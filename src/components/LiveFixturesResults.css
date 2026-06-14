@@ -1,0 +1,67 @@
+.fixtures-results {
+  display: flex;
+  gap: 16px;
+  padding: 16px 56px 24px;
+  background-color: #00030D;
+  font-family: 'Inter', sans-serif;
+}
+
+.fixtures-col {
+  flex: 1;
+  background-color: #12131F;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.title-with-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.live-badge {
+  background-color: #DC2626;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.match-table {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.match-row {
+  display: grid;
+  grid-template-columns: 50px 1fr 70px 1fr 40px;
+  align-items: center;
+  font-size: 12px;
+  color: #ffffff;
+  padding: 8px 0;
+  border-bottom: 1px solid #1F2937;
+}
+
+.match-league {
+  font-weight: 700;
+  color: #9CA3AF;
+  font-size: 10px;
+}
+
+.match-team {
+  font-weight: 600;
+}
+
+.match-score {
+  font-weight: 800;
+  text-align: center;
+}
+
+.match-time {
+  color: #9CA3AF;
+  font-size: 11px;
+  text-align: right;
+}

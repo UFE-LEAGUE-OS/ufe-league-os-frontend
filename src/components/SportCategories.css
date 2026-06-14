@@ -1,0 +1,46 @@
+.sport-categories {
+  display: flex;
+  gap: 16px;
+  padding: 0 56px 24px;
+  background-color: #00030D;
+  font-family: 'Inter', sans-serif;
+}
+
+.category-card {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border-radius: 8px;
+  padding: 20px;
+  color: #ffffff;
+}
+
+.category-icon {
+  font-size: 48px;
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.category-text p {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 12px;
+}
+
+.category-btn {
+  background-color: #2563EB;
+  color: #ffffff;
+  border: none;
+  border-radius: 5px;
+  padding: 8px 16px;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+}
