@@ -2,7 +2,8 @@ import { MemoryRouter } from 'react-router-dom'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
-import ForgotPassword, { normalizeCodeInput } from './ForgotPassword'
+import ForgotPassword from './ForgotPassword'
+import { normalizeCodeInput } from './forgotPasswordUtils'
 
 const navigateMock = vi.hoisted(() => vi.fn())
 const requestPasswordResetMock = vi.hoisted(() => vi.fn())
