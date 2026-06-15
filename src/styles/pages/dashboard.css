@@ -1,0 +1,63 @@
+.dashboard-page {
+  background-color: #02040c;
+  background-image:
+    linear-gradient(180deg, rgba(1, 4, 12, 0.42) 0%, rgba(1, 4, 12, 0.62) 42%, rgba(1, 4, 12, 0.88) 100%),
+    url('../../assets/stadium-bg.svg');
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-attachment: fixed;
+}
+
+.dashboard-layout {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.dashboard-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(340px, 0.92fr);
+  gap: 18px;
+  align-items: center;
+}
+
+.hero-copy-tight h1 {
+  max-width: 9ch;
+}
+
+.dashboard-panel {
+  padding: 24px;
+}
+
+.tag-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.dashboard-mini-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+@media (max-width: 1180px) {
+  .dashboard-hero,
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 860px) {
+  .dashboard-mini-grid {
+    grid-template-columns: 1fr;
+  }
+}

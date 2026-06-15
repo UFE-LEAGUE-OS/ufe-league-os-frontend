@@ -1,0 +1,51 @@
+<svg width="402" height="535" viewBox="0 0 402 535" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="402" height="535" fill="#000000"/>
+
+  <defs>
+    <linearGradient id="swooshOrange" x1="76" y1="204" x2="316" y2="249" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FF4500"/>
+      <stop offset="1" stop-color="#FF8A1E"/>
+    </linearGradient>
+    <linearGradient id="swooshPink" x1="84" y1="242" x2="316" y2="292" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FF2D86"/>
+      <stop offset="1" stop-color="#9B2BFF"/>
+    </linearGradient>
+    <linearGradient id="swooshBlue" x1="110" y1="286" x2="334" y2="355" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#7D3DFF"/>
+      <stop offset="1" stop-color="#1473FF"/>
+    </linearGradient>
+    <linearGradient id="osFill" x1="215" y1="401" x2="303" y2="401" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FF3A00"/>
+      <stop offset="0.55" stop-color="#FF6812"/>
+      <stop offset="1" stop-color="#FF981A"/>
+    </linearGradient>
+  </defs>
+
+  <g opacity="0.98" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M88 196C123 167 182 150 239 152C276 153 309 162 330 175" stroke="url(#swooshOrange)" stroke-width="8"/>
+    <path d="M75 230C111 201 176 185 240 188C279 190 311 199 331 213" stroke="url(#swooshPink)" stroke-width="8"/>
+    <path d="M85 274C127 242 194 228 257 230C295 232 319 239 338 254" stroke="url(#swooshBlue)" stroke-width="8"/>
+    <path d="M106 320C148 293 206 278 257 279C291 280 317 287 334 299" stroke="url(#swooshBlue)" stroke-width="8"/>
+  </g>
+
+  <g transform="translate(134 76)">
+    <path d="M39 22C29 29 23 43 23 59C23 76 31 90 44 97C47 99 50 100 54 100C55 88 56 66 56 45C56 28 54 17 51 10C47 11 42 15 39 22Z" fill="#FFFFFF"/>
+    <path d="M83 22C93 29 99 43 99 59C99 76 91 90 78 97C75 99 72 100 68 100C67 88 66 66 66 45C66 28 68 17 71 10C75 11 80 15 83 22Z" fill="#FFFFFF"/>
+    <path d="M44 17H78C84 17 89 21 89 27V66C89 79 82 89 72 93C66 95 56 95 50 93C40 89 33 79 33 66V27C33 21 38 17 44 17Z" stroke="#FFFFFF" stroke-width="7"/>
+    <path d="M61 34L65 46H78L67 53L71 65L61 58L51 65L55 53L44 46H57L61 34Z" fill="#FF3B30"/>
+    <path d="M33 96C47 106 75 106 89 96" stroke="#FFFFFF" stroke-width="4"/>
+  </g>
+
+  <text x="201" y="412" text-anchor="middle" fill="#FFFFFF" font-family="Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif" font-size="80" font-style="italic" font-weight="900" letter-spacing="-2">
+    LEAGUE
+  </text>
+  <text x="328" y="412" text-anchor="start" fill="url(#osFill)" font-family="Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif" font-size="80" font-style="italic" font-weight="900" letter-spacing="-2">
+    OS
+  </text>
+  <text x="201" y="451" text-anchor="middle" fill="#FFFFFF" font-family="Arial, Helvetica, sans-serif" font-size="19" font-weight="800" letter-spacing="1.3">
+    UNIFIED FAN ENGAGEMENT &
+  </text>
+  <text x="201" y="476" text-anchor="middle" fill="#FFFFFF" font-family="Arial, Helvetica, sans-serif" font-size="19" font-weight="800" letter-spacing="1.3">
+    LEAGUE PLATFORM
+  </text>
+</svg>
