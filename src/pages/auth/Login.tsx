@@ -1,5 +1,5 @@
 import { useState, type FormEvent, type ReactNode } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import PersonOutlinedIcon from '@mui/icons-material/PersonOutlined';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
@@ -42,6 +42,7 @@ function LoginFieldIcon({ children }: { children: ReactNode }) {
 
 export default function Login() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [googleLoginMessage, setGoogleLoginMessage] = useState('');
   const locationMessage = (location.state as { message?: string } | null)?.message ?? '';
@@ -54,6 +55,7 @@ export default function Login() {
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    navigate('/personalize');
   };
 
   const handleGoogleLogin = () => {
@@ -125,7 +127,7 @@ export default function Login() {
 
             <form className="login-form" onSubmit={handleSubmit} noValidate>
               <label>
-                Phone number or email
+                Phone Number or Email
                 <div className="login-field-shell">
                   <LoginFieldIcon>
                     <PersonOutlinedIcon />
