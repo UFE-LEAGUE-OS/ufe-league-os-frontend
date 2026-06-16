@@ -38,6 +38,22 @@ const features = [
 
 type RecoveryStep = 'request' | 'code' | 'password' | 'success';
 
+function extractMessage(error: unknown, fallback: string) {
+  const responseData = (error as { response?: { data?: unknown } })?.response?.data;
+
+  if (responseData && typeof responseData === 'object' && !Array.isArray(responseData)) {
+    const messages = Object.values(responseData as Record<string, unknown>)
+      .flatMap((value) => (Array.isArray(value) ? value : [value]))
+      .filter((value): value is string => typeof value === 'string');
+
+    if (messages.length > 0) {
+      return messages[0];
+    }
+  }
+
+  return fallback;
+}
+
 export default function ForgotPassword() {
   const navigate = useNavigate();
   const [step, setStep] = useState<RecoveryStep>('request');
@@ -48,73 +64,118 @@ export default function ForgotPassword() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isRequesting, setIsRequesting] = useState(false);
-  const [hasRequestedCode, setHasRequestedCode] = useState(false);
   const [isVerifyingCode, setIsVerifyingCode] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
-  const [successMessage, setSuccessMessage] = useState('');
+  const [statusMessage, setStatusMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
 
-  const resetCodeStep = () => {
-    setHasRequestedCode(false);
+  const resetToRequestStep = () => {
     setStep('request');
     setResetCode('');
     setNewPassword('');
     setConfirmPassword('');
     setShowPassword(false);
     setShowConfirmPassword(false);
-    setSuccessMessage('');
+    setStatusMessage('');
+    setErrorMessage('');
   };
 
   const handleEmailChange = (event: ChangeEvent<HTMLInputElement>) => {
     setEmail(event.target.value);
 
-    if (step !== 'request' || hasRequestedCode) {
-      resetCodeStep();
+    if (step !== 'request') {
+      resetToRequestStep();
     }
   };
 
   const handleRequestCode = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    setIsRequesting(true);
-    setHasRequestedCode(true);
-    setStep('code');
-    setIsRequesting(false);
+    const normalizedEmail = email.trim().toLowerCase();
 
-    void requestPasswordReset({ email: email.trim().toLowerCase() }).catch(() => undefined);
+    if (!normalizedEmail) {
+      setErrorMessage('Email address is required.');
+      return;
+    }
+
+    setIsRequesting(true);
+    setErrorMessage('');
+    setStatusMessage('');
+
+    try {
+      await requestPasswordReset({ email: normalizedEmail });
+      setStatusMessage('A reset code has been sent to your email.');
+      setStep('code');
+    } catch (error) {
+      setErrorMessage(
+        extractMessage(error, 'We could not send the reset code right now. Please try again.'),
+      );
+    } finally {
+      setIsRequesting(false);
+    }
   };
 
-  const handleVerifyCode = (event: FormEvent<HTMLFormElement>) => {
+  const handleVerifyCode = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
+    if (resetCode.trim().length !== 6) {
+      setErrorMessage('Reset code must be 6 digits long.');
+      return;
+    }
+
     setIsVerifyingCode(true);
-    setStep('password');
-    setIsVerifyingCode(false);
+    setErrorMessage('');
+
+    try {
+      setStatusMessage('Code accepted. Enter your new password.');
+      setStep('password');
+    } finally {
+      setIsVerifyingCode(false);
+    }
   };
 
   const handleResetPassword = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    setIsResetting(true);
-    setSuccessMessage('Password reset successful. Redirecting to login...');
-    setStep('success');
-    setResetCode('');
-    setNewPassword('');
-    setConfirmPassword('');
-    setHasRequestedCode(false);
+    const normalizedEmail = email.trim().toLowerCase();
 
-    window.setTimeout(() => {
-      navigate('/login', { replace: true });
-    }, 2000);
+    if (!normalizedEmail) {
+      setErrorMessage('Email address is required.');
+      return;
+    }
+
+    if (!newPassword || !confirmPassword) {
+      setErrorMessage('Please enter and confirm your new password.');
+      return;
+    }
+
+    setIsResetting(true);
+    setErrorMessage('');
+    setStatusMessage('');
 
     try {
       await resetPassword({
-        email: email.trim().toLowerCase(),
+        email: normalizedEmail,
         code: resetCode.trim(),
         password: newPassword,
         confirm_password: confirmPassword,
       });
-    } catch {
-      return;
+
+      setStatusMessage('Password reset successful. Redirecting to login...');
+      setStep('success');
+
+      window.setTimeout(() => {
+        navigate('/login', {
+          replace: true,
+          state: {
+            message: 'Your password has been reset. You can sign in again now.',
+          },
+        });
+      }, 1800);
+    } catch (error) {
+      setErrorMessage(
+        extractMessage(error, 'We could not reset your password right now. Please try again.'),
+      );
     } finally {
       setIsResetting(false);
     }
@@ -202,6 +263,18 @@ export default function ForgotPassword() {
                   </div>
                 </label>
 
+                {errorMessage ? (
+                  <p className="login-footnote" role="alert" style={{ color: '#ffd08a' }}>
+                    {errorMessage}
+                  </p>
+                ) : null}
+
+                {statusMessage ? (
+                  <p className="login-footnote" role="status" aria-live="polite" style={{ color: '#c8ffd5' }}>
+                    {statusMessage}
+                  </p>
+                ) : null}
+
                 <button type="submit" className="login-submit" disabled={isRequesting}>
                   {isRequesting ? 'Sending Code...' : 'Send Reset Code'}
                 </button>
@@ -242,11 +315,23 @@ export default function ForgotPassword() {
                     </div>
                   </label>
 
+                  {errorMessage ? (
+                    <p className="login-footnote" role="alert" style={{ color: '#ffd08a' }}>
+                      {errorMessage}
+                    </p>
+                  ) : null}
+
+                  {statusMessage ? (
+                    <p className="login-footnote" role="status" aria-live="polite" style={{ color: '#c8ffd5' }}>
+                      {statusMessage}
+                    </p>
+                  ) : null}
+
                   <button type="submit" className="login-submit" disabled={isVerifyingCode}>
                     {isVerifyingCode ? 'Verifying...' : 'Verify Code'}
                   </button>
 
-                  <button type="button" className="text-button" onClick={resetCodeStep}>
+                  <button type="button" className="text-button" onClick={resetToRequestStep}>
                     Resend code
                   </button>
                 </form>
@@ -303,6 +388,18 @@ export default function ForgotPassword() {
                   </div>
                 </label>
 
+                {errorMessage ? (
+                  <p className="login-footnote" role="alert" style={{ color: '#ffd08a' }}>
+                    {errorMessage}
+                  </p>
+                ) : null}
+
+                {statusMessage ? (
+                  <p className="login-footnote" role="status" aria-live="polite" style={{ color: '#c8ffd5' }}>
+                    {statusMessage}
+                  </p>
+                ) : null}
+
                 <button type="submit" className="login-submit" disabled={isResetting}>
                   {isResetting ? 'Resetting...' : 'Reset Password'}
                 </button>
@@ -334,8 +431,11 @@ export default function ForgotPassword() {
                 <h3 style={{ margin: 0, color: '#c8ffd5', fontSize: '1.05rem', fontWeight: 800 }}>
                   Success
                 </h3>
-                <p className="login-footnote" style={{ color: '#c8ffd5', fontWeight: 700, marginTop: '0.5rem' }}>
-                  {successMessage}
+                <p
+                  className="login-footnote"
+                  style={{ color: '#c8ffd5', fontWeight: 700, marginTop: '0.5rem' }}
+                >
+                  {statusMessage}
                 </p>
                 <p className="login-footnote">
                   <Link

@@ -1,6 +1,7 @@
 import { useState, type FormEvent, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { register as registerAccount } from '../../services/authService.js';
+import { savePendingOnboardingSession } from '../../utils/onboardingSession.js';
 import PersonOutlinedIcon from '@mui/icons-material/PersonOutlined';
 import MailOutlinedIcon from '@mui/icons-material/MailOutlined';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
@@ -137,12 +138,22 @@ export default function Register() {
 
       await registerAccount(payload);
 
-      navigate('/verify-email', {
-        replace: true,
-        state: {
-          email: payload.email,
-        },
+      savePendingOnboardingSession({
+        email: payload.email,
+        password: payload.password,
       });
+
+      setSubmitMessage('Registration successful. Check your email for the OTP.');
+
+      window.setTimeout(() => {
+        navigate('/verify-email', {
+          replace: true,
+          state: {
+            email: payload.email,
+            message: 'Registration successful. Please verify the OTP sent to your email.',
+          },
+        });
+      }, 900);
     } catch (error) {
       const isTimeoutError =
         typeof error === 'object' &&

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore.js';
-import { setToken } from '../../utils/tokenManager.js';
+import { setAuthTokens } from '../../utils/tokenManager.js';
 import { GlassCard, PageShell } from '../../components/site/LeagueUI.js';
 import '../../styles/pages/login.css';
 
@@ -47,10 +47,10 @@ export default function GoogleCallback() {
     }
 
     const { access, refresh, requiresEmailVerification, user } = result;
-    setToken(access);
-    if (refresh) {
-      localStorage.setItem('refresh_token', refresh);
-    }
+    setAuthTokens({
+      accessToken: access,
+      refreshToken: refresh,
+    });
 
     setAuth({
       user,
@@ -60,7 +60,10 @@ export default function GoogleCallback() {
     });
 
     window.history.replaceState({}, document.title, window.location.pathname);
-    navigate('/dashboard', { replace: true });
+    navigate(requiresEmailVerification ? '/verify-email' : '/dashboard/fan', {
+      replace: true,
+      state: requiresEmailVerification && user?.email ? { email: user.email } : undefined,
+    });
   }, [navigate, setAuth]);
 
   return (

@@ -8,6 +8,7 @@ import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined';
 import EmojiEventsOutlinedIcon from '@mui/icons-material/EmojiEventsOutlined';
 import EventNoteOutlinedIcon from '@mui/icons-material/EventNoteOutlined';
 import { GlassCard, PageShell } from '../../components/site/LeagueUI.js';
+import { useAuth } from '../../hooks/useAuth.js';
 import { buildGoogleAuthUrl } from './loginUtils.js';
 import '../../styles/pages/login.css';
 
@@ -43,8 +44,13 @@ function LoginFieldIcon({ children }: { children: ReactNode }) {
 export default function Login() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [googleLoginMessage, setGoogleLoginMessage] = useState('');
+  const [identifier, setIdentifier] = useState('');
+  const [password, setPassword] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const locationMessage = (location.state as { message?: string } | null)?.message ?? '';
 
   const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
@@ -53,9 +59,70 @@ export default function Login() {
     import.meta.env.VITE_GOOGLE_REDIRECT_URI?.trim() ||
     `${apiBaseUrl}/api/accounts/google/callback/`;
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    navigate('/personalize');
+
+    setIsSubmitting(true);
+    setErrorMessage('');
+
+    const normalizedIdentifier = identifier.trim();
+
+    if (!normalizedIdentifier || !password) {
+      setErrorMessage('Please enter your email/phone number and password.');
+      setIsSubmitting(false);
+      return;
+    }
+
+    try {
+      const response = await login({
+        identifier: normalizedIdentifier,
+        password,
+      });
+
+      const dashboardRoute =
+        response.frontend_dashboard_route && response.frontend_dashboard_route.startsWith('/dashboard')
+          ? response.frontend_dashboard_route
+          : '/dashboard/fan';
+
+      navigate(dashboardRoute, {
+        replace: true,
+        state: {
+          message: 'Login successful. Welcome back.',
+        },
+      });
+    } catch (error) {
+      const responseData = (error as { response?: { data?: unknown } })?.response?.data;
+
+      if (responseData && typeof responseData === 'object' && !Array.isArray(responseData)) {
+        const data = responseData as Record<string, unknown>;
+
+        if (data.code === 'email_not_verified') {
+          navigate('/verify-email', {
+            replace: true,
+            state: {
+              email: String(data.email ?? normalizedIdentifier),
+              message: 'Please verify your email before logging in.',
+            },
+          });
+          return;
+        }
+
+        const messages = Object.values(data)
+          .flatMap((value) => (Array.isArray(value) ? value : [value]))
+          .filter((value): value is string => typeof value === 'string');
+
+        if (messages.length > 0) {
+          setErrorMessage(messages[0]);
+          return;
+        }
+      }
+
+      setErrorMessage(
+        'We could not log you in right now. Please check your credentials and try again.',
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleGoogleLogin = () => {
@@ -123,6 +190,11 @@ export default function Login() {
                   {locationMessage}
                 </p>
               ) : null}
+              {errorMessage ? (
+                <p className="login-footnote" role="alert" style={{ color: '#ffd08a' }}>
+                  {errorMessage}
+                </p>
+              ) : null}
             </header>
 
             <form className="login-form" onSubmit={handleSubmit} noValidate>
@@ -132,7 +204,13 @@ export default function Login() {
                   <LoginFieldIcon>
                     <PersonOutlinedIcon />
                   </LoginFieldIcon>
-                  <input type="text" placeholder="Enter phone number or email" autoComplete="username" />
+                  <input
+                    type="text"
+                    placeholder="Enter phone number or email"
+                    autoComplete="username"
+                    value={identifier}
+                    onChange={(event) => setIdentifier(event.target.value)}
+                  />
                 </div>
               </label>
 
@@ -146,6 +224,8 @@ export default function Login() {
                     type={showPassword ? 'text' : 'password'}
                     placeholder="Enter your password"
                     autoComplete="current-password"
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
                   />
                   <button
                     type="button"
@@ -166,8 +246,8 @@ export default function Login() {
                 </Link>
               </div>
 
-              <button type="submit" className="login-submit">
-                Log In
+              <button type="submit" className="login-submit" disabled={isSubmitting}>
+                {isSubmitting ? 'Logging In...' : 'Log In'}
               </button>
 
               <div className="login-divider" aria-hidden="true">

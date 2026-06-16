@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { resendOtp, verifyOtp } from '../../services/authService.js';
 import { GlassCard, LeagueLogo, PageShell, TopNav } from '../../components/site/LeagueUI.js';
+import { getPendingOnboardingSession } from '../../utils/onboardingSession.js';
 import '../../styles/pages/verify-email.css';
 
 type VerifyEmailLocationState = {
@@ -17,7 +18,8 @@ export default function VerifyEmail() {
   const navigate = useNavigate();
   const location = useLocation();
   const locationState = location.state as VerifyEmailLocationState | null;
-  const [email, setEmail] = useState(locationState?.email ?? '');
+  const pendingOnboarding = getPendingOnboardingSession();
+  const [email, setEmail] = useState(locationState?.email ?? pendingOnboarding?.email ?? '');
   const [code, setCode] = useState('');
   const [statusMessage, setStatusMessage] = useState(locationState?.message ?? '');
   const [errorMessage, setErrorMessage] = useState('');
@@ -51,12 +53,13 @@ export default function VerifyEmail() {
         purpose: 'EMAIL_VERIFICATION',
       });
 
-      setStatusMessage('Email verified successfully. Redirecting to login...');
+      setStatusMessage('Email verified successfully. Redirecting to personalization...');
       window.setTimeout(() => {
-        navigate('/login', {
+        navigate('/personalize', {
           replace: true,
           state: {
-            message: 'Your email has been verified. You can now sign in.',
+            email: normalizedEmail,
+            message: 'Your email has been verified. Let’s personalize your fan profile.',
           },
         });
       }, 1500);
