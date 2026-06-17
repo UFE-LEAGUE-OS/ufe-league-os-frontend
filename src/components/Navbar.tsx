@@ -1,7 +1,9 @@
+import { useNavigate } from 'react-router-dom';
 import './Navbar.css';
 import logo from '../assets/logo.png';
 
 function Navbar() {
+  const navigate = useNavigate();
   return (
     <nav className="navbar">
       <div className="navbar-logo">
@@ -20,7 +22,7 @@ function Navbar() {
 
       <div className="navbar-actions">
         <button className="search-icon" aria-label="Search">🔍</button>
-        <button className="login-btn">Login</button>
+        <button className="login-btn" onClick={() => navigate('/login')}>Login</button>
       </div>
     </nav>
   );
