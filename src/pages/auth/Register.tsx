@@ -138,6 +138,12 @@ export default function Register() {
 
       await registerAccount(payload);
 
+      navigate('/personalize', {
+        replace: true,
+        state: {
+          email: payload.email,
+        },
+      });
       savePendingOnboardingSession({
         email: payload.email,
         password: payload.password,

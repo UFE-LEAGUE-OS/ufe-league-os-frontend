@@ -10,6 +10,7 @@ import {
   Profile,
   Personalize,
 } from '../pages';
+import Personalize from '../pages/auth/Personalize';
 import { PublicOnly, RequireAuth, RequireOnboarding } from './AuthGuards.js';
 
 export default function AppRoutes() {
@@ -23,6 +24,11 @@ export default function AppRoutes() {
         </Route>
         <Route path="/google-callback" element={<GoogleCallback />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/personalize" element={<Personalize />} />
+        <Route path="/verify-email" element={<VerifyEmail />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/profile" element={<Profile />} />
         <Route element={<RequireOnboarding />}>
           <Route path="/verify-email" element={<VerifyEmail />} />
           <Route path="/personalize" element={<Personalize />} />

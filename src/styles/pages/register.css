@@ -9,12 +9,12 @@
     overflow:hidden;
 
     background:
-        linear-gradient(180deg, rgba(2, 6, 18, 0.14), rgba(2, 6, 18, 0.42)),
-        url("../../assets/stadium-bg.svg");
+        linear-gradient(180deg, rgba(2, 5, 18, 0.62) 0%, rgba(5, 10, 30, 0.75) 100%),
+        url('../../assets/cta-banner.png');
 
-    background-position:center top;
-    background-size:92% auto;
-    background-repeat:no-repeat;
+    background-position: center center;
+    background-size: cover;
+    background-repeat: no-repeat;
     background-attachment: fixed;
 }
 
