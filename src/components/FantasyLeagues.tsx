@@ -1,29 +1,33 @@
 import './FantasyLeagues.css';
+import uplLogo from '../assets/star-times-upl.svg';
+import rugbyLogo from '../assets/nile-rugby.svg';
+import smackLogo from '../assets/smack-league.svg';
+import nblLogo from '../assets/national-basketball.svg';
 
 const leagues = [
   {
     name: 'UPL Fantasy',
     season: '2025/26 Season',
     desc: 'Create your squad from UPL stars and manage them to victory.',
-    logo: '🇺🇬',
+    logo: uplLogo,
   },
   {
     name: 'Rugby Premiership Fantasy',
     season: '2025/26 Season',
     desc: 'Pick your XV and dominate the pitch every weekend.',
-    logo: '🏉',
+    logo: rugbyLogo,
   },
   {
     name: 'SMACK League Fantasy',
     season: '2023/24 Season',
     desc: 'Create your squad from SMACK League stars and manage them to victory.',
-    logo: '🌍',
+    logo: smackLogo,
   },
   {
     name: 'NBL Fantasy',
     season: '2025/26 Season',
     desc: 'Assemble your five and climb the ranks to the top.',
-    logo: '🏀',
+    logo: nblLogo,
   },
 ];
 
@@ -39,7 +43,9 @@ function FantasyLeagues() {
         {leagues.map((league) => (
           <div className="fantasy-card" key={league.name}>
             <div className="fantasy-header">
-              <div className="fantasy-logo">{league.logo}</div>
+              <div className="fantasy-logo">
+                <img src={league.logo} alt={league.name} />
+              </div>
               <div>
                 <h4 className="fantasy-name">{league.name}</h4>
                 <p className="fantasy-season">{league.season}</p>

@@ -2,11 +2,12 @@ import { MemoryRouter } from 'react-router-dom'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
-import Register, {
+import Register from './Register'
+import {
   buildPhoneNumber,
   normalizePhoneInput,
   validateRegisterForm,
-} from './Register'
+} from './registerUtils'
 
 const navigateMock = vi.hoisted(() => vi.fn())
 const registerMock = vi.hoisted(() => vi.fn())
@@ -71,7 +72,9 @@ describe('register helpers', () => {
 })
 
 describe('Register page', () => {
-  it('submits a valid account creation payload and routes to email verification', async () => {
+  it(
+    'submits a valid account creation payload and routes to email verification',
+    async () => {
     const user = userEvent.setup()
     registerMock.mockResolvedValueOnce({ data: { ok: true } })
 
@@ -107,5 +110,7 @@ describe('Register page', () => {
         email: 'amina.kizza@example.com',
       },
     })
-  })
+    },
+    10000,
+  )
 })

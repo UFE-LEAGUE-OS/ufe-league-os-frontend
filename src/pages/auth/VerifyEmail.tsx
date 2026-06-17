@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { resendOtp, verifyOtp } from '../../services/authService.js';
 import { GlassCard, LeagueLogo, PageShell, TopNav } from '../../components/site/LeagueUI.js';
@@ -23,12 +23,6 @@ export default function VerifyEmail() {
   const [errorMessage, setErrorMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isResending, setIsResending] = useState(false);
-
-  useEffect(() => {
-    if (locationState?.email) {
-      setEmail(locationState.email);
-    }
-  }, [locationState?.email]);
 
   const handleVerify = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();

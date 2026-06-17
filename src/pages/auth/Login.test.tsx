@@ -2,7 +2,8 @@ import { MemoryRouter } from 'react-router-dom'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
-import Login, { buildGoogleAuthUrl } from './Login'
+import Login from './Login'
+import { buildGoogleAuthUrl } from './loginUtils'
 
 describe('buildGoogleAuthUrl', () => {
   it('builds the Google OAuth redirect URL from the configured values', () => {

@@ -1,0 +1,8 @@
+export { default as Landing } from './landing/Landing';
+export { default as Login } from './auth/Login';
+export { default as GoogleCallback } from './auth/GoogleCallback';
+export { default as ForgotPassword } from './auth/ForgotPassword';
+export { default as Register } from './auth/Register';
+export { default as VerifyEmail } from './auth/VerifyEmail';
+export { default as Dashboard } from './fan/Dashboard';
+export { default as Profile } from './fan/Profile';

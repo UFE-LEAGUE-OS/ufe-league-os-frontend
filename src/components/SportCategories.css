@@ -10,22 +10,43 @@
   flex: 1;
   display: flex;
   align-items: center;
-  gap: 16px;
   border-radius: 8px;
-  padding: 20px;
+  overflow: hidden;
+  position: relative;
+  min-height: 120px;
   color: #ffffff;
 }
 
-.category-icon {
-  font-size: 48px;
-  width: 80px;
-  height: 80px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: rgba(0, 0, 0, 0.3);
-  border-radius: 8px;
-  flex-shrink: 0;
+.category-image {
+  width: 45%;
+  height: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+}
+
+.category-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.category-image::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to right, transparent 40%, var(--card-bg) 100%);
+}
+
+.category-text {
+  margin-left: 42%;
+  padding: 20px 16px 20px 8px;
+  position: relative;
+  z-index: 1;
 }
 
 .category-text p {

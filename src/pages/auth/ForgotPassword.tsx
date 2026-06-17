@@ -11,6 +11,7 @@ import MarkEmailReadOutlinedIcon from '@mui/icons-material/MarkEmailReadOutlined
 import ShieldOutlinedIcon from '@mui/icons-material/ShieldOutlined';
 import ArrowBackOutlinedIcon from '@mui/icons-material/ArrowBackOutlined';
 import { GlassCard, PageShell } from '../../components/site/LeagueUI.js';
+import { normalizeCodeInput } from './forgotPasswordUtils.js';
 import '../../styles/pages/login.css';
 import '../../styles/pages/register.css';
 
@@ -36,10 +37,6 @@ const features = [
 ];
 
 type RecoveryStep = 'request' | 'code' | 'password' | 'success';
-
-export function normalizeCodeInput(value: string) {
-  return value.replace(/[^\d]/g, '');
-}
 
 export default function ForgotPassword() {
   const navigate = useNavigate();
