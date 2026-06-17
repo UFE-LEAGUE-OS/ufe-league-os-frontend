@@ -9,6 +9,7 @@ import {
   Dashboard,
   Profile,
 } from '../pages';
+import Personalize from '../pages/auth/Personalize';
 
 export default function AppRoutes() {
   return (
@@ -19,6 +20,7 @@ export default function AppRoutes() {
         <Route path="/google-callback" element={<GoogleCallback />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/personalize" element={<Personalize />} />
         <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/profile" element={<Profile />} />
