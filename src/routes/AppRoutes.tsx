@@ -10,7 +10,6 @@ import {
   Profile,
   Personalize,
 } from '../pages';
-import Personalize from '../pages/auth/Personalize';
 import { PublicOnly, RequireAuth, RequireOnboarding } from './AuthGuards.js';
 
 export default function AppRoutes() {

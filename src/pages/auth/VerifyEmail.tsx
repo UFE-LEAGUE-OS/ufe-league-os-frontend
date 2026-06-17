@@ -1,7 +1,6 @@
 import { useState, useRef, type FormEvent, type KeyboardEvent, type ClipboardEvent } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { resendOtp, verifyOtp } from '../../services/authService.js';
-import { LeagueLogo } from '../../components/site/LeagueUI.js';
 import { GlassCard, LeagueLogo, PageShell, TopNav } from '../../components/site/LeagueUI.js';
 import { getPendingOnboardingSession } from '../../utils/onboardingSession.js';
 import '../../styles/pages/verify-email.css';
@@ -13,7 +12,6 @@ export default function VerifyEmail() {
   const location = useLocation();
   const state = location.state as LocationState | null;
 
-  const [email] = useState(state?.email ?? '');
   const [digits, setDigits] = useState(['', '', '', '', '', '']);
   const locationState = location.state as VerifyEmailLocationState | null;
   const pendingOnboarding = getPendingOnboardingSession();
@@ -21,7 +19,6 @@ export default function VerifyEmail() {
   const [code, setCode] = useState('');
   const [statusMessage, setStatusMessage] = useState(locationState?.message ?? '');
   const [errorMessage, setErrorMessage] = useState('');
-  const [statusMessage, setStatusMessage] = useState(state?.message ?? '');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isResending, setIsResending] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
