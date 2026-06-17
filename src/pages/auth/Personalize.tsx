@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import CheckIcon from '@mui/icons-material/Check';
 import AddIcon from '@mui/icons-material/Add';
 import PublicIcon from '@mui/icons-material/Public';
@@ -90,6 +90,8 @@ const STEPS = ['Welcome', 'Sign Up', 'Follow Interests', 'Verify OTP', 'Log In']
 
 export default function Personalize() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const email = (location.state as { email?: string } | null)?.email ?? '';
   const [selected, setSelected] = useState<Record<string, Set<string>>>({});
 
   const toggle = (catId: string, itemId: string) => {
@@ -104,7 +106,7 @@ export default function Personalize() {
     selected[catId]?.has(itemId) ?? false;
 
   const handleContinue = () => {
-    navigate('/verify-email');
+    navigate('/verify-email', { state: { email } });
   };
 
   return (

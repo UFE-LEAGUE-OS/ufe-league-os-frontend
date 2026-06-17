@@ -55,7 +55,7 @@ export default function Login() {
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    navigate('/personalize');
+    navigate('/dashboard');
   };
 
   const handleGoogleLogin = () => {
