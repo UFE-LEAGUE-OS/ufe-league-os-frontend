@@ -20,7 +20,7 @@ function Navbar() {
 
       <div className="navbar-actions">
         <button className="search-icon" aria-label="Search">🔍</button>
-        <button className="signup-btn">Sign Up</button>
+        <button className="login-btn">Login</button>
       </div>
     </nav>
   );

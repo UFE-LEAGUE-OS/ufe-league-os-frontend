@@ -1,5 +1,7 @@
 import './Footer.css';
 import logo from '../assets/logo.png';
+import { FaFacebook, FaInstagram, FaYoutube, FaTiktok } from 'react-icons/fa';
+import { FaXTwitter } from 'react-icons/fa6';
 
 function Footer() {
   return (
@@ -39,11 +41,11 @@ function Footer() {
         <div className="footer-col">
           <h4>FOLLOW US</h4>
           <div className="footer-socials">
-            <span>📘</span>
-            <span>🐦</span>
-            <span>📷</span>
-            <span>▶️</span>
-            <span>🎵</span>
+            <FaFacebook size={20} />
+            <FaXTwitter size={20} />
+            <FaInstagram size={20} />
+            <FaYoutube size={20} />
+            <FaTiktok size={20} />
           </div>
         </div>
       </div>
