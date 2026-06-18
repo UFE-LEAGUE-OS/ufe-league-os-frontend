@@ -73,7 +73,7 @@ describe('register helpers', () => {
 
 describe('Register page', () => {
   it(
-    'submits a valid account creation payload and routes to email verification',
+    'submits a valid account creation payload and routes to personalization',
     async () => {
     const user = userEvent.setup()
     registerMock.mockResolvedValueOnce({ data: { ok: true } })
@@ -104,7 +104,7 @@ describe('Register page', () => {
       })
     })
 
-    expect(navigateMock).toHaveBeenCalledWith('/verify-email', {
+    expect(navigateMock).toHaveBeenCalledWith('/personalize', {
       replace: true,
       state: {
         email: 'amina.kizza@example.com',

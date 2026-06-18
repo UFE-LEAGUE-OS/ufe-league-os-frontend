@@ -14,10 +14,10 @@ function Navbar() {
     setSearchQuery('');
   };
 
-const handleKeyDown = (e: { key: string }) => {
-    if (e.key === 'Escape') {
-      setSearchOpen(false);
-      setSearchQuery('');
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && searchQuery.trim()) {
+      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+      handleSearchToggle();
     }
   };
 
