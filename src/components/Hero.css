@@ -8,6 +8,7 @@
   box-sizing: border-box;
   font-family: 'Inter', system-ui, sans-serif;
   color: #ffffff;
+  position: relative;
 }
 
 .hero-content {
@@ -42,24 +43,6 @@
   gap: 16px;
 }
 
-.btn-primary {
-  width: 222px;
-  height: 45px;
-  background-color: #8135FA;
-  color: #ffffff;
-  border: none;
-  border-radius: 5px;
-  padding: 0 18px;
-  font-weight: 700;
-  font-size: 15px;
-  font-family: 'Inter', sans-serif;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-}
-
 .btn-outline {
   background: transparent;
   color: #ffffff;
@@ -71,10 +54,18 @@
   font-size: 15px;
   font-family: 'Inter', sans-serif;
   cursor: pointer;
+  transition: background-color 0.2s ease,
+              border-color 0.2s ease,
+              transform 0.15s ease,
+              font-size 0.2s ease;
 }
 
-.hero {
-  position: relative;
+.btn-outline:hover {
+  background-color: #8135FA;
+  border-color: #8135FA;
+  color: #ffffff;
+  transform: scale(1.04);
+  font-size: 15.8px;
 }
 
 .hero-stats {

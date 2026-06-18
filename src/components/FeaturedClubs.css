@@ -84,3 +84,46 @@
   align-self: center;
   flex-shrink: 0;
 }
+
+/* Hover effects */
+.club-card {
+  transition: transform 0.2s ease, background-color 0.2s ease;
+  cursor: pointer;
+}
+
+.club-card:hover {
+  transform: scale(1.03);
+  background-color: #1e1f2e;
+}
+
+.club-logo {
+  transition: transform 0.2s ease;
+}
+
+.club-card:hover .club-logo {
+  transform: scale(1.1);
+}
+
+.become-member-btn {
+  transition: background-color 0.2s ease, transform 0.15s ease, font-size 0.2s ease;
+}
+
+.become-member-btn:hover {
+  background-color: #8135FA;
+  transform: scale(1.04);
+  font-size: 12.8px;
+}
+
+.clubs-arrow {
+  transition: background-color 0.2s ease, transform 0.15s ease;
+}
+
+.clubs-arrow:hover {
+  background-color: #9b55fb;
+  transform: scale(1.1);
+}
+
+.view-all-link:hover {
+  color: #9b55fb;
+  letter-spacing: 1.5px;
+}

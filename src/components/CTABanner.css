@@ -68,3 +68,31 @@
   font-size: 14px;
   cursor: pointer;
 }
+/* Hover effects */
+.explore-membership-btn {
+  transition: background-color 0.2s ease, transform 0.15s ease, font-size 0.2s ease;
+}
+
+.explore-membership-btn:hover {
+  background-color: #9b55fb;
+  transform: scale(1.04);
+  font-size: 14.8px;
+}
+
+.cta-feature {
+  transition: transform 0.2s ease, color 0.2s ease;
+  cursor: pointer;
+}
+
+.cta-feature:hover {
+  transform: translateX(6px);
+  color: #ffffff;
+}
+
+.cta-feature h4 {
+  transition: color 0.2s ease;
+}
+
+.cta-feature:hover h4 {
+  color: #8135FA;
+}
