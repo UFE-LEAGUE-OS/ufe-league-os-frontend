@@ -65,3 +65,29 @@
   font-size: 11px;
   text-align: right;
 }
+/* Hover effects */
+.match-row {
+  transition: background-color 0.2s ease, transform 0.2s ease;
+  cursor: pointer;
+}
+
+.match-row:hover {
+  background-color: #1e1f2e;
+  transform: translateX(4px);
+}
+
+.match-score {
+  transition: color 0.2s ease;
+}
+
+.match-row:hover .match-score {
+  color: #8135FA;
+}
+
+.fixtures-col {
+  transition: transform 0.2s ease;
+}
+
+.fixtures-col:hover {
+  transform: scale(1.01);
+}
