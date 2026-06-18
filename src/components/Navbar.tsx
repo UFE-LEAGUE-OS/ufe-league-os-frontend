@@ -19,6 +19,10 @@ function Navbar() {
       setSearchOpen(false);
       setSearchQuery('');
     }
+    if (e.key === 'Enter' && searchQuery.trim()) {
+      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+      handleSearchToggle();
+    }
   };
 
   return (
