@@ -4,7 +4,6 @@ import heroImage from '../assets/hero.png';
 
 function Hero() {
   const navigate = useNavigate();
-
   return (
     <section className="hero" style={{ backgroundImage: `url(${heroImage})` }}>
       <div className="hero-content">
