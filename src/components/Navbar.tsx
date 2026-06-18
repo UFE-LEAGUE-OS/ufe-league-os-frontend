@@ -1,5 +1,5 @@
-import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { FiSearch, FiX } from 'react-icons/fi';
 import './Navbar.css';
 import logo from '../assets/logo.png';
@@ -10,16 +10,16 @@ function Navbar() {
   const [searchQuery, setSearchQuery] = useState('');
 
   const handleSearchToggle = () => {
-    setSearchOpen(!searchOpen);
+    setSearchOpen((current) => !current);
     setSearchQuery('');
   };
 
-  const handleKeyDown = (e: { key: string }) => {
-    if (e.key === 'Escape') {
+  const handleKeyDown = (event: { key: string }) => {
+    if (event.key === 'Escape') {
       setSearchOpen(false);
       setSearchQuery('');
     }
-    if (e.key === 'Enter' && searchQuery.trim()) {
+    if (event.key === 'Enter' && searchQuery.trim()) {
       navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
       handleSearchToggle();
     }
@@ -39,11 +39,11 @@ function Navbar() {
             className="search-input"
             placeholder="Search competitions, clubs, players..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(event) => setSearchQuery(event.target.value)}
             onKeyDown={handleKeyDown}
             autoFocus
           />
-          <button className="search-close" onClick={handleSearchToggle}>
+          <button className="search-close" onClick={handleSearchToggle} aria-label="Close search">
             <FiX size={16} />
           </button>
         </div>
@@ -64,7 +64,7 @@ function Navbar() {
       <div className="navbar-actions">
         <button
           className="search-icon"
-          aria-label="Search"
+          aria-label={searchOpen ? 'Close search' : 'Search'}
           onClick={handleSearchToggle}
         >
           {searchOpen ? <FiX size={18} /> : <FiSearch size={18} />}

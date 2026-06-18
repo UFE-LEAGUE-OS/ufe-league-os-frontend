@@ -162,12 +162,6 @@ export default function Register() {
 
       await registerAccount(payload);
 
-      navigate('/personalize', {
-        replace: true,
-        state: {
-          email: payload.email,
-        },
-      });
       savePendingOnboardingSession({
         email: payload.email,
         password: payload.password,
@@ -175,15 +169,13 @@ export default function Register() {
 
       setSubmitMessage('Registration successful. Check your email for the OTP.');
 
-      window.setTimeout(() => {
-        navigate('/verify-email', {
-          replace: true,
-          state: {
-            email: payload.email,
-            message: 'Registration successful. Please verify the OTP sent to your email.',
-          },
-        });
-      }, 900);
+      navigate('/verify-email', {
+        replace: true,
+        state: {
+          email: payload.email,
+          message: 'Registration successful. Please verify the OTP sent to your email.',
+        },
+      });
     } catch (error) {
       const isTimeoutError =
         typeof error === 'object' &&

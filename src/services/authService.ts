@@ -1,6 +1,6 @@
 import axiosInstance from './apiClient.js';
 
-export type AuthPayload = Record<string, unknown>;
+export type AuthPayload = FormData | Record<string, unknown>;
 
 export const register = (payload: AuthPayload) =>
   axiosInstance.post('/accounts/register/', payload);
@@ -14,10 +14,10 @@ export const resendOtp = (payload: AuthPayload) =>
   axiosInstance.post('/accounts/resend-otp/', payload);
 
 export const requestPasswordReset = (payload: AuthPayload) =>
-  axiosInstance.post('/accounts/request-password-reset/', payload);
+  axiosInstance.post('/accounts/password-reset/request/', payload);
 
 export const resetPassword = (payload: AuthPayload) =>
-  axiosInstance.post('/accounts/reset-password/', payload);
+  axiosInstance.post('/accounts/password-reset/confirm/', payload);
 
 export const fetchProfile = () => axiosInstance.get('/accounts/profile/');
 

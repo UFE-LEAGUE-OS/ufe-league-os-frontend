@@ -24,6 +24,7 @@ vi.mock('react-router-dom', async () => {
 
 afterEach(() => {
   vi.restoreAllMocks();
+  vi.clearAllMocks();
 });
 
 describe('VerifyEmail page', () => {
@@ -39,17 +40,10 @@ describe('VerifyEmail page', () => {
       </MemoryRouter>,
     );
 
-    // Type into the 6 individual OTP digit boxes
-    const digitInputs = screen.getAllByRole('textbox', { name: /digit/i });
-    expect(digitInputs).toHaveLength(6);
-
-    await user.type(digitInputs[0], '1');
-    await user.type(digitInputs[1], '2');
-    await user.type(digitInputs[2], '3');
-    await user.type(digitInputs[3], '4');
-    await user.type(digitInputs[4], '5');
-    await user.type(digitInputs[5], '6');
-
+    const digits = ['1', '2', '3', '4', '5', '6'];
+    for (const [index, digit] of digits.entries()) {
+      await user.type(screen.getByRole('textbox', { name: `Digit ${index + 1}` }), digit);
+    }
     await user.click(screen.getByRole('button', { name: /verify & continue/i }));
 
     await waitFor(() => {
@@ -73,7 +67,8 @@ describe('VerifyEmail page', () => {
     expect(navigateMock).toHaveBeenCalledWith('/login', {
       replace: true,
       state: {
-        message: 'Your number has been verified. You can now sign in.',
+        email: 'fan@example.com',
+        message: 'Your email has been verified. You can now sign in.',
       },
     });
   });
@@ -88,7 +83,7 @@ describe('VerifyEmail page', () => {
       </MemoryRouter>,
     );
 
-    await user.click(screen.getByRole('button', { name: /didn't receive/i }));
+    await user.click(screen.getByRole('button', { name: /resend/i }));
 
     await waitFor(() => {
       expect(resendOtpMock).toHaveBeenCalledWith({

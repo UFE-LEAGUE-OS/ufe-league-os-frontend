@@ -12,12 +12,16 @@
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-columns: minmax(0, 1.05fr) minmax(520px, 0.95fr);
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 760px);
   align-items: center;
+  justify-content: space-between;
   gap: clamp(28px, 4vw, 72px);
+  width: 100%;
+  max-width: 100vw;
   min-height: 100svh;
   padding: clamp(56px, 7vh, 96px) clamp(28px, 4vw, 72px) clamp(28px, 4vh, 56px);
   box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 .login-story {
@@ -28,6 +32,7 @@
   color: #fff;
   padding-top: clamp(24px, 6vh, 84px);
   padding-left: clamp(0px, 1vw, 12px);
+  min-width: 0;
 }
 
 .login-hero-copy {
@@ -127,6 +132,7 @@
 
 .login-card {
   width: min(100%, 760px);
+  min-width: 0;
   margin-left: auto;
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.1);

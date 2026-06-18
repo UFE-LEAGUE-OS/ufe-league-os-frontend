@@ -9,6 +9,11 @@ import SchoolOutlinedIcon from '@mui/icons-material/SchoolOutlined';
 import SportsSoccerIcon from '@mui/icons-material/SportsSoccer';
 import type { SvgIconComponent } from '@mui/icons-material';
 import { PageShell } from '../../components/site/LeagueUI.js';
+import { useAuth } from '../../hooks/useAuth.js';
+import {
+  clearPendingOnboardingSession,
+  getPendingOnboardingSession,
+} from '../../utils/onboardingSession.js';
 import '../../styles/pages/personalize.css';
 
 type Item = { id: string; name: string; sub?: string; emoji?: string };
@@ -86,13 +91,15 @@ const CATEGORIES: Category[] = [
   },
 ];
 
-const STEPS = ['Welcome', 'Sign Up', 'Follow Interests', 'Verify OTP', 'Log In'];
+const STEPS = ['Welcome', 'Sign Up', 'Verify OTP', 'Follow Interests', 'Log In'];
 
 export default function Personalize() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { login } = useAuth();
   const email = (location.state as { email?: string } | null)?.email ?? '';
   const [selected, setSelected] = useState<Record<string, Set<string>>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const toggle = (catId: string, itemId: string) => {
     setSelected((prev) => {
@@ -109,8 +116,56 @@ if (set.has(itemId)) {
   const isSelected = (catId: string, itemId: string) =>
     selected[catId]?.has(itemId) ?? false;
 
-  const handleContinue = () => {
-    navigate('/verify-email', { state: { email } });
+  const handleContinue = async () => {
+    const preferences = Object.fromEntries(
+      Object.entries(selected).map(([category, values]) => [category, Array.from(values)]),
+    );
+
+    localStorage.setItem('league_os_personalization_preferences', JSON.stringify(preferences));
+
+    const pendingOnboarding = getPendingOnboardingSession();
+    if (!pendingOnboarding) {
+      navigate('/login', {
+        replace: true,
+        state: {
+          email,
+          message: 'Your email has been verified. Please log in to continue.',
+        },
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const response = await login({
+        identifier: pendingOnboarding.email,
+        password: pendingOnboarding.password,
+      });
+      clearPendingOnboardingSession();
+
+      const dashboardRoute =
+        response.frontend_dashboard_route && response.frontend_dashboard_route.startsWith('/dashboard')
+          ? response.frontend_dashboard_route
+          : '/dashboard/fan';
+
+      navigate(dashboardRoute, {
+        replace: true,
+        state: {
+          message: 'Your profile is ready. Welcome to League OS.',
+        },
+      });
+    } catch {
+      navigate('/login', {
+        replace: true,
+        state: {
+          email: pendingOnboarding.email,
+          message: 'Your profile is ready. Please log in to continue.',
+        },
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -123,10 +178,10 @@ if (set.has(itemId)) {
           {STEPS.map((step, i) => (
             <div
               key={step}
-              className={`p-step ${i < 2 ? 'p-step-done' : i === 2 ? 'p-step-active' : 'p-step-idle'}`}
+              className={`p-step ${i < 3 ? 'p-step-done' : i === 3 ? 'p-step-active' : 'p-step-idle'}`}
             >
               <span className="p-step-num">
-                {i < 2 ? <CheckIcon fontSize="inherit" /> : i + 1}
+                {i < 3 ? <CheckIcon fontSize="inherit" /> : i + 1}
               </span>
               <span className="p-step-label">{step}</span>
               {i < STEPS.length - 1 && <span className="p-step-line" />}
@@ -187,8 +242,8 @@ if (set.has(itemId)) {
       </main>
 
       <div className="personalize-footer">
-        <button className="personalize-continue" onClick={handleContinue}>
-          Continue
+        <button className="personalize-continue" onClick={handleContinue} disabled={isSubmitting}>
+          {isSubmitting ? 'Finishing...' : 'Continue'}
         </button>
       </div>
     </PageShell>

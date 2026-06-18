@@ -1,15 +1,9 @@
 import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { Link, useNavigate } from 'react-router-dom';
 import { fetchProfile, removeAvatar, updateProfile } from '../../services/authService.js';
 import { useAuthStore } from '../../store/authStore.js';
-import {
-  GlassCard,
-  PageShell,
-  SectionTitle,
-  StatCard,
-  Tag,
-  TopNav,
-} from '../../components/site/LeagueUI.js';
+import { GlassCard, PageShell, SectionTitle } from '../../components/site/LeagueUI.js';
 import '../../styles/pages/profile.css';
 
 type ProfileData = {
@@ -25,16 +19,12 @@ export default function Profile() {
   const navigate = useNavigate();
   const clearAuth = useAuthStore((state) => state.clearAuth);
   const [profile, setProfile] = useState<ProfileData | null>(null);
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('');
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isRemovingAvatar, setIsRemovingAvatar] = useState(false);
   const [statusMessage, setStatusMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
-  const badges = useMemo(() => ['Verified fan', 'Premium alerts', 'Match-day regular'], []);
 
   useEffect(() => {
     let active = true;
@@ -49,9 +39,6 @@ export default function Profile() {
 
         const data = response.data as ProfileData;
         setProfile(data);
-        setFirstName(data.first_name ?? '');
-        setLastName(data.last_name ?? '');
-        setPhoneNumber(data.phone_number ?? '');
       } catch (error) {
         const status = (error as { response?: { status?: number } })?.response?.status;
 
@@ -93,34 +80,23 @@ export default function Profile() {
     setErrorMessage('');
 
     try {
-      const payload =
-        avatarFile !== null
-          ? (() => {
-              const formData = new FormData();
-              formData.append('first_name', firstName);
-              formData.append('last_name', lastName);
-              formData.append('phone_number', phoneNumber);
-              formData.append('avatar', avatarFile);
-              return formData;
-            })()
-          : {
-              first_name: firstName,
-              last_name: lastName,
-              phone_number: phoneNumber,
-            };
+      if (avatarFile === null) {
+        setErrorMessage('Choose a profile picture before saving.');
+        return;
+      }
+
+      const payload = new FormData();
+      payload.append('avatar', avatarFile);
 
       const response = await updateProfile(payload);
       const updatedProfile = response.data?.user as ProfileData | undefined;
 
       if (updatedProfile) {
         setProfile(updatedProfile);
-        setFirstName(updatedProfile.first_name ?? '');
-        setLastName(updatedProfile.last_name ?? '');
-        setPhoneNumber(updatedProfile.phone_number ?? '');
       }
 
       setAvatarFile(null);
-      setStatusMessage('Profile updated successfully.');
+      setStatusMessage('Profile picture updated successfully.');
     } catch (error) {
       const responseData = (error as { response?: { data?: unknown } })?.response?.data;
 
@@ -177,118 +153,81 @@ export default function Profile() {
       .join('');
   }, [profile]);
 
+  const profileName = profile?.full_name ?? [profile?.first_name, profile?.last_name].filter(Boolean).join(' ');
+  const displayName = profileName || 'Your profile';
+  const email = profile?.email ?? 'Not provided';
+  const phoneNumber = profile?.phone_number ?? 'Not provided';
+
   return (
     <PageShell className="profile-page">
-      <TopNav compact />
-
       <main className="page profile-layout">
-        <GlassCard className="profile-hero">
-          <div className="profile-avatar">
-            {profile?.avatar_url ? (
-              <img
-                src={profile.avatar_url}
-                alt="Profile avatar"
-                style={{ width: '100%', height: '100%', borderRadius: 'inherit', objectFit: 'cover' }}
-              />
-            ) : (
-              initials
-            )}
-          </div>
-          <div className="profile-copy">
-            <p className="eyebrow">Fan profile</p>
-            <h1>{profile?.full_name ?? 'Your profile'}</h1>
-            <p>Track your clubs, keep your settings in sync, and build your fan identity inside League OS.</p>
-            <div className="story-badges">
-              {badges.map((badge) => (
-                <Tag key={badge}>{badge}</Tag>
-              ))}
+        <GlassCard className="content-card profile-picture-card">
+          <Link to="/dashboard/fan" className="profile-back-button">
+            <ArrowBackIcon />
+            Back to dashboard
+          </Link>
+
+          <SectionTitle eyebrow="Profile" title="Update profile picture" />
+
+          {isLoading ? <p className="profile-message">Loading profile...</p> : null}
+          {errorMessage ? (
+            <p className="profile-message profile-message-warn" role="alert">
+              {errorMessage}
+            </p>
+          ) : null}
+          {statusMessage ? (
+            <p className="profile-message profile-message-success" role="status" aria-live="polite">
+              {statusMessage}
+            </p>
+          ) : null}
+
+          <div className="profile-picture-layout">
+            <div className="profile-avatar profile-avatar-large">
+              {profile?.avatar_url ? (
+                <img src={profile.avatar_url} alt="Profile avatar" />
+              ) : (
+                initials
+              )}
             </div>
-          </div>
-        </GlassCard>
 
-        <section className="dashboard-grid">
-          <GlassCard className="content-card">
-            <SectionTitle eyebrow="Account" title="Update your details" />
-
-            {isLoading ? <p>Loading profile...</p> : null}
-            {errorMessage ? (
-              <p role="alert" style={{ color: '#ffd08a', fontWeight: 700 }}>
-                {errorMessage}
-              </p>
-            ) : null}
-            {statusMessage ? (
-              <p role="status" aria-live="polite" style={{ color: '#c8ffd5', fontWeight: 700 }}>
-                {statusMessage}
-              </p>
-            ) : null}
-
-            <form className="register-form" onSubmit={handleSubmit} noValidate>
-              <label>
-                First name
-                <div className="field-shell">
-                  <input
-                    type="text"
-                    value={firstName}
-                    onChange={(event) => setFirstName(event.target.value)}
-                  />
+            <div className="profile-account-summary">
+              <h1>{displayName}</h1>
+              <div className="profile-details">
+                <div>
+                  <span>Email address</span>
+                  <strong>{email}</strong>
                 </div>
-              </label>
-
-              <label>
-                Last name
-                <div className="field-shell">
-                  <input
-                    type="text"
-                    value={lastName}
-                    onChange={(event) => setLastName(event.target.value)}
-                  />
+                <div>
+                  <span>Phone number</span>
+                  <strong>{phoneNumber}</strong>
                 </div>
-              </label>
-
-              <label>
-                Phone number
-                <div className="field-shell">
-                  <input
-                    type="tel"
-                    value={phoneNumber}
-                    onChange={(event) => setPhoneNumber(event.target.value)}
-                  />
-                </div>
-              </label>
-
-              <label>
-                Avatar
-                <div className="field-shell">
-                  <input type="file" accept="image/*" onChange={handleAvatarChange} />
-                </div>
-              </label>
-
-              <div className="story-badges">
-                <button type="submit" className="login-submit" disabled={isSaving}>
-                  {isSaving ? 'Saving...' : 'Save Profile'}
-                </button>
-                <button
-                  type="button"
-                  className="text-button"
-                  onClick={handleRemoveAvatar}
-                  disabled={isRemovingAvatar}
-                >
-                  {isRemovingAvatar ? 'Removing...' : 'Remove Avatar'}
-                </button>
               </div>
-            </form>
-          </GlassCard>
-
-          <GlassCard className="content-card">
-            <SectionTitle eyebrow="Season snapshot" title="Your fan activity" />
-            <div className="stat-grid">
-              <StatCard label="matches watched" value="36" hint="This season" />
-              <StatCard label="comments posted" value="89" hint="Community activity" />
-              <StatCard label="rewards claimed" value="7" hint="Across events" />
-              <StatCard label="clubs followed" value="11" hint="Saved to profile" />
             </div>
-          </GlassCard>
-        </section>
+          </div>
+
+          <form className="register-form profile-picture-form" onSubmit={handleSubmit} noValidate>
+            <label>
+              Profile picture
+              <div className="field-shell">
+                <input type="file" accept="image/*" onChange={handleAvatarChange} />
+              </div>
+            </label>
+
+            <div className="profile-actions">
+              <button type="submit" className="login-submit" disabled={isSaving || avatarFile === null}>
+                {isSaving ? 'Saving...' : 'Save picture'}
+              </button>
+              <button
+                type="button"
+                className="text-button"
+                onClick={handleRemoveAvatar}
+                disabled={isRemovingAvatar || !profile?.avatar_url}
+              >
+                {isRemovingAvatar ? 'Removing...' : 'Remove picture'}
+              </button>
+            </div>
+          </form>
+        </GlassCard>
       </main>
     </PageShell>
   );

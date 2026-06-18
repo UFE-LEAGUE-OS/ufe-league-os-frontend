@@ -61,7 +61,6 @@ export default function Login() {
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    navigate('/dashboard');
 
     setIsSubmitting(true);
     setErrorMessage('');

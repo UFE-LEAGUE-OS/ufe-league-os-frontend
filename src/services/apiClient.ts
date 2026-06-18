@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosHeaders } from 'axios';
 import { getToken } from '../utils/tokenManager.js';
 
 const rawApiBaseUrl =
@@ -21,11 +21,19 @@ const axiosInstance = axios.create({
 });
 
 axiosInstance.interceptors.request.use((config) => {
-  const accessToken = localStorage.getItem('league_os_access_token');
+  const accessToken = getToken();
+  const headers = AxiosHeaders.from(config.headers);
 
   if (accessToken) {
-    config.headers.Authorization = `Bearer ${accessToken}`;
+    headers.set('Authorization', `Bearer ${accessToken}`);
   }
+
+  if (typeof FormData !== 'undefined' && config.data instanceof FormData) {
+    headers.delete('Content-Type');
+    headers.delete('content-type');
+  }
+
+  config.headers = headers;
 
   return config;
 });

@@ -108,6 +108,7 @@ describe('Register page', () => {
       replace: true,
       state: {
         email: 'amina.kizza@example.com',
+        message: 'Registration successful. Please verify the OTP sent to your email.',
       },
     })
     },
