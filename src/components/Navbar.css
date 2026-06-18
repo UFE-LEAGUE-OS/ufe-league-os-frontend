@@ -39,6 +39,10 @@
   gap: 4px;
   cursor: pointer;
   white-space: nowrap;
+  position: relative;
+  height: 75px;
+  color: rgba(255,255,255,0.85);
+  transition: color 0.2s ease, font-size 0.2s ease;
 }
 
 .arrow {
@@ -74,4 +78,35 @@
   font-size: 14px;
   cursor: pointer;
   white-space: nowrap;
+}
+
+.navbar-links li::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 2.5px;
+  background: #8135FA;
+  border-radius: 2px 2px 0 0;
+  transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.navbar-links li:hover {
+  color: #ffffff;
+  font-size: 15.8px;
+}
+
+.navbar-links li:hover::after {
+  width: 100%;
+}
+
+.login-btn {
+  transition: background-color 0.2s ease, transform 0.15s ease;
+}
+
+.login-btn:hover {
+  background-color: #9b55fb;
+  transform: scale(1.04);
 }

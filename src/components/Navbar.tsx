@@ -23,7 +23,7 @@ function Navbar() {
 
       <div className="navbar-actions">
         <button className="search-icon" aria-label="Search">🔍</button>
-        <button className="login-btn">Login</button>
+        <button className="login-btn" onClick={() => navigate('/login')}>Login</button>
       </div>
     </nav>
   );
