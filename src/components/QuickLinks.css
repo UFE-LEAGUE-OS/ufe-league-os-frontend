@@ -67,3 +67,30 @@
   justify-content: center;
   margin-top: 16px;
 }
+/* Hover effects */
+.quick-link-card {
+  transition: transform 0.2s ease, background 0.2s ease;
+  cursor: pointer;
+}
+
+.quick-link-card:hover {
+  transform: scale(1.03);
+  background: linear-gradient(135deg, #252a4a 0%, #1a1f3a 100%);
+}
+
+.quick-link-arrow {
+  transition: background-color 0.2s ease, transform 0.15s ease;
+}
+
+.quick-link-arrow:hover {
+  background-color: #9b55fb;
+  transform: scale(1.1);
+}
+
+.quick-link-text h3 {
+  transition: color 0.2s ease;
+}
+
+.quick-link-card:hover .quick-link-text h3 {
+  color: #8135FA;
+}

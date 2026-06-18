@@ -65,3 +65,22 @@
   font-size: 13px;
   cursor: pointer;
 }
+/* Hover effects */
+.category-btn {
+  transition: background-color 0.2s ease, transform 0.15s ease, font-size 0.2s ease;
+}
+
+.category-btn:hover {
+  background-color: #8135FA;
+  transform: scale(1.04);
+  font-size: 13.8px;
+}
+
+.category-card {
+  transition: transform 0.2s ease;
+  cursor: pointer;
+}
+
+.category-card:hover {
+  transform: scale(1.02);
+}
