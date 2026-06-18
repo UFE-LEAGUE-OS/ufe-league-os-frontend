@@ -44,20 +44,20 @@ function Hero() {
       </div>
 
       <div className="hero-features">
-  <div className="feature">
-    <span className="feature-icon">🌐</span> Live Scores & Stats
-  </div>
-  <div className="feature">
-    <span className="feature-icon">⚙️</span> Official Data
-  </div>
-  <div className="feature">
-    <span className="feature-icon">📋</span> Exclusive Content
-  </div>
-  <div className="feature">
-    <span className="feature-icon">👥</span> Fan Engagement
-  </div>
-</div>
-</section>
+        <div className="feature">
+          <span className="feature-icon">🌐</span> Live Scores & Stats
+        </div>
+        <div className="feature">
+          <span className="feature-icon">⚙️</span> Official Data
+        </div>
+        <div className="feature">
+          <span className="feature-icon">📋</span> Exclusive Content
+        </div>
+        <div className="feature">
+          <span className="feature-icon">👥</span> Fan Engagement
+        </div>
+      </div>
+    </section>
   );
 }
 
