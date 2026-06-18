@@ -8,6 +8,7 @@ import {
   VerifyEmail,
   Dashboard,
   Profile,
+  Competitions
 } from '../pages';
 import Personalize from '../pages/auth/Personalize';
 
@@ -24,6 +25,7 @@ export default function AppRoutes() {
         <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/competitions" element={<Competitions />} />
       </Routes>
     </Router>
   );

@@ -14,7 +14,7 @@ function Navbar() {
     setSearchQuery('');
   };
 
-const handleKeyDown = (e: { key: string }) => {
+  const handleKeyDown = (e: { key: string }) => {
     if (e.key === 'Escape') {
       setSearchOpen(false);
       setSearchQuery('');
@@ -48,7 +48,9 @@ const handleKeyDown = (e: { key: string }) => {
           <li>Sport <span className="arrow">▾</span></li>
           <li>Leagues <span className="arrow">▾</span></li>
           <li>Teams <span className="arrow">▾</span></li>
-          <li>Competitions <span className="arrow">▾</span></li>
+          <li onClick={() => navigate('/competitions')}>
+            Competitions <span className="arrow">▾</span>
+          </li>
           <li>News</li>
           <li>Membership</li>
           <li>Tickets</li>
