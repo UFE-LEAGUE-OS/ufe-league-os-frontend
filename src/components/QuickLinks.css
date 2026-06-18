@@ -21,8 +21,9 @@
 }
 
 .quick-link-text h3 {
+  font-family: 'Space Grotesk', sans-serif;
   font-size: 15px;
-  font-weight: 700;
+  font-weight: 600;
   color: #ffffff;
   margin: 0 0 6px;
 }

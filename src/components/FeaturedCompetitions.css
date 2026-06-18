@@ -12,8 +12,9 @@
 }
 
 .section-title {
+  font-family: 'Space Grotesk', sans-serif;
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 600;
   color: #8135FA;
   letter-spacing: 1px;
   margin: 0;

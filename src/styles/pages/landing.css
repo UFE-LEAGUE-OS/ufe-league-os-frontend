@@ -73,9 +73,11 @@
 
 .hero-scoreboard strong {
   color: #fff;
-  font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+  font-family: 'League Spartan', sans-serif;
   font-size: 4rem;
   line-height: 1;
+  font-weight: 800;
+  font-style: italic;
 }
 
 .hero-divider {
@@ -150,10 +152,12 @@
 .cta-banner h2 {
   margin: 0;
   max-width: 13ch;
-  font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+  font-family: 'League Spartan', sans-serif;
   font-size: clamp(2.2rem, 4vw, 3.8rem);
   line-height: 0.92;
   text-transform: uppercase;
+  font-weight: 800;
+  font-style: italic;
 }
 
 @media (max-width: 1180px) {

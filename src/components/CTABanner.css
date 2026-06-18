@@ -9,6 +9,7 @@
 }
 
 .cta-heading {
+  font-family: 'League Spartan', sans-serif;
   font-size: 40px;
   font-weight: 800;
   font-style: italic;
@@ -46,8 +47,9 @@
 }
 
 .cta-feature h4 {
+  font-family: 'Space Grotesk', sans-serif;
   font-size: 15px;
-  font-weight: 700;
+  font-weight: 600;
   margin: 0 0 4px;
 }
 

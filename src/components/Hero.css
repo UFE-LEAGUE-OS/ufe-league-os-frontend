@@ -6,7 +6,7 @@
   background-repeat: no-repeat;
   padding: 41px 60px 0 56px;
   box-sizing: border-box;
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: 'Inter', sans-serif;
   color: #ffffff;
   position: relative;
   display: flex;
@@ -25,6 +25,7 @@
 }
 
 .hero-heading {
+  font-family: 'League Spartan', sans-serif;
   font-size: 48px;
   font-weight: 800;
   font-style: italic;
@@ -93,8 +94,10 @@
 }
 
 .stat-number {
+  font-family: 'League Spartan', sans-serif;
   font-size: 36px;
   font-weight: 800;
+  font-style: italic;
   color: #ffffff;
 }
 

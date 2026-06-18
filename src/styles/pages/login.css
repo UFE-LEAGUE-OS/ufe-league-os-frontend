@@ -39,6 +39,7 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+  font-family: 'League Spartan', sans-serif;
   font-size: clamp(3.4rem, 5.3vw, 7.2rem);
   line-height: 0.94;
   letter-spacing: -0.06em;
@@ -147,11 +148,11 @@
 
 .login-card-header h2 {
   margin: 0;
-  font-family: inherit;
+  font-family: 'Space Grotesk', sans-serif;
   font-size: clamp(2.1rem, 2.65vw, 3.1rem);
   line-height: 0.95;
   letter-spacing: -0.01em;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .login-card-header h2 span {

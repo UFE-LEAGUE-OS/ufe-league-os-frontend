@@ -40,8 +40,9 @@
 }
 
 .club-name {
+  font-family: 'Space Grotesk', sans-serif;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 600;
   color: #ffffff;
   margin: 0 0 4px;
 }

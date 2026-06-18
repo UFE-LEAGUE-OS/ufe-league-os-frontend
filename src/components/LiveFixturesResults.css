@@ -46,7 +46,8 @@
 }
 
 .match-league {
-  font-weight: 700;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 600;
   color: #9CA3AF;
   font-size: 10px;
 }
