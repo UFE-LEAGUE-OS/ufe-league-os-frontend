@@ -97,7 +97,11 @@ export default function Personalize() {
   const toggle = (catId: string, itemId: string) => {
     setSelected((prev) => {
       const set = new Set(prev[catId] ?? []);
-      set.has(itemId) ? set.delete(itemId) : set.add(itemId);
+if (set.has(itemId)) {
+  set.delete(itemId);
+} else {
+  set.add(itemId);
+}
       return { ...prev, [catId]: set };
     });
   };
