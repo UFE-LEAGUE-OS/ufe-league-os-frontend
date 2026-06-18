@@ -1,168 +1,143 @@
-import { useState, type FormEvent } from 'react';
+import { useState, useRef, type FormEvent, type KeyboardEvent, type ClipboardEvent } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { resendOtp, verifyOtp } from '../../services/authService.js';
-import { GlassCard, LeagueLogo, PageShell, TopNav } from '../../components/site/LeagueUI.js';
+import { LeagueLogo } from '../../components/site/LeagueUI.js';
 import '../../styles/pages/verify-email.css';
 
-type VerifyEmailLocationState = {
-  email?: string;
-  message?: string;
-};
-
-function normalizeOtpInput(value: string) {
-  return value.replace(/[^\d]/g, '').slice(0, 6);
-}
+type LocationState = { email?: string; message?: string };
 
 export default function VerifyEmail() {
   const navigate = useNavigate();
   const location = useLocation();
-  const locationState = location.state as VerifyEmailLocationState | null;
-  const [email, setEmail] = useState(locationState?.email ?? '');
-  const [code, setCode] = useState('');
-  const [statusMessage, setStatusMessage] = useState(locationState?.message ?? '');
+  const state = location.state as LocationState | null;
+
+  const [email] = useState(state?.email ?? '');
+  const [digits, setDigits] = useState(['', '', '', '', '', '']);
   const [errorMessage, setErrorMessage] = useState('');
+  const [statusMessage, setStatusMessage] = useState(state?.message ?? '');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isResending, setIsResending] = useState(false);
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  const handleVerify = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const focusSlot = (index: number) => inputRefs.current[index]?.focus();
 
-    const normalizedEmail = email.trim().toLowerCase();
-    const normalizedCode = code.trim();
+  const handleChange = (index: number, value: string) => {
+    const digit = value.replace(/\D/g, '').slice(-1);
+    const next = [...digits];
+    next[index] = digit;
+    setDigits(next);
+    setErrorMessage('');
+    if (digit && index < 5) focusSlot(index + 1);
+  };
 
-    if (!normalizedEmail) {
-      setErrorMessage('Email address is required.');
-      return;
-    }
+  const handleKeyDown = (index: number, e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Backspace' && !digits[index] && index > 0) focusSlot(index - 1);
+    if (e.key === 'ArrowLeft' && index > 0) focusSlot(index - 1);
+    if (e.key === 'ArrowRight' && index < 5) focusSlot(index + 1);
+  };
 
-    if (normalizedCode.length !== 6) {
-      setErrorMessage('Verification code must be 6 digits long.');
-      return;
-    }
+  const handlePaste = (e: ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+    const next = ['', '', '', '', '', ''];
+    pasted.split('').forEach((d, i) => { next[i] = d; });
+    setDigits(next);
+    focusSlot(Math.min(pasted.length, 5));
+  };
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    const code = digits.join('');
+    if (code.length !== 6) { setErrorMessage('Enter all 6 digits.'); return; }
 
     setIsSubmitting(true);
     setErrorMessage('');
     setStatusMessage('');
 
     try {
-      await verifyOtp({
-        email: normalizedEmail,
-        code: normalizedCode,
-        purpose: 'EMAIL_VERIFICATION',
-      });
-
-      setStatusMessage('Email verified successfully. Redirecting to login...');
-      window.setTimeout(() => {
-        navigate('/login', {
-          replace: true,
-          state: {
-            message: 'Your email has been verified. You can now sign in.',
-          },
-        });
-      }, 1500);
+      await verifyOtp({ email, code, purpose: 'EMAIL_VERIFICATION' });
+      setStatusMessage('Verified! Redirecting to login...');
+      setTimeout(() => navigate('/login', {
+        replace: true,
+        state: { message: 'Your number has been verified. You can now sign in.' },
+      }), 1400);
     } catch (error) {
-      const responseData = (error as { response?: { data?: unknown } })?.response?.data;
-
-      if (responseData && typeof responseData === 'object' && !Array.isArray(responseData)) {
-        const messages = Object.values(responseData as Record<string, unknown>)
-          .flatMap((value) => (Array.isArray(value) ? value : [value]))
-          .filter((value): value is string => typeof value === 'string');
-
-        if (messages.length > 0) {
-          setErrorMessage(messages[0]);
-          return;
-        }
+      const data = (error as { response?: { data?: unknown } })?.response?.data;
+      if (data && typeof data === 'object' && !Array.isArray(data)) {
+        const msgs = Object.values(data as Record<string, unknown>)
+          .flatMap((v) => Array.isArray(v) ? v : [v])
+          .filter((v): v is string => typeof v === 'string');
+        if (msgs.length) { setErrorMessage(msgs[0]); return; }
       }
-
-      setErrorMessage('We could not verify your email right now. Please try again.');
+      setErrorMessage('Could not verify. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleResend = async () => {
-    const normalizedEmail = email.trim().toLowerCase();
-
-    if (!normalizedEmail) {
-      setErrorMessage('Email address is required to resend the code.');
-      return;
-    }
-
+    if (!email) { setErrorMessage('Email is required to resend the code.'); return; }
     setIsResending(true);
     setErrorMessage('');
-
     try {
-      await resendOtp({ email: normalizedEmail });
-      setStatusMessage('A new verification code has been sent to your email address.');
+      await resendOtp({ email });
+      setStatusMessage('A new code has been sent.');
     } catch {
-      setErrorMessage('We could not resend the verification code right now. Please try again.');
+      setErrorMessage('Could not resend the code. Please try again.');
     } finally {
       setIsResending(false);
     }
   };
 
   return (
-    <PageShell className="auth-page">
-      <TopNav compact />
+    <div className="otp-shell">
+      <div className="otp-card">
+        <div className="otp-logo">
+          <LeagueLogo compact />
+        </div>
 
-      <main className="page verify-layout">
-        <GlassCard className="verify-card">
-          <div className="verify-logo">
-            <LeagueLogo compact />
+        <h1 className="otp-title">Verify Your Number</h1>
+        <p className="otp-subtitle">
+          Enter the 6-digit code sent to your email address to continue.
+        </p>
+
+        <form onSubmit={handleSubmit} noValidate>
+          <div className="otp-boxes">
+            {digits.map((d, i) => (
+              <input
+                key={i}
+                ref={(el) => { inputRefs.current[i] = el; }}
+                className={`otp-box${d ? ' otp-box-filled' : ''}`}
+                type="text"
+                inputMode="numeric"
+                maxLength={2}
+                value={d}
+                autoComplete={i === 0 ? 'one-time-code' : 'off'}
+                aria-label={`Digit ${i + 1}`}
+                onChange={(e) => handleChange(i, e.target.value)}
+                onKeyDown={(e) => handleKeyDown(i, e)}
+                onPaste={handlePaste}
+                onFocus={(e) => e.target.select()}
+              />
+            ))}
           </div>
-          <h1>Verify Your Email</h1>
-          <p>Enter the 6-digit code we sent to your email address to finish setup.</p>
 
-          <form className="login-form register-form" onSubmit={handleVerify} noValidate>
-            <label>
-              Email address
-              <div className="field-shell">
-                <input
-                  type="email"
-                  placeholder="you@example.com"
-                  autoComplete="email"
-                  value={email}
-                  onChange={(event) => setEmail(event.target.value)}
-                />
-              </div>
-            </label>
+          {errorMessage && (
+            <p className="otp-message otp-error" role="alert">{errorMessage}</p>
+          )}
+          {statusMessage && (
+            <p className="otp-message otp-success" role="status">{statusMessage}</p>
+          )}
 
-            <label>
-              Verification code
-              <div className="field-shell">
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  placeholder="Enter the 6-digit code"
-                  autoComplete="one-time-code"
-                  value={code}
-                  onChange={(event) => setCode(normalizeOtpInput(event.target.value))}
-                />
-              </div>
-            </label>
+          <button type="submit" className="otp-submit" disabled={isSubmitting}>
+            {isSubmitting ? 'Verifying...' : 'Verify & Continue'}
+          </button>
+        </form>
 
-            {errorMessage ? (
-              <p className="login-footnote" role="alert" style={{ color: '#ffd08a' }}>
-                {errorMessage}
-              </p>
-            ) : null}
-
-            {statusMessage ? (
-              <p className="login-footnote" role="status" aria-live="polite" style={{ color: '#c8ffd5' }}>
-                {statusMessage}
-              </p>
-            ) : null}
-
-            <button type="submit" className="button button-primary button-full" disabled={isSubmitting}>
-              {isSubmitting ? 'Verifying...' : 'Verify Email'}
-            </button>
-
-            <button type="button" className="text-button" onClick={handleResend} disabled={isResending}>
-              {isResending ? 'Resending...' : 'Resend code'}
-            </button>
-          </form>
-        </GlassCard>
-      </main>
-    </PageShell>
+        <button type="button" className="otp-resend" onClick={handleResend} disabled={isResending}>
+          {isResending ? 'Resending...' : "Didn't receive a code? Resend"}
+        </button>
+      </div>
+    </div>
   );
 }

@@ -16,7 +16,7 @@ function Hero() {
           Buy tickets. Play fantasy. All the passion of Ugandan sport, in one place.
         </p>
         <div className="hero-buttons">
-          <button className="btn-primary">
+          <button className="btn-primary" onClick={() => navigate('/clubs')}>
             Browse Competitions <span className="btn-arrow">→</span>
           </button>
           <button className="btn-outline">Become a sponsor</button>
@@ -49,9 +49,6 @@ function Hero() {
         </div>
         <div className="feature">
           <span className="feature-icon">⚙️</span> Official Data
-        </div>
-        <div className="feature">
-          <span className="feature-icon">📋</span> Exclusive Content
         </div>
         <div className="feature">
           <span className="feature-icon">👥</span> Fan Engagement

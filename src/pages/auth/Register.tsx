@@ -137,7 +137,7 @@ export default function Register() {
 
       await registerAccount(payload);
 
-      navigate('/verify-email', {
+      navigate('/personalize', {
         replace: true,
         state: {
           email: payload.email,

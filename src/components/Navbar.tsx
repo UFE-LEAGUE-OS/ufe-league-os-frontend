@@ -4,6 +4,7 @@ import logo from '../assets/logo.png';
 
 function Navbar() {
   const navigate = useNavigate();
+
   return (
     <nav className="navbar">
       <div className="navbar-logo">
