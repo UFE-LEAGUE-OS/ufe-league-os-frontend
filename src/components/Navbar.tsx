@@ -3,7 +3,7 @@ import './Navbar.css';
 import logo from '../assets/logo.png';
 
 function Navbar() {
-  const navigate = useNavigate();
+const navigate = useNavigate();
 
   return (
     <nav className="navbar">
