@@ -1,7 +1,9 @@
+import { useNavigate } from 'react-router-dom';
 import './Hero.css';
 import heroImage from '../assets/hero.png';
 
 function Hero() {
+  const navigate = useNavigate();
   return (
     <section className="hero" style={{ backgroundImage: `url(${heroImage})` }}>
       <div className="hero-content">
@@ -18,7 +20,7 @@ function Hero() {
             Browse Competitions <span className="btn-arrow">→</span>
           </button>
           <button className="btn-outline">Become a sponsor</button>
-          <button className="btn-outline">Sign Up</button>
+          <button className="btn-outline" onClick={() => navigate('/register')}>Sign Up</button>
         </div>
       </div>
 
