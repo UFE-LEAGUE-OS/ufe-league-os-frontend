@@ -1,0 +1,90 @@
+.comp-footer {
+  background-color: #00030D;
+  padding: 48px 56px 24px;
+  font-family: 'Inter', sans-serif;
+  color: #ffffff;
+  border-top: 1px solid #1e2340;
+}
+
+.comp-footer-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 40px;
+  padding-bottom: 32px;
+  border-bottom: 1px solid #1F2937;
+}
+
+.comp-footer-brand {
+  flex: 1.5;
+  display: flex;
+  align-items: flex-start;
+}
+
+.comp-footer-logo {
+  width: 140px;
+  height: auto;
+  object-fit: contain;
+}
+
+.comp-footer-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.comp-footer-col h4 {
+  font-size: 15px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 6px;
+}
+
+.comp-footer-col a {
+  font-size: 13px;
+  color: #9CA3AF;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.2s ease, letter-spacing 0.2s ease;
+}
+
+.comp-footer-col a:hover {
+  color: #8135FA;
+  letter-spacing: 0.5px;
+}
+
+.comp-footer-socials {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.comp-social-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.2s ease, color 0.2s ease;
+}
+
+.comp-social-icon:hover {
+  background-color: #8135FA;
+  transform: scale(1.1);
+  color: #ffffff;
+}
+
+.comp-footer-bottom {
+  text-align: center;
+  padding-top: 20px;
+}
+
+.comp-footer-bottom p {
+  font-size: 12px;
+  color: #F97316;
+  margin: 0;
+}

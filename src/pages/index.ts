@@ -7,3 +7,4 @@ export { default as VerifyEmail } from './auth/VerifyEmail';
 export { default as Personalize } from './auth/Personalize';
 export { default as Dashboard } from './fan/Dashboard';
 export { default as Profile } from './fan/Profile';
+export { default as Competitions } from './Competitions';

@@ -8,9 +8,11 @@ import {
   VerifyEmail,
   Dashboard,
   Profile,
-  Personalize,
+  Competitions
 } from '../pages';
-import { PublicOnly, RequireAuth, RequireOnboarding } from './AuthGuards.js';
+import Personalize from '../pages/auth/Personalize';
+import NewsSection from '../pages/NewsPage';
+import EditProfile from '../components/EditProfilePage';
 
 export default function AppRoutes() {
   return (
@@ -28,22 +30,9 @@ export default function AppRoutes() {
         <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/profile" element={<Profile />} />
-        <Route element={<RequireOnboarding />}>
-          <Route path="/verify-email" element={<VerifyEmail />} />
-          <Route path="/personalize" element={<Personalize />} />
-        </Route>
-        <Route element={<RequireAuth />}>
-          <Route path="/dashboard" element={<Navigate to="/dashboard/fan" replace />} />
-          <Route path="/dashboard/fan" element={<Dashboard />} />
-          <Route path="/dashboard/club-admin" element={<Dashboard />} />
-          <Route path="/dashboard/league-admin" element={<Dashboard />} />
-          <Route path="/dashboard/union-admin" element={<Dashboard />} />
-          <Route path="/dashboard/super-admin" element={<Dashboard />} />
-          <Route path="/dashboard/referee" element={<Dashboard />} />
-          <Route path="/dashboard/ticketing-officer" element={<Dashboard />} />
-          <Route path="/dashboard/sponsor" element={<Dashboard />} />
-          <Route path="/profile" element={<Profile />} />
-        </Route>
+        <Route path="/competitions" element={<Competitions />} />
+        <Route path="/news" element={<NewsSection />} />
+        <Route path="/edit-profile" element={<EditProfile />} />
       </Routes>
     </Router>
   );
