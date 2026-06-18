@@ -88,3 +88,46 @@
   align-self: center;
   flex-shrink: 0;
 }
+/* Hover effects */
+.fantasy-card {
+  transition: transform 0.2s ease, background-color 0.2s ease;
+  cursor: pointer;
+}
+
+.fantasy-card:hover {
+  transform: scale(1.03);
+  background-color: #1e1f2e;
+}
+
+.fantasy-logo {
+  transition: transform 0.2s ease;
+}
+
+.fantasy-card:hover .fantasy-logo {
+  transform: scale(1.1);
+}
+
+.join-league-btn {
+  transition: background-color 0.2s ease, 
+              border-color 0.2s ease, 
+              color 0.2s ease,
+              transform 0.15s ease,
+              font-size 0.2s ease;
+}
+
+.join-league-btn:hover {
+  background-color: #8135FA;
+  border-color: #8135FA;
+  color: #ffffff;
+  transform: scale(1.04);
+  font-size: 12.8px;
+}
+
+.fantasy-arrow {
+  transition: background-color 0.2s ease, transform 0.15s ease;
+}
+
+.fantasy-arrow:hover {
+  background-color: #9b55fb;
+  transform: scale(1.1);
+}

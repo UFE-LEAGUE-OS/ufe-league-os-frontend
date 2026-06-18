@@ -8,6 +8,16 @@
   box-sizing: border-box;
   font-family: 'Inter', system-ui, sans-serif;
   color: #ffffff;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.hero-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
 }
 
 .hero-content {
@@ -34,30 +44,13 @@
   font-weight: 400;
   color: #d1d5db;
   line-height: 1.6;
-  margin: 0 0 56px;
+  margin: 0 0 32px;
 }
 
 .hero-buttons {
   display: flex;
   gap: 16px;
-}
-
-.btn-primary {
-  width: 222px;
-  height: 45px;
-  background-color: #8135FA;
-  color: #ffffff;
-  border: none;
-  border-radius: 5px;
-  padding: 0 18px;
-  font-weight: 700;
-  font-size: 15px;
-  font-family: 'Inter', sans-serif;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .btn-outline {
@@ -71,18 +64,25 @@
   font-size: 15px;
   font-family: 'Inter', sans-serif;
   cursor: pointer;
+  transition: background-color 0.2s ease,
+              border-color 0.2s ease,
+              transform 0.15s ease,
+              font-size 0.2s ease;
 }
 
-.hero {
-  position: relative;
+.btn-outline:hover {
+  background-color: #8135FA;
+  border-color: #8135FA;
+  color: #ffffff;
+  transform: scale(1.04);
+  font-size: 15.8px;
 }
 
 .hero-stats {
-  position: absolute;
-  bottom: 60px;
-  right: 60px;
   display: flex;
   gap: 48px;
+  align-self: flex-end;
+  padding-bottom: 48px;
 }
 
 .stat {
@@ -106,11 +106,9 @@
 }
 
 .hero-features {
-  position: absolute;
-  bottom: 16px;
-  left: 56px;
   display: flex;
   gap: 32px;
+  padding-bottom: 16px;
 }
 
 .feature {

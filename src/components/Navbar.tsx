@@ -1,9 +1,25 @@
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { FiSearch, FiX } from 'react-icons/fi';
 import './Navbar.css';
 import logo from '../assets/logo.png';
 
 function Navbar() {
-const navigate = useNavigate();
+  const navigate = useNavigate();
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const handleSearchToggle = () => {
+    setSearchOpen(!searchOpen);
+    setSearchQuery('');
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && searchQuery.trim()) {
+      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+      handleSearchToggle();
+    }
+  };
 
   return (
     <nav className="navbar">
@@ -11,19 +27,43 @@ const navigate = useNavigate();
         <img src={logo} alt="League OS" className="logo-img" />
       </div>
 
-      <ul className="navbar-links">
-        <li>Sport <span className="arrow">▾</span></li>
-        <li>Leagues <span className="arrow">▾</span></li>
-        <li>Teams <span className="arrow">▾</span></li>
-        <li>Competitions <span className="arrow">▾</span></li>
-        <li>News</li>
-        <li>Membership</li>
-        <li>Tickets</li>
-      </ul>
+      {searchOpen ? (
+        <div className="search-bar">
+          <FiSearch size={16} className="search-bar-icon" />
+          <input
+            type="text"
+            className="search-input"
+            placeholder="Search competitions, clubs, players..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={handleKeyDown}
+            autoFocus
+          />
+          <button className="search-close" onClick={handleSearchToggle}>
+            <FiX size={16} />
+          </button>
+        </div>
+      ) : (
+        <ul className="navbar-links">
+          <li>Sport <span className="arrow">▾</span></li>
+          <li>Leagues <span className="arrow">▾</span></li>
+          <li>Teams <span className="arrow">▾</span></li>
+          <li>Competitions <span className="arrow">▾</span></li>
+          <li>News</li>
+          <li>Membership</li>
+          <li>Tickets</li>
+        </ul>
+      )}
 
       <div className="navbar-actions">
-        <button className="search-icon" aria-label="Search">🔍</button>
-        <button className="login-btn">Login</button>
+        <button
+          className="search-icon"
+          aria-label="Search"
+          onClick={handleSearchToggle}
+        >
+          {searchOpen ? <FiX size={18} /> : <FiSearch size={18} />}
+        </button>
+        <button className="login-btn" onClick={() => navigate('/login')}>Login</button>
       </div>
     </nav>
   );

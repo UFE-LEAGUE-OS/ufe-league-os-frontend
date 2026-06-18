@@ -39,6 +39,32 @@
   gap: 4px;
   cursor: pointer;
   white-space: nowrap;
+  position: relative;
+  height: 75px;
+  color: rgba(255,255,255,0.85);
+  transition: color 0.2s ease, font-size 0.2s ease;
+}
+
+.navbar-links li::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 2.5px;
+  background: #8135FA;
+  border-radius: 2px 2px 0 0;
+  transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.navbar-links li:hover {
+  color: #ffffff;
+  font-size: 15.8px;
+}
+
+.navbar-links li:hover::after {
+  width: 100%;
 }
 
 .arrow {
@@ -48,7 +74,8 @@
 .navbar-actions {
   display: flex;
   align-items: center;
-  gap: 188px;
+  gap: 24px;
+  margin-left: auto;
 }
 
 .search-icon {
@@ -57,6 +84,19 @@
   color: #ffffff;
   font-size: 18px;
   cursor: pointer;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+}
+
+.search-icon:hover {
+  transform: scale(1.15);
+  background-color: #8135FA;
+  color: #ffffff;
 }
 
 .login-btn {
@@ -74,4 +114,71 @@
   font-size: 14px;
   cursor: pointer;
   white-space: nowrap;
+  transition: background-color 0.2s ease, transform 0.15s ease;
+}
+
+.login-btn:hover {
+  background-color: #9b55fb;
+  transform: scale(1.04);
+}
+
+.search-bar {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: rgba(255, 255, 255, 0.08);
+  border: 1px solid #8135FA;
+  border-radius: 8px;
+  padding: 0 16px;
+  height: 40px;
+  margin: 0 40px;
+  animation: slideIn 0.2s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: scaleX(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+.search-bar-icon {
+  color: #8135FA;
+  flex-shrink: 0;
+}
+
+.search-input {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  color: #ffffff;
+  font-size: 14px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+}
+
+.search-input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.search-close {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease;
+  flex-shrink: 0;
+}
+
+.search-close:hover {
+  color: #ffffff;
 }

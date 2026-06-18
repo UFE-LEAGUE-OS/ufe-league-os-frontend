@@ -71,3 +71,31 @@
   color: #6B7280;
   margin: 0;
 }
+/* Hover effects */
+.footer-col a {
+  transition: color 0.2s ease, letter-spacing 0.2s ease;
+}
+
+.footer-col a:hover {
+  color: #8135FA;
+  letter-spacing: 0.5px;
+}
+
+.footer-socials svg {
+  transition: transform 0.2s ease, color 0.2s ease;
+  cursor: pointer;
+}
+
+.footer-socials svg:hover {
+  transform: scale(1.2);
+  color: #8135FA;
+}
+
+.footer-logo {
+  transition: opacity 0.2s ease;
+  cursor: pointer;
+}
+
+.footer-logo:hover {
+  opacity: 0.8;
+}
