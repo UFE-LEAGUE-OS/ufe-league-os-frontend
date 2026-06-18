@@ -51,7 +51,7 @@ function Navbar() {
           <li onClick={() => navigate('/competitions')}>
             Competitions <span className="arrow">▾</span>
           </li>
-          <li>News</li>
+          <li>New</li>
           <li>Membership</li>
           <li>Tickets</li>
         </ul>

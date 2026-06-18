@@ -2,6 +2,7 @@ import './SportCategories.css';
 import footballImg from '../assets/football-card.png';
 import rugbyImg from '../assets/rugby-card.png';
 import basketballImg from '../assets/basketball-card.png';
+import React from 'react';
 
 const categories = [
   {
