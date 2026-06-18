@@ -39,10 +39,18 @@ describe('VerifyEmail page', () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getByDisplayValue('fan@example.com')).toBeInTheDocument();
+    // Type into the 6 individual OTP digit boxes
+    const digitInputs = screen.getAllByRole('textbox', { name: /digit/i });
+    expect(digitInputs).toHaveLength(6);
 
-    await user.type(screen.getByPlaceholderText('Enter the 6-digit code'), '12a3456');
-    await user.click(screen.getByRole('button', { name: /verify email/i }));
+    await user.type(digitInputs[0], '1');
+    await user.type(digitInputs[1], '2');
+    await user.type(digitInputs[2], '3');
+    await user.type(digitInputs[3], '4');
+    await user.type(digitInputs[4], '5');
+    await user.type(digitInputs[5], '6');
+
+    await user.click(screen.getByRole('button', { name: /verify & continue/i }));
 
     await waitFor(() => {
       expect(verifyOtpMock).toHaveBeenCalledWith({
@@ -52,9 +60,9 @@ describe('VerifyEmail page', () => {
       });
     });
 
-    expect(screen.getByRole('status')).toHaveTextContent(/email verified successfully/i);
+    expect(screen.getByRole('status')).toHaveTextContent(/redirecting to login/i);
 
-    const timeoutCall = timeoutSpy.mock.calls.find(([, delay]) => delay === 1500);
+    const timeoutCall = timeoutSpy.mock.calls.find(([, delay]) => delay === 1400);
     expect(timeoutCall).toBeDefined();
 
     const callback = timeoutCall?.[0];
@@ -65,7 +73,7 @@ describe('VerifyEmail page', () => {
     expect(navigateMock).toHaveBeenCalledWith('/login', {
       replace: true,
       state: {
-        message: 'Your email has been verified. You can now sign in.',
+        message: 'Your number has been verified. You can now sign in.',
       },
     });
   });
@@ -80,7 +88,7 @@ describe('VerifyEmail page', () => {
       </MemoryRouter>,
     );
 
-    await user.click(screen.getByRole('button', { name: /resend code/i }));
+    await user.click(screen.getByRole('button', { name: /didn't receive/i }));
 
     await waitFor(() => {
       expect(resendOtpMock).toHaveBeenCalledWith({
@@ -88,6 +96,6 @@ describe('VerifyEmail page', () => {
       });
     });
 
-    expect(screen.getByRole('status')).toHaveTextContent(/new verification code has been sent/i);
+    expect(screen.getByRole('status')).toHaveTextContent(/new code has been sent/i);
   });
 });
