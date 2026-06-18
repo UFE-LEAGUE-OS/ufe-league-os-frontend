@@ -449,11 +449,13 @@
 .section-title h2 {
   margin: 0;
   color: #fff;
-  font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+  font-family: 'League Spartan', sans-serif;
   font-size: clamp(2rem, 4vw, 3.4rem);
   line-height: 0.95;
   letter-spacing: 0.03em;
   text-transform: uppercase;
+  font-weight: 800;
+  font-style: italic;
 }
 
 .section-title h2 span,
@@ -476,12 +478,14 @@
 .verify-card h1 {
   margin: 0;
   color: #fff;
-  font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+  font-family: 'League Spartan', sans-serif;
   font-size: clamp(3.5rem, 7vw, 6.9rem);
   line-height: 0.9;
   letter-spacing: 0.025em;
   text-transform: uppercase;
   max-width: 9.5ch;
+  font-weight: 800;
+  font-style: italic;
 }
 
 .hero-copy p,
@@ -511,11 +515,13 @@
 .stat-card strong {
   display: block;
   color: #fff;
-  font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+  font-family: 'League Spartan', sans-serif;
   font-size: 2.6rem;
   line-height: 1;
   margin-bottom: 10px;
   letter-spacing: 0.02em;
+  font-weight: 800;
+  font-style: italic;
 }
 
 .stat-card span,

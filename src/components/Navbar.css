@@ -8,7 +8,7 @@
   background-color: #00030D;
   border-bottom: 1px solid #000000;
   color: #ffffff;
-  font-family: system-ui, sans-serif;
+  font-family: 'Inter', sans-serif;
   box-sizing: border-box;
 }
 
@@ -29,6 +29,7 @@
   flex: 1;
   list-style: none;
   gap: 32px;
+  font-family: 'Space Grotesk', sans-serif;
   font-weight: 600;
   font-size: 15px;
 }
