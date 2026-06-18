@@ -94,12 +94,3 @@
 .quick-link-card:hover .quick-link-text h3 {
   color: #8135FA;
 }
-
-.search-icon {
-  transition: transform 0.2s ease, background-color 0.2s ease;
-}
-
-.search-icon:hover {
-  transform: scale(1.15);
-  background-color: rgba(129, 53, 250, 0.2);
-}
