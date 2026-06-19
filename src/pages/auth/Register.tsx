@@ -674,7 +674,7 @@ export default function Register() {
                     : 'Sign Up'}
 
                 <span className="button-arrow" aria-hidden="true">
-                  >
+                  {'>'}
                 </span>
               </button>
 
