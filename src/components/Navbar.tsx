@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useState } from 'react';
 import { FiSearch, FiX } from 'react-icons/fi';
 import './Navbar.css';
@@ -6,6 +6,7 @@ import logo from '../assets/logo.png';
 
 function Navbar() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -25,9 +26,15 @@ function Navbar() {
     }
   };
 
+  const isActive = (path: string) => location.pathname.startsWith(path);
+
   return (
     <nav className="navbar">
-      <div className="navbar-logo">
+      <div
+        className="navbar-logo"
+        onClick={() => navigate('/')}
+        style={{ cursor: 'pointer' }}
+      >
         <img src={logo} alt="League OS" className="logo-img" />
       </div>
 
@@ -49,15 +56,36 @@ function Navbar() {
         </div>
       ) : (
         <ul className="navbar-links">
-          <li>Sport <span className="arrow">▾</span></li>
-          <li>Leagues <span className="arrow">▾</span></li>
-          <li>Teams <span className="arrow">▾</span></li>
-          <li onClick={() => navigate('/competitions')}>
+          <li className={isActive('/sport') ? 'active-link' : ''}>
+            Sport <span className="arrow">▾</span>
+          </li>
+          <li className={isActive('/leagues') ? 'active-link' : ''}>
+            Leagues <span className="arrow">▾</span>
+          </li>
+          <li className={isActive('/teams') ? 'active-link' : ''}>
+            Teams <span className="arrow">▾</span>
+          </li>
+          <li
+            className={isActive('/competitions') ? 'active-link' : ''}
+            onClick={() => navigate('/competitions')}
+          >
             Competitions <span className="arrow">▾</span>
           </li>
-          <li onClick={() => navigate('/news')}>News</li>
-          <li>Membership</li>
-          <li>Tickets</li>
+          <li
+            className={isActive('/news') ? 'active-link' : ''}
+            onClick={() => navigate('/news')}
+          >
+            News
+          </li>
+          <li className={isActive('/membership') ? 'active-link' : ''}>
+            Membership
+          </li>
+          <li
+            className={isActive('/tickets') ? 'active-link' : ''}
+            onClick={() => navigate('/tickets')}
+          >
+            Tickets
+          </li>
         </ul>
       )}
 
@@ -69,7 +97,9 @@ function Navbar() {
         >
           {searchOpen ? <FiX size={18} /> : <FiSearch size={18} />}
         </button>
-        <button className="login-btn" onClick={() => navigate('/login')}>Login</button>
+        <button className="login-btn" onClick={() => navigate('/login')}>
+          Log In
+        </button>
       </div>
     </nav>
   );

@@ -8,11 +8,12 @@ import {
   VerifyEmail,
   Dashboard,
   Profile,
-  Competitions
+  Competitions,
 } from '../pages';
 import Personalize from '../pages/auth/Personalize';
 import NewsSection from '../pages/NewsPage';
 import EditProfile from '../components/EditProfilePage';
+import Tickets from '../pages/landing/TicketsLandingPage';
 
 export default function AppRoutes() {
   return (
@@ -20,9 +21,9 @@ export default function AppRoutes() {
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
         <Route path="/google-callback" element={<GoogleCallback />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/register" element={<Register />} />
         <Route path="/personalize" element={<Personalize />} />
         <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="/dashboard" element={<Dashboard />} />
@@ -30,6 +31,7 @@ export default function AppRoutes() {
         <Route path="/competitions" element={<Competitions />} />
         <Route path="/news" element={<NewsSection />} />
         <Route path="/edit-profile" element={<EditProfile />} />
+        <Route path="/tickets" element={<Tickets />} />
       </Routes>
     </Router>
   );
