@@ -834,6 +834,65 @@
   padding-top: 20px;
 }
 
+/* ── Password Validation Indicator ── */
+.password-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-transform: none;
+  line-height: 1.4;
+}
+
+.password-status-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.password-strength-bar {
+  display: flex;
+  gap: 3px;
+  width: 100%;
+  height: 4px;
+  margin-top: 4px;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.password-strength-bar-segment {
+  flex: 1;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  transition: background 0.2s ease;
+}
+
+.password-strength-bar-segment.active {
+  background: currentColor;
+}
+
+.password-status.status-invalid-char {
+  color: #ff6b6b;
+}
+
+.password-status.status-too-short {
+  color: #ffb347;
+}
+
+.password-status.status-weak {
+  color: #ff6b6b;
+}
+
+.password-status.status-medium {
+  color: #ffb347;
+}
+
+.password-status.status-strong {
+  color: #75f0a3;
+}
+
 @media (max-width: 1180px) {
   .topbar {
     flex-wrap: wrap;

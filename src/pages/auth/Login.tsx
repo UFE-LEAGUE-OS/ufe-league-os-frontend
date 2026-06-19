@@ -9,6 +9,7 @@ import EmojiEventsOutlinedIcon from '@mui/icons-material/EmojiEventsOutlined';
 import EventNoteOutlinedIcon from '@mui/icons-material/EventNoteOutlined';
 import { GlassCard, PageShell } from '../../components/site/LeagueUI.js';
 import { buildGoogleAuthUrl } from './loginUtils.js';
+import { usePasswordValidation } from '../../hooks/usePasswordValidation.js';
 import '../../styles/pages/login.css';
 
 const features = [
@@ -40,11 +41,44 @@ function LoginFieldIcon({ children }: { children: ReactNode }) {
   );
 }
 
+function PasswordStatusDisplay({
+  status,
+  message,
+  score,
+}: {
+  status: string;
+  message: string;
+  score: number;
+}) {
+  if (!status || status === 'idle') return null;
+
+  const statusClass = `status-${status}`;
+
+  return (
+    <div className={`password-status ${statusClass}`}>
+      <span className="password-status-text">{message}</span>
+      {status === 'medium' || status === 'strong' ? (
+        <div className="password-strength-bar" aria-hidden="true">
+          {[0, 1, 2, 3].map((i) => (
+            <span
+              key={i}
+              className={`password-strength-bar-segment${i <= score ? ' active' : ''}`}
+            />
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 export default function Login() {
   const location = useLocation();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [googleLoginMessage, setGoogleLoginMessage] = useState('');
+  const [identifier, setIdentifier] = useState('');
+  const [password, setPassword] = useState('');
+  const { validation, validatePassword, resetValidation } = usePasswordValidation();
   const locationMessage = (location.state as { message?: string } | null)?.message ?? '';
 
   const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
@@ -53,8 +87,15 @@ export default function Login() {
     import.meta.env.VITE_GOOGLE_REDIRECT_URI?.trim() ||
     `${apiBaseUrl}/api/accounts/google/callback/`;
 
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setPassword(val);
+    void validatePassword(val);
+  };
+
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (validation.disabled) return;
     navigate('/dashboard');
   };
 
@@ -87,7 +128,7 @@ export default function Login() {
               <span className="login-hero-accent">One Platform.</span>
             </h1>
             <p>
-              League OS is Uganda&apos;s unified platform for fans, teams, leagues and partners.
+              League OS is Uganda's unified platform for fans, teams, leagues and partners.
               Follow. Engage. Support.
             </p>
           </div>
@@ -132,7 +173,13 @@ export default function Login() {
                   <LoginFieldIcon>
                     <PersonOutlinedIcon />
                   </LoginFieldIcon>
-                  <input type="text" placeholder="Enter phone number or email" autoComplete="username" />
+                  <input
+                    type="text"
+                    placeholder="Enter phone number or email"
+                    autoComplete="username"
+                    value={identifier}
+                    onChange={(e) => setIdentifier(e.target.value)}
+                  />
                 </div>
               </label>
 
@@ -146,6 +193,8 @@ export default function Login() {
                     type={showPassword ? 'text' : 'password'}
                     placeholder="Enter your password"
                     autoComplete="current-password"
+                    value={password}
+                    onChange={handlePasswordChange}
                   />
                   <button
                     type="button"
@@ -157,6 +206,11 @@ export default function Login() {
                     {showPassword ? <VisibilityOutlinedIcon /> : <VisibilityOffOutlinedIcon />}
                   </button>
                 </div>
+                <PasswordStatusDisplay
+                  status={validation.status}
+                  message={validation.message}
+                  score={validation.score}
+                />
               </label>
 
               <div className="login-meta-row">
@@ -166,7 +220,7 @@ export default function Login() {
                 </Link>
               </div>
 
-              <button type="submit" className="login-submit">
+              <button type="submit" className="login-submit" disabled={validation.disabled}>
                 Log In
               </button>
 
@@ -188,7 +242,7 @@ export default function Login() {
               ) : null}
 
               <p className="login-footnote">
-                Don&apos;t have an account? <Link to="/register">Sign Up</Link>
+                Don't have an account? <Link to="/register">Sign Up</Link>
               </p>
             </form>
           </div>

@@ -22,6 +22,7 @@ import {
   type RegisterFormErrors,
   type RegisterFormValues,
 } from './registerUtils.js';
+import { usePasswordValidation } from '../../hooks/usePasswordValidation.js';
 import '../../styles/pages/register.css';
 
 const features = [
@@ -82,6 +83,36 @@ function FieldIcon({ children }: { children: ReactNode }) {
   );
 }
 
+function PasswordStrengthIndicator({
+  status,
+  message,
+  score,
+}: {
+  status: string;
+  message: string;
+  score: number;
+}) {
+  if (!status || status === 'idle') return null;
+
+  const statusClass = `status-${status}`;
+
+  return (
+    <div className={`password-status ${statusClass}`}>
+      <span className="password-status-text">{message}</span>
+      {status === 'medium' || status === 'strong' ? (
+        <div className="password-strength-bar" aria-hidden="true">
+          {[0, 1, 2, 3].map((i) => (
+            <span
+              key={i}
+              className={`password-strength-bar-segment${i <= score ? ' active' : ''}`}
+            />
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 export default function Register() {
   const navigate = useNavigate();
 
@@ -92,8 +123,8 @@ export default function Register() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitMessage, setSubmitMessage] = useState('');
-
-  const canSubmit = !isSubmitting;
+  const { validation, validatePassword } = usePasswordValidation();
+  const canSubmit = !isSubmitting && !validation.disabled;
 
   const isFormEmpty =
     !formValues.firstName.trim() &&
@@ -131,6 +162,10 @@ export default function Register() {
 
       return nextErrors;
     });
+
+    if (field === 'password' && typeof value === 'string') {
+      void validatePassword(value);
+    }
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -142,6 +177,10 @@ export default function Register() {
     setSubmitMessage('');
 
     if (Object.keys(nextErrors).length > 0) {
+      return;
+    }
+
+    if (validation.disabled) {
       return;
     }
 
@@ -209,7 +248,7 @@ export default function Register() {
           <div className="register-story-copy">
             <h1>
               <span className="register-story-title">Join League OS</span>
-              <span>Be Part of Uganda&apos;s Game.</span>
+              <span>Be Part of Uganda's Game.</span>
             </h1>
 
             <p>
@@ -497,6 +536,12 @@ export default function Register() {
                   </button>
                 </div>
 
+                <PasswordStrengthIndicator
+                  status={validation.status}
+                  message={validation.message}
+                  score={validation.score}
+                />
+
                 {fieldErrors.password ? (
                   <span
                     id="register-password-error"
@@ -629,7 +674,7 @@ export default function Register() {
                     : 'Sign Up'}
 
                 <span className="button-arrow" aria-hidden="true">
-                  &gt;
+                  >
                 </span>
               </button>
 

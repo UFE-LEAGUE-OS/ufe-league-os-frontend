@@ -12,6 +12,7 @@ import ShieldOutlinedIcon from '@mui/icons-material/ShieldOutlined';
 import ArrowBackOutlinedIcon from '@mui/icons-material/ArrowBackOutlined';
 import { GlassCard, PageShell } from '../../components/site/LeagueUI.js';
 import { normalizeCodeInput } from './forgotPasswordUtils.js';
+import { usePasswordValidation } from '../../hooks/usePasswordValidation.js';
 import '../../styles/pages/login.css';
 import '../../styles/pages/register.css';
 
@@ -38,6 +39,36 @@ const features = [
 
 type RecoveryStep = 'request' | 'code' | 'password' | 'success';
 
+function PasswordStatusDisplay({
+  status,
+  message,
+  score,
+}: {
+  status: string;
+  message: string;
+  score: number;
+}) {
+  if (!status || status === 'idle') return null;
+
+  const statusClass = `status-${status}`;
+
+  return (
+    <div className={`password-status ${statusClass}`}>
+      <span className="password-status-text">{message}</span>
+      {status === 'medium' || status === 'strong' ? (
+        <div className="password-strength-bar" aria-hidden="true">
+          {[0, 1, 2, 3].map((i) => (
+            <span
+              key={i}
+              className={`password-strength-bar-segment${i <= score ? ' active' : ''}`}
+            />
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 export default function ForgotPassword() {
   const navigate = useNavigate();
   const [step, setStep] = useState<RecoveryStep>('request');
@@ -52,6 +83,7 @@ export default function ForgotPassword() {
   const [isVerifyingCode, setIsVerifyingCode] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  const { validation, validatePassword, resetValidation } = usePasswordValidation();
 
   const resetCodeStep = () => {
     setHasRequestedCode(false);
@@ -62,6 +94,7 @@ export default function ForgotPassword() {
     setShowPassword(false);
     setShowConfirmPassword(false);
     setSuccessMessage('');
+    resetValidation();
   };
 
   const handleEmailChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -91,8 +124,16 @@ export default function ForgotPassword() {
     setIsVerifyingCode(false);
   };
 
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setNewPassword(val);
+    void validatePassword(val);
+  };
+
   const handleResetPassword = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    if (validation.disabled) return;
 
     setIsResetting(true);
     setSuccessMessage('Password reset successful. Redirecting to login...');
@@ -131,7 +172,7 @@ export default function ForgotPassword() {
               <span className="login-hero-accent">Back in the Game.</span>
             </h1>
             <p>
-              We&apos;ll send a secure code to your email so you can create a new League OS
+              We'll send a secure code to your email so you can create a new League OS
               password and get right back to your account.
             </p>
           </div>
@@ -265,7 +306,7 @@ export default function ForgotPassword() {
                       type={showPassword ? 'text' : 'password'}
                       autoComplete="new-password"
                       value={newPassword}
-                      onChange={(event) => setNewPassword(event.target.value)}
+                      onChange={handlePasswordChange}
                     />
                     <button
                       type="button"
@@ -277,6 +318,11 @@ export default function ForgotPassword() {
                       {showPassword ? <VisibilityOutlinedIcon /> : <VisibilityOffOutlinedIcon />}
                     </button>
                   </div>
+                  <PasswordStatusDisplay
+                    status={validation.status}
+                    message={validation.message}
+                    score={validation.score}
+                  />
                 </label>
 
                 <label>
@@ -303,7 +349,7 @@ export default function ForgotPassword() {
                   </div>
                 </label>
 
-                <button type="submit" className="login-submit" disabled={isResetting}>
+                <button type="submit" className="login-submit" disabled={isResetting || validation.disabled}>
                   {isResetting ? 'Resetting...' : 'Reset Password'}
                 </button>
 
