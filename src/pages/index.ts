@@ -6,3 +6,4 @@ export { default as Register } from './auth/Register';
 export { default as VerifyEmail } from './auth/VerifyEmail';
 export { default as Dashboard } from './fan/Dashboard';
 export { default as Profile } from './fan/Profile';
+export { default as Competitions } from './Competitions';

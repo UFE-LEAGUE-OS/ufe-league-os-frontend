@@ -8,8 +8,11 @@ import {
   VerifyEmail,
   Dashboard,
   Profile,
+  Competitions
 } from '../pages';
 import Personalize from '../pages/auth/Personalize';
+import NewsSection from '../pages/NewsPage';
+import EditProfile from '../components/EditProfilePage';
 
 export default function AppRoutes() {
   return (
@@ -24,6 +27,9 @@ export default function AppRoutes() {
         <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/competitions" element={<Competitions />} />
+        <Route path="/news" element={<NewsSection />} />
+        <Route path="/edit-profile" element={<EditProfile />} />
       </Routes>
     </Router>
   );

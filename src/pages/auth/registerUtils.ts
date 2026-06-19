@@ -13,7 +13,58 @@ export type RegisterFormErrors = Partial<Record<keyof RegisterFormValues | 'form
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const passwordLengthRange = { min: 8, max: 32 };
+
 export const nameMaxLength = 150;
+
+type RegisterErrorField = keyof RegisterFormValues | 'form';
+
+const backendFieldMap: Record<string, RegisterErrorField> = {
+  first_name: 'firstName',
+  last_name: 'lastName',
+  phone_number: 'phoneNumber',
+  email: 'email',
+  password: 'password',
+  confirm_password: 'confirmPassword',
+  non_field_errors: 'form',
+  detail: 'form',
+};
+
+function collectErrorMessages(value: unknown): string[] {
+  if (typeof value === 'string') {
+    return [value];
+  }
+
+  if (Array.isArray(value)) {
+    return value.flatMap(collectErrorMessages);
+  }
+
+  if (value && typeof value === 'object') {
+    return Object.values(value as Record<string, unknown>).flatMap(collectErrorMessages);
+  }
+
+  return [];
+}
+
+export function mapRegisterApiErrors(responseData: unknown): RegisterFormErrors {
+  if (!responseData || typeof responseData !== 'object' || Array.isArray(responseData)) {
+    return {};
+  }
+
+  const errors: RegisterFormErrors = {};
+
+  for (const [key, value] of Object.entries(responseData as Record<string, unknown>)) {
+    const message = collectErrorMessages(value).join(' ');
+
+    if (!message) {
+      continue;
+    }
+
+    const field = backendFieldMap[key] ?? 'form';
+    errors[field] = errors[field] ? `${errors[field]} ${message}` : message;
+  }
+
+  return errors;
+}
 
 export function normalizePhoneInput(value: string) {
   return value.replace(/[^\d\s-]/g, '');
