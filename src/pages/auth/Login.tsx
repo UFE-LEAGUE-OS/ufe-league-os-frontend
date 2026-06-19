@@ -1,4 +1,4 @@
-import { useState, type FormEvent, type ReactNode } from 'react';
+import { useState, type ChangeEvent, type FormEvent, type ReactNode } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import PersonOutlinedIcon from '@mui/icons-material/PersonOutlined';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
@@ -78,7 +78,7 @@ export default function Login() {
   const [googleLoginMessage, setGoogleLoginMessage] = useState('');
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
-  const { validation, validatePassword, resetValidation } = usePasswordValidation();
+  const { validation, validatePassword } = usePasswordValidation();
   const locationMessage = (location.state as { message?: string } | null)?.message ?? '';
 
   const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
@@ -87,7 +87,7 @@ export default function Login() {
     import.meta.env.VITE_GOOGLE_REDIRECT_URI?.trim() ||
     `${apiBaseUrl}/api/accounts/google/callback/`;
 
-  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePasswordChange = (e: ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setPassword(val);
     void validatePassword(val);
