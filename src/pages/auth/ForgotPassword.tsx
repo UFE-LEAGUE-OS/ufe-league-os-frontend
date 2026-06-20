@@ -124,7 +124,7 @@ export default function ForgotPassword() {
     setIsVerifyingCode(false);
   };
 
-  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePasswordChange = (e: ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setNewPassword(val);
     void validatePassword(val);

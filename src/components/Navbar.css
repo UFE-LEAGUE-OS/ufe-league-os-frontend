@@ -79,6 +79,14 @@
   margin-left: auto;
 }
 
+.navbar-links li.active-link {
+  color: #8135FA;
+}
+
+.navbar-links li.active-link::after {
+  width: 100%;
+}
+
 .search-icon {
   background: none;
   border: none;
