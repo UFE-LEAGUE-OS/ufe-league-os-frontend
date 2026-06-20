@@ -1,5 +1,9 @@
+import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import resultsImg from '../assets/results.png';
+import standingsImg from '../assets/standings.png';
+import heroBg from '../assets/stadium-bg.svg';
 
 interface Fixture {
   league: string;
@@ -95,51 +99,86 @@ function groupByDate(items: Fixture[]) {
   return groups;
 }
 
+const styles = `
+  @media (max-width: 768px) {
+    .results-main { padding: 16px !important; }
+    .results-hero { padding: 24px 16px !important; }
+    .results-hero h1 { font-size: 1.6rem !important; }
+    .results-hero p { font-size: 0.85rem !important; }
+    .results-row { grid-template-columns: 1fr 70px 1fr !important; font-size: 0.75rem !important; }
+    .results-row .comp-col, .results-row .time-col { display: none !important; }
+    .results-standings-grid { grid-template-columns: 1fr !important; }
+    .results-date-header { font-size: 0.75rem !important; }
+    .results-score { font-size: 0.85rem !important; padding: 2px 8px !important; }
+  }
+  @media (max-width: 480px) {
+    .results-main { padding: 12px !important; }
+    .results-hero { padding: 16px !important; }
+    .results-hero h1 { font-size: 1.3rem !important; }
+    .results-hero p { font-size: 0.75rem !important; }
+    .results-row { grid-template-columns: 1fr 55px 1fr !important; font-size: 0.7rem !important; }
+    .results-row .comp-col, .results-row .time-col { display: none !important; }
+    .results-standings-grid { grid-template-columns: 1fr !important; }
+    .results-filter-btn { font-size: 0.7rem !important; padding: 6px 14px !important; }
+    .results-standings-table { font-size: 0.75rem !important; }
+    .results-standings-table .d-col { display: none !important; }
+  }
+`;
+
 function Results() {
   const groupedResults = groupByDate(results);
   const dates = Object.keys(groupedResults).sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
 
   return (
     <div style={{ background: '#00030D', minHeight: '100vh', fontFamily: 'Inter, sans-serif', color: '#fff' }}>
+      <style>{styles}</style>
       <Navbar />
 
-      <main style={{ maxWidth: 1400, margin: '0 auto', padding: '32px 56px' }}>
-        <h1 style={{ fontFamily: 'League Spartan, sans-serif', fontSize: '2.8rem', fontStyle: 'italic', fontWeight: 800, marginBottom: 8 }}>
-          RESULTS
-        </h1>
-        <p style={{ color: '#9CA3AF', marginBottom: 32, fontSize: '0.95rem' }}>
-          Latest scores and standings across all leagues and competitions.
-        </p>
+      {/* Hero Banner */}
+      <div className="results-hero" style={{
+        position: 'relative',
+        padding: '40px 56px',
+        background: `linear-gradient(135deg, rgba(249,115,22,0.12) 0%, rgba(0,3,13,0.9) 100%), url(${heroBg}) center/cover`,
+        overflow: 'hidden',
+      }}>
+        <div style={{ position: 'relative', zIndex: 1, maxWidth: 1400, margin: '0 auto' }}>
+          <Link to="/" style={{
+            display: 'inline-flex', alignItems: 'center', gap: 6,
+            color: '#9CA3AF', textDecoration: 'none', fontSize: '0.85rem',
+            fontWeight: 600, marginBottom: 16, transition: 'color 0.2s',
+          }}
+          onMouseEnter={e => e.currentTarget.style.color = '#fff'}
+          onMouseLeave={e => e.currentTarget.style.color = '#9CA3AF'}>
+            ← Back to Home
+          </Link>
+          <h1 style={{ fontFamily: 'League Spartan, sans-serif', fontSize: '2.8rem', fontStyle: 'italic', fontWeight: 800, marginBottom: 8 }}>
+            RESULTS
+          </h1>
+          <p style={{ color: '#9CA3AF', fontSize: '0.95rem', maxWidth: 600 }}>
+            Latest scores and standings across all leagues and competitions.
+          </p>
+        </div>
+        <img src={resultsImg} alt="" style={{
+          position: 'absolute', right: 0, top: 0, height: '100%',
+          opacity: 0.12, objectFit: 'cover', width: '40%',
+        }} />
+      </div>
 
+      <main className="results-main" style={{ maxWidth: 1400, margin: '0 auto', padding: '32px 56px' }}>
         {/* League Filter Tabs */}
         <div style={{ display: 'flex', gap: 8, marginBottom: 32, flexWrap: 'wrap' }}>
           {['All', 'UPL', 'NSRPL', 'NBL', 'TBL'].map(league => (
-            <button
-              key={league}
+            <button key={league} className="results-filter-btn"
               style={{
-                padding: '8px 20px',
-                borderRadius: 20,
+                padding: '8px 20px', borderRadius: 20,
                 border: '1px solid #1F2937',
                 background: league === 'All' ? '#8135FA' : 'transparent',
                 color: league === 'All' ? '#fff' : '#9CA3AF',
-                fontFamily: 'Space Grotesk, sans-serif',
-                fontWeight: 600,
-                fontSize: '0.8rem',
-                cursor: 'pointer',
-                transition: 'all 0.2s',
+                fontFamily: 'Space Grotesk, sans-serif', fontWeight: 600,
+                fontSize: '0.8rem', cursor: 'pointer', transition: 'all 0.2s',
               }}
-              onMouseEnter={e => {
-                if (league !== 'All') {
-                  e.currentTarget.style.borderColor = '#8135FA';
-                  e.currentTarget.style.color = '#fff';
-                }
-              }}
-              onMouseLeave={e => {
-                if (league !== 'All') {
-                  e.currentTarget.style.borderColor = '#1F2937';
-                  e.currentTarget.style.color = '#9CA3AF';
-                }
-              }}
+              onMouseEnter={e => { if (league !== 'All') { e.currentTarget.style.borderColor = '#8135FA'; e.currentTarget.style.color = '#fff'; }}}
+              onMouseLeave={e => { if (league !== 'All') { e.currentTarget.style.borderColor = '#1F2937'; e.currentTarget.style.color = '#9CA3AF'; }}}
             >
               {league === 'All' ? 'All Leagues' : league}
             </button>
@@ -152,30 +191,29 @@ function Results() {
           {dates.map(date => (
             <div key={date} style={{ marginBottom: 16 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
-                <span style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: '0.85rem', fontWeight: 600, color: '#9CA3AF' }}>
+                <span className="results-date-header" style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: '0.85rem', fontWeight: 600, color: '#9CA3AF' }}>
                   {new Date(date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
                 </span>
                 <div style={{ flex: 1, height: 1, background: '#1F2937' }} />
               </div>
               <div style={{ background: '#12131F', borderRadius: 8, overflow: 'hidden' }}>
                 {groupedResults[date].map((f, i) => {
-                  const isDraw = f.scoreA === f.scoreB;
                   const winner = f.scoreA !== undefined && f.scoreB !== undefined
                     ? (f.scoreA > f.scoreB ? 'home' : f.scoreA < f.scoreB ? 'away' : 'draw')
                     : 'draw';
                   return (
-                    <div key={i} style={{ display: 'grid', gridTemplateColumns: '140px 1fr 90px 1fr 120px', gap: 12, alignItems: 'center', padding: '14px 20px', borderBottom: '1px solid #1F2937', fontSize: '0.85rem', transition: 'background 0.2s' }}
+                    <div key={i} className="results-row" style={{ display: 'grid', gridTemplateColumns: '140px 1fr 90px 1fr 120px', gap: 12, alignItems: 'center', padding: '14px 20px', borderBottom: '1px solid #1F2937', fontSize: '0.85rem', transition: 'background 0.2s' }}
                          onMouseEnter={e => (e.currentTarget.style.background = '#1a1f3a')}
                          onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-                      <span style={{ fontSize: '0.7rem', color: '#9CA3AF', fontFamily: 'Space Grotesk, sans-serif', fontWeight: 600 }}>
+                      <span className="comp-col" style={{ fontSize: '0.7rem', color: '#9CA3AF', fontFamily: 'Space Grotesk, sans-serif', fontWeight: 600 }}>
                         <span style={{ color: leagueColors[f.league], marginRight: 4 }}>●</span> {f.competition}
                       </span>
                       <span style={{ fontWeight: winner === 'home' ? 800 : 400, textAlign: 'right', color: winner === 'home' ? '#fff' : '#9CA3AF' }}>{f.teamA}</span>
-                      <span style={{ fontWeight: 800, color: '#F97316', textAlign: 'center', fontSize: '1rem', background: 'rgba(249, 115, 22, 0.08)', borderRadius: 6, padding: '4px 12px', justifySelf: 'center' }}>
+                      <span className="results-score" style={{ fontWeight: 800, color: '#F97316', textAlign: 'center', fontSize: '1rem', background: 'rgba(249, 115, 22, 0.08)', borderRadius: 6, padding: '4px 12px', justifySelf: 'center' }}>
                         {f.scoreA} - {f.scoreB}
                       </span>
                       <span style={{ fontWeight: winner === 'away' ? 800 : 400, color: winner === 'away' ? '#fff' : '#9CA3AF' }}>{f.teamB}</span>
-                      <span style={{ color: '#6B7280', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span className="time-col" style={{ color: '#6B7280', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: 6 }}>
                         <span>{f.venue}</span>
                         <span style={{ fontSize: '0.7rem', color: '#4B5563' }}>{f.time}</span>
                       </span>
@@ -189,34 +227,31 @@ function Results() {
 
         {/* League Standings */}
         <section>
-          <h2 style={{ fontFamily: 'Space Grotesk, sans-serif', fontWeight: 600, fontSize: '1.15rem', marginBottom: 20 }}>LEAGUE STANDINGS</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+            <h2 style={{ fontFamily: 'Space Grotesk, sans-serif', fontWeight: 600, fontSize: '1.15rem', margin: 0 }}>LEAGUE STANDINGS</h2>
+            <img src={standingsImg} alt="" style={{ height: 24, opacity: 0.4 }} />
+          </div>
+          <div className="results-standings-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
             {Object.entries(standings).map(([league, rows]) => (
               <div key={league} style={{ background: '#12131F', borderRadius: 8, padding: 16, border: '1px solid #1F2937' }}>
                 <h3 style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: '0.9rem', fontWeight: 600, marginBottom: 12, color: leagueColors[league], display: 'flex', alignItems: 'center', gap: 6 }}>
                   <span style={{ width: 8, height: 8, borderRadius: '50%', background: leagueColors[league] }} />
                   {leagueNames[league]}
                 </h3>
-                <div style={{ display: 'grid', gridTemplateColumns: '28px 1fr 28px 28px 28px 36px', gap: 8, padding: '8px 0', borderBottom: '1px solid #1F2937', color: '#6B7280', fontSize: '0.7rem', fontWeight: 600, textTransform: 'uppercase' }}>
-                  <span>#</span><span>Team</span><span>P</span><span>W</span><span>{league === 'NBL' || league === 'TBL' ? 'L' : 'D'}</span><span style={{ textAlign: 'right' }}>Pts</span>
+                <div className="results-standings-table" style={{ display: 'grid', gridTemplateColumns: '28px 1fr 28px 28px 28px 36px', gap: 8, padding: '8px 0', borderBottom: '1px solid #1F2937', color: '#6B7280', fontSize: '0.7rem', fontWeight: 600, textTransform: 'uppercase' }}>
+                  <span>#</span><span>Team</span><span>P</span><span>W</span><span className="d-col">{league === 'NBL' || league === 'TBL' ? 'L' : 'D'}</span><span style={{ textAlign: 'right' }}>Pts</span>
                 </div>
                 {rows.map((r) => (
-                  <div key={r.pos} style={{ display: 'grid', gridTemplateColumns: '28px 1fr 28px 28px 28px 36px', gap: 8, alignItems: 'center', padding: '10px 0', borderBottom: '1px solid #1F2937', fontSize: '0.82rem' }}>
+                  <div key={r.pos} className="results-standings-table" style={{ display: 'grid', gridTemplateColumns: '28px 1fr 28px 28px 28px 36px', gap: 8, alignItems: 'center', padding: '10px 0', borderBottom: '1px solid #1F2937', fontSize: '0.82rem' }}>
                     <span style={{
-                      color: r.pos <= 2 ? leagueColors[league] : '#9CA3AF',
-                      fontWeight: 700,
-                      width: 22,
-                      height: 22,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      borderRadius: 4,
-                      background: r.pos <= 2 ? `${leagueColors[league]}20` : 'transparent',
+                      color: r.pos <= 2 ? leagueColors[league] : '#9CA3AF', fontWeight: 700,
+                      width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      borderRadius: 4, background: r.pos <= 2 ? `${leagueColors[league]}20` : 'transparent',
                     }}>{r.pos}</span>
                     <span style={{ fontWeight: 600 }}>{r.team}</span>
                     <span style={{ color: '#9CA3AF' }}>{r.p}</span>
                     <span style={{ color: '#9CA3AF' }}>{r.w}</span>
-                    <span style={{ color: '#9CA3AF' }}>{r.d}</span>
+                    <span className="d-col" style={{ color: '#9CA3AF' }}>{r.d}</span>
                     <span style={{ fontWeight: 800, textAlign: 'right', color: '#fff', fontSize: '0.9rem' }}>{r.pts}</span>
                   </div>
                 ))}

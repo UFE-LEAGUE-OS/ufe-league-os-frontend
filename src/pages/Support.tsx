@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import heroBg from '../assets/stadium-bg.svg';
 
 const faqItems = [
   { q: 'How do I create an account?', a: 'Click "Sign Up" on the homepage, fill in your details, verify your email, and you\'re ready to follow your favourite Ugandan sports teams.' },
@@ -34,23 +35,76 @@ const quickLinks = [
   { title: 'Status Page', desc: 'Check the current operational status of League OS.', link: '/support/status' },
 ];
 
+const styles = `
+  @media (max-width: 768px) {
+    .support-main { padding: 16px !important; }
+    .support-hero { padding: 24px 16px !important; }
+    .support-hero h1 { font-size: 1.6rem !important; }
+    .support-hero p { font-size: 0.85rem !important; }
+    .support-topics-grid { grid-template-columns: 1fr 1fr !important; }
+    .support-contact-grid { grid-template-columns: 1fr !important; }
+    .support-legal-grid { grid-template-columns: 1fr !important; }
+    .support-quick-grid { grid-template-columns: 1fr !important; }
+    .support-form-row { grid-template-columns: 1fr !important; }
+  }
+  @media (max-width: 480px) {
+    .support-main { padding: 12px !important; }
+    .support-hero { padding: 16px !important; }
+    .support-hero h1 { font-size: 1.3rem !important; }
+    .support-hero p { font-size: 0.75rem !important; }
+    .support-topics-grid { grid-template-columns: 1fr !important; }
+    .support-contact-grid { grid-template-columns: 1fr !important; }
+    .support-legal-grid { grid-template-columns: 1fr !important; }
+    .support-quick-grid { grid-template-columns: 1fr !important; }
+    .support-faq details { padding: 12px 16px !important; }
+    .support-faq summary { font-size: 0.82rem !important; }
+    .support-faq p { font-size: 0.78rem !important; }
+  }
+`;
+
 function Support() {
   return (
     <div style={{ background: '#00030D', minHeight: '100vh', fontFamily: 'Inter, sans-serif', color: '#fff' }}>
+      <style>{styles}</style>
       <Navbar />
 
-      <main style={{ maxWidth: 1200, margin: '0 auto', padding: '32px 56px' }}>
-        <h1 style={{ fontFamily: 'League Spartan, sans-serif', fontSize: '2.8rem', fontStyle: 'italic', fontWeight: 800, marginBottom: 8 }}>
-          SUPPORT <span style={{ color: '#F97316' }}>CENTER</span>
-        </h1>
-        <p style={{ color: '#9CA3AF', marginBottom: 48, fontSize: '0.95rem' }}>
-          We're here to help you get the most out of League OS.
-        </p>
+      {/* Hero Banner */}
+      <div className="support-hero" style={{
+        position: 'relative',
+        padding: '40px 56px',
+        background: `linear-gradient(135deg, rgba(16,185,129,0.1) 0%, rgba(0,3,13,0.9) 100%), url(${heroBg}) center/cover`,
+        overflow: 'hidden',
+      }}>
+        <div style={{ position: 'relative', zIndex: 1, maxWidth: 1200, margin: '0 auto' }}>
+          <Link to="/" style={{
+            display: 'inline-flex', alignItems: 'center', gap: 6,
+            color: '#9CA3AF', textDecoration: 'none', fontSize: '0.85rem',
+            fontWeight: 600, marginBottom: 16, transition: 'color 0.2s',
+          }}
+          onMouseEnter={e => e.currentTarget.style.color = '#fff'}
+          onMouseLeave={e => e.currentTarget.style.color = '#9CA3AF'}>
+            ← Back to Home
+          </Link>
+          <h1 style={{ fontFamily: 'League Spartan, sans-serif', fontSize: '2.8rem', fontStyle: 'italic', fontWeight: 800, marginBottom: 8 }}>
+            SUPPORT <span style={{ color: '#F97316' }}>CENTER</span>
+          </h1>
+          <p style={{ color: '#9CA3AF', fontSize: '0.95rem', maxWidth: 600 }}>
+            We're here to help you get the most out of League OS.
+          </p>
+        </div>
+        {/* Decorative elements */}
+        <div style={{ position: 'absolute', right: '5%', top: '50%', transform: 'translateY(-50%)', display: 'flex', gap: 16, opacity: 0.08 }}>
+          <span style={{ fontSize: '4rem' }}>⚽</span>
+          <span style={{ fontSize: '3.5rem' }}>🏀</span>
+          <span style={{ fontSize: '3rem' }}>🏉</span>
+        </div>
+      </div>
 
+      <main className="support-main" style={{ maxWidth: 1200, margin: '0 auto', padding: '32px 56px' }}>
         {/* Help Topics */}
         <section style={{ marginBottom: 48 }}>
           <h2 style={{ fontFamily: 'Space Grotesk, sans-serif', fontWeight: 600, fontSize: '1.3rem', marginBottom: 20 }}>HELP TOPICS</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+          <div className="support-topics-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
             {helpTopics.map((topic) => (
               <Link key={topic.title} to={topic.link} style={{ textDecoration: 'none', color: 'inherit' }}>
                 <div style={{ background: '#12131F', borderRadius: 12, padding: 24, border: '1px solid #1F2937', transition: 'all 0.2s', cursor: 'pointer', height: '100%' }}
@@ -68,7 +122,7 @@ function Support() {
         {/* FAQ */}
         <section style={{ marginBottom: 48 }}>
           <h2 style={{ fontFamily: 'Space Grotesk, sans-serif', fontWeight: 600, fontSize: '1.3rem', marginBottom: 20 }}>FREQUENTLY ASKED QUESTIONS</h2>
-          <div style={{ display: 'grid', gap: 12 }}>
+          <div className="support-faq" style={{ display: 'grid', gap: 12 }}>
             {faqItems.map((item, i) => (
               <details key={i} style={{ background: '#12131F', borderRadius: 8, padding: '16px 20px', border: '1px solid #1F2937', cursor: 'pointer', transition: 'border-color 0.2s' }}
                        onMouseEnter={e => (e.currentTarget.style.borderColor = '#8135FA')}
@@ -85,7 +139,7 @@ function Support() {
         {/* Contact */}
         <section>
           <h2 style={{ fontFamily: 'Space Grotesk, sans-serif', fontWeight: 600, fontSize: '1.3rem', marginBottom: 20 }}>CONTACT US</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+          <div className="support-contact-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
             {contactMethods.map((method) => (
               <div key={method.title} style={{ background: '#12131F', borderRadius: 12, padding: 24, border: '1px solid #1F2937', textAlign: 'center' }}>
                 <h3 style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: '1rem', fontWeight: 600, marginBottom: 8, color: '#F97316' }}>{method.title}</h3>
@@ -98,7 +152,7 @@ function Support() {
           <div style={{ marginTop: 24, padding: 24, background: '#12131F', borderRadius: 12, border: '1px solid #1F2937' }}>
             <h3 style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: '1rem', fontWeight: 600, marginBottom: 12, color: '#fff' }}>Send us a message</h3>
             <div style={{ display: 'grid', gap: 12 }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div className="support-form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <input type="text" placeholder="Your Name" style={{ padding: '12px 16px', borderRadius: 8, border: '1px solid #1F2937', background: 'rgba(255,255,255,0.04)', color: '#fff', fontFamily: 'Inter, sans-serif', fontSize: '0.85rem', outline: 'none' }} />
                 <input type="email" placeholder="Your Email" style={{ padding: '12px 16px', borderRadius: 8, border: '1px solid #1F2937', background: 'rgba(255,255,255,0.04)', color: '#fff', fontFamily: 'Inter, sans-serif', fontSize: '0.85rem', outline: 'none' }} />
               </div>
@@ -111,7 +165,7 @@ function Support() {
         {/* Quick Links */}
         <section style={{ marginBottom: 48 }}>
           <h2 style={{ fontFamily: 'Space Grotesk, sans-serif', fontWeight: 600, fontSize: '1.3rem', marginBottom: 20 }}>QUICK LINKS</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+          <div className="support-quick-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
             {quickLinks.map((link) => (
               <Link key={link.title} to={link.link} style={{ textDecoration: 'none', color: 'inherit' }}>
                 <div style={{ background: '#12131F', borderRadius: 12, padding: 20, border: '1px solid #1F2937', transition: 'all 0.2s', cursor: 'pointer', height: '100%', textAlign: 'center' }}
@@ -126,7 +180,7 @@ function Support() {
         </section>
 
         {/* Legal */}
-        <section style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+        <section className="support-legal-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
           <Link to="/support/terms" style={{ textDecoration: 'none', color: 'inherit' }}>
             <div style={{ background: '#12131F', borderRadius: 12, padding: 24, border: '1px solid #1F2937', transition: 'border-color 0.2s' }}
                  onMouseEnter={e => (e.currentTarget.style.borderColor = '#8135FA')}
