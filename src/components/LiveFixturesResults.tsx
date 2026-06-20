@@ -1,4 +1,5 @@
 import './LiveFixturesResults.css';
+import { Link } from 'react-router-dom';
 
 const liveFixtures = [
   { league: 'UPL', teamA: 'KCCA FC', scoreA: 2, scoreB: 1, teamB: 'Vipers SC', time: '35`' },
@@ -23,7 +24,7 @@ function LiveFixturesResults() {
             <h2 className="section-title">LIVE FIXTURES</h2>
             <span className="live-badge">● Live</span>
           </div>
-          <a href="#" className="view-all-link">View All Live Fixtures</a>
+          <Link to="/fixtures" className="view-all-link">View All Live Fixtures</Link>
         </div>
 
         <div className="match-table">
@@ -42,7 +43,7 @@ function LiveFixturesResults() {
       <div className="fixtures-col">
         <div className="section-header">
           <h2 className="section-title">LATEST RESULTS</h2>
-          <a href="#" className="view-all-link">View All Results</a>
+          <Link to="/results" className="view-all-link">View All Results</Link>
         </div>
 
         <div className="match-table">

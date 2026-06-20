@@ -1,5 +1,6 @@
 import './Footer.css';
 import logo from '../assets/logo.png';
+import { Link } from 'react-router-dom';
 import { FaFacebook, FaInstagram, FaYoutube, FaTiktok } from 'react-icons/fa';
 import { FaXTwitter } from 'react-icons/fa6';
 
@@ -32,8 +33,8 @@ function Footer() {
 
         <div className="footer-col">
           <h4>SUPPORT</h4>
-          <a href="#">Help Center</a>
-          <a href="#">Contact Us</a>
+          <Link to="/support">Help Center</Link>
+          <Link to="/support">Contact Us</Link>
           <a href="#">Terms of Service</a>
           <a href="#">Privacy Policy</a>
         </div>

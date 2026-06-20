@@ -7,3 +7,6 @@ export { default as VerifyEmail } from './auth/VerifyEmail';
 export { default as Dashboard } from './fan/Dashboard';
 export { default as Profile } from './fan/Profile';
 export { default as Competitions } from './Competitions';
+export { default as Fixtures } from './Fixtures';
+export { default as Results } from './Results';
+export { default as Support } from './Support';
