@@ -9,6 +9,9 @@ import {
   Dashboard,
   Profile,
   Competitions,
+  Fixtures,
+  Results,
+  Support
 } from '../pages';
 import Personalize from '../pages/auth/Personalize';
 import NewsSection from '../pages/NewsPage';
@@ -32,6 +35,9 @@ export default function AppRoutes() {
         <Route path="/news" element={<NewsSection />} />
         <Route path="/edit-profile" element={<EditProfile />} />
         <Route path="/tickets" element={<Tickets />} />
+        <Route path="/fixtures" element={<Fixtures />} />
+        <Route path="/results" element={<Results />} />
+        <Route path="/support" element={<Support />} />
       </Routes>
     </Router>
   );
