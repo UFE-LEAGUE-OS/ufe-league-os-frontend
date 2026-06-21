@@ -10,8 +10,8 @@ import EventNoteOutlinedIcon from '@mui/icons-material/EventNoteOutlined';
 import { useState, type FormEvent, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
-import leagueBanner from '../../assets/league-os-mark.svg';
-import { AuthTopBar, PageShell } from '../../components/site/LeagueUI.js';
+import BackButton from '../../components/BackButton';
+import Navbar from '../../components/Navbar';
 import { register as registerAccount } from '../../services/authService.js';
 import {
   buildPhoneNumber,
@@ -22,8 +22,8 @@ import {
   type RegisterFormErrors,
   type RegisterFormValues,
 } from './registerUtils.js';
+import '../../styles/pages/auth/register.css';
 import { usePasswordValidation } from '../../hooks/usePasswordValidation.js';
-import '../../styles/pages/register.css';
 
 const features = [
   {
@@ -44,16 +44,6 @@ const features = [
     tone: 'feature-blue',
     icon: EventNoteOutlinedIcon,
   },
-];
-
-const menu = [
-  'Sport',
-  'Leagues',
-  'Teams',
-  'Competitions',
-  'News',
-  'Membership',
-  'Tickets',
 ];
 
 const phoneCountries = [
@@ -240,8 +230,12 @@ export default function Register() {
   };
 
   return (
-    <PageShell className="register-page">
-      <AuthTopBar menuItems={menu} />
+    <div className="register-page">
+      <Navbar />
+
+      <div className="register-back-row">
+        <BackButton />
+      </div>
 
       <main className="register-main" id="register">
         <section className="register-story">
@@ -291,13 +285,6 @@ export default function Register() {
                 <p>Join the League OS community and be part of the action.</p>
               </div>
 
-              <div className="register-panel-logo">
-                <img
-                  src={leagueBanner}
-                  alt="League OS"
-                  className="register-panel-banner"
-                />
-              </div>
             </div>
 
             <form className="register-form" onSubmit={handleSubmit} noValidate>
@@ -685,6 +672,6 @@ export default function Register() {
           </div>
         </section>
       </main>
-    </PageShell>
+    </div>
   );
 }

@@ -10,7 +10,7 @@ import EventNoteOutlinedIcon from '@mui/icons-material/EventNoteOutlined';
 import { GlassCard, PageShell } from '../../components/site/LeagueUI.js';
 import { buildGoogleAuthUrl } from './loginUtils.js';
 import { usePasswordValidation } from '../../hooks/usePasswordValidation.js';
-import '../../styles/pages/login.css';
+import '../../styles/pages/auth/login.css';
 
 const features = [
   {

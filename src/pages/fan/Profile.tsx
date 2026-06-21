@@ -6,7 +6,7 @@ import {
   Tag,
   TopNav,
 } from '../../components/site/LeagueUI.js';
-import '../../styles/pages/profile.css';
+import '../../styles/pages/fan/homeProfile.css';
 
 const badges = ['Verified fan', 'Premium alerts', 'Match-day regular'];
 

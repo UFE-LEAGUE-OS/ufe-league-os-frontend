@@ -10,7 +10,7 @@ import CompetitionsFooter from '../components/CompetitionsFooter';
 import footballImg from '../assets/football-card.png';
 import rugbyImg from '../assets/rugby-card.png';
 import basketballImg from '../assets/basketball-card.png';
-import './Competitions.css';
+import '../styles/pages/landing/Competitions.css';
 
 const sportFilters = [
   'All Sports', 'Football', 'Rugby', 'Basketball', 'Volleyball', 'Cricket'

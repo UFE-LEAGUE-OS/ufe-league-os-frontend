@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore.js';
 import { setToken } from '../../utils/tokenManager.js';
 import { GlassCard, PageShell } from '../../components/site/LeagueUI.js';
-import '../../styles/pages/login.css';
+import '../../styles/pages/auth/login.css';
 
 function parseCallbackHash() {
   const params = new URLSearchParams(window.location.hash.replace(/^#/, ''));

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../styles/pages/landing/TicketsLandingPage.css';
+import BackButton from '../../components/BackButton';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 import logo from '../../assets/logo.png'; 
@@ -254,9 +255,7 @@ export default function TicketsLandingPage() {
       <main className="tickets-main">
         {/* Page actions: Back + Sign Up (page-specific, not in the global navbar) */}
         <div className="tickets-page-actions">
-          <button className="back-btn" onClick={() => navigate(-1)}>
-            <span aria-hidden="true">←</span> Back
-          </button>
+          <BackButton />
           <button className="signup-btn" onClick={() => navigate('/register')}>
             Sign Up
           </button>
