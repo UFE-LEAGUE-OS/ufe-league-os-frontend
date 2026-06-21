@@ -12,6 +12,8 @@ import ShieldOutlinedIcon from '@mui/icons-material/ShieldOutlined';
 import ArrowBackOutlinedIcon from '@mui/icons-material/ArrowBackOutlined';
 import { GlassCard, PageShell } from '../../components/site/LeagueUI.js';
 import { normalizeCodeInput } from './forgotPasswordUtils.js';
+import '../../styles/pages/auth/login.css';
+import '../../styles/pages/auth/register.css';
 import { usePasswordValidation } from '../../hooks/usePasswordValidation.js';
 import '../../styles/pages/login.css';
 import '../../styles/pages/register.css';

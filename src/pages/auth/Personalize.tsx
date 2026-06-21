@@ -9,7 +9,7 @@ import SchoolOutlinedIcon from '@mui/icons-material/SchoolOutlined';
 import SportsSoccerIcon from '@mui/icons-material/SportsSoccer';
 import type { SvgIconComponent } from '@mui/icons-material';
 import { PageShell } from '../../components/site/LeagueUI.js';
-import '../../styles/pages/personalize.css';
+import '../../styles/pages/auth/personalize.css';
 
 type Item = { id: string; name: string; sub?: string; emoji?: string };
 

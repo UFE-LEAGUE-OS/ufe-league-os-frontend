@@ -72,6 +72,37 @@ describe('register helpers', () => {
 })
 
 describe('Register page', () => {
+  it('navigates back from the registration page', async () => {
+    const user = userEvent.setup()
+
+    render(
+      <MemoryRouter initialEntries={['/', '/register']} initialIndex={1}>
+        <Register />
+      </MemoryRouter>,
+    )
+
+    await user.click(screen.getByRole('button', { name: /back/i }))
+
+    expect(navigateMock).toHaveBeenCalledWith(-1)
+  })
+
+  it('renders the shared site navbar', () => {
+    render(
+      <MemoryRouter>
+        <Register />
+      </MemoryRouter>,
+    )
+
+    expect(
+      screen
+        .getAllByAltText('League OS')
+        .some((image) => image.classList.contains('logo-img')),
+    ).toBe(true)
+    expect(screen.getByText(/competitions/i)).toBeInTheDocument()
+    expect(screen.getByText(/tickets/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /log in/i })).toBeInTheDocument()
+  })
+
   it(
     'submits a valid account creation payload and routes to personalization',
     async () => {
