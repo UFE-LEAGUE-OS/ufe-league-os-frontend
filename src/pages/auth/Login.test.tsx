@@ -1,9 +1,27 @@
 import { MemoryRouter } from 'react-router-dom'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import Login from './Login'
 import { buildGoogleAuthUrl } from './loginUtils'
+
+const navigateMock = vi.hoisted(() => vi.fn())
+const loginMock = vi.hoisted(() => vi.fn())
+
+vi.mock('react-router-dom', async () => {
+  const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom')
+
+  return {
+    ...actual,
+    useNavigate: () => navigateMock,
+  }
+})
+
+vi.mock('../../hooks/useAuth.js', () => ({
+  useAuth: () => ({
+    login: loginMock,
+  }),
+}))
 
 describe('buildGoogleAuthUrl', () => {
   it('builds the Google OAuth redirect URL from the configured values', () => {
@@ -20,6 +38,11 @@ describe('buildGoogleAuthUrl', () => {
 })
 
 describe('Login page', () => {
+  beforeEach(() => {
+    navigateMock.mockClear()
+    loginMock.mockReset()
+  })
+
   it('renders the sign-in form and toggles password visibility', async () => {
     const user = userEvent.setup()
 
@@ -51,5 +74,82 @@ describe('Login page', () => {
     )
 
     expect(screen.getByRole('status')).toHaveTextContent(/email has been verified/i)
+  })
+
+  it('does not submit or redirect when the login form is empty', async () => {
+    const user = userEvent.setup()
+
+    render(
+      <MemoryRouter>
+        <Login />
+      </MemoryRouter>,
+    )
+
+    await user.click(screen.getByRole('button', { name: /^log in$/i }))
+
+    expect(loginMock).not.toHaveBeenCalled()
+    expect(navigateMock).not.toHaveBeenCalled()
+    expect(screen.getByText(/phone number or email is required/i)).toBeInTheDocument()
+    expect(screen.getByText(/password is required/i)).toBeInTheDocument()
+  })
+
+  it('shows backend errors and does not redirect for invalid credentials', async () => {
+    const user = userEvent.setup()
+
+    loginMock.mockRejectedValueOnce({
+      response: {
+        data: {
+          detail: 'No active account found with the given credentials.',
+        },
+      },
+    })
+
+    render(
+      <MemoryRouter>
+        <Login />
+      </MemoryRouter>,
+    )
+
+    await user.type(screen.getByPlaceholderText('Enter phone number or email'), 'wrong@example.com')
+    await user.type(screen.getByPlaceholderText('Enter your password'), 'WrongPassword123')
+    await user.click(screen.getByRole('button', { name: /^log in$/i }))
+
+    expect(loginMock).toHaveBeenCalledWith({
+      identifier: 'wrong@example.com',
+      password: 'WrongPassword123',
+    })
+    expect(await screen.findByRole('alert')).toHaveTextContent(/no active account/i)
+    expect(navigateMock).not.toHaveBeenCalled()
+  })
+
+  it('submits valid credentials and redirects to the backend dashboard route', async () => {
+    const user = userEvent.setup()
+
+    loginMock.mockResolvedValueOnce({
+      access: 'access-token',
+      refresh: 'refresh-token',
+      requires_email_verification: false,
+      user: {
+        email: 'fan@example.com',
+        role: 'FAN',
+        frontend_dashboard_route: '/dashboard/fan',
+      },
+    })
+
+    render(
+      <MemoryRouter>
+        <Login />
+      </MemoryRouter>,
+    )
+
+    await user.type(screen.getByPlaceholderText('Enter phone number or email'), 'fan@example.com')
+    await user.type(screen.getByPlaceholderText('Enter your password'), 'StrongPassword123')
+    await user.click(screen.getByRole('button', { name: /^log in$/i }))
+
+    expect(loginMock).toHaveBeenCalledWith({
+      identifier: 'fan@example.com',
+      password: 'StrongPassword123',
+    })
+    expect(navigateMock).toHaveBeenCalledWith('/dashboard/fan', { replace: true })
   })
 })
