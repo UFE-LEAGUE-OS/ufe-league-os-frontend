@@ -1,0 +1,764 @@
+.page {
+    color: #ffffff;
+}
+
+.backLink,
+.explainerCard a,
+.checkoutForm button,
+.warningCard a,
+.supportCard a,
+.notFoundCard a {
+    border-radius: 6px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    font-family: var(--font-subhead);
+    font-weight: 900;
+    text-decoration: none;
+
+    transition:
+        transform 0.2s ease,
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.backLink {
+    width: max-content;
+    min-height: 40px;
+    margin-bottom: 22px;
+    padding: 0 14px;
+
+    color: var(--color-vivid-violet);
+    background: rgba(123, 63, 242, 0.1);
+    border: 1px solid rgba(123, 63, 242, 0.52);
+
+    font-size: 13px;
+}
+
+.pageHeader,
+.explainerCard,
+.panel,
+.orderCard,
+.tierCard,
+.warningCard,
+.supportCard,
+.statusMessage,
+.notFoundCard {
+    background: linear-gradient(
+        135deg,
+        rgba(15, 23, 42, 0.9),
+        rgba(2, 6, 23, 0.62)
+    );
+    border: 1px solid rgba(255, 255, 255, 0.13);
+    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.24);
+    backdrop-filter: blur(8px);
+}
+
+.pageHeader {
+    min-height: 180px;
+    border-radius: 14px;
+    padding: 28px;
+    margin-bottom: 22px;
+
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 96px;
+    align-items: center;
+    gap: 24px;
+
+    border-color: rgba(123, 63, 242, 0.46);
+}
+
+.pageHeader span {
+    min-height: 30px;
+    border-radius: 999px;
+    padding: 0 12px;
+    width: max-content;
+
+    display: inline-flex;
+    align-items: center;
+
+    color: var(--color-vivid-violet);
+    background: rgba(123, 63, 242, 0.12);
+    border: 1px solid rgba(123, 63, 242, 0.3);
+
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.pageHeader h1 {
+    margin: 12px 0 0;
+    color: #ffffff;
+    font-size: clamp(34px, 3vw, 52px);
+    font-weight: 900;
+    letter-spacing: -0.05em;
+}
+
+.pageHeader p {
+    max-width: 760px;
+    margin: 12px 0 0;
+
+    color: rgba(255, 255, 255, 0.66);
+    font-size: 16px;
+    line-height: 1.55;
+}
+
+.pageHeader img {
+    width: 96px;
+    height: 96px;
+    border-radius: 999px;
+    object-fit: cover;
+    background: #ffffff;
+}
+
+.statusMessage {
+    min-height: 50px;
+    border-radius: 8px;
+    padding: 0 18px;
+    margin-bottom: 20px;
+
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    color: #22c55e;
+    border-color: rgba(34, 197, 94, 0.4);
+    background: linear-gradient(
+        135deg,
+        rgba(34, 197, 94, 0.13),
+        rgba(15, 23, 42, 0.78)
+    );
+
+    font-size: 14px;
+    font-weight: 900;
+}
+
+.explainerCard {
+    min-height: 124px;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 26px;
+
+    display: grid;
+    grid-template-columns: 66px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 20px;
+
+    border-color: rgba(123, 63, 242, 0.42);
+}
+
+.explainerCard > span,
+.sidePanelHeader > span {
+    width: 62px;
+    height: 62px;
+    border-radius: 999px;
+    padding: 14px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    color: var(--color-vivid-violet);
+    background: rgba(123, 63, 242, 0.14);
+    border: 1px solid rgba(123, 63, 242, 0.34);
+}
+
+.explainerCard h2,
+.panelHeader h2,
+.sidePanelHeader h2,
+.orderCard h2,
+.warningCard h2,
+.supportCard h2,
+.notFoundCard h1 {
+    margin: 0;
+    color: #ffffff;
+    font-size: 21px;
+    font-weight: 900;
+}
+
+.explainerCard p,
+.panelHeader p,
+.sidePanelHeader p,
+.warningCard p,
+.supportCard p,
+.notFoundCard p {
+    margin: 8px 0 0;
+    color: rgba(255, 255, 255, 0.64);
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.explainerCard a {
+    height: 42px;
+    padding: 0 18px;
+
+    color: var(--color-vivid-violet);
+    background: rgba(123, 63, 242, 0.1);
+    border: 1px solid rgba(123, 63, 242, 0.56);
+
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.layoutGrid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 390px;
+    align-items: start;
+    gap: 26px;
+}
+
+.mainColumn,
+.sideColumn {
+    display: grid;
+    gap: 24px;
+}
+
+.panel,
+.orderCard,
+.warningCard,
+.supportCard {
+    border-radius: 10px;
+    padding: 22px;
+}
+
+.panelHeader {
+    margin-bottom: 20px;
+}
+
+.tierGrid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.tierCard {
+    min-height: 148px;
+    border-radius: 12px;
+    padding: 18px;
+    position: relative;
+
+    display: grid;
+    gap: 12px;
+    align-content: start;
+
+    color: #ffffff;
+    text-align: left;
+    cursor: pointer;
+}
+
+.tierCard svg {
+    color: var(--color-vivid-violet);
+}
+
+.tierCard h3 {
+    margin: 0;
+    color: #ffffff;
+    font-size: 17px;
+    font-weight: 900;
+}
+
+.tierCard strong {
+    display: block;
+    margin-top: 7px;
+    color: #ffffff;
+    font-size: 22px;
+    font-weight: 900;
+}
+
+.tierCard p {
+    margin: 5px 0 0;
+    color: rgba(255, 255, 255, 0.58);
+    font-size: 12px;
+}
+
+.tierCard > span {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+
+    min-height: 26px;
+    border-radius: 999px;
+    padding: 0 10px;
+
+    display: inline-flex;
+    align-items: center;
+
+    color: #ffffff;
+    background: rgba(123, 63, 242, 0.24);
+    border: 1px solid rgba(123, 63, 242, 0.42);
+
+    font-size: 11px;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.selectedTier {
+    border-color: rgba(123, 63, 242, 0.88);
+    background:
+        radial-gradient(
+            circle at 86% 8%,
+            rgba(123, 63, 242, 0.28),
+            transparent 36%
+        ),
+        linear-gradient(135deg, rgba(15, 23, 42, 0.94), rgba(2, 6, 23, 0.72));
+}
+
+.checkoutForm {
+    display: grid;
+    gap: 16px;
+}
+
+.checkoutForm label {
+    display: grid;
+    gap: 8px;
+}
+
+.checkoutForm label > span {
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 12px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.checkoutForm label > div {
+    min-height: 48px;
+    border-radius: 7px;
+    padding: 0 14px;
+
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    color: rgba(255, 255, 255, 0.44);
+    background: rgba(15, 23, 42, 0.72);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.checkoutForm label > div:focus-within {
+    border-color: rgba(123, 63, 242, 0.8);
+    box-shadow: 0 0 0 3px rgba(123, 63, 242, 0.18);
+}
+
+.checkoutForm input {
+    width: 100%;
+    border: 0;
+    outline: 0;
+
+    color: #ffffff;
+    background: transparent;
+
+    font: inherit;
+}
+
+.termsRow {
+    border-radius: 8px;
+    padding: 14px;
+
+    display: grid !important;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: flex-start;
+    gap: 12px;
+
+    background: rgba(123, 63, 242, 0.08);
+    border: 1px solid rgba(123, 63, 242, 0.22);
+}
+
+.termsRow input {
+    width: auto;
+    margin-top: 3px;
+    accent-color: var(--color-vivid-violet);
+}
+
+.termsRow span {
+    color: rgba(255, 255, 255, 0.68) !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    line-height: 1.5;
+    text-transform: none !important;
+    letter-spacing: 0 !important;
+}
+
+.checkoutForm button {
+    width: max-content;
+    min-height: 46px;
+    border: 1px solid var(--color-vivid-violet);
+    padding: 0 18px;
+
+    color: #ffffff;
+    background: var(--color-vivid-violet);
+
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.flowGrid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.flowGrid article {
+    border-radius: 10px;
+    padding: 16px;
+
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+
+    background: rgba(15, 23, 42, 0.58);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.flowGrid article > span {
+    width: 34px;
+    height: 34px;
+    border-radius: 999px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+
+    color: #ffffff;
+    background: var(--color-vivid-violet);
+    font-weight: 900;
+}
+
+.flowGrid h3 {
+    margin: 0;
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 900;
+}
+
+.flowGrid p {
+    margin: 5px 0 0;
+    color: rgba(255, 255, 255, 0.58);
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.orderCard {
+    border-color: rgba(123, 63, 242, 0.42);
+    background:
+        radial-gradient(
+            circle at 80% 10%,
+            rgba(123, 63, 242, 0.3),
+            transparent 38%
+        ),
+        linear-gradient(135deg, rgba(15, 23, 42, 0.92), rgba(2, 6, 23, 0.78));
+}
+
+.orderHeader {
+    display: grid;
+    grid-template-columns: 64px minmax(0, 1fr);
+    align-items: center;
+    gap: 14px;
+}
+
+.orderHeader img {
+    width: 64px;
+    height: 64px;
+    border-radius: 999px;
+    object-fit: cover;
+    background: #ffffff;
+}
+
+.orderHeader p {
+    margin: 5px 0 0;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.selectedTierBlock {
+    margin-top: 20px;
+    border-radius: 10px;
+    padding: 16px;
+
+    display: flex;
+    align-items: center;
+    gap: 14px;
+
+    background: rgba(123, 63, 242, 0.12);
+    border: 1px solid rgba(123, 63, 242, 0.24);
+}
+
+.selectedTierBlock svg {
+    color: var(--color-vivid-violet);
+}
+
+.selectedTierBlock span,
+.selectedTierBlock small {
+    display: block;
+    color: rgba(255, 255, 255, 0.58);
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.selectedTierBlock strong {
+    display: block;
+    margin: 5px 0;
+    color: #ffffff;
+    font-size: 20px;
+    font-weight: 900;
+}
+
+.priceList {
+    margin-top: 16px;
+    display: grid;
+    gap: 10px;
+}
+
+.priceList article {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+
+    color: rgba(255, 255, 255, 0.66);
+    font-size: 13px;
+}
+
+.priceList strong {
+    color: #ffffff;
+    font-weight: 900;
+}
+
+.totalRow {
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    padding-top: 12px;
+    margin-top: 4px;
+}
+
+.totalRow span,
+.totalRow strong {
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: 900;
+}
+
+.gatewayNotice {
+    border-radius: 8px;
+    padding: 14px;
+    margin-top: 16px;
+
+    display: grid;
+    grid-template-columns: 22px minmax(0, 1fr);
+    gap: 10px;
+
+    color: #facc15;
+    background: rgba(250, 204, 21, 0.09);
+    border: 1px solid rgba(250, 204, 21, 0.2);
+}
+
+.gatewayNotice p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.62);
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+.sidePanelHeader {
+    margin-bottom: 18px;
+
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.sidePanelHeader > span {
+    width: 50px;
+    height: 50px;
+    padding: 0;
+}
+
+.methodList {
+    display: grid;
+    gap: 10px;
+}
+
+.methodList span {
+    border-radius: 8px;
+    padding: 12px;
+
+    display: block;
+
+    color: rgba(255, 255, 255, 0.72);
+    background: rgba(15, 23, 42, 0.58);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.warningCard,
+.supportCard {
+    display: grid;
+    gap: 14px;
+}
+
+.warningCard {
+    border-color: rgba(250, 204, 21, 0.26);
+    background:
+        radial-gradient(
+            circle at 90% 0%,
+            rgba(250, 204, 21, 0.18),
+            transparent 36%
+        ),
+        linear-gradient(135deg, rgba(15, 23, 42, 0.92), rgba(54, 42, 10, 0.62));
+}
+
+.supportCard {
+    border-color: rgba(123, 63, 242, 0.42);
+    background:
+        radial-gradient(
+            circle at 80% 10%,
+            rgba(123, 63, 242, 0.3),
+            transparent 38%
+        ),
+        linear-gradient(135deg, rgba(15, 23, 42, 0.92), rgba(2, 6, 23, 0.78));
+}
+
+.warningCard > svg {
+    width: 62px;
+    height: 62px;
+    border-radius: 999px;
+    padding: 14px;
+
+    color: #facc15;
+    background: rgba(250, 204, 21, 0.12);
+    border: 1px solid rgba(250, 204, 21, 0.28);
+}
+
+.supportCard > svg {
+    width: 62px;
+    height: 62px;
+    border-radius: 999px;
+    padding: 14px;
+
+    color: var(--color-vivid-violet);
+    background: rgba(123, 63, 242, 0.14);
+    border: 1px solid rgba(123, 63, 242, 0.34);
+}
+
+.warningCard a,
+.supportCard a,
+.notFoundCard a {
+    width: max-content;
+    min-height: 42px;
+    padding: 0 16px;
+
+    color: #ffffff;
+    background: var(--color-vivid-violet);
+    border: 1px solid var(--color-vivid-violet);
+
+    font-size: 13px;
+}
+
+.notFoundCard {
+    max-width: 720px;
+    border-radius: 14px;
+    padding: 32px;
+    margin: 60px auto;
+
+    display: grid;
+    gap: 18px;
+    text-align: center;
+    justify-items: center;
+}
+
+.notFoundCard > svg {
+    color: #facc15;
+}
+
+.backLink:hover,
+.explainerCard a:hover,
+.checkoutForm button:hover,
+.warningCard a:hover,
+.supportCard a:hover,
+.notFoundCard a:hover {
+    transform: translateY(-2px);
+}
+
+.checkoutForm button:hover,
+.warningCard a:hover,
+.supportCard a:hover,
+.notFoundCard a:hover {
+    background: #a855f7;
+    box-shadow: 0 16px 32px rgba(123, 63, 242, 0.28);
+}
+
+.backLink:hover,
+.explainerCard a:hover {
+    background: rgba(123, 63, 242, 0.16);
+    border-color: rgba(123, 63, 242, 0.78);
+}
+
+.backLink:focus-visible,
+.explainerCard a:focus-visible,
+.checkoutForm button:focus-visible,
+.warningCard a:focus-visible,
+.supportCard a:focus-visible,
+.tierCard:focus-visible,
+.notFoundCard a:focus-visible {
+    outline: 3px solid rgba(123, 63, 242, 0.78);
+    outline-offset: 4px;
+}
+
+@media (max-width: 1360px) {
+    .layoutGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .sideColumn {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .orderCard {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 1080px) {
+    .explainerCard {
+        grid-template-columns: 66px minmax(0, 1fr);
+    }
+
+    .explainerCard a {
+        grid-column: 1 / -1;
+        width: max-content;
+    }
+
+    .tierGrid,
+    .flowGrid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 760px) {
+    .pageHeader,
+    .explainerCard,
+    .tierGrid,
+    .flowGrid,
+    .sideColumn {
+        grid-template-columns: 1fr;
+    }
+
+    .pageHeader img {
+        width: 82px;
+        height: 82px;
+    }
+
+    .tierCard > span {
+        position: static;
+        width: max-content;
+        margin-top: 4px;
+    }
+
+    .checkoutForm button {
+        width: 100%;
+    }
+}

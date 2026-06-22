@@ -31,6 +31,12 @@ import ProfilePrivacy from '../pages/fan/ProfilePrivacy';
 import ProfileSupport from '../pages/fan/ProfileSupport';
 import Tickets from '../pages/landing/TicketsLandingPage';
 import AuthenticatedLayout from '../components/AuthenticatedLayout/AuthenticatedLayout';
+import ExploreMembershipsPage from '../pages/memberships/ExploreMembershipsPage';
+import ClubMembershipDetailPage from '../pages/memberships/ClubMembershipDetailPage';
+import MembershipCheckoutPage from '../pages/memberships/MembershipCheckoutPage';
+import MembershipSuccessPage from '../pages/memberships/MembershipSuccessPage';
+import MembershipFailedPage from '../pages/memberships/MembershipFailedPage';
+import MyMembershipsPage from '../pages/memberships/MyMembershipsPage';
 import { useAuthStore } from '../store/authStore.js';
 
 function getStoredAccessToken() {
@@ -88,6 +94,12 @@ export default function AppRoutes() {
                     <Route path="/profile/notifications" element={<ProfileNotifications />} />
                     <Route path="/profile/privacy" element={<ProfilePrivacy />} />
                     <Route path="/profile/support" element={<ProfileSupport />} />
+                    <Route path="/memberships" element={<ExploreMembershipsPage />} />
+                    <Route path="/memberships/:clubSlug" element={<ClubMembershipDetailPage />} />
+                    <Route path="/memberships/:clubSlug/checkout" element={<MembershipCheckoutPage />} />
+                    <Route path="/memberships/:clubSlug/success" element={<MembershipSuccessPage />} />
+                    <Route path="/memberships/:clubSlug/failed" element={<MembershipFailedPage />} />
+                    <Route path="/dashboard/memberships" element={<MyMembershipsPage />} />
                 </Route>
                 <Route path="/edit-profile" element={protectedPage(<Navigate to="/profile/edit" replace />)} />
 
