@@ -1,366 +1,411 @@
-import { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import {
   ArrowRight,
-  ChevronLeft,
+  CalendarDays,
   ChevronRight,
-  Search,
-  Shield,
+  RotateCcw,
+  ShieldCheck,
   Trophy,
   Users,
 } from 'lucide-react';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
-import { publicClubs, publicTeams } from '../../data/publicBrowseCatalog';
+import {
+  competitionStandings,
+  publicClubs,
+  publicPlayers,
+  publicTeams,
+  type PublicClub,
+  type PublicTeam,
+} from '../../data/publicBrowseCatalog';
 import './TeamsPage.css';
 
-type TeamCard = {
-  slug: string;
-  name: string;
-  clubName: string;
-  clubSlug: string;
-  sport: string;
-  league: string;
-  squadSize: number;
-  image: string;
-  logo: string;
-  form: string[];
-  ranking: number;
+type ClubTeam = PublicTeam & {
+  tag: string;
+  coach: string;
+  nextFixture: string;
+  nextOpponentLogo: string;
+  description: string;
 };
 
-const PAGE_SIZE = 7;
-const sports = ['All Sports', 'Football', 'Rugby', 'Basketball'];
+const rugbyTeamTemplates = [
+  {
+    key: 'first-xv',
+    tag: 'Senior Men',
+    label: 'Senior Men',
+    squadSize: 28,
+    coach: 'Philip Wokorach',
+    description: 'Competing at the highest level in the Nile Special Rugby Premiership.',
+  },
+  {
+    key: 'ladies',
+    tag: 'Ladies Team',
+    label: 'Ladies',
+    squadSize: 24,
+    coach: 'Peace Lekuru',
+    description: 'Representing the club in the women’s rugby series.',
+  },
+  {
+    key: 'u20',
+    tag: 'U20 Team',
+    label: 'U20',
+    squadSize: 26,
+    coach: 'Henry Ssenginja',
+    description: 'Developing the next generation of rugby talent.',
+  },
+  {
+    key: '7s',
+    tag: '7s Team',
+    label: '7s',
+    squadSize: 18,
+    coach: 'David Kyalo',
+    description: 'Competing in national sevens tournaments and regional events.',
+  },
+  {
+    key: 'u18',
+    tag: 'U18 Team',
+    label: 'U18',
+    squadSize: 30,
+    coach: 'Ivan Magomu',
+    description: 'Building strong foundations for future champions.',
+  },
+  {
+    key: 'academy',
+    tag: 'Academy Team',
+    label: 'Academy',
+    squadSize: 32,
+    coach: 'Brian Odongo',
+    description: 'Grassroots development program for young players.',
+  },
+];
 
-function makeExtraTeams(): TeamCard[] {
-  const labels = ['Academy Team', 'Development Squad', 'U21 Team', 'Women’s Team', 'Reserve Team'];
+const footballTeamTemplates = [
+  { key: 'senior-team', tag: 'Senior Team', label: 'Senior Team', squadSize: 27, coach: 'Head Coach', description: 'Competing in the top football league.' },
+  { key: 'women-team', tag: 'Women’s Team', label: 'Women’s Team', squadSize: 24, coach: 'Team Coach', description: 'Representing the club in women’s football.' },
+  { key: 'u20-team', tag: 'U20 Team', label: 'U20 Team', squadSize: 26, coach: 'Youth Coach', description: 'Developing future senior team players.' },
+  { key: 'reserve-team', tag: 'Reserve Team', label: 'Reserve Team', squadSize: 25, coach: 'Reserve Coach', description: 'Competitive reserve squad and player pathway.' },
+];
 
-  return publicClubs.flatMap((club, clubIndex) =>
-    labels.slice(0, club.sport === 'Basketball' ? 2 : 3).map((label, labelIndex) => ({
-      slug: `${club.slug}-${label.toLowerCase().replaceAll(' ', '-').replace('’', '')}`,
-      name: `${club.name} ${label}`,
-      clubName: club.name,
-      clubSlug: club.slug,
-      sport: club.sport,
-      league: club.league,
-      squadSize: club.sport === 'Rugby' ? 28 - labelIndex : club.sport === 'Football' ? 26 - labelIndex : 15 - labelIndex,
-      image: club.logo,
-      logo: club.logo,
-      form: labelIndex % 2 === 0 ? ['W', 'W', 'L', 'W', 'W'] : ['W', 'L', 'W', 'D', 'W'],
-      ranking: clubIndex + labelIndex + 8,
-    })),
+const basketballTeamTemplates = [
+  { key: 'senior-team', tag: 'Senior Team', label: 'Senior Team', squadSize: 15, coach: 'Head Coach', description: 'Competing in the National Basketball League.' },
+  { key: 'women-team', tag: 'Women’s Team', label: 'Women’s Team', squadSize: 14, coach: 'Team Coach', description: 'Representing the club in women’s basketball.' },
+  { key: 'u18-team', tag: 'U18 Team', label: 'U18 Team', squadSize: 16, coach: 'Youth Coach', description: 'Developing young basketball talent.' },
+  { key: 'academy-team', tag: 'Academy Team', label: 'Academy Team', squadSize: 18, coach: 'Academy Coach', description: 'Grassroots basketball development pathway.' },
+];
+
+function getTemplatesForClub(club: PublicClub) {
+  if (club.sport === 'Rugby') return rugbyTeamTemplates;
+  if (club.sport === 'Football') return footballTeamTemplates;
+  return basketballTeamTemplates;
+}
+
+function getCompetitionForClub(club: PublicClub) {
+  return (
+    competitionStandings.find((competition) =>
+      competition.rows.some((row) => row.slug === club.slug),
+    ) ?? competitionStandings.find((competition) => competition.sport === club.sport)
   );
 }
 
-function normalizeTeams(): TeamCard[] {
-  const existingTeams: TeamCard[] = publicTeams.map((team, index) => {
-    const club = publicClubs.find((item) => item.slug === team.clubSlug);
+function getTeamSlug(club: PublicClub, key: string) {
+  if (club.slug === 'kobs' && key === 'first-xv') return 'kobs-first-xv';
+  if (club.slug === 'kobs' && key === 'ladies') return 'kobs-ladies';
+
+  const existingTeam = publicTeams.find(
+    (team) => team.clubSlug === club.slug && team.slug.includes(key),
+  );
+
+  return existingTeam?.slug ?? `${club.slug}-${key}`;
+}
+
+function getClubTeams(club: PublicClub): ClubTeam[] {
+  const templates = getTemplatesForClub(club);
+
+  return templates.map((template) => {
+    const slug = getTeamSlug(club, template.key);
+    const existingTeam = publicTeams.find((team) => team.slug === slug);
 
     return {
-      slug: team.slug,
-      name: team.name,
-      clubName: team.clubName,
-      clubSlug: team.clubSlug,
-      sport: team.sport,
-      league: team.league,
-      squadSize: team.squadSize,
-      image: team.image,
-      logo: club?.logo ?? team.image,
-      form: team.form,
-      ranking: index + 1,
+      slug,
+      name: existingTeam?.name ?? `${club.name} ${template.label}`,
+      clubSlug: club.slug,
+      clubName: club.name,
+      sport: club.sport,
+      league: club.league,
+      squadSize: existingTeam?.squadSize ?? template.squadSize,
+      image: existingTeam?.image ?? club.logo,
+      form: existingTeam?.form ?? ['W', 'W', 'L', 'W', 'W'],
+      tag: template.tag,
+      coach: template.coach,
+      nextFixture:
+        club.sport === 'Rugby'
+          ? 'vs Heathens 7s • 17 May 2025'
+          : club.sport === 'Football'
+            ? 'vs SC Villa • 24 May 2025'
+            : 'vs JT Jaguars • 24 May 2025',
+      nextOpponentLogo: club.logo,
+      description: template.description,
     };
   });
+}
 
-  const generatedTeams = makeExtraTeams();
-  const seen = new Set(existingTeams.map((team) => team.slug));
+function getOtherClubs(currentClub: PublicClub) {
+  return publicClubs
+    .filter((club) => club.slug !== currentClub.slug)
+    .slice(0, 4);
+}
+
+function getRecentResults(club: PublicClub, teams: ClubTeam[]) {
+  const mainTeam = teams[0];
 
   return [
-    ...existingTeams,
-    ...generatedTeams.filter((team) => !seen.has(team.slug)),
+    {
+      date: '10 MAY',
+      team: mainTeam?.name ?? club.name,
+      opponent: club.sport === 'Rugby' ? 'Impis RFC' : club.sport === 'Football' ? 'SC Villa' : 'JT Jaguars',
+      score: club.sport === 'Basketball' ? '78 - 71' : '28 - 17',
+      result: 'W',
+    },
+    {
+      date: '03 MAY',
+      team: mainTeam?.name ?? club.name,
+      opponent: club.sport === 'Rugby' ? 'Betway KOBs' : club.sport === 'Football' ? 'Express FC' : 'KIU Titans',
+      score: club.sport === 'Basketball' ? '69 - 74' : '19 - 22',
+      result: 'L',
+    },
+    {
+      date: '26 APR',
+      team: teams[3]?.name ?? mainTeam?.name ?? club.name,
+      opponent: club.sport === 'Rugby' ? 'Heathens 7s' : club.sport === 'Football' ? 'KCCA U20' : 'UCU Canons',
+      score: club.sport === 'Basketball' ? '82 - 76' : '31 - 12',
+      result: 'W',
+    },
+    {
+      date: '19 APR',
+      team: teams[2]?.name ?? mainTeam?.name ?? club.name,
+      opponent: club.sport === 'Rugby' ? 'SC Villa U20' : club.sport === 'Football' ? 'Vipers U20' : 'Ndejje Angels',
+      score: '14 - 14',
+      result: 'D',
+    },
   ];
 }
 
 function TeamsPage() {
-  const [activeSport, setActiveSport] = useState('All Sports');
-  const [selectedLeague, setSelectedLeague] = useState('All Leagues');
-  const [selectedClub, setSelectedClub] = useState('All Clubs');
-  const [sortBy, setSortBy] = useState('Popular');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
-
-  const teams = useMemo(() => normalizeTeams(), []);
-
-  const leagues = useMemo(() => {
-    return ['All Leagues', ...Array.from(new Set(teams.map((team) => team.league)))];
-  }, [teams]);
-
-  const clubs = useMemo(() => {
-    return ['All Clubs', ...Array.from(new Set(teams.map((team) => team.clubName)))];
-  }, [teams]);
-
-  const filteredTeams = useMemo(() => {
-    const query = searchQuery.trim().toLowerCase();
-
-    const filtered = teams.filter((team) => {
-      const matchesSport = activeSport === 'All Sports' || team.sport === activeSport;
-      const matchesLeague = selectedLeague === 'All Leagues' || team.league === selectedLeague;
-      const matchesClub = selectedClub === 'All Clubs' || team.clubName === selectedClub;
-      const matchesSearch =
-        !query ||
-        team.name.toLowerCase().includes(query) ||
-        team.clubName.toLowerCase().includes(query) ||
-        team.league.toLowerCase().includes(query) ||
-        team.sport.toLowerCase().includes(query);
-
-      return matchesSport && matchesLeague && matchesClub && matchesSearch;
-    });
-
-    return [...filtered].sort((a, b) => {
-      if (sortBy === 'Squad Size') return b.squadSize - a.squadSize;
-      if (sortBy === 'Newest') return b.ranking - a.ranking;
-      return a.ranking - b.ranking;
-    });
-  }, [activeSport, searchQuery, selectedClub, selectedLeague, sortBy, teams]);
-
-  const totalPages = Math.max(1, Math.ceil(filteredTeams.length / PAGE_SIZE));
-  const safeCurrentPage = Math.min(currentPage, totalPages);
-  const startIndex = (safeCurrentPage - 1) * PAGE_SIZE;
-  const visibleTeams = filteredTeams.slice(startIndex, startIndex + PAGE_SIZE);
-  const featuredTeams = teams.slice(0, 5);
-
-  function resetToFirstPage() {
-    setCurrentPage(1);
-  }
-
-  function goToPage(pageNumber: number) {
-    setCurrentPage(Math.min(Math.max(pageNumber, 1), totalPages));
-  }
+  const { clubSlug } = useParams();
+  const club = publicClubs.find((item) => item.slug === clubSlug) ?? publicClubs[0];
+  const teams = getClubTeams(club);
+  const otherClubs = getOtherClubs(club);
+  const competition = getCompetitionForClub(club);
+  const players = publicPlayers.filter((player) => player.clubSlug === club.slug);
+  const recentResults = getRecentResults(club, teams);
 
   return (
     <>
       <Navbar />
 
-      <main className="teams-public-page">
-        <section className="teams-public-hero">
-          <div className="teams-public-breadcrumb">
+      <main className="club-teams-page">
+        <section className="club-teams-hero">
+          <div className="club-teams-breadcrumb">
             <Link to="/">Home</Link>
+            <span>›</span>
+            <Link to="/clubs">Clubs</Link>
+            <span>›</span>
+            <Link to={`/clubs/${club.slug}`}>{club.name}</Link>
             <span>›</span>
             <strong>Teams</strong>
           </div>
 
           <h1>Teams</h1>
+          <p>Browse teams by club across Rugby, Football and Basketball.</p>
 
-          <p>Browse teams across Uganda&apos;s clubs and competitions.</p>
+          <div className="club-teams-filters">
+            <Link to="/clubs">All Sports</Link>
+            <Link to={`/clubs?sport=${encodeURIComponent(club.sport)}`}>{club.sport}</Link>
 
-          <div className="teams-public-stats">
-            <span>
-              <Users size={18} />
-              120+ Teams
-            </span>
-            <span>
-              <Trophy size={18} />
-              7 Sports
-            </span>
-            <span>
-              <Shield size={18} />
-              10+ Leagues
-            </span>
-            <span>
-              <Users size={18} />
-              50+ Clubs
-            </span>
+            <label>
+              <span>Select Competition</span>
+              <select value={competition?.name ?? club.league} disabled>
+                <option>{competition?.name ?? club.league}</option>
+              </select>
+            </label>
+
+            <label>
+              <span>Select Club</span>
+              <select
+                value={club.slug}
+                onChange={(event) => {
+                  window.location.href = `/clubs/${event.target.value}/teams`;
+                }}
+              >
+                {publicClubs.map((item) => (
+                  <option key={item.slug} value={item.slug}>
+                    {item.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <Link to={`/clubs/${club.slug}/teams`} className="club-teams-clear">
+              <RotateCcw size={15} />
+              Clear Filters
+            </Link>
           </div>
         </section>
 
-        <section className="teams-public-content">
-          <div className="teams-public-toolbar">
-            <select
-              value={activeSport}
-              onChange={(event) => {
-                setActiveSport(event.target.value);
-                resetToFirstPage();
-              }}
-            >
-              {sports.map((sport) => (
-                <option key={sport}>{sport}</option>
-              ))}
-            </select>
-
-            <select
-              value={selectedLeague}
-              onChange={(event) => {
-                setSelectedLeague(event.target.value);
-                resetToFirstPage();
-              }}
-            >
-              {leagues.map((league) => (
-                <option key={league}>{league}</option>
-              ))}
-            </select>
-
-            <select
-              value={selectedClub}
-              onChange={(event) => {
-                setSelectedClub(event.target.value);
-                resetToFirstPage();
-              }}
-            >
-              {clubs.map((club) => (
-                <option key={club}>{club}</option>
-              ))}
-            </select>
-
-            <label>
-              <Search size={18} />
-              <input
-                type="search"
-                placeholder="Search teams..."
-                value={searchQuery}
-                onChange={(event) => {
-                  setSearchQuery(event.target.value);
-                  resetToFirstPage();
-                }}
-              />
-            </label>
-
-            <select
-              value={sortBy}
-              onChange={(event) => {
-                setSortBy(event.target.value);
-                resetToFirstPage();
-              }}
-            >
-              <option>Popular</option>
-              <option>Squad Size</option>
-              <option>Newest</option>
-            </select>
-          </div>
-
-          <div className="teams-public-layout">
-            <section className="teams-public-main">
-              <p className="teams-public-count">
-                Showing {visibleTeams.length} of {filteredTeams.length} teams
-              </p>
-
-              <div className="teams-public-grid">
-                {visibleTeams.map((team) => (
-                  <article key={team.slug} className="teams-public-card">
-                    <div className="teams-public-image">
-                      <img src={team.image} alt={team.name} />
-                      <span>{team.sport}</span>
-                    </div>
-
-                    <div className="teams-public-logo">
-                      <img src={team.logo} alt="" />
-                    </div>
-
-                    <div className="teams-public-card-body">
-                      <h2>{team.name}</h2>
-                      <p>{team.clubName}</p>
-
-                      <div className="teams-public-card-meta">
-                        <span>{team.league}</span>
-                        <span>
-                          Squad Size
-                          <strong>{team.squadSize}</strong>
-                        </span>
-                      </div>
-
-                      <div className="teams-public-form">
-                        <small>Form</small>
-                        <div>
-                          {team.form.map((item, index) => (
-                            <span
-                              key={`${team.slug}-${item}-${index}`}
-                              className={
-                                item === 'W'
-                                  ? 'teams-public-win'
-                                  : item === 'L'
-                                    ? 'teams-public-loss'
-                                    : 'teams-public-draw'
-                              }
-                            >
-                              {item}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="teams-public-actions">
-                        <Link to={`/clubs/${team.clubSlug}`}>View Team</Link>
-                        <Link to={`/teams/${team.slug}/squad`}>View Squad</Link>
-                      </div>
-                    </div>
-                  </article>
-                ))}
+        <section className="club-teams-layout">
+          <div className="club-teams-main">
+            <section className="club-teams-club-card">
+              <div className="club-teams-logo">
+                <img src={club.logo} alt={club.name} />
               </div>
 
-              <div className="teams-public-pagination">
-                <button
-                  type="button"
-                  aria-label="Previous page"
-                  disabled={safeCurrentPage === 1}
-                  onClick={() => goToPage(safeCurrentPage - 1)}
-                >
-                  <ChevronLeft size={18} />
-                </button>
+              <div className="club-teams-club-copy">
+                <h2>{club.name}</h2>
+                <p>
+                  <span>{club.sport}</span>
+                  <span>{club.league}</span>
+                  <span>{club.location}</span>
+                </p>
+                <small>One club. Many teams. Building champions on and off the field.</small>
+              </div>
 
-                {Array.from({ length: totalPages }, (_, index) => index + 1).map((pageNumber) => (
-                  <button
-                    key={pageNumber}
-                    type="button"
-                    className={safeCurrentPage === pageNumber ? 'is-active' : ''}
-                    onClick={() => goToPage(pageNumber)}
-                  >
-                    {pageNumber}
-                  </button>
-                ))}
-
-                <button
-                  type="button"
-                  aria-label="Next page"
-                  disabled={safeCurrentPage === totalPages}
-                  onClick={() => goToPage(safeCurrentPage + 1)}
-                >
-                  <ChevronRight size={18} />
-                </button>
+              <div className="club-teams-club-stats">
+                <span>
+                  <Users size={24} />
+                  <strong>{teams.length}</strong>
+                  Teams
+                </span>
+                <span>
+                  <Users size={24} />
+                  <strong>{teams.reduce((total, team) => total + team.squadSize, 0)}+</strong>
+                  Players
+                </span>
+                <span>
+                  <Trophy size={24} />
+                  <strong>{club.trophies}</strong>
+                  Trophies
+                </span>
+                <span>
+                  <CalendarDays size={24} />
+                  Since
+                  <strong>{club.founded}</strong>
+                </span>
               </div>
             </section>
 
-            <aside className="teams-public-sidebar">
-              <section className="teams-public-panel">
-                <div className="teams-public-panel-header">
-                  <h2>Featured Teams</h2>
-                  <Link to="/teams">
-                    View All Teams <ArrowRight size={15} />
+            <div className="club-teams-section-title">
+              <h2>Teams at {club.name}</h2>
+              <span>{teams.length} Teams</span>
+            </div>
+
+            <section className="club-teams-grid">
+              {teams.map((team) => (
+                <article key={team.slug} className="club-team-card">
+                  <div className="club-team-image">
+                    <img src={team.image || club.logo} alt={team.name} />
+                    <span>{team.tag}</span>
+                  </div>
+
+                  <div className="club-team-body">
+                    <h3>{team.name}</h3>
+                    <p>{team.description}</p>
+
+                    <dl>
+                      <div>
+                        <dt>Head Coach</dt>
+                        <dd>{team.coach}</dd>
+                      </div>
+                      <div>
+                        <dt>Squad Size</dt>
+                        <dd>{team.squadSize}</dd>
+                      </div>
+                    </dl>
+
+                    <div className="club-team-footer">
+                      <small>
+                        <ShieldCheck size={15} />
+                        Next Fixture {team.nextFixture}
+                      </small>
+
+                      <Link to={`/teams/${team.slug}/squad`}>
+                        View Team
+                      </Link>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </section>
+
+            <section className="club-teams-bottom-grid">
+              <article className="club-teams-panel">
+                <div className="club-teams-panel-header">
+                  <h2>Featured Squad Players</h2>
+                  <Link to={`/teams/${teams[0]?.slug}/squad`}>
+                    View All Players <ArrowRight />
                   </Link>
                 </div>
 
-                <div className="teams-public-featured-list">
-                  {featuredTeams.map((team, index) => (
-                    <article key={team.slug}>
-                      <span>{index + 1}</span>
-                      <img src={team.logo} alt="" />
+                <div className="club-teams-player-row">
+                  {(players.length ? players : publicPlayers.slice(0, 4)).slice(0, 4).map((player) => (
+                    <Link key={player.slug} to={`/players/${player.slug}`} className="club-teams-player-card">
+                      <img src={player.image} alt={player.name} />
                       <div>
-                        <h3>{team.name}</h3>
-                        <p>{team.sport} • {team.league}</p>
+                        <strong>{player.name}</strong>
+                        <span>{player.position}</span>
                       </div>
-                      <button type="button" data-auth-required data-auth-action="follow">Follow</button>
-                    </article>
+                      <b>{player.jerseyNumber}</b>
+                    </Link>
                   ))}
                 </div>
-              </section>
+              </article>
 
-              <section className="teams-public-support">
-                <h2>Support Your Team</h2>
-                <p>Follow your favorite teams for updates, fixtures, results and more.</p>
-                <Link to="/memberships">
-                  Explore Memberships
-                  <ArrowRight size={16} />
-                </Link>
-              </section>
-            </aside>
+              <article className="club-teams-panel">
+                <div className="club-teams-panel-header">
+                  <h2>Recent Team Results</h2>
+                  <Link to="/results">
+                    View All Results <ArrowRight />
+                  </Link>
+                </div>
+
+                <div className="club-teams-result-list">
+                  {recentResults.map((result) => (
+                    <div key={`${result.date}-${result.team}-${result.opponent}`} className="club-teams-result-row">
+                      <span>{result.date}</span>
+                      <strong>{result.team}</strong>
+                      <small>{result.opponent}</small>
+                      <b>{result.score}</b>
+                      <em className={`is-${result.result.toLowerCase()}`}>{result.result}</em>
+                    </div>
+                  ))}
+                </div>
+              </article>
+            </section>
           </div>
+
+          <aside className="club-teams-sidebar">
+            <h2>Other Clubs</h2>
+            <p>Select a club to view its teams and squad details.</p>
+
+            <div className="club-teams-other-list">
+              {otherClubs.map((item) => (
+                <Link key={item.slug} to={`/clubs/${item.slug}/teams`}>
+                  <img src={item.logo} alt={item.name} />
+                  <span>
+                    <strong>{item.name}</strong>
+                    <small>{item.sport} Club</small>
+                    <small>{item.location}</small>
+                  </span>
+                  <ChevronRight size={18} />
+                </Link>
+              ))}
+            </div>
+
+            <Link to="/clubs" className="club-teams-view-all">
+              View All Clubs
+            </Link>
+          </aside>
         </section>
+
         <Footer />
       </main>
     </>

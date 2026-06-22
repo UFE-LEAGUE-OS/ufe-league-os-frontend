@@ -119,7 +119,6 @@ function ClubDetailsPage() {
   const competition = getCompetitionForClub(club.slug);
   const standing = getStandingForClub(club.slug);
   const teams = publicTeams.filter((team) => team.clubSlug === club.slug);
-  const primaryTeam = teams[0];
   const opponents = getOpponents(club.slug, club.sport);
   const recentForm = standing?.form ?? ['W', 'W', 'L', 'W', 'W'];
 
@@ -184,7 +183,7 @@ function ClubDetailsPage() {
                   Become Member
                 </Link>
 
-                <Link to={primaryTeam ? `/teams/${primaryTeam.slug}/squad` : '/teams'}>
+                <Link to={`/clubs/${club.slug}/teams`}>
                   <Users size={17} />
                   View Team
                 </Link>
@@ -237,7 +236,7 @@ function ClubDetailsPage() {
 
         <nav className="club-detail-tabs">
           <a href="#overview" className="is-active">Overview</a>
-          <a href="#teams">Teams</a>
+          <Link to={`/clubs/${club.slug}/teams`}>Teams</Link>
           <a href="#fixtures">Fixtures</a>
           <a href="/results">Results</a>
           <a href="/standings">Standings</a>
@@ -320,8 +319,8 @@ function ClubDetailsPage() {
             <section className="club-detail-panel" id="teams">
               <div className="club-detail-panel-header">
                 <h2>Teams Under {club.name}</h2>
-                <Link to="/clubs">
-                  Browse Clubs <ChevronRight size={15} />
+                <Link to={`/clubs/${club.slug}/teams`}>
+                  View All Teams <ChevronRight size={15} />
                 </Link>
               </div>
 
@@ -422,14 +421,14 @@ function ClubDetailsPage() {
             <section className="club-detail-panel" id="teams">
               <div className="club-detail-panel-header">
                 <h2>Featured Players</h2>
-                <Link to={primaryTeam ? `/teams/${primaryTeam.slug}/squad` : '/teams'}>
+                <Link to={`/clubs/${club.slug}/teams`}>
                   View Team <ChevronRight size={15} />
                 </Link>
               </div>
 
               <div className="club-detail-player-row">
                 {featuredPlayers.map((player) => (
-                  <Link key={player.name} to={primaryTeam ? `/teams/${primaryTeam.slug}/squad` : '/teams'}>
+                  <Link key={player.name} to={`/clubs/${club.slug}/teams`}>
                     <span>{player.number}</span>
                     <img src={club.logo} alt={player.name} />
                     <strong>{player.name}</strong>
