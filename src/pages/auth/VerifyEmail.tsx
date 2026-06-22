@@ -1,8 +1,7 @@
 import { useState, useRef, type FormEvent, type KeyboardEvent, type ClipboardEvent } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { resendOtp, verifyOtp } from '../../services/authService.js';
-import { GlassCard, LeagueLogo, PageShell, TopNav } from '../../components/site/LeagueUI.js';
-import { getPendingOnboardingSession } from '../../utils/onboardingSession.js';
+import { LeagueLogo } from '../../components/site/LeagueUI.js';
 import '../../styles/pages/auth/verify-email.css';
 import '../../styles/pages/verify-email.css';
 
