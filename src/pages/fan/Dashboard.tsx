@@ -25,7 +25,7 @@ import clubsImage from '../../assets/clubs.png';
 import fixturesImage from '../../assets/fixtures.png';
 import standingsImage from '../../assets/standings.png';
 import resultsImage from '../../assets/results.png';
-import '../../styles/pages/fan/dashboard.css';
+import '../../styles/pages/dashboard.css';
 
 type TeamCard = {
   name: string;
