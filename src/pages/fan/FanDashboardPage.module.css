@@ -1,0 +1,686 @@
+.page {
+    color: #ffffff;
+}
+
+.pageHeader {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 26px;
+}
+
+.pageHeader h1 {
+    margin: 0;
+    font-size: clamp(28px, 2.4vw, 38px);
+    font-weight: 900;
+    letter-spacing: -0.04em;
+}
+
+.pageHeader p {
+    margin: 6px 0 0;
+    color: rgba(255, 255, 255, 0.68);
+    font-size: 16px;
+}
+
+.customizeButton {
+    height: 42px;
+    border-radius: 6px;
+    padding: 0 18px;
+
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+
+    color: var(--color-vivid-violet);
+    background: rgba(2, 6, 23, 0.38);
+    border: 1px solid rgba(123, 63, 242, 0.7);
+
+    font-family: var(--font-subhead);
+    font-size: 13px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.summaryGrid {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.summaryCard,
+.panel {
+    background: linear-gradient(
+        135deg,
+        rgba(15, 23, 42, 0.88),
+        rgba(2, 6, 23, 0.62)
+    );
+    border: 1px solid rgba(255, 255, 255, 0.13);
+    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.24);
+    backdrop-filter: blur(8px);
+}
+
+.summaryCard {
+    min-height: 112px;
+    border-radius: 8px;
+    padding: 22px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+}
+
+.summaryCard p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.76);
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.summaryCard strong {
+    display: block;
+    margin-top: 8px;
+
+    color: #ffffff;
+    font-size: 30px;
+    font-weight: 900;
+    line-height: 1;
+}
+
+.summaryCard span {
+    display: block;
+    margin-top: 8px;
+
+    color: rgba(255, 255, 255, 0.56);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.summaryCard svg {
+    opacity: 0.92;
+}
+
+.purple {
+    border-color: rgba(123, 63, 242, 0.55);
+}
+
+.purple svg {
+    color: var(--color-vivid-violet);
+}
+
+.blue svg {
+    color: #5b7cff;
+}
+
+.orange {
+    border-color: rgba(255, 163, 26, 0.35);
+}
+
+.orange svg {
+    color: #ffa31a;
+}
+
+.mainGrid {
+    margin-top: 28px;
+
+    display: grid;
+    grid-template-columns: 1.1fr 1fr 1fr;
+    gap: 22px;
+}
+
+.panel {
+    border-radius: 10px;
+    padding: 22px;
+}
+
+.panelHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 18px;
+}
+
+.panelHeader h2 {
+    margin: 0;
+    color: #ffffff;
+    font-size: 19px;
+    font-weight: 900;
+}
+
+.panelHeader a,
+.panelFooterLink {
+    color: var(--color-vivid-violet);
+    font-size: 13px;
+    font-weight: 900;
+    text-decoration: none;
+}
+
+.panelHeader a:hover,
+.panelFooterLink:hover {
+    color: #a855f7;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.matchesPanel {
+    grid-row: span 2;
+}
+
+.matchList {
+    display: grid;
+}
+
+.matchItem {
+    padding: 18px 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.matchItem:first-child {
+    padding-top: 0;
+}
+
+.matchTeams {
+    min-width: 0;
+
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr) 30px 44px;
+    align-items: center;
+    gap: 12px;
+}
+
+.matchTeams img,
+.clubCard img,
+.membershipItem img {
+    width: 44px;
+    height: 44px;
+    border-radius: 999px;
+    object-fit: cover;
+    background: #ffffff;
+}
+
+.matchTeams h3,
+.newsItem h3,
+.membershipItem h3,
+.ticketContent h3 {
+    margin: 0;
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 900;
+}
+
+.matchTeams p,
+.matchTeams span,
+.matchTeams small {
+    display: block;
+    color: rgba(255, 255, 255, 0.62);
+    font-size: 12px;
+    line-height: 1.35;
+}
+
+.matchTeams strong {
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 13px;
+    text-align: center;
+}
+
+.matchActions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.matchActions a {
+    height: 34px;
+    border-radius: 5px;
+    padding: 0 17px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    color: var(--color-vivid-violet);
+    border: 1px solid rgba(123, 63, 242, 0.72);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 900;
+}
+
+.matchActions button {
+    width: 34px;
+    height: 34px;
+    border: 0;
+    color: rgba(255, 255, 255, 0.76);
+    background: transparent;
+    cursor: pointer;
+}
+
+.clubGrid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.clubCard {
+    min-width: 0;
+
+    display: grid;
+    justify-items: center;
+    gap: 8px;
+
+    color: #ffffff;
+    text-align: center;
+    text-decoration: none;
+}
+
+.clubCard span {
+    width: 66px;
+    height: 66px;
+    border-radius: 999px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    background: rgba(123, 63, 242, 0.14);
+    border: 1px solid rgba(123, 63, 242, 0.28);
+}
+
+.clubCard img {
+    width: 54px;
+    height: 54px;
+}
+
+.clubCard strong {
+    margin-top: 4px;
+    font-size: 13px;
+    font-weight: 900;
+}
+
+.clubCard small {
+    color: rgba(255, 255, 255, 0.58);
+    font-size: 12px;
+}
+
+.helperText {
+    margin: 28px 0 18px;
+    color: rgba(255, 255, 255, 0.62);
+    font-size: 13px;
+}
+
+.outlineAction {
+    width: max-content;
+    height: 42px;
+    border-radius: 6px;
+    padding: 0 28px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    color: var(--color-vivid-violet);
+    border: 1px solid rgba(123, 63, 242, 0.72);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 900;
+}
+
+.newsList {
+    display: grid;
+    gap: 16px;
+}
+
+.newsItem {
+    min-width: 0;
+    padding-bottom: 16px;
+
+    display: grid;
+    grid-template-columns: 110px minmax(0, 1fr);
+    align-items: center;
+    gap: 16px;
+
+    color: #ffffff;
+    text-decoration: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.newsItem img {
+    width: 110px;
+    height: 70px;
+    border-radius: 4px;
+    object-fit: cover;
+}
+
+.newsItem span {
+    color: var(--color-vivid-violet);
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.newsItem p {
+    margin: 6px 0 0;
+    color: rgba(255, 255, 255, 0.54);
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.membershipsPanel {
+    grid-column: span 1;
+}
+
+.membershipList {
+    display: grid;
+    gap: 12px;
+}
+
+.membershipItem {
+    padding: 14px;
+    border-radius: 8px;
+
+    display: grid;
+    grid-template-columns: 50px 1fr auto auto;
+    align-items: center;
+    gap: 14px;
+
+    background: rgba(15, 23, 42, 0.56);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.membershipItem p {
+    margin: 4px 0 0;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 12px;
+}
+
+.membershipItem span {
+    color: rgba(255, 255, 255, 0.54);
+    font-size: 12px;
+    text-align: right;
+}
+
+.membershipItem span strong {
+    display: block;
+    margin-top: 4px;
+    color: #59d979;
+}
+
+.membershipItem a {
+    height: 34px;
+    border-radius: 5px;
+    padding: 0 14px;
+
+    display: inline-flex;
+    align-items: center;
+
+    color: var(--color-vivid-violet);
+    border: 1px solid rgba(123, 63, 242, 0.72);
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.ticketContent {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 136px;
+    gap: 22px;
+    align-items: center;
+}
+
+.ticketContent p {
+    margin: 8px 0 0;
+    color: rgba(255, 255, 255, 0.62);
+    font-size: 13px;
+}
+
+.ticketContent h3 {
+    margin-top: 18px;
+    font-size: 20px;
+    line-height: 1.25;
+}
+
+.ticketContent h3 span {
+    display: block;
+    color: rgba(255, 255, 255, 0.58);
+    font-size: 13px;
+    text-transform: uppercase;
+}
+
+.qrTicket {
+    border-radius: 8px;
+    padding: 14px;
+
+    color: #ffffff;
+    text-align: center;
+    background: linear-gradient(
+        180deg,
+        rgba(123, 63, 242, 0.72),
+        rgba(45, 20, 90, 0.92)
+    );
+}
+
+.qrTicket span,
+.qrTicket p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.82);
+    font-size: 11px;
+    text-transform: uppercase;
+}
+
+.qrTicket strong {
+    display: block;
+    margin-top: 6px;
+    font-size: 14px;
+}
+
+.fakeQr {
+    width: 82px;
+    height: 82px;
+    margin: 12px auto 0;
+    border-radius: 4px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: #111827;
+    background: #ffffff;
+}
+
+.rewardSummary {
+    display: grid;
+    grid-template-columns: 54px 1fr 1.4fr;
+    gap: 18px;
+    align-items: center;
+}
+
+.rewardSummary > svg {
+    width: 54px;
+    height: 54px;
+    padding: 12px;
+    border-radius: 999px;
+
+    color: #ffa31a;
+    background: rgba(255, 163, 26, 0.12);
+    border: 1px solid rgba(255, 163, 26, 0.32);
+}
+
+.rewardSummary strong {
+    color: #ffffff;
+    font-size: 28px;
+    font-weight: 900;
+}
+
+.rewardSummary p,
+.rewardProgress span,
+.rewardProgress small {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.58);
+    font-size: 12px;
+}
+
+.rewardProgress > div {
+    height: 6px;
+    border-radius: 999px;
+    margin: 8px 0;
+
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.rewardProgress > div span {
+    display: block;
+    width: 82%;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--color-vivid-violet);
+}
+
+.benefitGrid {
+    margin-top: 28px;
+
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.benefitGrid span {
+    min-height: 58px;
+    border-radius: 999px;
+    padding: 0 12px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: rgba(255, 255, 255, 0.72);
+    background: rgba(123, 63, 242, 0.1);
+    font-size: 12px;
+    font-weight: 800;
+    text-align: center;
+}
+
+.panelFooterLink {
+    display: inline-flex;
+    margin-top: 18px;
+}
+
+.customizeButton:hover,
+.matchActions a:hover,
+.outlineAction:hover,
+.membershipItem a:hover {
+    transform: translateY(-2px);
+    background: rgba(123, 63, 242, 0.14);
+}
+
+.newsItem:hover,
+.clubCard:hover {
+    transform: translateY(-2px);
+}
+
+.customizeButton,
+.matchActions a,
+.outlineAction,
+.membershipItem a,
+.newsItem,
+.clubCard {
+    transition:
+        transform 0.2s ease,
+        background-color 0.2s ease,
+        border-color 0.2s ease;
+}
+
+@media (max-width: 1400px) {
+    .summaryGrid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .mainGrid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .newsPanel {
+        grid-column: span 2;
+    }
+}
+
+@media (max-width: 980px) {
+    .mainGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .newsPanel {
+        grid-column: span 1;
+    }
+
+    .summaryGrid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .clubGrid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .membershipItem {
+        grid-template-columns: 50px 1fr;
+    }
+
+    .membershipItem span,
+    .membershipItem a {
+        justify-self: start;
+    }
+
+    .ticketContent {
+        grid-template-columns: 1fr;
+    }
+
+    .rewardSummary {
+        grid-template-columns: 1fr;
+    }
+
+    .benefitGrid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 680px) {
+    .pageHeader {
+        flex-direction: column;
+    }
+
+    .summaryGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .matchItem {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .matchTeams {
+        grid-template-columns: 44px minmax(0, 1fr);
+    }
+
+    .matchTeams strong,
+    .matchTeams img:last-child {
+        display: none;
+    }
+
+    .newsItem {
+        grid-template-columns: 82px minmax(0, 1fr);
+    }
+
+    .newsItem img {
+        width: 82px;
+        height: 62px;
+    }
+}

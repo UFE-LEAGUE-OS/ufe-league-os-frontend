@@ -1,0 +1,600 @@
+.page {
+    color: #ffffff;
+}
+
+.pageHeader {
+    margin-bottom: 28px;
+
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+}
+
+.pageHeader h1 {
+    margin: 0;
+    font-size: clamp(32px, 3vw, 46px);
+    font-weight: 900;
+    letter-spacing: -0.045em;
+}
+
+.pageHeader p {
+    max-width: 850px;
+    margin: 8px 0 0;
+    color: rgba(255, 255, 255, 0.68);
+    font-size: 17px;
+}
+
+.primaryHeaderAction,
+.supportForm button,
+.contactList a,
+.contactList :global(a),
+.statusCard a,
+.warningCard a,
+.categoryCard {
+    border-radius: 6px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    font-family: var(--font-subhead);
+    font-weight: 900;
+    text-decoration: none;
+
+    transition:
+        transform 0.2s ease,
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.primaryHeaderAction {
+    height: 42px;
+    border: 1px solid var(--color-vivid-violet);
+    padding: 0 18px;
+
+    color: #ffffff;
+    background: var(--color-vivid-violet);
+
+    font-size: 13px;
+}
+
+.saveMessage,
+.heroCard,
+.categoryCard,
+.panel,
+.statusCard,
+.warningCard {
+    background: linear-gradient(
+        135deg,
+        rgba(15, 23, 42, 0.9),
+        rgba(2, 6, 23, 0.62)
+    );
+    border: 1px solid rgba(255, 255, 255, 0.13);
+    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.24);
+    backdrop-filter: blur(8px);
+}
+
+.saveMessage {
+    min-height: 50px;
+    border-radius: 8px;
+    padding: 0 18px;
+    margin-bottom: 20px;
+
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    color: #22c55e;
+    border-color: rgba(34, 197, 94, 0.4);
+    background: linear-gradient(
+        135deg,
+        rgba(34, 197, 94, 0.13),
+        rgba(15, 23, 42, 0.78)
+    );
+
+    font-size: 14px;
+    font-weight: 900;
+}
+
+.heroCard {
+    min-height: 160px;
+    border-radius: 12px;
+    padding: 26px;
+    margin-bottom: 24px;
+
+    display: grid;
+    grid-template-columns: 70px minmax(0, 1fr) minmax(320px, 420px);
+    align-items: center;
+    gap: 22px;
+
+    border-color: rgba(123, 63, 242, 0.46);
+}
+
+.heroCard > span,
+.categoryCard > span,
+.sidePanelHeader > span {
+    width: 62px;
+    height: 62px;
+    border-radius: 999px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    color: var(--color-vivid-violet);
+    background: rgba(123, 63, 242, 0.14);
+    border: 1px solid rgba(123, 63, 242, 0.34);
+}
+
+.heroCard h2,
+.panelHeader h2,
+.sidePanelHeader h2,
+.statusCard h2,
+.warningCard h2 {
+    margin: 0;
+    color: #ffffff;
+    font-size: 21px;
+    font-weight: 900;
+}
+
+.heroCard p,
+.panelHeader p,
+.sidePanelHeader p,
+.statusCard p,
+.warningCard p {
+    margin: 8px 0 0;
+    color: rgba(255, 255, 255, 0.64);
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.heroSearch {
+    min-height: 52px;
+    border-radius: 8px;
+    padding: 0 16px;
+
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    color: rgba(255, 255, 255, 0.48);
+    background: rgba(15, 23, 42, 0.78);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.heroSearch:focus-within {
+    border-color: rgba(123, 63, 242, 0.8);
+    box-shadow: 0 0 0 3px rgba(123, 63, 242, 0.18);
+}
+
+.heroSearch input {
+    width: 100%;
+    border: 0;
+    outline: 0;
+
+    color: #ffffff;
+    background: transparent;
+
+    font: inherit;
+    font-size: 14px;
+}
+
+.categoryGrid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 18px;
+    margin-bottom: 26px;
+}
+
+.categoryCard {
+    min-height: 148px;
+    border-radius: 10px;
+    padding: 18px;
+
+    justify-content: flex-start;
+    align-items: flex-start;
+
+    color: #ffffff;
+}
+
+.categoryCard h2 {
+    margin: 0;
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 900;
+}
+
+.categoryCard p {
+    margin: 7px 0 0;
+    color: rgba(255, 255, 255, 0.58);
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+.categoryCard > svg {
+    margin-left: auto;
+    color: rgba(255, 255, 255, 0.42);
+}
+
+.purple > span svg {
+    color: var(--color-vivid-violet);
+}
+
+.orange > span svg {
+    color: #ff5a18;
+}
+
+.blue > span svg {
+    color: #5b7cff;
+}
+
+.green > span svg {
+    color: #22c55e;
+}
+
+.layoutGrid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 390px;
+    align-items: start;
+    gap: 26px;
+}
+
+.mainColumn,
+.sideColumn {
+    display: grid;
+    gap: 24px;
+}
+
+.panel,
+.statusCard,
+.warningCard {
+    border-radius: 10px;
+    padding: 22px;
+}
+
+.panelHeader {
+    margin-bottom: 20px;
+}
+
+.faqList {
+    display: grid;
+    gap: 12px;
+}
+
+.faqItem {
+    border-radius: 10px;
+    padding: 16px;
+
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr);
+    gap: 14px;
+
+    background: rgba(15, 23, 42, 0.58);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.faqItem > span {
+    width: 42px;
+    height: 42px;
+    border-radius: 999px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    color: var(--color-vivid-violet);
+    background: rgba(123, 63, 242, 0.14);
+}
+
+.faqItem strong,
+.ticketItem strong,
+.contactList strong {
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 900;
+}
+
+.faqItem p,
+.ticketItem p,
+.contactList small {
+    display: block;
+    margin: 7px 0 0;
+    color: rgba(255, 255, 255, 0.58);
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+.faqItem small {
+    display: inline-flex;
+    width: max-content;
+    min-height: 26px;
+    border-radius: 999px;
+    padding: 0 10px;
+    margin-top: 10px;
+
+    align-items: center;
+
+    color: var(--color-vivid-violet);
+    background: rgba(123, 63, 242, 0.1);
+
+    font-size: 11px;
+    font-weight: 900;
+}
+
+.supportForm {
+    display: grid;
+    gap: 16px;
+}
+
+.supportForm label {
+    display: grid;
+    gap: 8px;
+}
+
+.supportForm label span {
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 12px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.supportForm select,
+.supportForm textarea {
+    width: 100%;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 7px;
+    padding: 13px 14px;
+
+    color: #ffffff;
+    background: rgba(15, 23, 42, 0.72);
+
+    font: inherit;
+    resize: vertical;
+}
+
+.supportForm select:focus,
+.supportForm textarea:focus {
+    outline: 0;
+    border-color: rgba(123, 63, 242, 0.8);
+    box-shadow: 0 0 0 3px rgba(123, 63, 242, 0.18);
+}
+
+.supportForm button {
+    width: max-content;
+    min-height: 44px;
+    border: 0;
+    padding: 0 18px;
+
+    color: #ffffff;
+    background: var(--color-vivid-violet);
+
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.sidePanelHeader {
+    margin-bottom: 18px;
+
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.sidePanelHeader > span {
+    width: 50px;
+    height: 50px;
+}
+
+.contactList,
+.ticketList {
+    display: grid;
+    gap: 12px;
+}
+
+.contactList a {
+    min-height: 70px;
+    border-radius: 8px;
+    padding: 14px;
+
+    justify-content: flex-start;
+
+    color: #ffffff;
+    background: rgba(15, 23, 42, 0.58);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.contactList a > svg {
+    color: var(--color-vivid-violet);
+}
+
+.ticketItem {
+    border-radius: 8px;
+    padding: 14px;
+
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 12px;
+
+    background: rgba(15, 23, 42, 0.58);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.resolvedStatus,
+.openStatus,
+.reviewStatus {
+    min-height: 26px;
+    border-radius: 999px;
+    padding: 0 10px;
+
+    display: inline-flex;
+    align-items: center;
+
+    font-size: 11px;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.resolvedStatus {
+    color: #22c55e;
+    background: rgba(34, 197, 94, 0.12);
+    border: 1px solid rgba(34, 197, 94, 0.28);
+}
+
+.openStatus {
+    color: #facc15;
+    background: rgba(250, 204, 21, 0.1);
+    border: 1px solid rgba(250, 204, 21, 0.24);
+}
+
+.reviewStatus {
+    color: #5b7cff;
+    background: rgba(91, 124, 255, 0.1);
+    border: 1px solid rgba(91, 124, 255, 0.24);
+}
+
+.statusCard,
+.warningCard {
+    display: grid;
+    gap: 14px;
+}
+
+.statusCard {
+    border-color: rgba(34, 197, 94, 0.28);
+    background:
+        radial-gradient(
+            circle at 90% 0%,
+            rgba(34, 197, 94, 0.18),
+            transparent 36%
+        ),
+        linear-gradient(135deg, rgba(15, 23, 42, 0.92), rgba(2, 40, 23, 0.54));
+}
+
+.statusCard > svg {
+    width: 62px;
+    height: 62px;
+    border-radius: 999px;
+    padding: 14px;
+
+    color: #22c55e;
+    background: rgba(34, 197, 94, 0.12);
+    border: 1px solid rgba(34, 197, 94, 0.28);
+}
+
+.statusCard a,
+.warningCard a {
+    width: max-content;
+    min-height: 42px;
+    padding: 0 16px;
+
+    color: #ffffff;
+    background: var(--color-vivid-violet);
+    border: 1px solid var(--color-vivid-violet);
+
+    font-size: 13px;
+}
+
+.warningCard {
+    border-color: rgba(250, 204, 21, 0.26);
+    background:
+        radial-gradient(
+            circle at 90% 0%,
+            rgba(250, 204, 21, 0.18),
+            transparent 36%
+        ),
+        linear-gradient(135deg, rgba(15, 23, 42, 0.92), rgba(54, 42, 10, 0.62));
+}
+
+.warningCard > svg {
+    width: 62px;
+    height: 62px;
+    border-radius: 999px;
+    padding: 14px;
+
+    color: #facc15;
+    background: rgba(250, 204, 21, 0.12);
+    border: 1px solid rgba(250, 204, 21, 0.28);
+}
+
+.primaryHeaderAction:hover,
+.supportForm button:hover,
+.statusCard a:hover,
+.warningCard a:hover,
+.categoryCard:hover,
+.contactList a:hover {
+    transform: translateY(-2px);
+}
+
+.primaryHeaderAction:hover,
+.supportForm button:hover,
+.statusCard a:hover,
+.warningCard a:hover {
+    background: #a855f7;
+    box-shadow: 0 16px 32px rgba(123, 63, 242, 0.28);
+}
+
+.categoryCard:hover,
+.contactList a:hover {
+    border-color: rgba(123, 63, 242, 0.58);
+    background: rgba(123, 63, 242, 0.12);
+}
+
+.primaryHeaderAction:focus-visible,
+.supportForm button:focus-visible,
+.statusCard a:focus-visible,
+.warningCard a:focus-visible,
+.categoryCard:focus-visible,
+.contactList a:focus-visible {
+    outline: 3px solid rgba(123, 63, 242, 0.78);
+    outline-offset: 4px;
+}
+
+@media (max-width: 1360px) {
+    .layoutGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .sideColumn {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .statusCard,
+    .warningCard {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 1080px) {
+    .heroCard {
+        grid-template-columns: 70px minmax(0, 1fr);
+    }
+
+    .heroSearch {
+        grid-column: 1 / -1;
+    }
+
+    .categoryGrid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 760px) {
+    .pageHeader {
+        flex-direction: column;
+    }
+
+    .heroCard,
+    .categoryGrid,
+    .sideColumn {
+        grid-template-columns: 1fr;
+    }
+
+    .faqItem,
+    .ticketItem {
+        grid-template-columns: 1fr;
+    }
+}
