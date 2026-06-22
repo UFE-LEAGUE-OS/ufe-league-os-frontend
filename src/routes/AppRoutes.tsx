@@ -39,6 +39,7 @@ import ExploreClubsPage from '../pages/clubs/ExploreClubsPage';
 import ClubDetailsPage from '../pages/clubs/ClubDetailsPage';
 import SportsPage from '../pages/sports/SportsPage';
 import TeamSquadPage from '../pages/teams/TeamSquadPage';
+import TeamsPage from '../pages/teams/TeamsPage';
 import PlayerDetailPage from '../pages/players/PlayerDetailPage';
 import StandingsPage from '../pages/standings/StandingsPage';
 import ExploreMembershipsPage from '../pages/memberships/ExploreMembershipsPage';
@@ -120,6 +121,7 @@ export default function AppRoutes() {
                 <Route path="/tickets" element={<Tickets />} />
                 <Route path="/clubs" element={<ExploreClubsPage />} />
                 <Route path="/clubs/:clubSlug" element={<ClubDetailsPage />} />
+                <Route path="/clubs/:clubSlug/teams" element={<TeamsPage />} />
                 <Route path="/teams" element={<Navigate to="/clubs" replace />} />
                 <Route path="/teams/:teamSlug/squad" element={<TeamSquadPage />} />
                 <Route path="/players/:playerSlug" element={<PlayerDetailPage />} />
