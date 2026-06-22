@@ -12,6 +12,7 @@ background:
   background-size: cover;
   background-attachment: fixed;
   margin: 0;
+ 
 }
 
 .news-navbar {
@@ -19,9 +20,10 @@ background:
   justify-content: space-between;
   align-items: center;
   padding: 20px 0;
-  background: rgba(27, 26, 26, 0.76);
+ height: 75px;
   backdrop-filter: blur(10px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background-color: #00030D;
+  border-bottom: 1px solid #000000;
 }
 
 
@@ -32,6 +34,7 @@ background:
   margin: 0;
   padding: 0;
   font-size: medium;
+  font-family: Space Grotesk Semibold ;
 }
 
 
@@ -41,6 +44,12 @@ background:
   font-size: 16px;
   transition: 0.3s ease;
  
+}
+
+.active {
+   color: #7f49fc !important;
+  font-weight: bold;
+  
 }
 
 
@@ -135,6 +144,10 @@ background:
   flex-direction: column;
   gap: 15px;
 }
+.hero-title{
+  font-family: League Spartan ExtraBold italic;
+  font-style: italic;
+}
 
 /* CARDS */
 .hero-card {
@@ -147,13 +160,11 @@ background:
 
 .hero-card h3 {
   margin-bottom: 8px;
-  color: #4f8cff;
+  color: #7f49fc;
+  font-family: Space Grotesk Semibold ;
 }
 
-.hero-card p {
-  font-size: 14px;
-  color: #ccc;
-}
+
 
 .hero-card:hover {
   transform: translateY(-4px);
@@ -182,6 +193,7 @@ background:
   display: flex;
   align-items: center;
   gap: 10px;
+  font-family: Inter Regular;
 }
 
 .trend-num {
@@ -189,7 +201,7 @@ background:
   font-weight: bold;
   font-size: 18px;
   min-width: 25px;
- font-family: "Cormorant Garamond", serif;
+font-family: Inter Regular;
 }
 
 .trend-text {
@@ -203,6 +215,7 @@ background:
   justify-content: space-between;
   margin-top: 6px;
   font-size: 12px;
+  font-family: Inter Regular;
 }
 
 /* SPORT */
@@ -214,6 +227,7 @@ background:
 /* TIME */
 .trend-time {
   color: #888;
+  font-family: Inter Regular;
 }
 
 /* HOVER */
@@ -236,10 +250,6 @@ background:
   margin-bottom: 12px;
 }
 
-.results-header h3 {
-  color: #4f8cff;
-  font-size: 16px;
-}
 
 /* BUTTON */
 .view-table {
@@ -251,6 +261,7 @@ background:
   border-radius: 6px;
   cursor: pointer;
   transition: 0.3s ease;
+  font-family: Inter Regular;
 }
 
 .view-table:hover {
@@ -272,6 +283,7 @@ background:
   color: #ddd;
   padding: 6px 0;
   border-bottom: 1px solid rgba(255,255,255,0.08);
+  font-family: Inter Regular;
 }
 
 /* HEADER ROW */
@@ -279,6 +291,7 @@ background:
   font-weight: bold;
   color: #888;
   border-bottom: 1px solid rgba(255,255,255,0.2);
+  font-family: Inter Regular;
 }
 
 /* ALIGNMENT */
@@ -349,12 +362,14 @@ background:
   color: #ddd;
   max-width: 500px;
   margin-bottom: 15px;
+  font-family: Inter Regular;
 }
 
 
 .hero-buttons {
   display: flex;
   gap: 12px;
+  font-family: Inter Regular;
 }
 
 
@@ -397,15 +412,23 @@ background:
   background: #0b0f1a07;
   color: white;
   margin-top: 10px;
+  font-family: Space Grotesk Semibold ;
+}
+
+.latest-headlines h2 {
+  font-family: Space Grotesk Semibold ;
 }
 
 .section-title {
   font-size: 24px;
   margin-bottom: 20px;
   color: #ffffff;
-  border-left: 4px solid #4f8cff;
+  border-left: 4px solid orangered;
   padding-left: 10px;
   margin-top: 0;
+}
+.join-text h2{
+    font-family: Space Grotesk Semibold ;
 }
 
 /* GRID */
@@ -440,6 +463,7 @@ background:
   font-size: 15px;
   margin: 12px;
   color: white;
+ 
   
 }
 
@@ -448,6 +472,7 @@ background:
   color: #ccc;
   margin: 0 12px 12px;
   line-height: 1.4;
+  font-family: Inter Regular;
 }
 
 /* BOTTOM INFO */
@@ -459,7 +484,9 @@ background:
   color: #aaa;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
-
+.news-footer h3{
+    font-family: Space Grotesk Semibold ;
+}
 /* RESPONSIVE */
 @media (max-width: 900px) {
   .news-grid {
@@ -498,12 +525,14 @@ background:
   color: #ccc;
   max-width: 600px;
   line-height: 1.5;
+  font-family: Inter Regular;
 }
 
 /* RIGHT SIDE BUTTONS */
 .join-actions {
   display: flex;
   gap: 12px;
+  font-family: Inter Regular;
 }
 
 /* BUTTONS */
@@ -515,6 +544,7 @@ background:
   border-radius: 8px;
   cursor: pointer;
   transition: 0.3s ease;
+  
 }
 
 .btn-create:hover {
@@ -574,6 +604,11 @@ background:
 .news-footer > div {
   min-width: 160px;
 }
+.footer-logo p{
+  font-family: Inter Regular;
+  font-size: 14px;
+  width: 250px;
+}
 
 /* Headings */
 .news-footer h3 {
@@ -587,6 +622,7 @@ background:
   list-style: none;
   padding: 0;
   margin: 0;
+  font-family: Inter Regular;
 }
 
 /* List items spacing */

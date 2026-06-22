@@ -3,6 +3,8 @@ import uplLogo from '../assets/star-times-upl.svg';
 import rugbyLogo from '../assets/nile-rugby.svg';
 import smackLogo from '../assets/smack-league.svg';
 import nblLogo from '../assets/national-basketball.svg';
+import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 
 const leagues = [
   {
@@ -31,8 +33,27 @@ const leagues = [
   },
 ];
 
+
 function FantasyLeagues() {
+  
+
+const [showPopup, setShowPopup] = useState(false);
+const navigate = useNavigate();
+
+useEffect(() => {
+  if (showPopup) {
+    document.body.style.overflow = "hidden"; // stop scrolling
+  } else {
+    document.body.style.overflow = "auto"; // allow scrolling again
+  }
+
+  return () => {
+    document.body.style.overflow = "auto";
+  };
+}, [showPopup]);
+  
   return (
+    
     <section className="fantasy-leagues">
       <div className="section-header">
         <h2 className="section-title">FANTASY PREMIER LEAGUES</h2>
@@ -52,12 +73,44 @@ function FantasyLeagues() {
               </div>
             </div>
             <p className="fantasy-desc">{league.desc}</p>
-            <button className="join-league-btn">Join League</button>
+            <button className="join-league-btn"  onClick={() => setShowPopup(true)}>Join League</button>
           </div>
         ))}
         <button className="fantasy-arrow">→</button>
       </div>
+
+
+      {showPopup && (
+  <div className="popup-overlay">
+    <div className="popup-card">
+      <h3>Login Required</h3>
+      <p>
+        You need to be logged in to join fantasy league.
+      </p>
+
+      <div className="popup-actions">
+        <button className="log" onClick={() => navigate("/login")}>
+          Login
+        </button>
+
+        <button className="sign" onClick={() => navigate("/register")}>
+          Sign Up
+        </button>
+      </div>
+
+      <button
+        className="close-btn"
+        onClick={() => setShowPopup(false)}
+      >
+        X
+      </button>
+    </div>
+  </div>
+)}
     </section>
+
+
+
   );
 }
 

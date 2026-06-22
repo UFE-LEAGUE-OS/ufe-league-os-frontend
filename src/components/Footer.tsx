@@ -3,8 +3,11 @@ import logo from '../assets/logo.png';
 import { Link } from 'react-router-dom';
 import { FaFacebook, FaInstagram, FaYoutube, FaTiktok } from 'react-icons/fa';
 import { FaXTwitter } from 'react-icons/fa6';
+import { useNavigate } from "react-router-dom";
 
 function Footer() {
+   const navigate = useNavigate();
+
   return (
     <footer className="footer">
       <div className="footer-top">
@@ -17,8 +20,8 @@ function Footer() {
 
         <div className="footer-col">
           <h4>PLATFORM</h4>
-          <a href="#">About Us</a>
-          <a href="#">How It Works</a>
+          <a onClick={() => navigate('/About',{ state: { tab: "about" } })} style={{ cursor: 'pointer' }}>About Us</a>
+          <a onClick={() => navigate('/About', { state: { tab: "how-it-works" } })}style={{ cursor: 'pointer' }}>How It Works</a>
           <a href="#">For Leagues</a>
           <a href="#">For Clubs</a>
         </div>
