@@ -1,7 +1,11 @@
 import type { ReactNode } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
+import NotificationsNoneOutlinedIcon from '@mui/icons-material/NotificationsNoneOutlined';
 import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
+import { useAuth } from '../../hooks/useAuth.js';
+import { useAuthStore } from '../../store/authStore.js';
 import '../../styles/components.css';
 import leagueMark from '../../assets/league-os-mark.svg';
 import leagueWordmark from '../../assets/league-os-wordmark.svg';
@@ -60,13 +64,46 @@ type RowProps = {
   right: string;
 };
 
-const navLinks = [
+const publicNavLinks = [
   { to: '/', label: 'Home' },
   { to: '/register', label: 'Join' },
   { to: '/login', label: 'Login' },
-  { to: '/dashboard', label: 'Experience' },
+  { to: '/dashboard/fan', label: 'Experience' },
   { to: '/profile', label: 'Profile' },
 ];
+
+const loggedInNavLinks = [
+  { to: '/', label: 'Home' },
+  { to: '/dashboard/fan', label: 'Dashboard' },
+  { to: '/competitions', label: 'Competitions' },
+  { to: '/news', label: 'News' },
+  { to: '/profile', label: 'Profile' },
+];
+
+function getStoredAccessToken() {
+  return localStorage.getItem('league_os_access_token') || localStorage.getItem('access_token');
+}
+
+function getUserDisplayName(user: Record<string, unknown> | null) {
+  const fullName = typeof user?.full_name === 'string' ? user.full_name.trim() : '';
+  const firstName = typeof user?.first_name === 'string' ? user.first_name.trim() : '';
+  const email = typeof user?.email === 'string' ? user.email.trim() : '';
+
+  if (fullName) return fullName;
+  if (firstName) return firstName;
+  if (email.includes('@')) return email.split('@')[0] ?? 'Fan';
+
+  return 'Fan';
+}
+
+function getUserInitials(name: string) {
+  return name
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? '')
+    .join('') || 'F';
+}
 
 export function PageShell({ children, className = '' }: ShellProps) {
   return (
@@ -80,6 +117,25 @@ export function PageShell({ children, className = '' }: ShellProps) {
 }
 
 export function TopNav({ compact = false }: TopNavProps) {
+  const navigate = useNavigate();
+  const { logout } = useAuth();
+  const user = useAuthStore((state) => state.user);
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const isAuthenticated = Boolean(accessToken || getStoredAccessToken());
+  const displayName = getUserDisplayName(user);
+  const initials = getUserInitials(displayName);
+  const visibleLinks = isAuthenticated ? loggedInNavLinks : publicNavLinks;
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login', {
+      replace: true,
+      state: {
+        message: 'You have been logged out.',
+      },
+    });
+  };
+
   return (
     <header className={`topbar ${compact ? 'topbar-compact' : ''}`.trim()}>
       <Link to="/" className="brand-lockup" aria-label="League OS home">
@@ -87,7 +143,7 @@ export function TopNav({ compact = false }: TopNavProps) {
       </Link>
 
       <nav className="topnav">
-        {navLinks.map((link) => (
+        {visibleLinks.map((link) => (
           <Link key={link.to} to={link.to}>
             {link.label}
           </Link>
@@ -96,9 +152,33 @@ export function TopNav({ compact = false }: TopNavProps) {
 
       <div className="topbar-actions">
         <span className="search-chip">Search</span>
-        <Link to="/register" className="button button-primary button-small">
-          Join now
-        </Link>
+
+        {isAuthenticated ? (
+          <div className="topbar-auth-actions">
+            <button type="button" className="topbar-notification-btn" aria-label="Notifications">
+              <NotificationsNoneOutlinedIcon />
+              <span className="topbar-notification-badge">3</span>
+            </button>
+
+            <Link to="/profile" className="topbar-profile-chip" aria-label="View profile">
+              <span className="topbar-profile-avatar">{initials}</span>
+              <span className="topbar-profile-copy">
+                <strong>{displayName}</strong>
+                <small>View Profile</small>
+              </span>
+              <KeyboardArrowDownIcon className="topbar-profile-chevron" />
+            </Link>
+
+            <button type="button" className="topbar-logout-button" onClick={handleLogout}>
+              <LogoutOutlinedIcon />
+              Logout
+            </button>
+          </div>
+        ) : (
+          <Link to="/register" className="button button-primary button-small">
+            Join now
+          </Link>
+        )}
       </div>
     </header>
   );
