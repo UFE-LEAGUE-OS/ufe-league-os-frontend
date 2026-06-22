@@ -30,13 +30,6 @@ const fixtures: Fixture[] = [
   { league: 'TBL', competition: 'Tooro Basketball League', date: '2026-06-22', time: '15:00', teamA: 'Midnight Express', teamB: 'Dujay FC', venue: 'Fort Portal Arena', status: 'upcoming' },
 ];
 
-const leagueColors: Record<string, string> = {
-  UPL: '#F97316',
-  NSRPL: '#10B981',
-  NBL: '#3B82F6',
-  TBL: '#A855F7',
-};
-
 const styles = `
   @media (max-width: 768px) {
     .fixtures-main { padding: 16px !important; }

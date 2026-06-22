@@ -11,7 +11,6 @@ import kobsLogo from '../../assets/kobs.jpg';
 import piratesLogo from '../../assets/standic-pirates.png';
 import platinumLogo from '../../assets/platinum-heathens.jpg';
 import blazersLogo from '../../assets/nam-blazers.png';
-import ctaBanner from '../../assets/cta-banner.png';
 
 type TicketTier = 'all' | 'vip' | 'ordinary';
 
