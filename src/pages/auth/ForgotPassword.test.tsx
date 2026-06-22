@@ -59,16 +59,16 @@ describe('ForgotPassword page', () => {
     const passwordInputs = container.querySelectorAll('input[type="password"]')
     expect(passwordInputs).toHaveLength(2)
 
-    await user.type(passwordInputs[0], 'NewPass1!')
-    await user.type(passwordInputs[1], 'NewPass1!')
+    await user.type(passwordInputs[0], 'NewStrongPass1!')
+    await user.type(passwordInputs[1], 'NewStrongPass1!')
     await user.click(screen.getByRole('button', { name: /reset password/i }))
 
     await waitFor(() => {
       expect(resetPasswordMock).toHaveBeenCalledWith({
         email: 'user@example.com',
         code: '1234',
-        password: 'NewPass1!',
-        confirm_password: 'NewPass1!',
+        password: 'NewStrongPass1!',
+        confirm_password: 'NewStrongPass1!',
       })
     })
 

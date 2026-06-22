@@ -1,4 +1,4 @@
-import { useState, type FormEvent, type ReactNode } from 'react';
+import { useState, type ChangeEvent, type FormEvent, type ReactNode } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import PersonOutlinedIcon from '@mui/icons-material/PersonOutlined';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
@@ -8,192 +8,345 @@ import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined';
 import EmojiEventsOutlinedIcon from '@mui/icons-material/EmojiEventsOutlined';
 import EventNoteOutlinedIcon from '@mui/icons-material/EventNoteOutlined';
 import { GlassCard, PageShell } from '../../components/site/LeagueUI.js';
+import { useAuth } from '../../hooks/useAuth.js';
 import { buildGoogleAuthUrl } from './loginUtils.js';
-import '../../styles/pages/login.css';
+import '../../styles/pages/auth/login.css';
+
+type LoginErrors = {
+    identifier?: string;
+    password?: string;
+    general?: string;
+};
+
+type LoginResult = {
+    frontend_dashboard_route?: unknown;
+    dashboard_route?: unknown;
+    user?: {
+        frontend_dashboard_route?: unknown;
+        dashboard_route?: unknown;
+    };
+};
+
+type ApiError = {
+    response?: {
+        data?: {
+            detail?: string;
+            error?: string;
+            message?: string;
+            non_field_errors?: string[];
+            identifier?: string[];
+            email?: string[];
+            password?: string[];
+            requires_email_verification?: boolean;
+        };
+    };
+};
 
 const features = [
-  {
-    title: 'For Fans',
-    copy: 'Follow your teams, get live scores, and never miss a moment.',
-    tone: 'feature-purple',
-    icon: GroupsOutlinedIcon,
-  },
-  {
-    title: 'Live Scores & Updates',
-    copy: 'Real-time scores, results and match highlights.',
-    tone: 'feature-orange',
-    icon: EmojiEventsOutlinedIcon,
-  },
-  {
-    title: 'Never Miss a Moment',
-    copy: 'Personalized schedules and important alerts.',
-    tone: 'feature-blue',
-    icon: EventNoteOutlinedIcon,
-  },
+    {
+        title: 'For Fans',
+        copy: 'Follow your teams, get live scores, and never miss a moment.',
+        tone: 'feature-purple',
+        icon: GroupsOutlinedIcon,
+    },
+    {
+        title: 'Live Scores & Updates',
+        copy: 'Real-time scores, results and match highlights.',
+        tone: 'feature-orange',
+        icon: EmojiEventsOutlinedIcon,
+    },
+    {
+        title: 'Never Miss a Moment',
+        copy: 'Personalized schedules and important alerts.',
+        tone: 'feature-blue',
+        icon: EventNoteOutlinedIcon,
+    },
 ];
 
 function LoginFieldIcon({ children }: { children: ReactNode }) {
-  return (
-    <span className="login-field-icon" aria-hidden="true">
-      {children}
-    </span>
-  );
+    return (
+        <span className="login-field-icon" aria-hidden="true">
+            {children}
+        </span>
+    );
+}
+
+function firstMessage(value?: string | string[]) {
+    if (Array.isArray(value)) return value[0];
+    return value;
+}
+
+function getLoginErrorMessage(error: unknown) {
+    const data = (error as ApiError).response?.data;
+
+    if (data?.requires_email_verification) {
+        return 'Please verify your email before logging in.';
+    }
+
+    return (
+        firstMessage(data?.detail) ||
+        firstMessage(data?.error) ||
+        firstMessage(data?.message) ||
+        firstMessage(data?.non_field_errors) ||
+        firstMessage(data?.identifier) ||
+        firstMessage(data?.email) ||
+        firstMessage(data?.password) ||
+        'Login failed. Please check your phone number or email and password.'
+    );
+}
+
+function safeDashboardRoute(value: unknown) {
+    return typeof value === 'string' && value.startsWith('/') ? value : null;
+}
+
+function resolveDashboardRoute(result: LoginResult) {
+    return (
+        safeDashboardRoute(result.user?.frontend_dashboard_route) ||
+        safeDashboardRoute(result.frontend_dashboard_route) ||
+        safeDashboardRoute(result.user?.dashboard_route) ||
+        safeDashboardRoute(result.dashboard_route) ||
+        '/dashboard'
+    );
 }
 
 export default function Login() {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const [showPassword, setShowPassword] = useState(false);
-  const [googleLoginMessage, setGoogleLoginMessage] = useState('');
-  const locationMessage = (location.state as { message?: string } | null)?.message ?? '';
+    const location = useLocation();
+    const navigate = useNavigate();
+    const { login } = useAuth();
 
-  const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID?.trim();
-  const googleRedirectUri =
-    import.meta.env.VITE_GOOGLE_REDIRECT_URI?.trim() ||
-    `${apiBaseUrl}/api/accounts/google/callback/`;
+    const [showPassword, setShowPassword] = useState(false);
+    const [googleLoginMessage, setGoogleLoginMessage] = useState('');
+    const [identifier, setIdentifier] = useState('');
+    const [password, setPassword] = useState('');
+    const [errors, setErrors] = useState<LoginErrors>({});
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    navigate('/dashboard');
-  };
+    const locationMessage = (location.state as { message?: string } | null)?.message ?? '';
 
-  const handleGoogleLogin = () => {
-    const url = buildGoogleAuthUrl({
-      apiBaseUrl,
-      googleClientId,
-      googleRedirectUri,
-    });
+    const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+    const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID?.trim();
+    const googleRedirectUri =
+        import.meta.env.VITE_GOOGLE_REDIRECT_URI?.trim() ||
+        `${apiBaseUrl}/api/accounts/google/callback/`;
 
-    if (!url) {
-      setGoogleLoginMessage(
-        'Google sign-in is not configured yet.',
-      );
-      return;
-    }
+    const clearError = (field: keyof LoginErrors) => {
+        setErrors((current) => ({
+            ...current,
+            [field]: undefined,
+            general: undefined,
+        }));
+    };
 
-    setGoogleLoginMessage('');
-    window.location.assign(url);
-  };
+    const handleIdentifierChange = (e: ChangeEvent<HTMLInputElement>) => {
+        setIdentifier(e.target.value);
+        clearError('identifier');
+    };
 
-  return (
-    <PageShell className="auth-page login-page">
-      <main className="login-layout">
-        <section className="login-story">
-          <div className="login-hero-copy">
-            <h1>
-              <span>Every Game.</span>
-              <span>Every Fan.</span>
-              <span className="login-hero-accent">One Platform.</span>
-            </h1>
-            <p>
-              League OS is Uganda&apos;s unified platform for fans, teams, leagues and partners.
-              Follow. Engage. Support.
-            </p>
-          </div>
+    const handlePasswordChange = (e: ChangeEvent<HTMLInputElement>) => {
+        setPassword(e.target.value);
+        clearError('password');
+    };
 
-          <div className="login-feature-list">
-            {features.map((feature) => {
-              const Icon = feature.icon;
+    const validateForm = () => {
+        const nextErrors: LoginErrors = {};
 
-              return (
-                <article key={feature.title} className={`login-feature ${feature.tone}`}>
-                  <span className="login-feature-icon" aria-hidden="true">
-                    <Icon className="login-feature-icon-svg" />
-                  </span>
-                  <div className="login-feature-copy">
-                    <strong>{feature.title}</strong>
-                    <p>{feature.copy}</p>
-                  </div>
-                </article>
-              );
-            })}
-          </div>
-        </section>
+        if (!identifier.trim()) {
+            nextErrors.identifier = 'Phone number or email is required.';
+        }
 
-        <GlassCard className="login-card">
-          <div className="login-card-inner">
-            <header className="login-card-header">
-              <h2>
-                Welcome <span>Back!</span>
-              </h2>
-              <p>Log in to continue your League OS experience.</p>
-              {locationMessage ? (
-                <p className="login-footnote" role="status" aria-live="polite" style={{ color: '#c8ffd5' }}>
-                  {locationMessage}
-                </p>
-              ) : null}
-            </header>
+        if (!password) {
+            nextErrors.password = 'Password is required.';
+        }
 
-            <form className="login-form" onSubmit={handleSubmit} noValidate>
-              <label>
-                Phone Number or Email
-                <div className="login-field-shell">
-                  <LoginFieldIcon>
-                    <PersonOutlinedIcon />
-                  </LoginFieldIcon>
-                  <input type="text" placeholder="Enter phone number or email" autoComplete="username" />
-                </div>
-              </label>
+        setErrors(nextErrors);
+        return Object.keys(nextErrors).length === 0;
+    };
 
-              <label>
-                Password
-                <div className="login-password-shell">
-                  <LoginFieldIcon>
-                    <LockOutlinedIcon />
-                  </LoginFieldIcon>
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="Enter your password"
-                    autoComplete="current-password"
-                  />
-                  <button
-                    type="button"
-                    className="login-password-toggle"
-                    aria-label={showPassword ? 'Hide password' : 'Show password'}
-                    aria-pressed={showPassword}
-                    onClick={() => setShowPassword((current) => !current)}
-                  >
-                    {showPassword ? <VisibilityOutlinedIcon /> : <VisibilityOffOutlinedIcon />}
-                  </button>
-                </div>
-              </label>
+    const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
 
-              <div className="login-meta-row">
-                <span />
-                <Link className="login-forgot" to="/forgot-password">
-                  Forgot password?
-                </Link>
-              </div>
+        if (!validateForm()) return;
 
-              <button type="submit" className="login-submit">
-                Log In
-              </button>
+        setIsSubmitting(true);
 
-              <div className="login-divider" aria-hidden="true">
-                <span>OR</span>
-              </div>
+        try {
+            const result = await login({
+                identifier: identifier.trim(),
+                password,
+            });
 
-              <button type="button" className="login-google" onClick={handleGoogleLogin}>
-                <span className="google-mark" aria-hidden="true">
-                  G
-                </span>
-                <span>Continue with Google</span>
-              </button>
+            navigate(resolveDashboardRoute(result), { replace: true });
+        } catch (error) {
+            setErrors({
+                general: getLoginErrorMessage(error),
+            });
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
-              {googleLoginMessage ? (
-                <p className="login-footnote" role="status" aria-live="polite" style={{ color: '#ffd08a' }}>
-                  {googleLoginMessage}
-                </p>
-              ) : null}
+    const handleGoogleLogin = () => {
+        const url = buildGoogleAuthUrl({
+            apiBaseUrl,
+            googleClientId,
+            googleRedirectUri,
+        });
 
-              <p className="login-footnote">
-                Don&apos;t have an account? <Link to="/register">Sign Up</Link>
-              </p>
-            </form>
-          </div>
-        </GlassCard>
-      </main>
-    </PageShell>
-  );
+        if (!url) {
+            setGoogleLoginMessage('Google sign-in is not configured yet.');
+            return;
+        }
+
+        setGoogleLoginMessage('');
+        window.location.assign(url);
+    };
+
+    return (
+        <PageShell className="auth-page login-page">
+            <main className="login-layout">
+                <section className="login-story">
+                    <div className="login-hero-copy">
+                        <h1>
+                            <span>Every Game.</span>
+                            <span>Every Fan.</span>
+                            <span className="login-hero-accent">One Platform.</span>
+                        </h1>
+                        <p>
+                            League OS is Uganda's unified platform for fans, teams, leagues and partners.
+                            Follow. Engage. Support.
+                        </p>
+                    </div>
+
+                    <div className="login-feature-list">
+                        {features.map((feature) => {
+                            const Icon = feature.icon;
+
+                            return (
+                                <article key={feature.title} className={`login-feature ${feature.tone}`}>
+                                    <span className="login-feature-icon" aria-hidden="true">
+                                        <Icon className="login-feature-icon-svg" />
+                                    </span>
+                                    <div className="login-feature-copy">
+                                        <strong>{feature.title}</strong>
+                                        <p>{feature.copy}</p>
+                                    </div>
+                                </article>
+                            );
+                        })}
+                    </div>
+                </section>
+
+                <GlassCard className="login-card">
+                    <div className="login-card-inner">
+                        <header className="login-card-header">
+                            <h2>
+                                Welcome <span>Back!</span>
+                            </h2>
+                            <p>Log in to continue your League OS experience.</p>
+                            {locationMessage ? (
+                                <p className="login-footnote" role="status" aria-live="polite" style={{ color: '#c8ffd5' }}>
+                                    {locationMessage}
+                                </p>
+                            ) : null}
+                        </header>
+
+                        <form className="login-form" onSubmit={handleSubmit} noValidate>
+                            {errors.general ? (
+                                <p className="login-footnote" role="alert" style={{ color: '#ffb4b4', fontWeight: 700 }}>
+                                    {errors.general}
+                                </p>
+                            ) : null}
+
+                            <label>
+                                Phone Number or Email
+                                <div className="login-field-shell">
+                                    <LoginFieldIcon>
+                                        <PersonOutlinedIcon />
+                                    </LoginFieldIcon>
+                                    <input
+                                        type="text"
+                                        placeholder="Enter phone number or email"
+                                        autoComplete="username"
+                                        value={identifier}
+                                        onChange={handleIdentifierChange}
+                                        aria-invalid={Boolean(errors.identifier)}
+                                        aria-describedby={errors.identifier ? 'login-identifier-error' : undefined}
+                                    />
+                                </div>
+                                {errors.identifier ? (
+                                    <p id="login-identifier-error" className="login-footnote" role="alert" style={{ color: '#ffb4b4' }}>
+                                        {errors.identifier}
+                                    </p>
+                                ) : null}
+                            </label>
+
+                            <label>
+                                Password
+                                <div className="login-password-shell">
+                                    <LoginFieldIcon>
+                                        <LockOutlinedIcon />
+                                    </LoginFieldIcon>
+                                    <input
+                                        type={showPassword ? 'text' : 'password'}
+                                        placeholder="Enter your password"
+                                        autoComplete="current-password"
+                                        value={password}
+                                        onChange={handlePasswordChange}
+                                        aria-invalid={Boolean(errors.password)}
+                                        aria-describedby={errors.password ? 'login-password-error' : undefined}
+                                    />
+                                    <button
+                                        type="button"
+                                        className="login-password-toggle"
+                                        aria-label={showPassword ? 'Hide password' : 'Show password'}
+                                        aria-pressed={showPassword}
+                                        onClick={() => setShowPassword((current) => !current)}
+                                    >
+                                        {showPassword ? <VisibilityOutlinedIcon /> : <VisibilityOffOutlinedIcon />}
+                                    </button>
+                                </div>
+                                {errors.password ? (
+                                    <p id="login-password-error" className="login-footnote" role="alert" style={{ color: '#ffb4b4' }}>
+                                        {errors.password}
+                                    </p>
+                                ) : null}
+                            </label>
+
+                            <div className="login-meta-row">
+                                <span />
+                                <Link className="login-forgot" to="/forgot-password">
+                                    Forgot password?
+                                </Link>
+                            </div>
+
+                            <button type="submit" className="login-submit" disabled={isSubmitting}>
+                                {isSubmitting ? 'Logging in...' : 'Log In'}
+                            </button>
+
+                            <div className="login-divider" aria-hidden="true">
+                                <span>OR</span>
+                            </div>
+
+                            <button type="button" className="login-google" onClick={handleGoogleLogin}>
+                                <span className="google-mark" aria-hidden="true">
+                                    G
+                                </span>
+                                <span>Continue with Google</span>
+                            </button>
+
+                            {googleLoginMessage ? (
+                                <p className="login-footnote" role="status" aria-live="polite" style={{ color: '#ffd08a' }}>
+                                    {googleLoginMessage}
+                                </p>
+                            ) : null}
+
+                            <p className="login-footnote">
+                                Don't have an account? <Link to="/register">Sign Up</Link>
+                            </p>
+                        </form>
+                    </div>
+                </GlassCard>
+            </main>
+        </PageShell>
+    );
 }

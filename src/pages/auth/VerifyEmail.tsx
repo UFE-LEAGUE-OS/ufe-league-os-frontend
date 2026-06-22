@@ -2,6 +2,7 @@ import { useState, useRef, type FormEvent, type KeyboardEvent, type ClipboardEve
 import { useLocation, useNavigate } from 'react-router-dom';
 import { resendOtp, verifyOtp } from '../../services/authService.js';
 import { LeagueLogo } from '../../components/site/LeagueUI.js';
+import '../../styles/pages/auth/verify-email.css';
 import '../../styles/pages/verify-email.css';
 
 type LocationState = { email?: string; message?: string };

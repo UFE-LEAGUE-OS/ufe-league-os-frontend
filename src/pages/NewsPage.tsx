@@ -1,14 +1,14 @@
-import "../styles/pages/NewsPage.css"
+import "../styles/pages/landing/NewsPage.css"
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
 import { FiBell, FiUser, FiSearch } from "react-icons/fi";
 import { FaArrowRight } from "react-icons/fa6";
 import logo from "../assets/logo.png";
-import heroImg from "../assets/basketball-card.png";
-import news1 from "../assets/news.png";
-import news2 from "../assets/news.png";
-import news3 from "../assets/news.png";
+import heroImg from "../assets/basketball.png";
+import news1 from "../assets/rugby-card.png";
+import news2 from "../assets/hero.png";
+import news3 from "../assets/basketball-card.png";
 import Footer from "../components/Footer.tsx";
 
 type Notification = {
