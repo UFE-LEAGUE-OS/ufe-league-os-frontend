@@ -6,6 +6,7 @@ import {
     Routes,
     useLocation,
 } from 'react-router-dom';
+
 import {
     Landing,
     Login,
@@ -20,10 +21,13 @@ import {
     Results,
     Support,
 } from '../pages';
+
 import Personalize from '../pages/auth/Personalize';
 import NewsSection from '../pages/NewsPage';
 import EditProfile from '../components/EditProfilePage';
+import AboutUs from '../pages/About';
 import Tickets from '../pages/landing/TicketsLandingPage';
+
 import { useAuthStore } from '../store/authStore.js';
 
 function getStoredAccessToken() {
@@ -81,6 +85,8 @@ export default function AppRoutes() {
                 <Route path="/fixtures" element={<Fixtures />} />
                 <Route path="/results" element={<Results />} />
                 <Route path="/support" element={<Support />} />
+
+                <Route path="/about" element={<AboutUs />} />
             </Routes>
         </Router>
     );
