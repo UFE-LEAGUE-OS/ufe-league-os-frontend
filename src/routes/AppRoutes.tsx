@@ -22,8 +22,15 @@ import {
 } from '../pages';
 import Personalize from '../pages/auth/Personalize';
 import NewsSection from '../pages/NewsPage';
-import EditProfile from '../components/EditProfilePage';
+import ProfileEdit from '../pages/fan/ProfileEdit';
+import ProfileInterests from '../pages/fan/ProfileInterests';
+import ProfileClubs from '../pages/fan/ProfileClubs';
+import ProfilePayments from '../pages/fan/ProfilePayments';
+import ProfileNotifications from '../pages/fan/ProfileNotifications';
+import ProfilePrivacy from '../pages/fan/ProfilePrivacy';
+import ProfileSupport from '../pages/fan/ProfileSupport';
 import Tickets from '../pages/landing/TicketsLandingPage';
+import AuthenticatedLayout from '../components/AuthenticatedLayout/AuthenticatedLayout';
 import { useAuthStore } from '../store/authStore.js';
 
 function getStoredAccessToken() {
@@ -72,8 +79,17 @@ export default function AppRoutes() {
 
                 <Route path="/dashboard" element={protectedPage(<Dashboard />)} />
                 <Route path="/dashboard/fan" element={protectedPage(<Dashboard />)} />
-                <Route path="/profile" element={protectedPage(<Profile />)} />
-                <Route path="/edit-profile" element={protectedPage(<EditProfile />)} />
+                <Route element={protectedPage(<AuthenticatedLayout />)}>
+                    <Route path="/profile" element={<Profile />} />
+                    <Route path="/profile/edit" element={<ProfileEdit />} />
+                    <Route path="/profile/interests" element={<ProfileInterests />} />
+                    <Route path="/profile/clubs" element={<ProfileClubs />} />
+                    <Route path="/profile/payments" element={<ProfilePayments />} />
+                    <Route path="/profile/notifications" element={<ProfileNotifications />} />
+                    <Route path="/profile/privacy" element={<ProfilePrivacy />} />
+                    <Route path="/profile/support" element={<ProfileSupport />} />
+                </Route>
+                <Route path="/edit-profile" element={protectedPage(<Navigate to="/profile/edit" replace />)} />
 
                 <Route path="/competitions" element={<Competitions />} />
                 <Route path="/news" element={<NewsSection />} />

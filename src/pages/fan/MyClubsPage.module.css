@@ -1,0 +1,694 @@
+.page {
+    color: #ffffff;
+}
+
+.pageHeader {
+    margin-bottom: 28px;
+
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+}
+
+.pageHeader h1 {
+    margin: 0;
+    font-size: clamp(32px, 3vw, 46px);
+    font-weight: 900;
+    letter-spacing: -0.045em;
+}
+
+.pageHeader p {
+    max-width: 760px;
+    margin: 8px 0 0;
+    color: rgba(255, 255, 255, 0.68);
+    font-size: 17px;
+}
+
+.primaryHeaderAction,
+.explainerCard a,
+.panelHeader a,
+.membershipActions a,
+.clubActions a,
+.matchActions a,
+.clubSupportCard a {
+    border-radius: 6px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    font-family: var(--font-subhead);
+    font-weight: 900;
+    text-decoration: none;
+
+    transition:
+        transform 0.2s ease,
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.primaryHeaderAction {
+    height: 42px;
+    padding: 0 18px;
+
+    color: #ffffff;
+    background: var(--color-vivid-violet);
+    border: 1px solid var(--color-vivid-violet);
+
+    font-size: 13px;
+}
+
+.explainerCard,
+.summaryCard,
+.panel,
+.clubSupportCard {
+    background: linear-gradient(
+        135deg,
+        rgba(15, 23, 42, 0.9),
+        rgba(2, 6, 23, 0.62)
+    );
+    border: 1px solid rgba(255, 255, 255, 0.13);
+    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.24);
+    backdrop-filter: blur(8px);
+}
+
+.explainerCard {
+    min-height: 132px;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+
+    display: grid;
+    grid-template-columns: 66px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 20px;
+
+    border-color: rgba(123, 63, 242, 0.46);
+}
+
+.explainerCard > span,
+.clubSupportCard > svg {
+    width: 62px;
+    height: 62px;
+    border-radius: 999px;
+    padding: 14px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    color: var(--color-vivid-violet);
+    background: rgba(123, 63, 242, 0.14);
+    border: 1px solid rgba(123, 63, 242, 0.34);
+}
+
+.explainerCard h2,
+.clubSupportCard h2 {
+    margin: 0;
+    color: #ffffff;
+    font-size: 21px;
+    font-weight: 900;
+}
+
+.explainerCard p,
+.clubSupportCard p {
+    margin: 8px 0 0;
+    color: rgba(255, 255, 255, 0.64);
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.explainerCard a {
+    height: 42px;
+    padding: 0 18px;
+
+    color: var(--color-vivid-violet);
+    background: rgba(123, 63, 242, 0.1);
+    border: 1px solid rgba(123, 63, 242, 0.56);
+
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.summaryGrid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 18px;
+    margin-bottom: 26px;
+}
+
+.summaryCard {
+    min-height: 112px;
+    border-radius: 8px;
+    padding: 22px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+}
+
+.summaryCard p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.76);
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.summaryCard strong {
+    display: block;
+    margin-top: 8px;
+
+    color: #ffffff;
+    font-size: 30px;
+    font-weight: 900;
+    line-height: 1;
+}
+
+.summaryCard span {
+    display: block;
+    margin-top: 8px;
+
+    color: rgba(255, 255, 255, 0.56);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.summaryCard svg {
+    opacity: 0.95;
+}
+
+.purple svg {
+    color: var(--color-vivid-violet);
+}
+
+.orange svg {
+    color: #ff5a18;
+}
+
+.blue svg {
+    color: #5b7cff;
+}
+
+.green svg {
+    color: #22c55e;
+}
+
+.layoutGrid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 420px;
+    align-items: start;
+    gap: 26px;
+}
+
+.mainColumn,
+.sideColumn {
+    display: grid;
+    gap: 24px;
+}
+
+.panel,
+.clubSupportCard {
+    border-radius: 10px;
+    padding: 22px;
+}
+
+.panelHeader {
+    margin-bottom: 20px;
+
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 18px;
+}
+
+.panelHeader h2 {
+    margin: 0;
+    color: #ffffff;
+    font-size: 21px;
+    font-weight: 900;
+}
+
+.panelHeader p {
+    margin: 7px 0 0;
+    color: rgba(255, 255, 255, 0.62);
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.panelHeader a {
+    color: var(--color-vivid-violet);
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.membershipList {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.membershipCard {
+    border-radius: 12px;
+    padding: 20px;
+
+    background:
+        radial-gradient(
+            circle at 86% 8%,
+            rgba(123, 63, 242, 0.2),
+            transparent 36%
+        ),
+        rgba(15, 23, 42, 0.68);
+
+    border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.membershipTop {
+    display: grid;
+    grid-template-columns: 54px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 14px;
+}
+
+.membershipTop img,
+.clubLogoWrap img,
+.matchItem img,
+.recommendedItem img {
+    width: 54px;
+    height: 54px;
+    border-radius: 999px;
+    object-fit: cover;
+    background: #ffffff;
+}
+
+.membershipTop h3,
+.clubCard h3,
+.matchItem h3,
+.recommendedItem h3 {
+    margin: 0;
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 900;
+}
+
+.membershipTop p,
+.clubCard p,
+.matchItem p,
+.recommendedItem p {
+    margin: 5px 0 0;
+    color: rgba(255, 255, 255, 0.62);
+    font-size: 13px;
+}
+
+.membershipTop > span {
+    min-height: 28px;
+    border-radius: 999px;
+    padding: 0 10px;
+
+    display: inline-flex;
+    align-items: center;
+
+    color: #22c55e;
+    background: rgba(34, 197, 94, 0.12);
+    border: 1px solid rgba(34, 197, 94, 0.28);
+
+    font-size: 11px;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.membershipTier {
+    margin-top: 20px;
+    border-radius: 10px;
+    padding: 16px;
+
+    display: flex;
+    align-items: center;
+    gap: 14px;
+
+    background: rgba(123, 63, 242, 0.12);
+    border: 1px solid rgba(123, 63, 242, 0.24);
+}
+
+.membershipTier svg {
+    color: var(--color-vivid-violet);
+}
+
+.membershipTier strong {
+    color: #ffffff;
+    font-size: 20px;
+    font-weight: 900;
+}
+
+.membershipTier p,
+.membershipTier small {
+    display: block;
+    margin: 5px 0 0;
+
+    color: rgba(255, 255, 255, 0.62);
+    font-size: 12px;
+}
+
+.benefitList {
+    margin-top: 16px;
+
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.benefitList span {
+    min-height: 30px;
+    border-radius: 999px;
+    padding: 0 11px;
+
+    display: inline-flex;
+    align-items: center;
+
+    color: rgba(255, 255, 255, 0.78);
+    background: rgba(255, 255, 255, 0.06);
+
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.membershipActions {
+    margin-top: 18px;
+
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.membershipActions a,
+.clubActions a,
+.matchActions a {
+    min-height: 36px;
+    padding: 0 14px;
+
+    color: var(--color-vivid-violet);
+    background: rgba(123, 63, 242, 0.1);
+    border: 1px solid rgba(123, 63, 242, 0.52);
+
+    font-size: 12px;
+}
+
+.searchCard {
+    min-height: 52px;
+    border-radius: 8px;
+    margin-bottom: 18px;
+    padding: 0 16px;
+
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    color: rgba(255, 255, 255, 0.48);
+    background: rgba(15, 23, 42, 0.78);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.searchCard:focus-within {
+    border-color: rgba(123, 63, 242, 0.8);
+    box-shadow: 0 0 0 3px rgba(123, 63, 242, 0.18);
+}
+
+.searchCard input {
+    width: 100%;
+    border: 0;
+    outline: 0;
+
+    color: #ffffff;
+    background: transparent;
+
+    font: inherit;
+    font-size: 14px;
+}
+
+.clubGrid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.clubCard {
+    border-radius: 10px;
+    padding: 18px;
+
+    display: grid;
+    grid-template-columns: 68px minmax(0, 1fr);
+    gap: 14px;
+
+    background: rgba(15, 23, 42, 0.62);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.clubLogoWrap {
+    width: 68px;
+    height: 68px;
+    border-radius: 999px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    background: rgba(123, 63, 242, 0.14);
+    border: 1px solid rgba(123, 63, 242, 0.26);
+}
+
+.clubLogoWrap img {
+    width: 56px;
+    height: 56px;
+}
+
+.clubCard span {
+    display: inline-flex;
+}
+
+.clubMembershipStatus {
+    grid-column: 1 / -1;
+}
+
+.memberBadge,
+.notMember {
+    min-height: 28px;
+    border-radius: 999px;
+    padding: 0 10px;
+
+    align-items: center;
+
+    font-size: 11px;
+    font-weight: 900;
+}
+
+.memberBadge {
+    color: #22c55e;
+    background: rgba(34, 197, 94, 0.12);
+    border: 1px solid rgba(34, 197, 94, 0.28);
+}
+
+.notMember {
+    color: rgba(255, 255, 255, 0.62);
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.clubActions {
+    grid-column: 1 / -1;
+
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.matchList,
+.recommendedList {
+    display: grid;
+    gap: 14px;
+}
+
+.matchItem,
+.recommendedItem {
+    border-radius: 10px;
+    padding: 14px;
+
+    display: grid;
+    grid-template-columns: 54px minmax(0, 1fr);
+    gap: 14px;
+
+    background: rgba(15, 23, 42, 0.58);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.matchItem h3 span {
+    color: rgba(255, 255, 255, 0.58);
+    font-size: 12px;
+    text-transform: uppercase;
+}
+
+.matchItem small,
+.recommendedItem small {
+    display: block;
+    margin-top: 5px;
+    color: rgba(255, 255, 255, 0.52);
+    font-size: 12px;
+}
+
+.matchActions {
+    grid-column: 1 / -1;
+
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.matchActions button {
+    width: 36px;
+    height: 36px;
+    border: 0;
+    border-radius: 6px;
+
+    color: rgba(255, 255, 255, 0.7);
+    background: rgba(255, 255, 255, 0.06);
+    cursor: pointer;
+}
+
+.recommendedItem {
+    grid-template-columns: 54px minmax(0, 1fr) auto;
+    align-items: center;
+}
+
+.recommendedItem button {
+    min-height: 34px;
+    border-radius: 6px;
+    padding: 0 12px;
+
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+
+    color: var(--color-vivid-violet);
+    background: rgba(123, 63, 242, 0.1);
+    border: 1px solid rgba(123, 63, 242, 0.52);
+
+    font-family: var(--font-subhead);
+    font-size: 12px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.clubSupportCard {
+    display: grid;
+    gap: 16px;
+
+    border-color: rgba(123, 63, 242, 0.42);
+    background:
+        radial-gradient(
+            circle at 80% 10%,
+            rgba(123, 63, 242, 0.3),
+            transparent 38%
+        ),
+        linear-gradient(135deg, rgba(15, 23, 42, 0.92), rgba(2, 6, 23, 0.78));
+}
+
+.clubSupportCard a {
+    height: 44px;
+    padding: 0 18px;
+
+    color: #ffffff;
+    background: var(--color-vivid-violet);
+    border: 1px solid var(--color-vivid-violet);
+
+    font-size: 13px;
+}
+
+.primaryHeaderAction:hover,
+.explainerCard a:hover,
+.panelHeader a:hover,
+.membershipActions a:hover,
+.clubActions a:hover,
+.matchActions a:hover,
+.clubSupportCard a:hover,
+.recommendedItem button:hover {
+    transform: translateY(-2px);
+    background: rgba(123, 63, 242, 0.16);
+    border-color: rgba(123, 63, 242, 0.78);
+}
+
+.primaryHeaderAction:hover,
+.clubSupportCard a:hover {
+    background: #a855f7;
+}
+
+.primaryHeaderAction:focus-visible,
+.explainerCard a:focus-visible,
+.panelHeader a:focus-visible,
+.membershipActions a:focus-visible,
+.clubActions a:focus-visible,
+.matchActions a:focus-visible,
+.clubSupportCard a:focus-visible,
+.recommendedItem button:focus-visible,
+.matchActions button:focus-visible {
+    outline: 3px solid rgba(123, 63, 242, 0.78);
+    outline-offset: 4px;
+}
+
+@media (max-width: 1360px) {
+    .layoutGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .sideColumn {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .clubSupportCard {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 1080px) {
+    .summaryGrid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .membershipList,
+    .clubGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .explainerCard {
+        grid-template-columns: 66px minmax(0, 1fr);
+    }
+
+    .explainerCard a {
+        grid-column: 1 / -1;
+        width: max-content;
+    }
+}
+
+@media (max-width: 760px) {
+    .pageHeader {
+        flex-direction: column;
+    }
+
+    .summaryGrid,
+    .sideColumn {
+        grid-template-columns: 1fr;
+    }
+
+    .explainerCard {
+        grid-template-columns: 1fr;
+    }
+
+    .recommendedItem {
+        grid-template-columns: 54px minmax(0, 1fr);
+    }
+
+    .recommendedItem button {
+        grid-column: 1 / -1;
+        width: max-content;
+    }
+}

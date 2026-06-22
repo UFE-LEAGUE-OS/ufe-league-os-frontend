@@ -1,3 +1,15 @@
+
+:root {
+  --color-vivid-violet: #7b3ff2;
+  --color-energy-coral: #ff5a3c;
+  --color-electric-blue: #0095ff;
+  --color-dark-slate: #0e1120;
+  --color-off-white: #f5f6f8;
+  --font-display: "League Spartan", Impact, sans-serif;
+  --font-subhead: "Space Grotesk", Arial, sans-serif;
+  --font-body: "Inter", Arial, sans-serif;
+}
+
 * {
   margin: 0;
   padding: 0;

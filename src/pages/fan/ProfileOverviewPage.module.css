@@ -1,0 +1,581 @@
+.page {
+    color: #ffffff;
+}
+
+.pageHeader {
+    margin-bottom: 28px;
+}
+
+.pageHeader h1 {
+    margin: 0;
+    font-size: clamp(32px, 3vw, 46px);
+    font-weight: 900;
+    letter-spacing: -0.045em;
+}
+
+.pageHeader p {
+    margin: 8px 0 0;
+    color: rgba(255, 255, 255, 0.68);
+    font-size: 17px;
+}
+
+.layoutGrid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 390px;
+    gap: 26px;
+}
+
+.mainColumn,
+.sideColumn {
+    display: grid;
+    gap: 24px;
+}
+
+.profileHero,
+.actionCard,
+.interestsPanel,
+.sidePanel,
+.supportCard {
+    background: linear-gradient(
+        135deg,
+        rgba(15, 23, 42, 0.9),
+        rgba(2, 6, 23, 0.62)
+    );
+    border: 1px solid rgba(255, 255, 255, 0.13);
+    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.24);
+    backdrop-filter: blur(8px);
+}
+
+.profileHero {
+    border-color: rgba(123, 63, 242, 0.58);
+    border-radius: 12px;
+    padding: 28px 32px;
+
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    align-items: center;
+    gap: 28px;
+}
+
+.profileIdentity {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+.avatarWrap {
+    position: relative;
+    width: 112px;
+    height: 112px;
+    flex-shrink: 0;
+}
+
+.avatarWrap > span {
+    width: 112px;
+    height: 112px;
+    border-radius: 999px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    color: #ffffff;
+    background: linear-gradient(
+        135deg,
+        rgba(255, 90, 24, 0.96),
+        rgba(123, 63, 242, 0.96)
+    );
+    border: 3px solid var(--color-vivid-violet);
+
+    font-family: var(--font-subhead);
+    font-size: 32px;
+    font-weight: 900;
+}
+
+.avatarWrap button {
+    position: absolute;
+    right: 1px;
+    bottom: 8px;
+
+    width: 34px;
+    height: 34px;
+    border-radius: 999px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    color: #ffffff;
+    background: rgba(15, 23, 42, 0.94);
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    cursor: pointer;
+}
+
+.profileIdentity h2 {
+    margin: 0;
+
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    color: #ffffff;
+    font-size: 30px;
+    font-weight: 900;
+    letter-spacing: -0.035em;
+}
+
+.profileIdentity h2 svg {
+    color: var(--color-vivid-violet);
+}
+
+.profileIdentity p {
+    margin: 8px 0 0;
+    color: rgba(255, 255, 255, 0.68);
+    font-size: 15px;
+}
+
+.profileMeta {
+    margin-top: 18px;
+
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.profileMeta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+
+    color: rgba(255, 255, 255, 0.64);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.membershipBadge {
+    border-left: 1px solid rgba(255, 255, 255, 0.12);
+    padding-left: 28px;
+
+    display: grid;
+    grid-template-columns: 58px minmax(0, 1fr);
+    align-items: center;
+    gap: 16px;
+}
+
+.membershipBadge > span {
+    width: 58px;
+    height: 58px;
+    border-radius: 999px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    color: var(--color-vivid-violet);
+    background: rgba(123, 63, 242, 0.14);
+    border: 1px solid rgba(123, 63, 242, 0.34);
+}
+
+.membershipBadge strong {
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 900;
+}
+
+.membershipBadge p {
+    margin: 5px 0 0;
+    color: rgba(255, 255, 255, 0.58);
+    font-size: 13px;
+}
+
+.membershipBadge a {
+    grid-column: 1 / -1;
+
+    color: var(--color-vivid-violet);
+    font-size: 14px;
+    font-weight: 900;
+    text-decoration: none;
+}
+
+.actionGrid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.actionCard {
+    min-height: 160px;
+    border-radius: 10px;
+    padding: 24px;
+
+    display: grid;
+    grid-template-columns: 66px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 18px;
+
+    color: #ffffff;
+    text-decoration: none;
+
+    transition:
+        transform 0.2s ease,
+        border-color 0.2s ease,
+        background-color 0.2s ease;
+}
+
+.actionCard:hover,
+.actionCard:focus-visible {
+    transform: translateY(-4px);
+    border-color: rgba(123, 63, 242, 0.62);
+    background: linear-gradient(
+        135deg,
+        rgba(30, 41, 59, 0.92),
+        rgba(35, 20, 73, 0.62)
+    );
+}
+
+.actionIcon {
+    width: 62px;
+    height: 62px;
+    border-radius: 999px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    background: rgba(123, 63, 242, 0.13);
+    border: 1px solid rgba(123, 63, 242, 0.28);
+}
+
+.actionCard h2 {
+    margin: 0;
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: 900;
+}
+
+.actionCard p {
+    margin: 10px 0 0;
+    color: rgba(255, 255, 255, 0.64);
+    font-size: 14px;
+    line-height: 1.45;
+}
+
+.purple .actionIcon,
+.purple.activityIcon {
+    color: var(--color-vivid-violet);
+}
+
+.orange .actionIcon,
+.orange.activityIcon {
+    color: #ff5a18;
+}
+
+.green .actionIcon,
+.green.activityIcon {
+    color: #22c55e;
+}
+
+.blue .actionIcon,
+.blue.activityIcon {
+    color: #5b7cff;
+}
+
+.yellow .actionIcon,
+.yellow.activityIcon {
+    color: #facc15;
+}
+
+.cyan .actionIcon,
+.cyan.activityIcon {
+    color: #22d3ee;
+}
+
+.interestsPanel,
+.sidePanel,
+.supportCard {
+    border-radius: 10px;
+    padding: 22px;
+}
+
+.panelHeader {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 18px;
+}
+
+.panelHeader h2,
+.sidePanel h2,
+.supportCard h2 {
+    margin: 0;
+    color: #ffffff;
+    font-size: 19px;
+    font-weight: 900;
+}
+
+.panelHeader h2 {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+}
+
+.panelHeader h2 svg {
+    color: var(--color-vivid-violet);
+}
+
+.panelHeader p {
+    margin: 7px 0 0;
+    color: rgba(255, 255, 255, 0.62);
+    font-size: 13px;
+}
+
+.panelHeader a {
+    color: var(--color-vivid-violet);
+    font-size: 13px;
+    font-weight: 900;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.interestList {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.interestChip,
+.moreChip {
+    min-height: 46px;
+    border-radius: 7px;
+    padding: 0 14px;
+
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+
+    color: #ffffff;
+    background: rgba(15, 23, 42, 0.72);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.interestChip img {
+    width: 30px;
+    height: 30px;
+    border-radius: 999px;
+    object-fit: cover;
+}
+
+.interestChip strong {
+    width: 18px;
+    height: 18px;
+    border-radius: 999px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    background: var(--color-vivid-violet);
+    font-size: 11px;
+}
+
+.moreChip {
+    color: rgba(255, 255, 255, 0.72);
+}
+
+.activityList,
+.quickActionList {
+    display: grid;
+    gap: 14px;
+}
+
+.activityItem {
+    padding-bottom: 14px;
+
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 14px;
+
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.activityIcon,
+.quickAction span,
+.supportCard > span {
+    width: 42px;
+    height: 42px;
+    border-radius: 999px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    background: rgba(123, 63, 242, 0.13);
+    border: 1px solid rgba(123, 63, 242, 0.28);
+}
+
+.activityItem h3 {
+    margin: 0;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 900;
+}
+
+.activityItem p,
+.quickAction p,
+.supportCard p {
+    margin: 5px 0 0;
+    color: rgba(255, 255, 255, 0.58);
+    font-size: 13px;
+    line-height: 1.35;
+}
+
+.activityItem time {
+    color: rgba(255, 255, 255, 0.48);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.quickAction {
+    min-height: 64px;
+    border-radius: 8px;
+    padding: 12px;
+
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 12px;
+
+    color: #ffffff;
+    background: rgba(15, 23, 42, 0.56);
+    text-decoration: none;
+
+    transition:
+        transform 0.2s ease,
+        background-color 0.2s ease;
+}
+
+.quickAction:hover,
+.quickAction:focus-visible {
+    transform: translateX(3px);
+    background: rgba(123, 63, 242, 0.13);
+}
+
+.quickAction strong {
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 900;
+}
+
+.supportCard {
+    display: grid;
+    grid-template-columns: 70px minmax(0, 1fr);
+    align-items: center;
+    gap: 16px;
+
+    background:
+        radial-gradient(
+            circle at 18% 50%,
+            rgba(123, 63, 242, 0.36),
+            transparent 32%
+        ),
+        linear-gradient(135deg, rgba(15, 23, 42, 0.92), rgba(10, 35, 105, 0.78));
+}
+
+.supportCard > span {
+    width: 66px;
+    height: 66px;
+    color: var(--color-vivid-violet);
+}
+
+.supportCard a {
+    grid-column: 2;
+    width: max-content;
+    height: 42px;
+    border-radius: 6px;
+    padding: 0 24px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    color: #ffffff;
+    background: var(--color-vivid-violet);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 900;
+}
+
+.actionCard:focus-visible,
+.quickAction:focus-visible,
+.supportCard a:focus-visible,
+.panelHeader a:focus-visible {
+    outline: 3px solid rgba(123, 63, 242, 0.78);
+    outline-offset: 4px;
+}
+
+@media (max-width: 1360px) {
+    .layoutGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .sideColumn {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .supportCard {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 1080px) {
+    .profileHero {
+        grid-template-columns: 1fr;
+    }
+
+    .membershipBadge {
+        border-left: 0;
+        border-top: 1px solid rgba(255, 255, 255, 0.12);
+        padding-left: 0;
+        padding-top: 24px;
+    }
+
+    .actionGrid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .sideColumn {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 680px) {
+    .profileIdentity {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .actionGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .actionCard {
+        grid-template-columns: 56px minmax(0, 1fr);
+    }
+
+    .actionCard > svg {
+        display: none;
+    }
+
+    .supportCard {
+        grid-template-columns: 1fr;
+    }
+
+    .supportCard a {
+        grid-column: 1;
+    }
+}
