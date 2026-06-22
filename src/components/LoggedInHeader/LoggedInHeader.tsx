@@ -15,14 +15,14 @@ import styles from "./LoggedInHeader.module.css";
 const navItems = [
     { label: "Sport", href: "/" },
     { label: "Leagues", href: "/" },
-    { label: "Teams", href: "/" },
+    { label: "Clubs", href: "/clubs" },
     { label: "Competitions", href: "/" },
     { label: "News", href: "/" },
     { label: "Club Memberships", href: "/memberships" },
     { label: "Tickets", href: "/" },
 ];
 
-const dropdownNavItems = new Set(["Sport", "Leagues", "Teams", "Competitions"]);
+const dropdownNavItems = new Set(["Sport", "Leagues", "Clubs", "Competitions"]);
 
 const searchableItems = [
     {

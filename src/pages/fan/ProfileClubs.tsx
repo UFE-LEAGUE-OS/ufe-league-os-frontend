@@ -49,7 +49,7 @@ const summaryCards = [
 const activeMemberships = [
     {
         id: "kobs-gold",
-        slug: "kcb-kobs",
+        slug: "kobs",
         clubName: "KCB KOBS",
         tier: "Gold Member",
         sport: "Rugby Club",
@@ -88,7 +88,7 @@ const activeMemberships = [
 const followedClubs = [
     {
         id: "kobs",
-        slug: "kcb-kobs",
+        slug: "kobs",
         name: "KCB KOBS",
         sport: "Rugby Club",
         logo: "/assets/clubs/kobs.jpg",

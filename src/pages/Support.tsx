@@ -181,7 +181,7 @@ function Support() {
 
         {/* Legal */}
         <section className="support-legal-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-          <Link to="/support/terms" style={{ textDecoration: 'none', color: 'inherit' }}>
+          <Link to="/support" style={{ textDecoration: 'none', color: 'inherit' }}>
             <div style={{ background: '#12131F', borderRadius: 12, padding: 24, border: '1px solid #1F2937', transition: 'border-color 0.2s' }}
                  onMouseEnter={e => (e.currentTarget.style.borderColor = '#8135FA')}
                  onMouseLeave={e => (e.currentTarget.style.borderColor = '#1F2937')}>
@@ -189,7 +189,7 @@ function Support() {
               <p style={{ fontSize: '0.85rem', color: '#9CA3AF', lineHeight: 1.5, margin: 0 }}>Read the terms governing your use of League OS and our services.</p>
             </div>
           </Link>
-          <Link to="/support/privacy-policy" style={{ textDecoration: 'none', color: 'inherit' }}>
+          <Link to="/support" style={{ textDecoration: 'none', color: 'inherit' }}>
             <div style={{ background: '#12131F', borderRadius: 12, padding: 24, border: '1px solid #1F2937', transition: 'border-color 0.2s' }}
                  onMouseEnter={e => (e.currentTarget.style.borderColor = '#8135FA')}
                  onMouseLeave={e => (e.currentTarget.style.borderColor = '#1F2937')}>

@@ -88,14 +88,20 @@ function Navbar() {
         </div>
       ) : (
         <ul className="navbar-links">
-          <li className={isActive('/sport') ? 'active-link' : ''}>
+          <li
+            className={isActive('/sports') ? 'active-link' : ''}
+            onClick={() => navigate('/sports')}
+          >
             Sport <span className="arrow">▾</span>
           </li>
           <li className={isActive('/leagues') ? 'active-link' : ''}>
             Leagues <span className="arrow">▾</span>
           </li>
-          <li className={isActive('/teams') ? 'active-link' : ''}>
-            Teams <span className="arrow">▾</span>
+          <li
+            className={isActive('/clubs') ? 'active-link' : ''}
+            onClick={() => navigate('/clubs')}
+          >
+            Clubs <span className="arrow">▾</span>
           </li>
           <li
             className={isActive('/competitions') ? 'active-link' : ''}
@@ -109,7 +115,10 @@ function Navbar() {
           >
             News
           </li>
-          <li className={isActive('/membership') ? 'active-link' : ''}>
+          <li
+            className={isActive('/memberships') ? 'active-link' : ''}
+            onClick={() => navigate('/memberships')}
+          >
             Membership
           </li>
           <li

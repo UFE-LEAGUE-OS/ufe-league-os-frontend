@@ -17,6 +17,7 @@ import {
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import styles from "./ClubMembershipDetailPage.module.css";
+import Footer from '../../components/Footer';
 
 const clubMemberships = [
     {
@@ -576,7 +577,8 @@ function ClubMembershipDetailPage() {
                             </article>
                         </div>
                     </section>
-                </main>
+                  <Footer />
+      </main>
 
                 <aside className={styles.sideColumn}>
                     <section className={styles.checkoutCard}>

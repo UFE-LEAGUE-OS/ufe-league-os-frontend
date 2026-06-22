@@ -262,7 +262,7 @@ function ProfileOverviewPage() {
                     <section className={styles.sidePanel}>
                         <div className={styles.panelHeader}>
                             <h2>Recent Activity</h2>
-                            <Link to="/profile/activity">View All</Link>
+                            <Link to="/profile">View All</Link>
                         </div>
 
                         <div className={styles.activityList}>

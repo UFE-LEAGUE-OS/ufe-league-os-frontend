@@ -95,3 +95,15 @@
 .quick-link-card:hover .quick-link-text h3 {
   color: #8135FA;
 }
+
+.quick-link-card {
+  appearance: none;
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  text-align: left;
+  cursor: pointer;
+}
+
+.quick-link-card:hover {
+  transform: translateY(-2px);
+}

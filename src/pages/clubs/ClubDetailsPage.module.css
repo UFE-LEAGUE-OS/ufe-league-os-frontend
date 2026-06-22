@@ -1,0 +1,810 @@
+.page {
+    min-height: 100vh;
+    color: #ffffff;
+    background:
+        radial-gradient(circle at 50% 0%, rgba(123, 63, 242, 0.2), transparent 36%),
+        linear-gradient(180deg, rgba(2, 6, 23, 0.22), rgba(2, 6, 23, 0.96)),
+        url("/assets/auth/auth-stadium-bg.png");
+    background-size: cover;
+    background-position: top center;
+    background-attachment: fixed;
+}
+
+.hero {
+    padding: 24px 7vw 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.backLink,
+.heroActions button,
+.heroActions a,
+.textLink,
+.panelHeader a,
+.memberButton,
+.loginText a,
+.followPanel button,
+.notFoundCard a {
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: var(--font-subhead);
+    font-weight: 900;
+    text-decoration: none;
+    transition:
+        transform 0.2s ease,
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.backLink {
+    width: max-content;
+    min-height: 36px;
+    margin-bottom: 16px;
+    padding: 0 12px;
+    color: rgba(255, 255, 255, 0.72);
+    background: rgba(15, 23, 42, 0.44);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    font-size: 12px;
+}
+
+.heroInner {
+    min-height: 230px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    align-items: center;
+    gap: 30px;
+}
+
+.clubIdentity {
+    display: grid;
+    grid-template-columns: 124px minmax(0, 1fr);
+    align-items: center;
+    gap: 24px;
+}
+
+.clubIdentity img {
+    width: 116px;
+    height: 116px;
+    border-radius: 999px;
+    object-fit: cover;
+    background: #ffffff;
+    border: 8px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 18px 42px rgba(0, 0, 0, 0.32);
+}
+
+.breadcrumbs {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 12px;
+}
+
+.breadcrumbs a,
+.breadcrumbs strong {
+    color: rgba(255, 255, 255, 0.62);
+    text-decoration: none;
+}
+
+.clubIdentity h1 {
+    margin: 14px 0 0;
+    color: #ffffff;
+    font-size: clamp(42px, 5vw, 78px);
+    font-weight: 950;
+    line-height: 0.92;
+    letter-spacing: -0.07em;
+    font-style: italic;
+    text-transform: uppercase;
+}
+
+.clubIdentity p {
+    margin: 8px 0 0;
+    color: rgba(255, 255, 255, 0.82);
+    font-size: 19px;
+    font-weight: 800;
+}
+
+.clubMeta {
+    margin-top: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 14px;
+}
+
+.clubMeta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.clubMeta svg {
+    color: var(--color-vivid-violet);
+}
+
+.heroStats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(76px, auto));
+    gap: 0;
+}
+
+.heroStats article {
+    min-width: 82px;
+    border-left: 1px solid rgba(255, 255, 255, 0.14);
+    padding: 0 18px;
+}
+
+.heroStats span {
+    display: block;
+    color: rgba(255, 255, 255, 0.48);
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.heroStats strong {
+    display: block;
+    margin-top: 6px;
+    color: #ffffff;
+    font-size: 24px;
+    font-weight: 950;
+}
+
+.heroActions {
+    display: grid;
+    grid-template-columns: 150px 190px;
+    gap: 14px;
+}
+
+.heroActions button,
+.heroActions a {
+    min-height: 44px;
+    border: 1px solid rgba(123, 63, 242, 0.64);
+    padding: 0 18px;
+    color: #ffffff;
+    background: rgba(123, 63, 242, 0.12);
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.heroActions button {
+    background: var(--color-vivid-violet);
+    border-color: var(--color-vivid-violet);
+}
+
+.tabs {
+    margin: 0 7vw;
+    min-height: 64px;
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.tabs a {
+    height: 64px;
+    display: inline-flex;
+    align-items: center;
+    color: rgba(255, 255, 255, 0.74);
+    font-size: 14px;
+    font-weight: 900;
+    text-decoration: none;
+    position: relative;
+}
+
+.tabs a:first-child {
+    color: #b45cff;
+}
+
+.tabs a:first-child::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 3px;
+    border-radius: 999px;
+    background: #b45cff;
+}
+
+.tabs button {
+    margin-left: auto;
+    border: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: rgba(255, 255, 255, 0.72);
+    background: transparent;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.contentGrid {
+    padding: 14px 7vw 28px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 390px;
+    align-items: start;
+    gap: 22px;
+}
+
+.mainColumn {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.sideColumn {
+    display: grid;
+    gap: 16px;
+}
+
+.panel,
+.membershipPanel,
+.followPanel,
+.notFoundCard {
+    border-radius: 10px;
+    padding: 18px;
+    background:
+        linear-gradient(135deg, rgba(15, 23, 42, 0.88), rgba(2, 6, 23, 0.66));
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.22);
+    backdrop-filter: blur(10px);
+}
+
+.panel h2,
+.membershipPanel h2,
+.followPanel h2,
+.notFoundCard h1 {
+    margin: 0;
+    color: #b45cff;
+    font-size: 16px;
+    font-weight: 950;
+    text-transform: uppercase;
+}
+
+.panel p,
+.membershipPanel p,
+.followPanel p,
+.notFoundCard p {
+    margin: 12px 0 0;
+    color: rgba(255, 255, 255, 0.68);
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.textLink {
+    width: max-content;
+    margin-top: 16px;
+    color: #b45cff;
+    font-size: 12px;
+}
+
+.panelHeader,
+.sideHeader {
+    margin-bottom: 14px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.panelHeader span,
+.panelHeader a {
+    color: #b45cff;
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.statsGrid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.statsGrid article {
+    border-radius: 8px;
+    padding: 14px 10px;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.statsGrid strong {
+    display: block;
+    color: #ffffff;
+    font-size: 24px;
+    font-weight: 950;
+}
+
+.statsGrid span {
+    display: block;
+    margin-top: 5px;
+    color: rgba(255, 255, 255, 0.52);
+    font-size: 11px;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.scoreStats {
+    margin-top: 12px;
+    border-radius: 8px;
+    padding: 12px;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    background: rgba(10, 18, 42, 0.78);
+}
+
+.scoreStats span {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.64);
+    font-size: 12px;
+    font-weight: 800;
+    border-right: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.scoreStats span:last-child {
+    border-right: 0;
+}
+
+.formRow {
+    margin-top: 14px;
+    display: flex;
+    gap: 10px;
+}
+
+.formRow span,
+.resultRow em {
+    width: 40px;
+    height: 30px;
+    border-radius: 5px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-style: normal;
+    font-size: 12px;
+    font-weight: 950;
+}
+
+.win {
+    background: #22c55e;
+}
+
+.loss {
+    background: #ef4444;
+}
+
+.draw {
+    background: #f59e0b;
+}
+
+.honoursList,
+.playerList,
+.infoList,
+.membershipList {
+    display: grid;
+    gap: 10px;
+}
+
+.honoursList article {
+    display: grid;
+    grid-template-columns: 54px minmax(0, 1fr);
+    align-items: center;
+    gap: 12px;
+}
+
+.honoursList article > span {
+    font-size: 42px;
+}
+
+.honoursList h3,
+.playerRow h3,
+.membershipList h3,
+.teamCard h3 {
+    margin: 0;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 950;
+}
+
+.honoursList p,
+.playerRow p,
+.membershipList p,
+.teamCard p,
+.teamCard span {
+    margin: 5px 0 0;
+    color: rgba(255, 255, 255, 0.58);
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+.teamGrid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.teamCard {
+    min-height: 144px;
+    border-radius: 8px;
+    overflow: hidden;
+    display: grid;
+    align-content: start;
+    text-decoration: none;
+    background: rgba(15, 23, 42, 0.62);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.teamCard img {
+    width: 100%;
+    height: 74px;
+    object-fit: cover;
+    background: #ffffff;
+}
+
+.teamCard div {
+    padding: 12px;
+}
+
+.fixtureList,
+.resultList {
+    display: grid;
+    gap: 8px;
+}
+
+.fixtureRow,
+.resultRow {
+    min-height: 42px;
+    border-radius: 7px;
+    padding: 10px 12px;
+    display: grid;
+    grid-template-columns: 54px minmax(0, 1fr) 150px 60px minmax(120px, 0.6fr);
+    align-items: center;
+    gap: 10px;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.resultRow {
+    grid-template-columns: 54px minmax(0, 1fr) 120px 34px;
+}
+
+.fixtureRow span,
+.resultRow span {
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 11px;
+    font-weight: 900;
+}
+
+.fixtureRow strong,
+.resultRow strong {
+    color: #ffffff;
+    font-size: 12px;
+}
+
+.fixtureRow small,
+.resultRow small {
+    color: rgba(255, 255, 255, 0.52);
+    font-weight: 800;
+}
+
+.fixtureRow time,
+.resultRow time,
+.fixtureRow p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.58);
+    font-size: 11px;
+}
+
+.sideHeader {
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.sideHeader > span {
+    width: 52px;
+    height: 52px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #b45cff;
+    background: rgba(123, 63, 242, 0.14);
+    border: 1px solid rgba(123, 63, 242, 0.3);
+}
+
+.sideHeader p {
+    margin: 5px 0 0;
+}
+
+.membershipList article {
+    position: relative;
+    border-radius: 8px;
+    padding: 14px;
+    display: grid;
+    grid-template-columns: 26px minmax(0, 1fr);
+    gap: 10px;
+    background: rgba(15, 23, 42, 0.62);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.membershipList svg {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.membershipList strong {
+    display: block;
+    margin-top: 5px;
+    color: rgba(255, 255, 255, 0.76);
+    font-size: 12px;
+}
+
+.membershipList p {
+    grid-column: 2;
+    margin: 0;
+    font-size: 11px;
+}
+
+.membershipList article > span {
+    position: absolute;
+    top: -10px;
+    right: 12px;
+    border-radius: 999px;
+    padding: 4px 8px;
+    color: #ffffff;
+    background: var(--color-vivid-violet);
+    font-size: 10px;
+    font-weight: 950;
+}
+
+.popularMembership {
+    border-color: rgba(123, 63, 242, 0.8) !important;
+    background:
+        radial-gradient(circle at 90% 0%, rgba(123, 63, 242, 0.22), transparent 42%),
+        rgba(15, 23, 42, 0.78) !important;
+}
+
+.popularMembership svg {
+    color: #facc15;
+}
+
+.memberButton {
+    width: 100%;
+    min-height: 48px;
+    margin-top: 16px;
+    color: #ffffff;
+    background: var(--color-vivid-violet);
+    border: 1px solid var(--color-vivid-violet);
+    font-size: 14px;
+}
+
+.loginText {
+    text-align: center;
+    font-size: 12px !important;
+}
+
+.loginText a {
+    color: #b45cff;
+}
+
+.playerRow {
+    border-radius: 8px;
+    padding: 10px;
+    display: grid;
+    grid-template-columns: 42px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.playerRow > span {
+    width: 42px;
+    height: 42px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #b45cff;
+    background: rgba(123, 63, 242, 0.12);
+}
+
+.playerRow h3 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.playerRow h3 em {
+    border-radius: 4px;
+    padding: 3px 5px;
+    color: #ffffff;
+    background: var(--color-vivid-violet);
+    font-size: 9px;
+    font-style: normal;
+    text-transform: uppercase;
+}
+
+.playerRow strong {
+    color: rgba(255, 255, 255, 0.56);
+    font-size: 12px;
+}
+
+.infoList article {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 10px 0;
+    display: grid;
+    grid-template-columns: 24px 110px minmax(0, 1fr);
+    align-items: center;
+    gap: 8px;
+}
+
+.infoList article:last-child {
+    border-bottom: 0;
+}
+
+.infoList svg {
+    color: rgba(255, 255, 255, 0.62);
+}
+
+.infoList span {
+    color: rgba(255, 255, 255, 0.58);
+    font-size: 12px;
+}
+
+.infoList strong {
+    color: rgba(255, 255, 255, 0.88);
+    font-size: 12px;
+    text-align: right;
+}
+
+.followPanel {
+    display: grid;
+    gap: 12px;
+}
+
+.followPanel button {
+    min-height: 44px;
+    border: 1px solid var(--color-vivid-violet);
+    color: #ffffff;
+    background: var(--color-vivid-violet);
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.notFoundCard {
+    max-width: 700px;
+    margin: 80px auto;
+    display: grid;
+    justify-items: center;
+    text-align: center;
+    gap: 16px;
+}
+
+.notFoundCard > svg {
+    color: #b45cff;
+}
+
+.notFoundCard a {
+    min-height: 42px;
+    padding: 0 16px;
+    color: #ffffff;
+    background: var(--color-vivid-violet);
+    border: 1px solid var(--color-vivid-violet);
+    font-size: 13px;
+}
+
+.backLink:hover,
+.heroActions button:hover,
+.heroActions a:hover,
+.textLink:hover,
+.panelHeader a:hover,
+.memberButton:hover,
+.followPanel button:hover,
+.notFoundCard a:hover {
+    transform: translateY(-2px);
+}
+
+.heroActions button:hover,
+.memberButton:hover,
+.followPanel button:hover,
+.notFoundCard a:hover {
+    background: #a855f7;
+    box-shadow: 0 16px 32px rgba(123, 63, 242, 0.28);
+}
+
+@media (max-width: 1500px) {
+    .heroInner,
+    .contentGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .heroActions {
+        width: max-content;
+    }
+
+    .sideColumn {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 1080px) {
+    .clubIdentity,
+    .mainColumn,
+    .teamGrid,
+    .sideColumn {
+        grid-template-columns: 1fr;
+    }
+
+    .heroStats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .heroActions {
+        width: 100%;
+        grid-template-columns: 1fr;
+    }
+
+    .tabs {
+        overflow-x: auto;
+    }
+
+    .fixtureRow,
+    .resultRow {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 720px) {
+    .hero,
+    .tabs,
+    .contentGrid {
+        margin-left: 18px;
+        margin-right: 18px;
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    .hero {
+        padding-top: 18px;
+    }
+
+    .clubIdentity img {
+        width: 92px;
+        height: 92px;
+    }
+
+    .heroStats {
+        grid-template-columns: 1fr;
+    }
+
+    .heroStats article {
+        border-left: 0;
+        border-top: 1px solid rgba(255, 255, 255, 0.12);
+        padding: 12px 0;
+    }
+
+    .statsGrid,
+    .scoreStats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .infoList article {
+        grid-template-columns: 24px minmax(0, 1fr);
+    }
+
+    .infoList strong {
+        grid-column: 2;
+        text-align: left;
+    }
+}

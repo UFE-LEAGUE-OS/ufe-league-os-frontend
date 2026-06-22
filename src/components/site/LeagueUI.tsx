@@ -185,7 +185,7 @@ export function TopNav({ compact = false }: TopNavProps) {
 }
 
 export function AuthTopBar({
-  menuItems = ['Sport', 'Leagues', 'Teams', 'Competitions', 'News', 'Membership', 'Tickets'],
+  menuItems = ['Sport', 'Leagues', 'Clubs', 'Competitions', 'News', 'Membership', 'Tickets'],
   menuHref = '#register',
   primaryActionLabel = 'Sign Up',
   primaryActionTo = '/register',

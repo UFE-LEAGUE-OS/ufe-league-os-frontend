@@ -15,6 +15,7 @@ import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useBackendClubs } from "../../hooks/useBackendClubs";
 import styles from "./ExploreMembershipsPage.module.css";
+import Footer from '../../components/Footer';
 
 interface MembershipPlan {
     id: string;
@@ -375,7 +376,8 @@ function ExploreMembershipsPage() {
                             </article>
                         ))}
                     </section>
-                </main>
+                  <Footer />
+      </main>
 
                 <aside className={styles.sideColumn}>
                     <section className={styles.panel}>
