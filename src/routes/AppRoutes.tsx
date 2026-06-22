@@ -13,6 +13,7 @@ import {
 import Personalize from '../pages/auth/Personalize';
 import NewsSection from '../pages/NewsPage';
 import EditProfile from '../components/EditProfilePage';
+import AboutUs from '../pages/About';
 
 export default function AppRoutes() {
   return (
@@ -30,6 +31,7 @@ export default function AppRoutes() {
         <Route path="/competitions" element={<Competitions />} />
         <Route path="/news" element={<NewsSection />} />
         <Route path="/edit-profile" element={<EditProfile />} />
+        <Route path="/About" element={<AboutUs />} />
       </Routes>
     </Router>
   );
