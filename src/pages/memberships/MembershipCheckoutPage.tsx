@@ -14,7 +14,7 @@ import {
     User,
 } from "lucide-react";
 import type { FormEvent } from "react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useCurrentUser } from "../../hooks/useCurrentUser";
 import styles from "./MembershipCheckoutPage.module.css";
@@ -150,32 +150,23 @@ function MembershipCheckoutPage() {
         "";
 
     const [selectedTierId, setSelectedTierId] = useState(defaultTierId);
-    const [fullName, setFullName] = useState("");
-    const [email, setEmail] = useState("");
-    const [phone, setPhone] = useState("");
+    const [fullName, setFullName] = useState(
+        currentUser.name && currentUser.name !== "Fan" ? currentUser.name : ""
+    );
+    const [email, setEmail] = useState(
+        currentUser.email && currentUser.email !== "No email available" ? currentUser.email : ""
+    );
+    const [phone, setPhone] = useState(
+        currentUser.phoneNumber && currentUser.phoneNumber !== "No phone number added" ? currentUser.phoneNumber : ""
+    );
     const [acceptedTerms, setAcceptedTerms] = useState(false);
     const [statusMessage, setStatusMessage] = useState("");
-
-    useEffect(() => {
-        if (currentUser.name && currentUser.name !== "Fan") {
-            setFullName(currentUser.name);
-        }
-
-        if (currentUser.email && currentUser.email !== "No email available") {
-            setEmail(currentUser.email);
-        }
-
-        if (currentUser.phoneNumber && currentUser.phoneNumber !== "No phone number added") {
-            setPhone(currentUser.phoneNumber);
-        }
-    }, [currentUser.email, currentUser.name, currentUser.phoneNumber]);
 
     if (!membership) {
         return (
             <section className={styles.page}>
                 <div className={styles.notFoundCard}>
                     <AlertTriangle size={48} strokeWidth={2.3} aria-hidden="true" />
-
                     <div>
                         <h1>Checkout page not found</h1>
                         <p>
@@ -183,7 +174,6 @@ function MembershipCheckoutPage() {
                             the membership directory and choose another club.
                         </p>
                     </div>
-
                     <Link to="/memberships">Back to Club Memberships</Link>
                 </div>
             </section>
@@ -210,7 +200,6 @@ function MembershipCheckoutPage() {
         }
 
         setStatusMessage("Checkout confirmed locally. Backend membership payment endpoint will be connected when available.");
-
         navigate(`/memberships/${membershipSlug}/success?tier=${selectedTierIdForRedirect}`);
     }
 
@@ -230,7 +219,6 @@ function MembershipCheckoutPage() {
                         checkout.
                     </p>
                 </div>
-
                 <img src={membership.logo} alt="" aria-hidden="true" />
             </header>
 
@@ -245,7 +233,6 @@ function MembershipCheckoutPage() {
                 <span>
                     <ShieldCheck size={34} strokeWidth={2.3} aria-hidden="true" />
                 </span>
-
                 <div>
                     <h2>Payment method selection happens in Flutterwave checkout</h2>
                     <p>
@@ -254,7 +241,6 @@ function MembershipCheckoutPage() {
                         confirmation, then activate the club membership.
                     </p>
                 </div>
-
                 <Link to="/profile/payments">View Payments &amp; Receipts</Link>
             </section>
 
@@ -264,9 +250,7 @@ function MembershipCheckoutPage() {
                         <div className={styles.panelHeader}>
                             <div>
                                 <h2>Confirm Membership Tier</h2>
-                                <p>
-                                    Choose the club tier you want to purchase, renew or upgrade.
-                                </p>
+                                <p>Choose the club tier you want to purchase, renew or upgrade.</p>
                             </div>
                         </div>
 
@@ -274,19 +258,16 @@ function MembershipCheckoutPage() {
                             {membership.tiers.map((tier) => (
                                 <button
                                     type="button"
-                                    className={`${styles.tierCard} ${selectedTier.id === tier.id ? styles.selectedTier : ""
-                                        }`}
+                                    className={`${styles.tierCard} ${selectedTier.id === tier.id ? styles.selectedTier : ""}`}
                                     key={tier.id}
                                     onClick={() => setSelectedTierId(tier.id)}
                                 >
                                     <Crown size={28} strokeWidth={2.2} aria-hidden="true" />
-
                                     <div>
                                         <h3>{tier.name}</h3>
                                         <strong>{formatCurrency(tier.price)}</strong>
                                         <p>per season</p>
                                     </div>
-
                                     {tier.popular ? <span>Popular</span> : null}
                                 </button>
                             ))}
@@ -349,7 +330,6 @@ function MembershipCheckoutPage() {
                                         setAcceptedTerms((currentValue) => !currentValue)
                                     }
                                 />
-
                                 <span>
                                     I confirm that I am purchasing a club membership from{" "}
                                     <strong>{membership.clubName}</strong>. League OS will manage
@@ -383,7 +363,6 @@ function MembershipCheckoutPage() {
                                     <p>League OS sends selected tier and member details.</p>
                                 </div>
                             </article>
-
                             <article>
                                 <span>2</span>
                                 <div>
@@ -391,7 +370,6 @@ function MembershipCheckoutPage() {
                                     <p>Flutterwave handles available payment options.</p>
                                 </div>
                             </article>
-
                             <article>
                                 <span>3</span>
                                 <div>
@@ -399,7 +377,6 @@ function MembershipCheckoutPage() {
                                     <p>Webhook or verification updates the payment status.</p>
                                 </div>
                             </article>
-
                             <article>
                                 <span>4</span>
                                 <div>
@@ -415,7 +392,6 @@ function MembershipCheckoutPage() {
                     <section className={styles.orderCard}>
                         <div className={styles.orderHeader}>
                             <img src={membership.logo} alt="" aria-hidden="true" />
-
                             <div>
                                 <h2>{membership.clubName}</h2>
                                 <p>{membership.sport}</p>
@@ -424,7 +400,6 @@ function MembershipCheckoutPage() {
 
                         <div className={styles.selectedTierBlock}>
                             <Crown size={32} strokeWidth={2.2} aria-hidden="true" />
-
                             <div>
                                 <span>Selected Tier</span>
                                 <strong>{selectedTier.name}</strong>
@@ -437,12 +412,10 @@ function MembershipCheckoutPage() {
                                 <span>Membership price</span>
                                 <strong>{formatCurrency(selectedTier.price)}</strong>
                             </article>
-
                             <article>
                                 <span>Estimated service fee</span>
                                 <strong>{formatCurrency(serviceFee)}</strong>
                             </article>
-
                             <article className={styles.totalRow}>
                                 <span>Total</span>
                                 <strong>{formatCurrency(totalAmount)}</strong>
@@ -451,7 +424,6 @@ function MembershipCheckoutPage() {
 
                         <div className={styles.gatewayNotice}>
                             <Lock size={20} strokeWidth={2.4} aria-hidden="true" />
-
                             <p>
                                 Final payment method and available channels will be handled by
                                 Flutterwave checkout.
@@ -464,7 +436,6 @@ function MembershipCheckoutPage() {
                             <span>
                                 <Smartphone size={26} strokeWidth={2.3} aria-hidden="true" />
                             </span>
-
                             <div>
                                 <h2>Supported at Checkout</h2>
                                 <p>Do not collect these details in this page.</p>
@@ -481,7 +452,6 @@ function MembershipCheckoutPage() {
 
                     <section className={styles.warningCard}>
                         <ReceiptText size={42} strokeWidth={2.3} aria-hidden="true" />
-
                         <div>
                             <h2>Receipt after payment</h2>
                             <p>
@@ -489,13 +459,11 @@ function MembershipCheckoutPage() {
                                 should appear in Payments & Receipts.
                             </p>
                         </div>
-
                         <Link to="/profile/payments">Open Payments &amp; Receipts</Link>
                     </section>
 
                     <section className={styles.supportCard}>
                         <FileText size={42} strokeWidth={2.3} aria-hidden="true" />
-
                         <div>
                             <h2>Membership record</h2>
                             <p>
@@ -503,7 +471,6 @@ function MembershipCheckoutPage() {
                                 Club Memberships.
                             </p>
                         </div>
-
                         <Link to="/dashboard/memberships">Open My Memberships</Link>
                     </section>
                 </aside>

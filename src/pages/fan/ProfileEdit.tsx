@@ -10,7 +10,7 @@ import {
     X,
 } from "lucide-react";
 import type { FormEvent } from "react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useCurrentUser } from "../../hooks/useCurrentUser";
 import { updateProfile } from "../../services/authService.js";
@@ -60,16 +60,6 @@ function EditProfilePage() {
     );
     const [saveMessage, setSaveMessage] = useState("");
     const [isSaving, setIsSaving] = useState(false);
-
-    useEffect(() => {
-        setFormData(createInitialFormState(currentUser));
-    }, [
-        currentUser.email,
-        currentUser.favoriteSport,
-        currentUser.location,
-        currentUser.name,
-        currentUser.phoneNumber,
-    ]);
 
     function updateField<Key extends keyof EditProfileFormState>(
         field: Key,

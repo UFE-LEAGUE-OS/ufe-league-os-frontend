@@ -26,7 +26,7 @@ function StandingsPage() {
     competitionsBySport[0] ??
     competitionStandings[0];
 
-  const rows = selectedCompetition?.rows ?? [];
+  const rows = useMemo(() => selectedCompetition?.rows ?? [], [selectedCompetition]);
 
   const topPerformers = useMemo(() => {
     const leaders = {
