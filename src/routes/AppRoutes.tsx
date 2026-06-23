@@ -41,6 +41,11 @@ import TeamSquadPage from '../pages/teams/TeamSquadPage';
 import TeamsPage from '../pages/teams/TeamsPage';
 import PlayerDetailPage from '../pages/players/PlayerDetailPage';
 import StandingsPage from '../pages/standings/StandingsPage';
+import UgandaPremierLeague from '../pages/leagues/UgandaPremierLeague';
+import NationalBasketballLeague from '../pages/leagues/NationalBasketballLeague';
+import NileSpecialPremiership from '../pages/leagues/NileSpecialPremiership';
+import SmackLeague from '../pages/leagues/SmackLeague';
+import BudoLeague from '../pages/leagues/BudoLeague';
 import ExploreMembershipsPage from '../pages/memberships/ExploreMembershipsPage';
 import ClubMembershipDetailPage from '../pages/memberships/ClubMembershipDetailPage';
 import MembershipCheckoutPage from '../pages/memberships/MembershipCheckoutPage';
@@ -97,6 +102,11 @@ export default function AppRoutes() {
                 <Route path="/teams/:teamSlug/squad" element={<TeamSquadPage />} />
                 <Route path="/players/:playerSlug" element={<PlayerDetailPage />} />
                 <Route path="/standings" element={<StandingsPage />} />
+                <Route path="/leagues/uganda-premier-league" element={<UgandaPremierLeague />} />
+                <Route path="/leagues/nile-special-premiership" element={<NileSpecialPremiership />} />
+                <Route path="/leagues/national-basketball-league" element={<NationalBasketballLeague />} />
+                <Route path="/leagues/budo-league" element={<BudoLeague />} />
+                <Route path="/leagues/smack-league" element={<SmackLeague />} />
                 <Route path="/fixtures" element={<Fixtures />} />
                 <Route path="/results" element={<Results />} />
                 <Route path="/support" element={<Support />} />
