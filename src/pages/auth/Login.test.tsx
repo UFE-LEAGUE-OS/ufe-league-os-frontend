@@ -76,6 +76,72 @@ describe('Login page', () => {
     expect(screen.getByRole('status')).toHaveTextContent(/email has been verified/i)
   })
 
+  it('redirects users who still need email verification to the OTP page', async () => {
+    const user = userEvent.setup()
+
+    loginMock.mockResolvedValueOnce({
+      access: 'access-token',
+      refresh: 'refresh-token',
+      requires_email_verification: true,
+      user: {
+        email: 'fan@example.com',
+        role: 'FAN',
+        frontend_dashboard_route: '/dashboard/fan',
+      },
+    })
+
+    render(
+      <MemoryRouter initialEntries={[{ pathname: '/login', state: { postLoginRedirect: '/profile' } }]}>
+        <Login />
+      </MemoryRouter>,
+    )
+
+    await user.type(screen.getByPlaceholderText('Enter phone number or email'), 'fan@example.com')
+    await user.type(screen.getByPlaceholderText('Enter your password'), 'StrongPassword123')
+    await user.click(screen.getByRole('button', { name: /^log in$/i }))
+
+    expect(navigateMock).toHaveBeenCalledWith('/verify-email', {
+      replace: true,
+      state: {
+        email: 'fan@example.com',
+        message: 'Please verify your email address before continuing.',
+        postLoginRedirect: '/profile',
+      },
+    })
+  })
+
+  it('redirects backend verification-required errors to the OTP page', async () => {
+    const user = userEvent.setup()
+
+    loginMock.mockRejectedValueOnce({
+      response: {
+        data: {
+          requires_email_verification: true,
+          detail: 'Email verification required.',
+        },
+      },
+    })
+
+    render(
+      <MemoryRouter>
+        <Login />
+      </MemoryRouter>,
+    )
+
+    await user.type(screen.getByPlaceholderText('Enter phone number or email'), 'fan@example.com')
+    await user.type(screen.getByPlaceholderText('Enter your password'), 'StrongPassword123')
+    await user.click(screen.getByRole('button', { name: /^log in$/i }))
+
+    expect(navigateMock).toHaveBeenCalledWith('/verify-email', {
+      replace: true,
+      state: {
+        email: 'fan@example.com',
+        message: 'Please verify your email address before continuing.',
+        postLoginRedirect: '/dashboard',
+      },
+    })
+  })
+
   it('does not submit or redirect when the login form is empty', async () => {
     const user = userEvent.setup()
 
@@ -151,5 +217,32 @@ describe('Login page', () => {
       password: 'StrongPassword123',
     })
     expect(navigateMock).toHaveBeenCalledWith('/dashboard/fan', { replace: true })
+  })
+
+  it('returns verified users to their requested protected page', async () => {
+    const user = userEvent.setup()
+
+    loginMock.mockResolvedValueOnce({
+      access: 'access-token',
+      refresh: 'refresh-token',
+      requires_email_verification: false,
+      user: {
+        email: 'fan@example.com',
+        role: 'FAN',
+        frontend_dashboard_route: '/dashboard/fan',
+      },
+    })
+
+    render(
+      <MemoryRouter initialEntries={[{ pathname: '/login', state: { postLoginRedirect: '/memberships' } }]}>
+        <Login />
+      </MemoryRouter>,
+    )
+
+    await user.type(screen.getByPlaceholderText('Enter phone number or email'), 'fan@example.com')
+    await user.type(screen.getByPlaceholderText('Enter your password'), 'StrongPassword123')
+    await user.click(screen.getByRole('button', { name: /^log in$/i }))
+
+    expect(navigateMock).toHaveBeenCalledWith('/memberships', { replace: true })
   })
 })

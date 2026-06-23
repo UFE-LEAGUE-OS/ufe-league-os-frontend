@@ -152,7 +152,6 @@ export default function Unions() {
     <div className="unions-page">
       <Navbar />
 
-      {/* Hero */}
       <header className="unions-hero">
         <div className="unions-hero__orb--left" />
         <div className="unions-hero__orb--right" />
@@ -166,7 +165,6 @@ export default function Unions() {
           development and grassroots growth.
         </p>
 
-        {/* Stats bar */}
         <div className="unions-stats">
           {stats.map((stat) => (
             <div key={stat.label} className="unions-stats__card">
@@ -181,7 +179,6 @@ export default function Unions() {
 
       <main className="unions-main">
 
-        {/* Search + Filters */}
         <div className="unions-controls">
           <input
             type="text"
@@ -205,12 +202,10 @@ export default function Unions() {
           </div>
         </div>
 
-        {/* Results count */}
         <p className="unions-results-count">
           Showing {filtered.length} of {unions.length} federations
         </p>
 
-        {/* Union Cards Grid */}
         <div className="unions-grid">
           {filtered.map((union) => (
             <article
@@ -227,7 +222,6 @@ export default function Unions() {
                     : '0 4px 24px rgba(0,0,0,0.2)',
               }}
             >
-              {/* Card Header */}
               <div className="union-card__header">
                 <div className="union-card__header-left">
                   <div
@@ -247,9 +241,7 @@ export default function Unions() {
                       >
                         {union.acronym}
                       </span>
-                      <span
-                        className={`union-card__status union-card__status--${union.status}`}
-                      >
+                      <span className={`union-card__status union-card__status--${union.status}`}>
                         {union.status === 'active' ? '● Active' : '● Developing'}
                       </span>
                     </div>
@@ -258,10 +250,7 @@ export default function Unions() {
                 </div>
                 <div className="union-card__founded">
                   <p className="union-card__founded-label">Est.</p>
-                  <p
-                    className="union-card__founded-year"
-                    style={{ color: union.accentColor }}
-                  >
+                  <p className="union-card__founded-year" style={{ color: union.accentColor }}>
                     {union.founded}
                   </p>
                 </div>
@@ -269,7 +258,6 @@ export default function Unions() {
 
               <p className="union-card__description">{union.description}</p>
 
-              {/* Quick stats row */}
               <div className="union-card__stats">
                 {[
                   { label: 'Members', value: union.members },
