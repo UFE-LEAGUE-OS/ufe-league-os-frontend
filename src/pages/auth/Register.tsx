@@ -24,6 +24,8 @@ import {
 } from './registerUtils.js';
 import '../../styles/pages/auth/register.css';
 import { usePasswordValidation } from '../../hooks/usePasswordValidation.js';
+import { PERSONALIZE_ROUTE, VERIFY_EMAIL_ROUTE } from '../../utils/authFlow.js';
+import { savePendingOnboardingSession } from '../../utils/onboardingSession.js';
 
 const features = [
   {
@@ -106,8 +108,7 @@ function PasswordStrengthIndicator({
 export default function Register() {
   const navigate = useNavigate();
 
-  const [formValues, setFormValues] =
-    useState<RegisterFormValues>(initialFormValues);
+  const [formValues, setFormValues] = useState<RegisterFormValues>(initialFormValues);
   const [fieldErrors, setFieldErrors] = useState<RegisterFormErrors>({});
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -128,16 +129,11 @@ export default function Register() {
     field: K,
     value: RegisterFormValues[K],
   ) => {
-    setFormValues((current) => ({
-      ...current,
-      [field]: value,
-    }));
-
+    setFormValues((current) => ({ ...current, [field]: value }));
     setSubmitMessage('');
 
     setFieldErrors((current) => {
       const nextErrors = { ...current };
-
       delete nextErrors.form;
       delete nextErrors[field];
 
@@ -162,17 +158,11 @@ export default function Register() {
     event.preventDefault();
 
     const nextErrors = validateRegisterForm(formValues);
-
     setFieldErrors(nextErrors);
     setSubmitMessage('');
 
-    if (Object.keys(nextErrors).length > 0) {
-      return;
-    }
-
-    if (validation.disabled) {
-      return;
-    }
+    if (Object.keys(nextErrors).length > 0) return;
+    if (validation.disabled) return;
 
     setIsSubmitting(true);
 
@@ -180,21 +170,32 @@ export default function Register() {
       const payload = {
         first_name: formValues.firstName.trim(),
         last_name: formValues.lastName.trim(),
-        phone_number: buildPhoneNumber(
-          formValues.countryCode,
-          formValues.phoneNumber,
-        ),
+        phone_number: buildPhoneNumber(formValues.countryCode, formValues.phoneNumber),
         email: formValues.email.trim().toLowerCase(),
         password: formValues.password,
         confirm_password: formValues.confirmPassword,
       };
 
-      await registerAccount(payload);
+      const response = await registerAccount(payload);
+      const data = response.data as {
+        requires_email_verification?: boolean;
+        next_step?: string;
+        message?: string;
+      };
 
-      navigate('/personalize', {
+      savePendingOnboardingSession({
+        email: payload.email,
+        password: payload.password,
+      });
+
+      navigate(VERIFY_EMAIL_ROUTE, {
         replace: true,
         state: {
           email: payload.email,
+          message:
+            data.message ??
+            'Please verify your email address before continuing.',
+          postLoginRedirect: PERSONALIZE_ROUTE,
         },
       });
     } catch (error) {
@@ -205,15 +206,11 @@ export default function Register() {
         (error as { code?: string }).code === 'ECONNABORTED';
 
       if (isTimeoutError) {
-        setSubmitMessage(
-          'The registration request timed out. Please try again in a moment.',
-        );
+        setSubmitMessage('The registration request timed out. Please try again in a moment.');
         return;
       }
 
-      const responseData = (error as { response?: { data?: unknown } })
-        ?.response?.data;
-
+      const responseData = (error as { response?: { data?: unknown } })?.response?.data;
       const apiErrors = mapRegisterApiErrors(responseData);
 
       if (Object.keys(apiErrors).length > 0) {
@@ -221,9 +218,7 @@ export default function Register() {
         return;
       }
 
-      setSubmitMessage(
-        'We could not complete registration right now. Please try again.',
-      );
+      setSubmitMessage('We could not complete registration right now. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -244,7 +239,6 @@ export default function Register() {
               <span className="register-story-title">Join League OS</span>
               <span>Be Part of Uganda's Game.</span>
             </h1>
-
             <p>
               Create your account and unlock the ultimate sports experience.
               Follow. Engage. Support.
@@ -254,16 +248,11 @@ export default function Register() {
           <div className="register-feature-list">
             {features.map((feature) => {
               const Icon = feature.icon;
-
               return (
-                <article
-                  key={feature.title}
-                  className={`register-feature ${feature.tone}`}
-                >
+                <article key={feature.title} className={`register-feature ${feature.tone}`}>
                   <span className="feature-icon" aria-hidden="true">
                     <Icon className="feature-icon-svg" />
                   </span>
-
                   <div>
                     <strong>{feature.title}</strong>
                     <p>{feature.copy}</p>
@@ -278,13 +267,9 @@ export default function Register() {
           <div className="register-panel-inner">
             <div className="register-panel-header">
               <div className="register-panel-copy">
-                <h2>
-                  Create Your <span>Account</span>
-                </h2>
-
+                <h2>Create Your <span>Account</span></h2>
                 <p>Join the League OS community and be part of the action.</p>
               </div>
-
             </div>
 
             <form className="register-form" onSubmit={handleSubmit} noValidate>
@@ -294,12 +279,8 @@ export default function Register() {
                   htmlFor="register-first-name"
                 >
                   First name
-
                   <div className="field-shell">
-                    <FieldIcon>
-                      <PersonOutlinedIcon />
-                    </FieldIcon>
-
+                    <FieldIcon><PersonOutlinedIcon /></FieldIcon>
                     <input
                       id="register-first-name"
                       name="firstName"
@@ -308,24 +289,13 @@ export default function Register() {
                       autoComplete="given-name"
                       maxLength={nameMaxLength}
                       value={formValues.firstName}
-                      onChange={(event) =>
-                        updateField('firstName', event.target.value)
-                      }
+                      onChange={(event) => updateField('firstName', event.target.value)}
                       aria-invalid={Boolean(fieldErrors.firstName)}
-                      aria-describedby={
-                        fieldErrors.firstName
-                          ? 'register-first-name-error'
-                          : undefined
-                      }
+                      aria-describedby={fieldErrors.firstName ? 'register-first-name-error' : undefined}
                     />
                   </div>
-
                   {fieldErrors.firstName ? (
-                    <span
-                      id="register-first-name-error"
-                      className="field-error"
-                      role="alert"
-                    >
+                    <span id="register-first-name-error" className="field-error" role="alert">
                       {fieldErrors.firstName}
                     </span>
                   ) : null}
@@ -336,12 +306,8 @@ export default function Register() {
                   htmlFor="register-last-name"
                 >
                   Last name
-
                   <div className="field-shell">
-                    <FieldIcon>
-                      <PersonOutlinedIcon />
-                    </FieldIcon>
-
+                    <FieldIcon><PersonOutlinedIcon /></FieldIcon>
                     <input
                       id="register-last-name"
                       name="lastName"
@@ -350,24 +316,13 @@ export default function Register() {
                       autoComplete="family-name"
                       maxLength={nameMaxLength}
                       value={formValues.lastName}
-                      onChange={(event) =>
-                        updateField('lastName', event.target.value)
-                      }
+                      onChange={(event) => updateField('lastName', event.target.value)}
                       aria-invalid={Boolean(fieldErrors.lastName)}
-                      aria-describedby={
-                        fieldErrors.lastName
-                          ? 'register-last-name-error'
-                          : undefined
-                      }
+                      aria-describedby={fieldErrors.lastName ? 'register-last-name-error' : undefined}
                     />
                   </div>
-
                   {fieldErrors.lastName ? (
-                    <span
-                      id="register-last-name-error"
-                      className="field-error"
-                      role="alert"
-                    >
+                    <span id="register-last-name-error" className="field-error" role="alert">
                       {fieldErrors.lastName}
                     </span>
                   ) : null}
@@ -379,16 +334,13 @@ export default function Register() {
                 htmlFor="register-phone-number"
               >
                 Phone number
-
                 <div className="phone-input">
                   <select
                     className="phone-country"
                     id="register-country-code"
                     name="countryCode"
                     value={formValues.countryCode}
-                    onChange={(event) =>
-                      updateField('countryCode', event.target.value)
-                    }
+                    onChange={(event) => updateField('countryCode', event.target.value)}
                     aria-label="Country code"
                   >
                     {phoneCountries.map((country) => (
@@ -397,11 +349,9 @@ export default function Register() {
                       </option>
                     ))}
                   </select>
-
                   <span className="field-divider" aria-hidden="true">
                     <KeyboardArrowDownIcon />
                   </span>
-
                   <input
                     id="register-phone-number"
                     name="phoneNumber"
@@ -410,27 +360,13 @@ export default function Register() {
                     inputMode="numeric"
                     autoComplete="tel-national"
                     value={formValues.phoneNumber}
-                    onChange={(event) =>
-                      updateField(
-                        'phoneNumber',
-                        normalizePhoneInput(event.target.value),
-                      )
-                    }
+                    onChange={(event) => updateField('phoneNumber', normalizePhoneInput(event.target.value))}
                     aria-invalid={Boolean(fieldErrors.phoneNumber)}
-                    aria-describedby={
-                      fieldErrors.phoneNumber
-                        ? 'register-phone-number-error'
-                        : undefined
-                    }
+                    aria-describedby={fieldErrors.phoneNumber ? 'register-phone-number-error' : undefined}
                   />
                 </div>
-
                 {fieldErrors.phoneNumber ? (
-                  <span
-                    id="register-phone-number-error"
-                    className="field-error"
-                    role="alert"
-                  >
+                  <span id="register-phone-number-error" className="field-error" role="alert">
                     {fieldErrors.phoneNumber}
                   </span>
                 ) : null}
@@ -441,12 +377,8 @@ export default function Register() {
                 htmlFor="register-email"
               >
                 Email address
-
                 <div className="field-shell">
-                  <FieldIcon>
-                    <MailOutlinedIcon />
-                  </FieldIcon>
-
+                  <FieldIcon><MailOutlinedIcon /></FieldIcon>
                   <input
                     id="register-email"
                     name="email"
@@ -454,22 +386,13 @@ export default function Register() {
                     placeholder="you@example.com"
                     autoComplete="email"
                     value={formValues.email}
-                    onChange={(event) =>
-                      updateField('email', event.target.value)
-                    }
+                    onChange={(event) => updateField('email', event.target.value)}
                     aria-invalid={Boolean(fieldErrors.email)}
-                    aria-describedby={
-                      fieldErrors.email ? 'register-email-error' : undefined
-                    }
+                    aria-describedby={fieldErrors.email ? 'register-email-error' : undefined}
                   />
                 </div>
-
                 {fieldErrors.email ? (
-                  <span
-                    id="register-email-error"
-                    className="field-error"
-                    role="alert"
-                  >
+                  <span id="register-email-error" className="field-error" role="alert">
                     {fieldErrors.email}
                   </span>
                 ) : null}
@@ -480,12 +403,8 @@ export default function Register() {
                 htmlFor="register-password"
               >
                 Password
-
                 <div className="password-field">
-                  <FieldIcon>
-                    <LockOutlinedIcon />
-                  </FieldIcon>
-
+                  <FieldIcon><LockOutlinedIcon /></FieldIcon>
                   <input
                     id="register-password"
                     name="password"
@@ -493,66 +412,39 @@ export default function Register() {
                     placeholder="Create a secure password"
                     autoComplete="new-password"
                     value={formValues.password}
-                    onChange={(event) =>
-                      updateField('password', event.target.value)
-                    }
+                    onChange={(event) => updateField('password', event.target.value)}
                     aria-invalid={Boolean(fieldErrors.password)}
-                    aria-describedby={
-                      fieldErrors.password
-                        ? 'register-password-error'
-                        : undefined
-                    }
+                    aria-describedby={fieldErrors.password ? 'register-password-error' : undefined}
                   />
-
                   <button
                     type="button"
                     className="field-icon"
-                    aria-label={
-                      showPassword ? 'Hide password' : 'Show password'
-                    }
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
                     aria-pressed={showPassword}
-                    onClick={() =>
-                      setShowPassword((current) => !current)
-                    }
+                    onClick={() => setShowPassword((current) => !current)}
                   >
-                    {showPassword ? (
-                      <VisibilityOutlinedIcon />
-                    ) : (
-                      <VisibilityOffOutlinedIcon />
-                    )}
+                    {showPassword ? <VisibilityOutlinedIcon /> : <VisibilityOffOutlinedIcon />}
                   </button>
                 </div>
-
                 <PasswordStrengthIndicator
                   status={validation.status}
                   message={validation.message}
                   score={validation.score}
                 />
-
                 {fieldErrors.password ? (
-                  <span
-                    id="register-password-error"
-                    className="field-error"
-                    role="alert"
-                  >
+                  <span id="register-password-error" className="field-error" role="alert">
                     {fieldErrors.password}
                   </span>
                 ) : null}
               </label>
 
               <label
-                className={
-                  fieldErrors.confirmPassword ? 'has-error' : undefined
-                }
+                className={fieldErrors.confirmPassword ? 'has-error' : undefined}
                 htmlFor="register-confirm-password"
               >
                 Confirm password
-
                 <div className="password-field">
-                  <FieldIcon>
-                    <LockOutlinedIcon />
-                  </FieldIcon>
-
+                  <FieldIcon><LockOutlinedIcon /></FieldIcon>
                   <input
                     id="register-confirm-password"
                     name="confirmPassword"
@@ -560,44 +452,22 @@ export default function Register() {
                     placeholder="Confirm your password"
                     autoComplete="new-password"
                     value={formValues.confirmPassword}
-                    onChange={(event) =>
-                      updateField('confirmPassword', event.target.value)
-                    }
+                    onChange={(event) => updateField('confirmPassword', event.target.value)}
                     aria-invalid={Boolean(fieldErrors.confirmPassword)}
-                    aria-describedby={
-                      fieldErrors.confirmPassword
-                        ? 'register-confirm-password-error'
-                        : undefined
-                    }
+                    aria-describedby={fieldErrors.confirmPassword ? 'register-confirm-password-error' : undefined}
                   />
-
                   <button
                     type="button"
                     className="field-icon"
-                    aria-label={
-                      showConfirmPassword
-                        ? 'Hide password'
-                        : 'Show password'
-                    }
+                    aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
                     aria-pressed={showConfirmPassword}
-                    onClick={() =>
-                      setShowConfirmPassword((current) => !current)
-                    }
+                    onClick={() => setShowConfirmPassword((current) => !current)}
                   >
-                    {showConfirmPassword ? (
-                      <VisibilityOutlinedIcon />
-                    ) : (
-                      <VisibilityOffOutlinedIcon />
-                    )}
+                    {showConfirmPassword ? <VisibilityOutlinedIcon /> : <VisibilityOffOutlinedIcon />}
                   </button>
                 </div>
-
                 {fieldErrors.confirmPassword ? (
-                  <span
-                    id="register-confirm-password-error"
-                    className="field-error"
-                    role="alert"
-                  >
+                  <span id="register-confirm-password-error" className="field-error" role="alert">
                     {fieldErrors.confirmPassword}
                   </span>
                 ) : null}
@@ -607,17 +477,10 @@ export default function Register() {
                 <input
                   type="checkbox"
                   checked={formValues.termsAccepted}
-                  onChange={(event) =>
-                    updateField('termsAccepted', event.target.checked)
-                  }
+                  onChange={(event) => updateField('termsAccepted', event.target.checked)}
                   aria-invalid={Boolean(fieldErrors.termsAccepted)}
-                  aria-describedby={
-                    fieldErrors.termsAccepted
-                      ? 'register-terms-error'
-                      : undefined
-                  }
+                  aria-describedby={fieldErrors.termsAccepted ? 'register-terms-error' : undefined}
                 />
-
                 <span>
                   I agree to the <a href="#register">Terms of Service</a> and{' '}
                   <a href="#register">Privacy Policy</a>.
@@ -625,44 +488,27 @@ export default function Register() {
               </label>
 
               {fieldErrors.termsAccepted ? (
-                <span
-                  id="register-terms-error"
-                  className="field-error terms-error"
-                  role="alert"
-                >
+                <span id="register-terms-error" className="field-error terms-error" role="alert">
                   {fieldErrors.termsAccepted}
                 </span>
               ) : null}
 
               {fieldErrors.form ? (
-                <p className="register-form-message" role="alert">
-                  {fieldErrors.form}
-                </p>
+                <p className="register-form-message" role="alert">{fieldErrors.form}</p>
               ) : null}
 
               {submitMessage ? (
-                <p className="register-form-message" role="alert">
-                  {submitMessage}
-                </p>
+                <p className="register-form-message" role="alert">{submitMessage}</p>
               ) : null}
 
               <button
                 type="submit"
-                className={`button button-primary button-full register-submit ${
-                  isFormEmpty ? 'register-submit-empty' : ''
-                }`.trim()}
+                className={`button button-primary button-full register-submit ${isFormEmpty ? 'register-submit-empty' : ''}`.trim()}
                 disabled={!canSubmit}
                 aria-disabled={!canSubmit}
               >
-                {isSubmitting
-                  ? 'Signing Up...'
-                  : isFormEmpty
-                    ? 'Start Registration'
-                    : 'Sign Up'}
-
-                <span className="button-arrow" aria-hidden="true">
-                  {'>'}
-                </span>
+                {isSubmitting ? 'Signing Up...' : isFormEmpty ? 'Start Registration' : 'Sign Up'}
+                <span className="button-arrow" aria-hidden="true">{'>'}</span>
               </button>
 
               <p className="register-footnote">

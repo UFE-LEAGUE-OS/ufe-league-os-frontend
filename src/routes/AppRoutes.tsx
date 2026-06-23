@@ -1,11 +1,10 @@
-import { type ReactNode } from 'react';
 import {
     BrowserRouter as Router,
     Navigate,
     Route,
     Routes,
-    useLocation,
 } from 'react-router-dom';
+import { type ReactNode } from 'react';
 
 import {
     Landing,
@@ -48,38 +47,10 @@ import MembershipCheckoutPage from '../pages/memberships/MembershipCheckoutPage'
 import MembershipSuccessPage from '../pages/memberships/MembershipSuccessPage';
 import MembershipFailedPage from '../pages/memberships/MembershipFailedPage';
 import MyMembershipsPage from '../pages/memberships/MyMembershipsPage';
-import { useAuthStore } from '../store/authStore.js';
-
-function getStoredAccessToken() {
-    return (
-        localStorage.getItem('league_os_access_token') ||
-        localStorage.getItem('access_token')
-    );
-}
-
-function RequireAuth({ children }: { children: ReactNode }) {
-    const location = useLocation();
-    const accessToken = useAuthStore((state) => state.accessToken);
-    const isAuthenticated = Boolean(accessToken || getStoredAccessToken());
-
-    if (!isAuthenticated) {
-        return (
-            <Navigate
-                to="/login"
-                replace
-                state={{
-                    message: 'Please log in to continue.',
-                    from: location.pathname,
-                }}
-            />
-        );
-    }
-
-    return children;
-}
+import ProtectedRoute from './ProtectedRoute';
 
 function protectedPage(page: ReactNode) {
-    return <RequireAuth>{page}</RequireAuth>;
+    return <ProtectedRoute>{page}</ProtectedRoute>;
 }
 
 export default function AppRoutes() {

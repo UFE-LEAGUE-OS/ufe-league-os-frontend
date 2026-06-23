@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { removeRefreshToken, removeToken, setRefreshToken, setToken } from '../utils/tokenManager.js';
 
 type AuthUser = Record<string, unknown> | null;
 
@@ -22,14 +23,20 @@ export const useAuthStore = create<AuthStore>()((set) => ({
   refreshToken: null,
   requiresEmailVerification: false,
 
-  setAuth: ({ user, access, refresh, requiresEmailVerification }) =>
-    set({ user, accessToken: access, refreshToken: refresh, requiresEmailVerification }),
+  setAuth: ({ user, access, refresh, requiresEmailVerification }) => {
+    setToken(access);
+    setRefreshToken(refresh);
+    set({ user, accessToken: access, refreshToken: refresh, requiresEmailVerification });
+  },
 
-  clearAuth: () =>
+  clearAuth: () => {
+    removeToken();
+    removeRefreshToken();
     set({
       user: null,
       accessToken: null,
       refreshToken: null,
       requiresEmailVerification: false,
-    }),
+    });
+  },
 }));

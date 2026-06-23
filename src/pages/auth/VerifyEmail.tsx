@@ -2,19 +2,28 @@ import { useState, useRef, type FormEvent, type KeyboardEvent, type ClipboardEve
 import { useLocation, useNavigate } from 'react-router-dom';
 import { resendOtp, verifyOtp } from '../../services/authService.js';
 import { LeagueLogo } from '../../components/site/LeagueUI.js';
+import { useAuth } from '../../hooks/useAuth.js';
+import {
+  getPendingOnboardingSession,
+  clearPendingOnboardingSession,
+} from '../../utils/onboardingSession.js';
+import { getSafeAuthRedirect, LOGIN_ROUTE, PERSONALIZE_ROUTE } from '../../utils/authFlow.js';
 import '../../styles/pages/auth/verify-email.css';
-import '../../styles/pages/verify-email.css';
 
-type LocationState = { email?: string; message?: string };
+type LocationState = { email?: string; message?: string; postLoginRedirect?: string };
 
 export default function VerifyEmail() {
   const navigate = useNavigate();
   const location = useLocation();
   const state = location.state as LocationState | null;
+  const { login } = useAuth();
+  const postLoginRedirect = getSafeAuthRedirect(state?.postLoginRedirect);
 
   const [email] = useState(state?.email ?? '');
   const [digits, setDigits] = useState(['', '', '', '', '', '']);
-  const [errorMessage, setErrorMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState(
+    state?.email ? '' : 'We need your email address to verify this account. Return to login and try again.',
+  );
   const [statusMessage, setStatusMessage] = useState(state?.message ?? '');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isResending, setIsResending] = useState(false);
@@ -49,6 +58,10 @@ export default function VerifyEmail() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     const code = digits.join('');
+    if (!email) {
+      setErrorMessage('We need your email address to verify this account. Return to login and try again.');
+      return;
+    }
     if (code.length !== 6) { setErrorMessage('Enter all 6 digits.'); return; }
 
     setIsSubmitting(true);
@@ -57,11 +70,38 @@ export default function VerifyEmail() {
 
     try {
       await verifyOtp({ email, code, purpose: 'EMAIL_VERIFICATION' });
-      setStatusMessage('Verified! Redirecting to login...');
-      setTimeout(() => navigate('/login', {
-        replace: true,
-        state: { message: 'Your number has been verified. You can now sign in.' },
-      }), 1400);
+
+      const session = getPendingOnboardingSession();
+
+      if (session) {
+        try {
+          await login({ identifier: session.email, password: session.password });
+          setStatusMessage('Verified! Redirecting to personalization...');
+          clearPendingOnboardingSession();
+          setTimeout(() => navigate(postLoginRedirect ?? PERSONALIZE_ROUTE, { replace: true }), 1400);
+        } catch {
+          clearPendingOnboardingSession();
+          setStatusMessage('Verified! Please log in to continue.');
+          setTimeout(() => navigate(LOGIN_ROUTE, {
+            replace: true,
+            state: {
+              email,
+              message: 'Your email has been verified. Please log in to continue.',
+              postLoginRedirect,
+            },
+          }), 1400);
+        }
+      } else {
+        setStatusMessage('Verified! Please log in to continue.');
+        setTimeout(() => navigate(LOGIN_ROUTE, {
+          replace: true,
+          state: {
+            email,
+            message: 'Your email has been verified. Please log in to continue.',
+            postLoginRedirect,
+          },
+        }), 1400);
+      }
     } catch (error) {
       const data = (error as { response?: { data?: unknown } })?.response?.data;
       if (data && typeof data === 'object' && !Array.isArray(data)) {
@@ -97,7 +137,7 @@ export default function VerifyEmail() {
           <LeagueLogo compact />
         </div>
 
-        <h1 className="otp-title">Verify Your Number</h1>
+        <h1 className="otp-title">Verify Your Email</h1>
         <p className="otp-subtitle">
           Enter the 6-digit code sent to your email address to continue.
         </p>
@@ -130,7 +170,7 @@ export default function VerifyEmail() {
             <p className="otp-message otp-success" role="status">{statusMessage}</p>
           )}
 
-          <button type="submit" className="otp-submit" disabled={isSubmitting}>
+          <button type="submit" className="otp-submit" disabled={isSubmitting || !email}>
             {isSubmitting ? 'Verifying...' : 'Verify & Continue'}
           </button>
         </form>

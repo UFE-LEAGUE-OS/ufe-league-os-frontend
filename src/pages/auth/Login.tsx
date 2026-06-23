@@ -10,6 +10,11 @@ import EventNoteOutlinedIcon from '@mui/icons-material/EventNoteOutlined';
 import { GlassCard, PageShell } from '../../components/site/LeagueUI.js';
 import { useAuth } from '../../hooks/useAuth.js';
 import { buildGoogleAuthUrl } from './loginUtils.js';
+import {
+    getSafeAuthRedirect,
+    VERIFY_EMAIL_ROUTE,
+    type AuthFlowState,
+} from '../../utils/authFlow.js';
 import '../../styles/pages/auth/login.css';
 
 type LoginErrors = {
@@ -21,7 +26,9 @@ type LoginErrors = {
 type LoginResult = {
     frontend_dashboard_route?: unknown;
     dashboard_route?: unknown;
+    requires_email_verification?: boolean;
     user?: {
+        email?: unknown;
         frontend_dashboard_route?: unknown;
         dashboard_route?: unknown;
     };
@@ -109,6 +116,10 @@ function resolveDashboardRoute(result: LoginResult) {
     );
 }
 
+function getUserEmail(value: unknown) {
+    return typeof value === 'string' && value.includes('@') ? value : undefined;
+}
+
 export default function Login() {
     const location = useLocation();
     const navigate = useNavigate();
@@ -121,7 +132,9 @@ export default function Login() {
     const [errors, setErrors] = useState<LoginErrors>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const locationMessage = (location.state as { message?: string } | null)?.message ?? '';
+    const locationState = location.state as AuthFlowState | null;
+    const locationMessage = locationState?.message ?? '';
+    const postLoginRedirect = getSafeAuthRedirect(locationState?.postLoginRedirect);
 
     const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
     const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID?.trim();
@@ -175,8 +188,36 @@ export default function Login() {
                 password,
             });
 
-            navigate(resolveDashboardRoute(result), { replace: true });
+            if (result.requires_email_verification) {
+                navigate(VERIFY_EMAIL_ROUTE, {
+                    replace: true,
+                    state: {
+                        email:
+                            getUserEmail(result.user?.email) ??
+                            getUserEmail(identifier.trim()),
+                        message: 'Please verify your email address before continuing.',
+                        postLoginRedirect: postLoginRedirect ?? resolveDashboardRoute(result),
+                    },
+                });
+                return;
+            }
+
+            navigate(postLoginRedirect ?? resolveDashboardRoute(result), { replace: true });
         } catch (error) {
+            const data = (error as ApiError).response?.data;
+
+            if (data?.requires_email_verification) {
+                navigate(VERIFY_EMAIL_ROUTE, {
+                    replace: true,
+                    state: {
+                        email: getUserEmail(identifier.trim()),
+                        message: 'Please verify your email address before continuing.',
+                        postLoginRedirect: postLoginRedirect ?? '/dashboard',
+                    },
+                });
+                return;
+            }
+
             setErrors({
                 general: getLoginErrorMessage(error),
             });
@@ -244,7 +285,7 @@ export default function Login() {
                             </h2>
                             <p>Log in to continue your League OS experience.</p>
                             {locationMessage ? (
-                                <p className="login-footnote" role="status" aria-live="polite" style={{ color: '#c8ffd5' }}>
+                                <p className="auth-message auth-message-success" role="status" aria-live="polite">
                                     {locationMessage}
                                 </p>
                             ) : null}
@@ -252,7 +293,7 @@ export default function Login() {
 
                         <form className="login-form" onSubmit={handleSubmit} noValidate>
                             {errors.general ? (
-                                <p className="login-footnote" role="alert" style={{ color: '#ffb4b4', fontWeight: 700 }}>
+                                <p className="auth-message auth-message-error" role="alert">
                                     {errors.general}
                                 </p>
                             ) : null}
@@ -274,7 +315,7 @@ export default function Login() {
                                     />
                                 </div>
                                 {errors.identifier ? (
-                                    <p id="login-identifier-error" className="login-footnote" role="alert" style={{ color: '#ffb4b4' }}>
+                                    <p id="login-identifier-error" className="login-footnote login-footnote-error" role="alert">
                                         {errors.identifier}
                                     </p>
                                 ) : null}
@@ -306,7 +347,7 @@ export default function Login() {
                                     </button>
                                 </div>
                                 {errors.password ? (
-                                    <p id="login-password-error" className="login-footnote" role="alert" style={{ color: '#ffb4b4' }}>
+                                    <p id="login-password-error" className="login-footnote login-footnote-error" role="alert">
                                         {errors.password}
                                     </p>
                                 ) : null}
@@ -335,7 +376,7 @@ export default function Login() {
                             </button>
 
                             {googleLoginMessage ? (
-                                <p className="login-footnote" role="status" aria-live="polite" style={{ color: '#ffd08a' }}>
+                                <p className="auth-message auth-message-warning" role="status" aria-live="polite">
                                     {googleLoginMessage}
                                 </p>
                             ) : null}
