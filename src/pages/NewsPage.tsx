@@ -5,7 +5,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { FiBell, FiUser, FiSearch } from "react-icons/fi";
 import { FaArrowRight } from "react-icons/fa6";
 import logo from "../assets/logo.png";
-import heroImg from "../assets/basketball.png";
+import heroImg from "../assets/basketball-card.png";
 import news1 from "../assets/rugby-card.png";
 import news2 from "../assets/hero.png";
 import news3 from "../assets/basketball-card.png";
