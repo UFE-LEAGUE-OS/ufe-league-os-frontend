@@ -1,16 +1,36 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { FiBell, FiChevronDown, FiLogOut, FiSearch, FiX } from 'react-icons/fi';
 import './Navbar.css';
 import logo from '../assets/logo.png';
 import { useAuth } from '../hooks/useAuth.js';
 import { useAuthStore } from '../store/authStore.js';
 
+const leagueItems = [
+  { name: 'Uganda Premier League', route: '/leagues/uganda-premier-league' },
+  { name: 'Nile Special Premiership', route: '/leagues/nile-special-premiership' },
+  { name: 'National Basketball League', route: '/leagues/national-basketball-league' },
+  { name: 'Budo League', route: '/leagues/budo-league' },
+  { name: 'SMACK League', route: '/leagues/smack-league' },
+];
+
 function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [leaguesOpen, setLeaguesOpen] = useState(false);
+  const leaguesRef = useRef<HTMLLIElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (leaguesRef.current && !leaguesRef.current.contains(event.target as Node)) {
+        setLeaguesOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
   const { logout } = useAuth();
   const accessToken = useAuthStore((state) => state.accessToken);
   const user = useAuthStore((state) => state.user);
@@ -94,8 +114,26 @@ function Navbar() {
           >
             Sport <span className="arrow">▾</span>
           </li>
-          <li className={isActive('/leagues') ? 'active-link' : ''}>
+          <li
+            ref={leaguesRef}
+            className={`${isActive('/leagues') ? 'active-link' : ''} nav-dropdown-trigger`}
+            onMouseEnter={() => setLeaguesOpen(true)}
+            onMouseLeave={() => setLeaguesOpen(false)}
+          >
             Leagues <span className="arrow">▾</span>
+            {leaguesOpen && (
+              <ul className="nav-dropdown">
+                {leagueItems.map((item) => (
+                  <li
+                    key={item.route}
+                    className="nav-dropdown-item"
+                    onClick={() => { navigate(item.route); setLeaguesOpen(false); }}
+                  >
+                    {item.name}
+                  </li>
+                ))}
+              </ul>
+            )}
           </li>
           <li
             className={isActive('/clubs') ? 'active-link' : ''}
