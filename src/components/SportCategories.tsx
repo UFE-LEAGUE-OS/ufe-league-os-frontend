@@ -3,6 +3,7 @@ import footballImg from '../assets/football-card.png';
 import rugbyImg from '../assets/rugby-card.png';
 import basketballImg from '../assets/basketball-card.png';
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const categories = [
   {
@@ -11,6 +12,7 @@ const categories = [
     gradient: 'linear-gradient(135deg, #1E3A8A, #2563EB)',
     fadeColor: '#1E3A8A',
     image: footballImg,
+    link: '/competitions#football-card',
   },
   {
     title: 'Stringer together. United by rugby.',
@@ -18,6 +20,7 @@ const categories = [
     gradient: 'linear-gradient(135deg, #4C1D95, #7C3AED)',
     fadeColor: '#4C1D95',
     image: rugbyImg,
+    link: '/competitions#rugby-card',
   },
   {
     title: 'Fast breaks. Big plays. Loyal fans.',
@@ -25,10 +28,13 @@ const categories = [
     gradient: 'linear-gradient(135deg, #EA580C, #F97316)',
     fadeColor: '#C2410C',
     image: basketballImg,
+    link: '/competitions#basketball-card',
   },
 ];
 
 function SportCategories() {
+  const navigate = useNavigate();
+
   return (
     <section className="sport-categories">
       {categories.map((cat) => (
@@ -36,6 +42,7 @@ function SportCategories() {
           className="category-card"
           style={{ background: cat.gradient }}
           key={cat.title}
+          onClick={() => navigate(cat.link)}
         >
           <div
             className="category-image"
@@ -45,7 +52,9 @@ function SportCategories() {
           </div>
           <div className="category-text">
             <p>{cat.title}</p>
-            <button className="category-btn">{cat.button}</button>
+            <button className="category-btn" onClick={(e) => { e.stopPropagation(); navigate(cat.link); }}>
+              {cat.button}
+            </button>
           </div>
         </div>
       ))}
