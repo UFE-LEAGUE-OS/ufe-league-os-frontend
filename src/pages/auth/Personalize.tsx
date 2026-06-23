@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import CheckIcon from '@mui/icons-material/Check';
 import AddIcon from '@mui/icons-material/Add';
 import PublicIcon from '@mui/icons-material/Public';
@@ -9,6 +9,7 @@ import SchoolOutlinedIcon from '@mui/icons-material/SchoolOutlined';
 import SportsSoccerIcon from '@mui/icons-material/SportsSoccer';
 import type { SvgIconComponent } from '@mui/icons-material';
 import { PageShell } from '../../components/site/LeagueUI.js';
+import { DASHBOARD_ROUTE } from '../../utils/authFlow.js';
 import '../../styles/pages/auth/personalize.css';
 
 type Item = { id: string; name: string; sub?: string; emoji?: string };
@@ -86,12 +87,10 @@ const CATEGORIES: Category[] = [
   },
 ];
 
-const STEPS = ['Welcome', 'Sign Up', 'Follow Interests', 'Verify OTP', 'Log In'];
+const STEPS = ['Welcome', 'Sign Up', 'Verify OTP', 'Log In', 'Follow Interests'];
 
 export default function Personalize() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const email = (location.state as { email?: string } | null)?.email ?? '';
   const [selected, setSelected] = useState<Record<string, Set<string>>>({});
 
   const toggle = (catId: string, itemId: string) => {
@@ -110,7 +109,12 @@ if (set.has(itemId)) {
     selected[catId]?.has(itemId) ?? false;
 
   const handleContinue = () => {
-    navigate('/verify-email', { state: { email } });
+    navigate(DASHBOARD_ROUTE, {
+      replace: true,
+      state: {
+        message: 'Your interests are saved for this session.',
+      },
+    });
   };
 
   return (
