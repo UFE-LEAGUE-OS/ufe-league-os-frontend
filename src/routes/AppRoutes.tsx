@@ -23,7 +23,8 @@ import {
 } from '../pages';
 
 import Personalize from '../pages/auth/Personalize';
-import NewsSection from '../pages/NewsPage';
+// Change to the new path
+import NewsSection from "../pages/landing/NewsPage";
 import ProfileEdit from '../pages/fan/ProfileEdit';
 import ProfileInterests from '../pages/fan/ProfileInterests';
 import ProfileClubs from '../pages/fan/ProfileClubs';
