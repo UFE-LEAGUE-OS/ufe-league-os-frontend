@@ -16,6 +16,7 @@ vi.mock('../pages', () => ({
     Fixtures: () => <h1>Fixtures Page</h1>,
     Results: () => <h1>Results Page</h1>,
     Support: () => <h1>Support Page</h1>,
+    Unions: () => <h1>Unions Page</h1>, 
 }))
 
 vi.mock('../pages/auth/Personalize', () => ({
@@ -36,10 +37,6 @@ vi.mock('../pages/landing/TicketsLandingPage', () => ({
 
 vi.mock('../pages/landing/Unions', () => ({
     default: () => <h1>Unions Page</h1>,
-}))
-
-vi.mock('../pages/auth/VerifyEmail', () => ({
-    default: () => <h1>Verify Email Page</h1>,
 }))
 
 function visit(path: string) {
