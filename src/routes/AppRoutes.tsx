@@ -62,8 +62,8 @@ import MyMembershipsPage from '../pages/memberships/MyMembershipsPage';
 import AuthenticatedLayout from '../components/AuthenticatedLayout/AuthenticatedLayout';
 import AuthRequiredGate from '../components/AuthRequiredGate';
 import ProtectedRoute from './ProtectedRoute';
-
 import Payments from '../pages/PaymentPage';
+
 
 function protectedPage(page: ReactNode) {
     return <ProtectedRoute>{page}</ProtectedRoute>;
