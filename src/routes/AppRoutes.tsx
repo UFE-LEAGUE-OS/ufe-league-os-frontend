@@ -32,6 +32,7 @@ import ProfilePrivacy from '../pages/fan/ProfilePrivacy';
 import ProfileSupport from '../pages/fan/ProfileSupport';
 import AboutUs from '../pages/About';
 import Tickets from '../pages/landing/TicketsLandingPage';
+import Unions from '../pages/landing/Unions';
 import AuthenticatedLayout from '../components/AuthenticatedLayout/AuthenticatedLayout';
 import AuthRequiredGate from '../components/AuthRequiredGate';
 import ExploreClubsPage from '../pages/clubs/ExploreClubsPage';
@@ -101,6 +102,7 @@ export default function AppRoutes() {
                 <Route path="/competitions" element={<Competitions />} />
                 <Route path="/news" element={<NewsSection />} />
                 <Route path="/tickets" element={<Tickets />} />
+                <Route path="/unions" element={<Unions />} />
                 <Route path="/clubs" element={<ExploreClubsPage />} />
                 <Route path="/clubs/:clubSlug" element={<ClubDetailsPage />} />
                 <Route path="/clubs/:clubSlug/teams" element={<TeamsPage />} />
