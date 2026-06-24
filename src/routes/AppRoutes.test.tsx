@@ -39,6 +39,15 @@ vi.mock('../pages/landing/Unions', () => ({
     default: () => <h1>Unions Page</h1>,
 }))
 
+vi.mock('../pages/auth/VerifyEmail', () => ({
+    default: () => <h1>Verify Email Page</h1>,
+}))
+
+vi.mock('./ProtectedRoute', async () => {
+    const actual = await vi.importActual('./ProtectedRoute')
+    return actual
+})
+
 function visit(path: string) {
     window.history.pushState({}, '', path)
     render(<AppRoutes />)
