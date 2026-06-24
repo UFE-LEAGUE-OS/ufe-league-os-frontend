@@ -34,6 +34,10 @@ vi.mock('../pages/landing/TicketsLandingPage', () => ({
     default: () => <h1>Tickets Page</h1>,
 }))
 
+vi.mock('../pages/landing/Unions', () => ({
+    default: () => <h1>Unions Page</h1>,
+}))
+
 function visit(path: string) {
     window.history.pushState({}, '', path)
     render(<AppRoutes />)
