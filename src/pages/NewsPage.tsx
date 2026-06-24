@@ -17,6 +17,8 @@ type Notification = {
     read: boolean;
 };
 
+const API_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
+
 export default function NewsSection() {
     const [profile, setProfile] = useState<Record<string, string> | null>(null);
     const navigate = useNavigate();
@@ -27,12 +29,12 @@ export default function NewsSection() {
     const [open, setOpen] = useState(false);
 
     useEffect(() => {
-        axios.get("http://127.0.0.1:8000/api/profile/")
+        axios.get(`${API_URL}/api/profile/`)
             .then(res => setProfile(res.data));
     }, []);
 
     useEffect(() => {
-        axios.get("http://127.0.0.1:8000/api/notifications/")
+        axios.get(`${API_URL}/api/notifications/`)
             .then(res => setNotifications(res.data));
     }, []);
 
