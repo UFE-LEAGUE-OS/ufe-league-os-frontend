@@ -16,10 +16,10 @@ describe('TicketsLandingPage', () => {
   it('renders ticket filters and available matches', () => {
     renderTicketsPage()
 
-    expect(screen.getByRole('heading', { name: /match ticketing/i })).toBeInTheDocument()
+    expect(screen.getByText(/match/i, { selector: '.tickets-header-plain' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /back/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /all leagues/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /vip/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /^⭐ vip$/i })).toBeInTheDocument()
     expect(screen.getByText(/kcca fc/i)).toBeInTheDocument()
     expect(screen.getByText(/betway kobs/i)).toBeInTheDocument()
     expect(screen.getByText(/city oilers/i)).toBeInTheDocument()
@@ -48,7 +48,7 @@ describe('TicketsLandingPage', () => {
 
     expect(firstMatch).not.toBeNull()
     expect(within(firstMatch as HTMLElement).getByText(/ordinary/i)).toBeInTheDocument()
-    expect(within(firstMatch as HTMLElement).queryByText(/vip/i)).not.toBeInTheDocument()
+    expect(within(firstMatch as HTMLElement).queryByText(/^vip$/i)).not.toBeInTheDocument()
   })
 
   it('prompts guests to sign in before buying a ticket', async () => {
@@ -59,7 +59,7 @@ describe('TicketsLandingPage', () => {
     await user.click(screen.getAllByRole('button', { name: /buy vip/i })[0])
 
     expect(screen.getByRole('heading', { name: /sign in to buy tickets/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /log in/i })).toBeInTheDocument()
+    expect(screen.getAllByRole('button', { name: /log in/i })[1]).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /create account/i })).toBeInTheDocument()
   })
 })

@@ -27,6 +27,8 @@ describe('useAuthStore', () => {
       refreshToken: 'refresh-token',
       requiresEmailVerification: true,
     })
+    expect(localStorage.getItem('league_os_access_token')).toBe('access-token')
+    expect(localStorage.getItem('league_os_refresh_token')).toBe('refresh-token')
   })
 
   it('clears authenticated user data', () => {
@@ -40,5 +42,7 @@ describe('useAuthStore', () => {
     useAuthStore.getState().clearAuth()
 
     expect(useAuthStore.getState()).toMatchObject(initialState)
+    expect(localStorage.getItem('league_os_access_token')).toBeNull()
+    expect(localStorage.getItem('league_os_refresh_token')).toBeNull()
   })
 })

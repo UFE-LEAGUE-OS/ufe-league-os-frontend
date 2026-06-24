@@ -3,10 +3,10 @@ import logo from '../assets/logo.png';
 import { Link } from 'react-router-dom';
 import { FaFacebook, FaInstagram, FaYoutube, FaTiktok } from 'react-icons/fa';
 import { FaXTwitter } from 'react-icons/fa6';
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from 'react-router-dom';
 
 function Footer() {
-   const navigate = useNavigate();
+  const navigate = useNavigate();
 
   return (
     <footer className="footer">
@@ -20,18 +20,18 @@ function Footer() {
 
         <div className="footer-col">
           <h4>PLATFORM</h4>
-          <a onClick={() => navigate('/About',{ state: { tab: "about" } })} style={{ cursor: 'pointer' }}>About Us</a>
-          <a onClick={() => navigate('/About', { state: { tab: "how-it-works" } })}style={{ cursor: 'pointer' }}>How It Works</a>
-          <a href="#">For Leagues</a>
-          <a href="#">For Clubs</a>
+          <a onClick={() => navigate('/About', { state: { tab: 'about' } })} style={{ cursor: 'pointer' }}>About Us</a>
+          <a onClick={() => navigate('/About', { state: { tab: 'how-it-works' } })} style={{ cursor: 'pointer' }}>How It Works</a>
+          <a onClick={() => navigate('/for-leagues')} style={{ cursor: 'pointer' }}>For Leagues</a>
+          <a onClick={() => navigate('/for-clubs')} style={{ cursor: 'pointer' }}>For Clubs</a>
         </div>
 
         <div className="footer-col">
           <h4>COMPETITIONS</h4>
-          <a href="#">Football</a>
-          <a href="#">Rugby</a>
-          <a href="#">Basketball</a>
-          <a href="#">All Competitions</a>
+          <a onClick={() => navigate('/competitions#football-card')} style={{ cursor: 'pointer' }}>Football</a>
+          <a onClick={() => navigate('/competitions#rugby-card')} style={{ cursor: 'pointer' }}>Rugby</a>
+          <a onClick={() => navigate('/competitions#basketball-card')} style={{ cursor: 'pointer' }}>Basketball</a>
+          <a onClick={() => navigate('/competitions')} style={{ cursor: 'pointer' }}>All Competitions</a>
         </div>
 
         <div className="footer-col">

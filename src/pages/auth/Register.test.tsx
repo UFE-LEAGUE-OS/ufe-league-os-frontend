@@ -203,10 +203,13 @@ describe('Register page', () => {
                 }),
             )
 
-            expect(navigateMock).toHaveBeenCalledWith('/personalize', {
+            expect(navigateMock).toHaveBeenCalledWith('/verify-email', {
                 replace: true,
                 state: {
                     email: 'amina.kizza@example.com',
+                    message:
+                        'Registration successful. Please verify your email address using the OTP sent to your email.',
+                    postLoginRedirect: '/personalize',
                 },
             })
         },
