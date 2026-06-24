@@ -1,5 +1,6 @@
 import React from 'react'
 import { render, screen } from '@testing-library/react'
+import { Navigate } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import AppRoutes from './AppRoutes'
 import { useAuthStore } from '../store/authStore'
@@ -17,7 +18,7 @@ vi.mock('../pages', () => ({
     Fixtures: () => <h1>Fixtures Page</h1>,
     Results: () => <h1>Results Page</h1>,
     Support: () => <h1>Support Page</h1>,
-    Unions: () => <h1>Unions Page</h1>, 
+    Unions: () => <h1>Unions Page</h1>,
 }))
 
 vi.mock('../pages/auth/Personalize', () => ({
@@ -46,14 +47,15 @@ vi.mock('../pages/auth/VerifyEmail', () => ({
 
 vi.mock('./ProtectedRoute', () => ({
     default: ({ children }: { children: React.ReactNode }) => {
-        const requiresEmailVerification = useAuthStore.getState().requiresEmailVerification
-        const accessToken = useAuthStore.getState().accessToken
+        const store = useAuthStore.getState()
+        const requiresEmailVerification = store.requiresEmailVerification
+        const accessToken = store.accessToken ?? localStorage.getItem('league_os_access_token')
 
         if (requiresEmailVerification) {
-            return <h1>Verify Email Page</h1>
+            return <Navigate to="/verify-email" replace />
         }
-        if (!accessToken && !localStorage.getItem('league_os_access_token')) {
-            return <h1>Login Page</h1>
+        if (!accessToken) {
+            return <Navigate to="/login" replace />
         }
         return <>{children}</>
     },
