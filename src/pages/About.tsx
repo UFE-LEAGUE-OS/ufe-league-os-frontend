@@ -1,4 +1,4 @@
-import "../styles/pages/NewsPage.css";
+import "../styles/pages/landing/NewsPage.css";
 import "../styles/pages/About.css";
 import Footer from "../components/Footer";
 import { FiSearch } from "react-icons/fi";

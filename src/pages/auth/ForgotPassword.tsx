@@ -15,8 +15,7 @@ import { normalizeCodeInput } from './forgotPasswordUtils.js';
 import '../../styles/pages/auth/login.css';
 import '../../styles/pages/auth/register.css';
 import { usePasswordValidation } from '../../hooks/usePasswordValidation.js';
-import '../../styles/pages/login.css';
-import '../../styles/pages/register.css';
+
 
 const features = [
   {
@@ -40,6 +39,26 @@ const features = [
 ];
 
 type RecoveryStep = 'request' | 'code' | 'password' | 'success';
+
+function getResetErrorMessage(error: unknown) {
+  const responseData = (error as { response?: { data?: unknown } })?.response?.data;
+
+  if (responseData && typeof responseData === 'object' && !Array.isArray(responseData)) {
+    const data = responseData as Record<string, unknown>;
+
+    if (typeof data.detail === 'string') return data.detail;
+
+    const messages = Object.values(data)
+      .flatMap((value) => (Array.isArray(value) ? value : [value]))
+      .filter((value): value is string => typeof value === 'string');
+
+    if (messages.length > 0) return messages[0];
+  }
+
+  if (typeof responseData === 'string') return responseData;
+
+  return 'We could not complete that step. Please try again.';
+}
 
 function PasswordStatusDisplay({
   status,
@@ -85,6 +104,8 @@ export default function ForgotPassword() {
   const [isVerifyingCode, setIsVerifyingCode] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+  const [statusMessage, setStatusMessage] = useState('');
   const { validation, validatePassword, resetValidation } = usePasswordValidation();
 
   const resetCodeStep = () => {
@@ -96,11 +117,15 @@ export default function ForgotPassword() {
     setShowPassword(false);
     setShowConfirmPassword(false);
     setSuccessMessage('');
+    setErrorMessage('');
+    setStatusMessage('');
     resetValidation();
   };
 
   const handleEmailChange = (event: ChangeEvent<HTMLInputElement>) => {
     setEmail(event.target.value);
+    setErrorMessage('');
+    setStatusMessage('');
 
     if (step !== 'request' || hasRequestedCode) {
       resetCodeStep();
@@ -110,18 +135,43 @@ export default function ForgotPassword() {
   const handleRequestCode = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    setIsRequesting(true);
-    setHasRequestedCode(true);
-    setStep('code');
-    setIsRequesting(false);
+    const normalizedEmail = email.trim().toLowerCase();
 
-    void requestPasswordReset({ email: email.trim().toLowerCase() }).catch(() => undefined);
+    if (!normalizedEmail) {
+      setErrorMessage('Enter the email address on your account.');
+      return;
+    }
+
+    setIsRequesting(true);
+    setErrorMessage('');
+    setStatusMessage('');
+
+    try {
+      await requestPasswordReset({ email: normalizedEmail });
+      setHasRequestedCode(true);
+      setStep('code');
+      setStatusMessage('A reset code has been sent to your email address.');
+    } catch (error) {
+      setHasRequestedCode(false);
+      setErrorMessage(getResetErrorMessage(error));
+    } finally {
+      setIsRequesting(false);
+    }
   };
 
   const handleVerifyCode = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     setIsVerifyingCode(true);
+    setErrorMessage('');
+    setStatusMessage('');
+
+    if (resetCode.trim().length !== 6) {
+      setErrorMessage('Enter the 6-digit reset code.');
+      setIsVerifyingCode(false);
+      return;
+    }
+
     setStep('password');
     setIsVerifyingCode(false);
   };
@@ -129,6 +179,7 @@ export default function ForgotPassword() {
   const handlePasswordChange = (e: ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setNewPassword(val);
+    setErrorMessage('');
     void validatePassword(val);
   };
 
@@ -137,17 +188,14 @@ export default function ForgotPassword() {
 
     if (validation.disabled) return;
 
-    setIsResetting(true);
-    setSuccessMessage('Password reset successful. Redirecting to login...');
-    setStep('success');
-    setResetCode('');
-    setNewPassword('');
-    setConfirmPassword('');
-    setHasRequestedCode(false);
+    if (newPassword !== confirmPassword) {
+      setErrorMessage('Passwords do not match.');
+      return;
+    }
 
-    window.setTimeout(() => {
-      navigate('/login', { replace: true });
-    }, 2000);
+    setIsResetting(true);
+    setErrorMessage('');
+    setStatusMessage('');
 
     try {
       await resetPassword({
@@ -156,8 +204,22 @@ export default function ForgotPassword() {
         password: newPassword,
         confirm_password: confirmPassword,
       });
-    } catch {
-      return;
+
+      setSuccessMessage('Password reset successful. Redirecting to login...');
+      setStep('success');
+      setResetCode('');
+      setNewPassword('');
+      setConfirmPassword('');
+      setHasRequestedCode(false);
+
+      window.setTimeout(() => {
+        navigate('/login', {
+          replace: true,
+          state: { message: 'Password reset successful. You can now sign in.' },
+        });
+      }, 2000);
+    } catch (error) {
+      setErrorMessage(getResetErrorMessage(error));
     } finally {
       setIsResetting(false);
     }
@@ -204,6 +266,16 @@ export default function ForgotPassword() {
               <h2>
                 Forgot <span>Password?</span>
               </h2>
+              {statusMessage ? (
+                <p className="login-footnote" role="status" aria-live="polite" style={{ color: '#c8ffd5' }}>
+                  {statusMessage}
+                </p>
+              ) : null}
+              {errorMessage ? (
+                <p className="login-footnote" role="alert" style={{ color: '#ffd08a' }}>
+                  {errorMessage}
+                </p>
+              ) : null}
             </header>
 
             {step === 'request' ? (
@@ -280,7 +352,10 @@ export default function ForgotPassword() {
                         placeholder="Enter the 6-digit code"
                         autoComplete="one-time-code"
                         value={resetCode}
-                        onChange={(event) => setResetCode(normalizeCodeInput(event.target.value))}
+                        onChange={(event) => {
+                          setResetCode(normalizeCodeInput(event.target.value));
+                          setErrorMessage('');
+                        }}
                       />
                     </div>
                   </label>
@@ -337,7 +412,10 @@ export default function ForgotPassword() {
                       type={showConfirmPassword ? 'text' : 'password'}
                       autoComplete="new-password"
                       value={confirmPassword}
-                      onChange={(event) => setConfirmPassword(event.target.value)}
+                      onChange={(event) => {
+                        setConfirmPassword(event.target.value);
+                        setErrorMessage('');
+                      }}
                     />
                     <button
                       type="button"

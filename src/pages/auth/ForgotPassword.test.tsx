@@ -1,7 +1,7 @@
 import { MemoryRouter } from 'react-router-dom'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import ForgotPassword from './ForgotPassword'
 import { normalizeCodeInput } from './forgotPasswordUtils'
 
@@ -21,6 +21,12 @@ vi.mock('react-router-dom', async () => {
     ...actual,
     useNavigate: () => navigateMock,
   }
+})
+
+beforeEach(() => {
+  navigateMock.mockReset()
+  requestPasswordResetMock.mockReset()
+  resetPasswordMock.mockReset()
 })
 
 describe('forgot password helpers', () => {
@@ -51,8 +57,8 @@ describe('ForgotPassword page', () => {
       })
     })
 
-    await user.type(screen.getByPlaceholderText(/enter the 6-digit code/i), '12a34b')
-    expect(screen.getByDisplayValue('1234')).toBeInTheDocument()
+    await user.type(screen.getByPlaceholderText(/enter the 6-digit code/i), '12a34b56')
+    expect(screen.getByDisplayValue('123456')).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: /^verify code$/i }))
 
@@ -66,7 +72,7 @@ describe('ForgotPassword page', () => {
     await waitFor(() => {
       expect(resetPasswordMock).toHaveBeenCalledWith({
         email: 'user@example.com',
-        code: '1234',
+        code: '123456',
         password: 'NewStrongPass1!',
         confirm_password: 'NewStrongPass1!',
       })
@@ -85,6 +91,56 @@ describe('ForgotPassword page', () => {
       timerCallback()
     }
 
-    expect(navigateMock).toHaveBeenCalledWith('/login', { replace: true })
+    expect(navigateMock).toHaveBeenCalledWith('/login', {
+      replace: true,
+      state: { message: 'Password reset successful. You can now sign in.' },
+    })
+  })
+
+  it('does not advance when requesting a reset code fails', async () => {
+    const user = userEvent.setup()
+    requestPasswordResetMock.mockRejectedValueOnce({
+      response: { data: { email: ['No account exists for this email.'] } },
+    })
+
+    render(
+      <MemoryRouter>
+        <ForgotPassword />
+      </MemoryRouter>,
+    )
+
+    await user.type(screen.getByPlaceholderText('you@example.com'), 'missing@example.com')
+    await user.click(screen.getByRole('button', { name: /send reset code/i }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(/no account exists/i)
+    expect(screen.queryByPlaceholderText(/enter the 6-digit code/i)).not.toBeInTheDocument()
+  })
+
+  it('shows backend reset errors and keeps the password form open', async () => {
+    const user = userEvent.setup()
+    requestPasswordResetMock.mockResolvedValueOnce({ data: { ok: true } })
+    resetPasswordMock.mockRejectedValueOnce({
+      response: { data: { code: ['Invalid OTP code.'] } },
+    })
+
+    const { container } = render(
+      <MemoryRouter>
+        <ForgotPassword />
+      </MemoryRouter>,
+    )
+
+    await user.type(screen.getByPlaceholderText('you@example.com'), 'user@example.com')
+    await user.click(screen.getByRole('button', { name: /send reset code/i }))
+    await user.type(await screen.findByPlaceholderText(/enter the 6-digit code/i), '123456')
+    await user.click(screen.getByRole('button', { name: /^verify code$/i }))
+
+    const passwordInputs = container.querySelectorAll('input[type="password"]')
+    await user.type(passwordInputs[0], 'NewStrongPass1!')
+    await user.type(passwordInputs[1], 'NewStrongPass1!')
+    await user.click(screen.getByRole('button', { name: /reset password/i }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(/invalid otp code/i)
+    expect(screen.getByRole('button', { name: /reset password/i })).toBeInTheDocument()
+    expect(navigateMock).not.toHaveBeenCalled()
   })
 })

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import axiosInstance from "../services/apiClient.js";
 import "./EditProfilePage.css";
 
 export default function EditProfile() {
@@ -18,7 +18,7 @@ export default function EditProfile() {
   });
 
   useEffect(() => {
-    axios.get("http://127.0.0.1:8000/api/profile/")
+    axiosInstance.get("/accounts/profile/")
       .then(res => {
         setProfile(res.data);
         setForm(res.data);
@@ -38,10 +38,7 @@ export default function EditProfile() {
       data.append("image", selectedImage);
     }
     try {
-      const res = await axios.post(
-        "http://127.0.0.1:8000/api/profile/update/",
-        data
-      );
+      const res = await axiosInstance.patch("/accounts/profile/", data);
       setProfile(res.data);
       setEdit(false);
     } catch (error) {

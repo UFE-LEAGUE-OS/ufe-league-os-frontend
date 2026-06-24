@@ -48,6 +48,7 @@ import MembershipCheckoutPage from '../pages/memberships/MembershipCheckoutPage'
 import MembershipSuccessPage from '../pages/memberships/MembershipSuccessPage';
 import MembershipFailedPage from '../pages/memberships/MembershipFailedPage';
 import MyMembershipsPage from '../pages/memberships/MyMembershipsPage';
+import Unions from '../pages/landing/Unions';
 import { useAuthStore } from '../store/authStore.js';
 
 function getStoredAccessToken() {
@@ -114,7 +115,6 @@ export default function AppRoutes() {
                     <Route path="/dashboard/memberships" element={<MyMembershipsPage />} />
                 </Route>
                 <Route path="/edit-profile" element={protectedPage(<Navigate to="/profile/edit" replace />)} />
-
                 <Route path="/sports" element={<SportsPage />} />
                 <Route path="/competitions" element={<Competitions />} />
                 <Route path="/news" element={<NewsSection />} />
@@ -129,7 +129,7 @@ export default function AppRoutes() {
                 <Route path="/fixtures" element={<Fixtures />} />
                 <Route path="/results" element={<Results />} />
                 <Route path="/support" element={<Support />} />
-
+                <Route path="/unions" element={<Unions />} />  
                 <Route path="/about" element={<AboutUs />} />
             </Routes>
         </Router>

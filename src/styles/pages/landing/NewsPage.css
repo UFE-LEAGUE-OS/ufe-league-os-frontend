@@ -1,0 +1,748 @@
+/*......News main page style...}*/
+
+.news-page{
+background:
+    radial-gradient(circle at top, rgba(3, 16, 45, 0.06), rgba(3, 16, 45, 0.7) 58%),
+    radial-gradient(circle at left bottom, rgba(44, 104, 255, 0.28), transparent 34%),
+    radial-gradient(circle at right bottom, rgba(124, 58, 237, 0.2), transparent 30%),
+    linear-gradient(180deg, rgba(2, 5, 14, 0.95), rgba(2, 5, 14, 0.86)),
+    url('../../assets/stadium-bg.svg');
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-attachment: fixed;
+  margin: 0;
+}
+
+.news-navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 0;
+  background: rgba(27, 26, 26, 0.76);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+
+.navbar-links {
+  list-style: none;
+  display: flex;
+  gap: 40px;
+  margin: 0;
+  padding: 0;
+  font-size: medium;
+}
+
+
+.navbar-links a {
+  text-decoration: none;
+  color: white;
+  font-size: 16px;
+  transition: 0.3s ease;
+ 
+}
+
+
+.navbar-links a:hover {
+  color: rgb(208, 90, 231);
+}
+
+
+.navbar-links li a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -5px;
+  width: 0%;
+  height: 2px;
+  
+  transition: 0.3s ease;
+}
+
+.navbar-links li a:hover::after {
+  width: 100%;
+}
+
+
+/*icons*/
+
+.navbar-icons {
+  display: flex;
+  align-items: right;
+  gap: 20px;
+}
+
+.notification-icon {
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.notification-icon:hover {
+  color: #38bdf8 !important;
+  transform: scale(1.1);
+}
+.navbar-logo {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.navbar-logo img {
+  height: 45px;   /* control logo size */
+  width: auto;
+  object-fit: contain;
+  transition: transform 0.3s ease;
+}
+
+/* hover effect */
+.navbar-logo:hover img {
+  transform: scale(1.05);
+}
+/*.......Hero Section......*/
+
+.hero-section {
+  display: flex;
+  gap: 20px;
+  padding: 20px 40px;
+  background: #0b0f1a1c;
+  color: white;
+}
+
+/* LEFT IMAGE */
+.hero-image {
+  flex: 2;
+  height: 420px;
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+.hero-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.hero-image img:hover {
+  transform: scale(1.05);
+}
+
+/* RIGHT SIDE */
+.hero-side {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* CARDS */
+.hero-card {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: 0.3s ease;
+}
+
+.hero-card h3 {
+  margin-bottom: 8px;
+  color: #4f8cff;
+}
+
+.hero-card p {
+  font-size: 14px;
+  color: #ccc;
+}
+
+.hero-card:hover {
+  transform: translateY(-4px);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.trending-card {
+  padding: 20px;
+}
+
+.trend-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 10px;
+}
+
+/* MAIN ITEM */
+.trend-item {
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+/* TOP LINE */
+.trend-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.trend-num {
+  color: Grey;
+  font-weight: bold;
+  font-size: 18px;
+  min-width: 25px;
+ font-family: "Cormorant Garamond", serif;
+}
+
+.trend-text {
+  font-size: 13px;
+  color: #ddd;
+}
+
+/* BOTTOM LINE */
+.trend-bottom {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+  font-size: 12px;
+}
+
+/* SPORT */
+.trend-sport {
+  color: White;
+  padding-left: 40px;
+}
+
+/* TIME */
+.trend-time {
+  color: #888;
+}
+
+/* HOVER */
+.trend-item:hover {
+  background: rgba(255,255,255,0.04);
+  padding-left: 5px;
+  transition: 0.2s ease;
+  cursor: pointer;
+}
+/* CARD */
+.results-card {
+  padding: 20px;
+}
+
+/* HEADER */
+.results-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.results-header h3 {
+  color: #4f8cff;
+  font-size: 16px;
+}
+
+/* BUTTON */
+.view-table {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.2);
+  color: white;
+  padding: 6px 10px;
+  font-size: 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.view-table:hover {
+  background: rgba(255,255,255,0.08);
+}
+
+/* TABLE */
+.results-table {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ROWS */
+.results-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: #ddd;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+/* HEADER ROW */
+.results-row.header {
+  font-weight: bold;
+  color: #888;
+  border-bottom: 1px solid rgba(255,255,255,0.2);
+}
+
+/* ALIGNMENT */
+.results-row span {
+  flex: 1;
+  text-align: center;
+}
+
+.results-row span:first-child {
+  text-align: left;
+}
+
+.results-row span:last-child {
+  text-align: right;
+}
+/* reponsive hero image */
+@media (max-width: 900px) {
+  .hero-section {
+    flex-direction: column;
+   
+  }
+
+  .hero-image {
+    height: 300px;
+  }
+}
+
+
+.hero-image {
+  flex: 2;
+  height: 450px;
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+.hero-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+
+.hero-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 30px;
+  background: linear-gradient(
+    to top,
+    rgba(0,0,0,0.85),
+    rgba(0,0,0,0.2),
+    transparent
+  );
+  color: white;
+}
+
+
+.hero-overlay .hero-title {
+  font-size: 36px;
+  margin-bottom: 10px;
+}
+
+
+.hero-overlay p {
+  font-size: 14px;
+  color: #ddd;
+  max-width: 500px;
+  margin-bottom: 15px;
+}
+
+
+.hero-buttons {
+  display: flex;
+  gap: 12px;
+}
+
+
+.btn-primary {
+  background: #7f49fc;
+  border: none;
+  color: white;
+  padding: 10px 14px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.btn-primary:hover {
+  background: #3b6fe0;
+  transform: translateY(-2px);
+}
+
+
+.btn-secondary {
+  background: hsla(0, 0%, 50%, 0.356);
+  border: 1px solid #ffffff55;
+  color: white;
+  padding: 10px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.btn-secondary:hover {
+  background: rgba(179, 131, 241, 0.1);
+}
+
+/*.....News Section headlines...*/
+.latest-headlines {
+  padding: 40px;
+  background: #0b0f1a07;
+  color: white;
+  margin-top: 10px;
+}
+
+.section-title {
+  font-size: 24px;
+  margin-bottom: 20px;
+  color: #ffffff;
+  border-left: 4px solid #4f8cff;
+  padding-left: 10px;
+  margin-top: 0;
+}
+
+/* GRID */
+.news-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+/* CARD */
+.news-card {
+  background: rgba(24, 23, 23, 0.514);
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: 0.3s ease;
+}
+
+.news-card:hover {
+  transform: translateY(-5px);
+}
+
+/* IMAGE */
+.news-card img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+}
+
+/* TEXT */
+.news-card h3 {
+  font-size: 15px;
+  margin: 12px;
+  color: white;
+  
+}
+
+.news-card p {
+  font-size: 13px;
+  color: #ccc;
+  margin: 0 12px 12px;
+  line-height: 1.4;
+}
+
+/* BOTTOM INFO */
+.news-footer-info {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px;
+  font-size: 12px;
+  color: #aaa;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+  .news-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/*.....Third Section ...*/
+.join-elite {
+  margin: 40px;
+  padding: 30px 40px;
+  background:rgba(151, 83, 240, 0.801);
+  /*background: linear-gradient(135deg, #10172a, #0b0f1a);*/
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+
+/* LEFT SIDE */
+.join-text {
+  flex: 1;
+}
+
+.join-text h2 {
+  font-size: 22px;
+  margin-bottom: 10px;
+  color: #ffffff;
+}
+
+.join-text p {
+  font-size: 14px;
+  color: #ccc;
+  max-width: 600px;
+  line-height: 1.5;
+}
+
+/* RIGHT SIDE BUTTONS */
+.join-actions {
+  display: flex;
+  gap: 12px;
+}
+
+/* BUTTONS */
+.btn-create {
+  background: white;
+  border: none;
+  color: rgb(154, 79, 240);
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.btn-create:hover {
+  background: #3b6fe0;
+  transform: translateY(-2px);
+}
+
+.btn-login {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.3);
+  color: white;
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.btn-login:hover {
+  background: rgba(255,255,255,0.08);
+  transform: translateY(-2px);
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .join-elite {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .join-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+
+
+/*....Footer Style ...*/
+
+.news-footer {
+  background: #0b0f1a;
+  color: #ffffff;
+  padding: 60px 40px 30px;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 40px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Logo section */
+.news-footer img {
+  width: 120px;
+  height: auto;
+}
+
+/* Each column */
+.news-footer > div {
+  min-width: 160px;
+}
+
+/* Headings */
+.news-footer h3 {
+  font-size: 16px;
+  margin-bottom: 15px;
+  color: white;
+}
+
+/* List reset */
+.news-footer ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* List items spacing */
+.news-footer li {
+  margin-bottom: 10px;
+}
+
+/* Links */
+.news-footer a {
+  color: #ccc;
+  text-decoration: none;
+  font-size: 14px;
+  transition: 0.3s ease;
+  cursor: pointer;
+}
+
+/* Hover effect */
+.news-footer a:hover {
+  color: #ffffff;
+  padding-left: 5px;
+}
+
+/* Responsive (mobile) */
+@media (max-width: 768px) {
+  .news-footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+/*....Footer bar...*/
+.footer-bottom-bar {
+  background: #092d8f;
+  color: hsl(0, 79%, 36%);
+  text-align: center;
+  padding: 15px 10px;
+  font-size: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  font-weight: bold;
+}
+
+.footer-bottom-bar p {
+  margin: 0;
+  letter-spacing: 0.5px;
+}
+
+/*.......navbar profile image....*/
+.notification-wrapper,
+.profile-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.username {
+  color: white;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 10px;
+   white-space: nowrap;
+}
+.profile-dropdown {
+  position: absolute;
+  right: 0;
+  top: 35px;
+  width: 180px;
+  background: white;
+  color: black;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  overflow: hidden;
+  z-index: 1000;
+}
+.item {
+  padding: 10px;
+  cursor: pointer;
+  transition: 0.2s;
+  font-size: 12px;
+}
+
+.item:hover {
+  background: #f2f2f2;
+}
+
+.logout {
+  color: red;
+}
+
+.profile-img {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  object-fit: cover;
+  cursor: pointer;
+}
+
+
+/*......searh icon...*/
+.search-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+  flex: 1;
+  justify-content: flex-end;
+}
+.search-input {
+  margin-left: 10px;
+  padding: 8px 12px;
+  border-radius: 20px;
+  border: 1px solid #ccc;
+  outline: none;
+  position:absolute;
+  right: 20px;
+  top: 35px;
+  transform: translateY(-50%);
+  width: 150px;
+}
+
+/*.....notification....*/
+.icon {
+  font-size: 19px;
+  cursor: pointer;
+}
+.notification-dropdown {
+  position: absolute;
+  right: 0;
+  top: 30px;
+  width: 250px;
+  background: white;
+  color: black;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  padding: 10px;
+}
+.badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: red;
+  color: white;
+  font-size: 12px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.notification-item {
+  padding: 8px;
+  border-bottom: 1px solid #eee;
+  font-size: 12px;
+  cursor: pointer;
+}
+.notification-item:hover {
+  background: #f2f2f2;
+}
