@@ -67,7 +67,7 @@ export default function NewsSection() {
                             <button className="btn-primary">
                                 Read full story <FaArrowRight />
                             </button>
-                            <button className="btn-secondary" onClick={() => navigate("/fixtures")}>
+                            <button className="btn-secondary" onClick={() => navigate("/results")}>
                                 Matches stats
                             </button>
                         </div>
