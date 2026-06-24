@@ -37,6 +37,9 @@ import AuthRequiredGate from '../components/AuthRequiredGate';
 import ExploreClubsPage from '../pages/clubs/ExploreClubsPage';
 import ClubDetailsPage from '../pages/clubs/ClubDetailsPage';
 import SportsPage from '../pages/sports/SportsPage';
+import FootballPage from '../pages/sports/FootballPage';
+import RugbyPage from '../pages/sports/RugbyPage';
+import BasketballPage from '../pages/sports/BasketballPage';
 import TeamSquadPage from '../pages/teams/TeamSquadPage';
 import TeamsPage from '../pages/teams/TeamsPage';
 import PlayerDetailPage from '../pages/players/PlayerDetailPage';
@@ -92,6 +95,9 @@ export default function AppRoutes() {
                 <Route path="/edit-profile" element={protectedPage(<Navigate to="/profile/edit" replace />)} />
 
                 <Route path="/sports" element={<SportsPage />} />
+                <Route path="/sports/football" element={<FootballPage />} />
+                <Route path="/sports/rugby" element={<RugbyPage />} />
+                <Route path="/sports/basketball" element={<BasketballPage />} />
                 <Route path="/competitions" element={<Competitions />} />
                 <Route path="/news" element={<NewsSection />} />
                 <Route path="/tickets" element={<Tickets />} />
