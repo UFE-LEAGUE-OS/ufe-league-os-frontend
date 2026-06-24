@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { FiGrid, FiList, FiTrendingUp } from 'react-icons/fi';
 import { BsTicketPerforated } from 'react-icons/bs';
 import { GiSoccerBall, GiRugbyConversion } from 'react-icons/gi';
@@ -84,8 +84,20 @@ const streakData = [
 
 function Competitions() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [activeFilter, setActiveFilter] = useState('All Sports');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+
+  useEffect(() => {
+    if (location.hash) {
+      const element = document.getElementById(location.hash.replace('#', ''));
+      if (element) {
+        setTimeout(() => {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+      }
+    }
+  }, [location.hash]);
 
   const getSportIcon = (sport: string) => {
     switch (sport) {
@@ -110,7 +122,6 @@ function Competitions() {
     <div className="competitions-page">
       <CompetitionsNavbar />
 
-      {/* Page Header */}
       <div className="competitions-header">
         <div className="competitions-header-top">
           <div>
@@ -140,7 +151,6 @@ function Competitions() {
         </div>
       </div>
 
-      {/* Sport Filter Tabs */}
       <div className="sport-filters">
         {sportFilters.map((filter) => (
           <button
@@ -153,11 +163,11 @@ function Competitions() {
         ))}
       </div>
 
-      {/* Competitions Grid */}
       <div className="competitions-grid">
         {competitions.map((comp) => (
           <div
             key={comp.id}
+            id={comp.type}
             className={`competition-card ${comp.type}`}
           >
             {comp.image ? (
@@ -254,7 +264,6 @@ function Competitions() {
           </div>
         ))}
 
-        {/* Sponsor Card */}
         <div className="sponsor-card">
           <div>
             <div className="sponsor-icon">🏆</div>
@@ -267,7 +276,6 @@ function Competitions() {
           <button className="sponsor-btn">Become a Sponsor</button>
         </div>
 
-        {/* Propose League Card */}
         <div className="propose-card">
           <div className="propose-plus">+</div>
           <p className="propose-title">Propose League</p>
@@ -277,7 +285,6 @@ function Competitions() {
         </div>
       </div>
 
-      {/* Uganda Cup Featured Banner */}
       <div className="featured-banner">
         <div className="banner-left">
           <span className="official-badge">OFFICIAL</span>
@@ -325,7 +332,6 @@ function Competitions() {
         </div>
       </div>
 
-      {/* CTA Section */}
       <div className="competitions-cta">
         <div className="cta-left">
           <h2>Join the Elite Experience</h2>
