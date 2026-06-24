@@ -95,6 +95,20 @@ describe('AppRoutes protected routes', () => {
         expect(screen.getByRole('heading', { name: /profile page/i })).toBeInTheDocument()
     })
 
+    it('redirects signed-in users with unverified email to verification before protected pages', () => {
+        useAuthStore.getState().setAuth({
+            user: { email: 'fan@example.com', role: 'FAN' },
+            access: 'access-token',
+            refresh: 'refresh-token',
+            requiresEmailVerification: true,
+        })
+
+        visit('/profile')
+
+        expect(screen.getByRole('heading', { name: /verify email page/i })).toBeInTheDocument()
+        expect(screen.queryByRole('heading', { name: /profile page/i })).not.toBeInTheDocument()
+    })
+
     it('keeps public routes available without login', () => {
         visit('/fixtures')
 

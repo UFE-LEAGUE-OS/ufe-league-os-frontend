@@ -85,3 +85,60 @@
 .category-card:hover {
   transform: scale(1.02);
 }
+
+/* Responsive: stack cards vertically on small screens */
+@media (max-width: 768px) {
+  .sport-categories {
+    flex-direction: column;
+    padding: 0 16px 24px;
+    gap: 12px;
+  }
+
+  .category-card {
+    min-height: 100px;
+  }
+
+  .category-image {
+    width: 40%;
+  }
+
+  .category-text {
+    margin-left: 38%;
+    padding: 14px 12px 14px 6px;
+  }
+
+  .category-text p {
+    font-size: 12px;
+    margin: 0 0 8px;
+  }
+
+  .category-btn {
+    font-size: 11px;
+    padding: 6px 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .sport-categories {
+    padding: 0 10px 16px;
+    gap: 10px;
+  }
+
+  .category-image {
+    width: 35%;
+  }
+
+  .category-text {
+    margin-left: 33%;
+    padding: 10px 10px 10px 4px;
+  }
+
+  .category-text p {
+    font-size: 11px;
+  }
+
+  .category-btn {
+    font-size: 10px;
+    padding: 5px 10px;
+  }
+}

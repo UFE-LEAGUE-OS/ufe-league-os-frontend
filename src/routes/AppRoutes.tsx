@@ -1,11 +1,10 @@
-import { type ReactNode } from 'react';
 import {
     BrowserRouter as Router,
     Navigate,
     Route,
     Routes,
-    useLocation,
 } from 'react-router-dom';
+import { type ReactNode } from 'react';
 
 import {
     Landing,
@@ -38,48 +37,28 @@ import AuthRequiredGate from '../components/AuthRequiredGate';
 import ExploreClubsPage from '../pages/clubs/ExploreClubsPage';
 import ClubDetailsPage from '../pages/clubs/ClubDetailsPage';
 import SportsPage from '../pages/sports/SportsPage';
+import FootballPage from '../pages/sports/FootballPage';
+import RugbyPage from '../pages/sports/RugbyPage';
+import BasketballPage from '../pages/sports/BasketballPage';
 import TeamSquadPage from '../pages/teams/TeamSquadPage';
 import TeamsPage from '../pages/teams/TeamsPage';
 import PlayerDetailPage from '../pages/players/PlayerDetailPage';
 import StandingsPage from '../pages/standings/StandingsPage';
+import UgandaPremierLeague from '../pages/leagues/UgandaPremierLeague';
+import NationalBasketballLeague from '../pages/leagues/NationalBasketballLeague';
+import NileSpecialPremiership from '../pages/leagues/NileSpecialPremiership';
+import SmackLeague from '../pages/leagues/SmackLeague';
+import BudoLeague from '../pages/leagues/BudoLeague';
 import ExploreMembershipsPage from '../pages/memberships/ExploreMembershipsPage';
 import ClubMembershipDetailPage from '../pages/memberships/ClubMembershipDetailPage';
 import MembershipCheckoutPage from '../pages/memberships/MembershipCheckoutPage';
 import MembershipSuccessPage from '../pages/memberships/MembershipSuccessPage';
 import MembershipFailedPage from '../pages/memberships/MembershipFailedPage';
 import MyMembershipsPage from '../pages/memberships/MyMembershipsPage';
-import { useAuthStore } from '../store/authStore.js';
-
-function getStoredAccessToken() {
-    return (
-        localStorage.getItem('league_os_access_token') ||
-        localStorage.getItem('access_token')
-    );
-}
-
-function RequireAuth({ children }: { children: ReactNode }) {
-    const location = useLocation();
-    const accessToken = useAuthStore((state) => state.accessToken);
-    const isAuthenticated = Boolean(accessToken || getStoredAccessToken());
-
-    if (!isAuthenticated) {
-        return (
-            <Navigate
-                to="/login"
-                replace
-                state={{
-                    message: 'Please log in to continue.',
-                    from: location.pathname,
-                }}
-            />
-        );
-    }
-
-    return children;
-}
+import ProtectedRoute from './ProtectedRoute';
 
 function protectedPage(page: ReactNode) {
-    return <RequireAuth>{page}</RequireAuth>;
+    return <ProtectedRoute>{page}</ProtectedRoute>;
 }
 
 export default function AppRoutes() {
@@ -116,6 +95,9 @@ export default function AppRoutes() {
                 <Route path="/edit-profile" element={protectedPage(<Navigate to="/profile/edit" replace />)} />
 
                 <Route path="/sports" element={<SportsPage />} />
+                <Route path="/sports/football" element={<FootballPage />} />
+                <Route path="/sports/rugby" element={<RugbyPage />} />
+                <Route path="/sports/basketball" element={<BasketballPage />} />
                 <Route path="/competitions" element={<Competitions />} />
                 <Route path="/news" element={<NewsSection />} />
                 <Route path="/tickets" element={<Tickets />} />
@@ -126,6 +108,11 @@ export default function AppRoutes() {
                 <Route path="/teams/:teamSlug/squad" element={<TeamSquadPage />} />
                 <Route path="/players/:playerSlug" element={<PlayerDetailPage />} />
                 <Route path="/standings" element={<StandingsPage />} />
+                <Route path="/leagues/uganda-premier-league" element={<UgandaPremierLeague />} />
+                <Route path="/leagues/nile-special-premiership" element={<NileSpecialPremiership />} />
+                <Route path="/leagues/national-basketball-league" element={<NationalBasketballLeague />} />
+                <Route path="/leagues/budo-league" element={<BudoLeague />} />
+                <Route path="/leagues/smack-league" element={<SmackLeague />} />
                 <Route path="/fixtures" element={<Fixtures />} />
                 <Route path="/results" element={<Results />} />
                 <Route path="/support" element={<Support />} />

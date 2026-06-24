@@ -5,7 +5,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { FiBell, FiUser, FiSearch } from "react-icons/fi";
 import { FaArrowRight } from "react-icons/fa6";
 import logo from "../assets/logo.png";
-import heroImg from "../assets/basketball.png";
+import heroImg from "../assets/basketball-card.png";
 import news1 from "../assets/rugby-card.png";
 import news2 from "../assets/hero.png";
 import news3 from "../assets/basketball-card.png";
@@ -17,6 +17,8 @@ type Notification = {
     read: boolean;
 };
 
+const API_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
+
 export default function NewsSection() {
     const [profile, setProfile] = useState<Record<string, string> | null>(null);
     const navigate = useNavigate();
@@ -27,12 +29,12 @@ export default function NewsSection() {
     const [open, setOpen] = useState(false);
 
     useEffect(() => {
-        axios.get("http://127.0.0.1:8000/api/profile/")
+        axios.get(`${API_URL}/api/profile/`)
             .then(res => setProfile(res.data));
     }, []);
 
     useEffect(() => {
-        axios.get("http://127.0.0.1:8000/api/notifications/")
+        axios.get(`${API_URL}/api/notifications/`)
             .then(res => setNotifications(res.data));
     }, []);
 
@@ -50,7 +52,7 @@ export default function NewsSection() {
                 </div>
                 <div className="navbar-icons">
                     <div className="search-container">
-                        {showSearch && <input type="text" placeholder="Search..." className="search-input" />}
+                        {showSearch && <input type="text" placeholder="Search..." className="news-search-input" />}
                         <FiSearch className="icon" onClick={() => setShowSearch(!showSearch)} />
                     </div>
 
@@ -252,60 +254,6 @@ export default function NewsSection() {
             </section>
 
             <Footer />
-            {/* 
-            <footer className="news-footer">
-                <div className="footer-logo">
-                    <img src={logo} alt="Logo" />
-                    <p className="footer-tagline">
-            The unified fan engagement and league platform for Ugandan sports.
-          </p>
-                </div>
-
-                <div>
-                    <h3>Platform</h3>
-                    <ul>
-                        <li><a>About Us</a></li>
-                        <li><a>How it Works</a></li>
-                        <li><a>For Leagues</a></li>
-                        <li><a>For clubs</a></li>
-                        
-                    </ul>
-                </div>
-                <div>
-                    <h3>Accounts</h3>
-                    <ul>
-                        <li><a>Football</a></li>
-                        <li><a>Rugby</a></li>
-                        <li><a>Basketball</a></li>
-                        <li><a>All Competitions</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h3>Company</h3>
-                    <ul>
-                        <li><a>About Us</a></li>
-                        <li><a>Contact</a></li>
-                        <li><a>Privacy Policy</a></li>
-                        <li><a>Tearms of use</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h3>Follow</h3>
-                    <ul>
-                        <li><a href="https://x.com" target="_blank" rel="noreferrer">
-                            <FaXTwitter />
-                        </a></li>
-                        <li><a href="https://instagram.com" target="_blank" rel="noreferrer">
-                            <FaInstagram />
-                        </a></li>
-                        <li><a href="https://facebook.com" target="_blank" rel="noreferrer">
-                            <FaFacebookF />
-                        </a></li>
-                    </ul>
-                </div>
-            </footer>
-*/}
-
         </div>
     );
 }

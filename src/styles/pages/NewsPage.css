@@ -98,16 +98,16 @@ background:
 }
 
 .navbar-logo img {
-  height: 45px;   /* control logo size */
+  height: 45px;
   width: auto;
   object-fit: contain;
   transition: transform 0.3s ease;
 }
 
-/* hover effect */
 .navbar-logo:hover img {
   transform: scale(1.05);
 }
+
 /*.......Hero Section......*/
 
 .hero-section {
@@ -118,7 +118,6 @@ background:
   color: white;
 }
 
-/* LEFT IMAGE */
 .hero-image {
   flex: 2;
   height: 420px;
@@ -137,19 +136,18 @@ background:
   transform: scale(1.05);
 }
 
-/* RIGHT SIDE */
 .hero-side {
   flex: 1;
   display: flex;
   flex-direction: column;
   gap: 15px;
 }
+
 .hero-title{
   font-family: League Spartan ExtraBold italic;
   font-style: italic;
 }
 
-/* CARDS */
 .hero-card {
   background: rgba(255, 255, 255, 0.05);
   padding: 20px;
@@ -163,8 +161,6 @@ background:
   color: #7f49fc;
   font-family: Space Grotesk Semibold ;
 }
-
-
 
 .hero-card:hover {
   transform: translateY(-4px);
@@ -182,13 +178,11 @@ background:
   margin-top: 10px;
 }
 
-/* MAIN ITEM */
 .trend-item {
   padding-bottom: 10px;
   border-bottom: 1px solid rgba(255,255,255,0.08);
 }
 
-/* TOP LINE */
 .trend-top {
   display: flex;
   align-items: center;
@@ -201,7 +195,7 @@ background:
   font-weight: bold;
   font-size: 18px;
   min-width: 25px;
-font-family: Inter Regular;
+  font-family: Inter Regular;
 }
 
 .trend-text {
@@ -209,7 +203,6 @@ font-family: Inter Regular;
   color: #ddd;
 }
 
-/* BOTTOM LINE */
 .trend-bottom {
   display: flex;
   justify-content: space-between;
@@ -218,31 +211,27 @@ font-family: Inter Regular;
   font-family: Inter Regular;
 }
 
-/* SPORT */
 .trend-sport {
   color: White;
   padding-left: 40px;
 }
 
-/* TIME */
 .trend-time {
   color: #888;
   font-family: Inter Regular;
 }
 
-/* HOVER */
 .trend-item:hover {
   background: rgba(255,255,255,0.04);
   padding-left: 5px;
   transition: 0.2s ease;
   cursor: pointer;
 }
-/* CARD */
+
 .results-card {
   padding: 20px;
 }
 
-/* HEADER */
 .results-header {
   display: flex;
   justify-content: space-between;
@@ -250,8 +239,6 @@ font-family: Inter Regular;
   margin-bottom: 12px;
 }
 
-
-/* BUTTON */
 .view-table {
   background: transparent;
   border: 1px solid rgba(255,255,255,0.2);
@@ -268,14 +255,12 @@ font-family: Inter Regular;
   background: rgba(255,255,255,0.08);
 }
 
-/* TABLE */
 .results-table {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-/* ROWS */
 .results-row {
   display: flex;
   justify-content: space-between;
@@ -286,7 +271,6 @@ font-family: Inter Regular;
   font-family: Inter Regular;
 }
 
-/* HEADER ROW */
 .results-row.header {
   font-weight: bold;
   color: #888;
@@ -294,7 +278,6 @@ font-family: Inter Regular;
   font-family: Inter Regular;
 }
 
-/* ALIGNMENT */
 .results-row span {
   flex: 1;
   text-align: center;
@@ -307,18 +290,16 @@ font-family: Inter Regular;
 .results-row span:last-child {
   text-align: right;
 }
-/* reponsive hero image */
+
 @media (max-width: 900px) {
   .hero-section {
     flex-direction: column;
-   
   }
 
   .hero-image {
     height: 300px;
   }
 }
-
 
 .hero-image {
   flex: 2;
@@ -333,7 +314,6 @@ font-family: Inter Regular;
   height: 100%;
   object-fit: cover;
 }
-
 
 .hero-overlay {
   position: absolute;
@@ -350,12 +330,10 @@ font-family: Inter Regular;
   color: white;
 }
 
-
 .hero-overlay .hero-title {
   font-size: 36px;
   margin-bottom: 10px;
 }
-
 
 .hero-overlay p {
   font-size: 14px;
@@ -365,13 +343,11 @@ font-family: Inter Regular;
   font-family: Inter Regular;
 }
 
-
 .hero-buttons {
   display: flex;
   gap: 12px;
   font-family: Inter Regular;
 }
-
 
 .btn-primary {
   background: #7f49fc;
@@ -390,7 +366,6 @@ font-family: Inter Regular;
   background: #3b6fe0;
   transform: translateY(-2px);
 }
-
 
 .btn-secondary {
   background: hsla(0, 0%, 50%, 0.356);
@@ -427,18 +402,17 @@ font-family: Inter Regular;
   padding-left: 10px;
   margin-top: 0;
 }
+
 .join-text h2{
-    font-family: Space Grotesk Semibold ;
+  font-family: Space Grotesk Semibold ;
 }
 
-/* GRID */
 .news-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 20px;
 }
 
-/* CARD */
 .news-card {
   background: rgba(24, 23, 23, 0.514);
   border-radius: 12px;
@@ -451,20 +425,16 @@ font-family: Inter Regular;
   transform: translateY(-5px);
 }
 
-/* IMAGE */
 .news-card img {
   width: 100%;
   height: 180px;
   object-fit: cover;
 }
 
-/* TEXT */
 .news-card h3 {
   font-size: 15px;
   margin: 12px;
   color: white;
- 
-  
 }
 
 .news-card p {
@@ -475,7 +445,6 @@ font-family: Inter Regular;
   font-family: Inter Regular;
 }
 
-/* BOTTOM INFO */
 .news-footer-info {
   display: flex;
   justify-content: space-between;
@@ -484,10 +453,11 @@ font-family: Inter Regular;
   color: #aaa;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
+
 .news-footer h3{
-    font-family: Space Grotesk Semibold ;
+  font-family: Space Grotesk Semibold ;
 }
-/* RESPONSIVE */
+
 @media (max-width: 900px) {
   .news-grid {
     grid-template-columns: 1fr;
@@ -499,17 +469,14 @@ font-family: Inter Regular;
   margin: 40px;
   padding: 30px 40px;
   background:rgba(151, 83, 240, 0.801);
-  /*background: linear-gradient(135deg, #10172a, #0b0f1a);*/
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 14px;
-
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 20px;
 }
 
-/* LEFT SIDE */
 .join-text {
   flex: 1;
 }
@@ -528,14 +495,12 @@ font-family: Inter Regular;
   font-family: Inter Regular;
 }
 
-/* RIGHT SIDE BUTTONS */
 .join-actions {
   display: flex;
   gap: 12px;
   font-family: Inter Regular;
 }
 
-/* BUTTONS */
 .btn-create {
   background: white;
   border: none;
@@ -544,7 +509,6 @@ font-family: Inter Regular;
   border-radius: 8px;
   cursor: pointer;
   transition: 0.3s ease;
-  
 }
 
 .btn-create:hover {
@@ -567,7 +531,6 @@ font-family: Inter Regular;
   transform: translateY(-2px);
 }
 
-/* RESPONSIVE */
 @media (max-width: 768px) {
   .join-elite {
     flex-direction: column;
@@ -580,9 +543,7 @@ font-family: Inter Regular;
   }
 }
 
-
 /*....Footer Style ...*/
-
 .news-footer {
   background: #0b0f1a;
   color: #ffffff;
@@ -594,30 +555,27 @@ font-family: Inter Regular;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-/* Logo section */
 .news-footer img {
   width: 120px;
   height: auto;
 }
 
-/* Each column */
 .news-footer > div {
   min-width: 160px;
 }
+
 .footer-logo p{
   font-family: Inter Regular;
   font-size: 14px;
   width: 250px;
 }
 
-/* Headings */
 .news-footer h3 {
   font-size: 16px;
   margin-bottom: 15px;
   color: white;
 }
 
-/* List reset */
 .news-footer ul {
   list-style: none;
   padding: 0;
@@ -625,12 +583,10 @@ font-family: Inter Regular;
   font-family: Inter Regular;
 }
 
-/* List items spacing */
 .news-footer li {
   margin-bottom: 10px;
 }
 
-/* Links */
 .news-footer a {
   color: #ccc;
   text-decoration: none;
@@ -639,13 +595,11 @@ font-family: Inter Regular;
   cursor: pointer;
 }
 
-/* Hover effect */
 .news-footer a:hover {
   color: #ffffff;
   padding-left: 5px;
 }
 
-/* Responsive (mobile) */
 @media (max-width: 768px) {
   .news-footer {
     flex-direction: column;
@@ -653,7 +607,6 @@ font-family: Inter Regular;
   }
 }
 
-/*....Footer bar...*/
 .footer-bottom-bar {
   background: #092d8f;
   color: hsl(0, 79%, 36%);
@@ -683,8 +636,9 @@ font-family: Inter Regular;
   font-size: 12px;
   font-weight: 500;
   padding: 10px;
-   white-space: nowrap;
+  white-space: nowrap;
 }
+
 .profile-dropdown {
   position: absolute;
   right: 0;
@@ -697,6 +651,7 @@ font-family: Inter Regular;
   overflow: hidden;
   z-index: 1000;
 }
+
 .item {
   padding: 10px;
   cursor: pointer;
@@ -720,8 +675,7 @@ font-family: Inter Regular;
   cursor: pointer;
 }
 
-
-/*......searh icon...*/
+/*......search icon...*/
 .search-container {
   display: flex;
   align-items: center;
@@ -730,13 +684,14 @@ font-family: Inter Regular;
   flex: 1;
   justify-content: flex-end;
 }
-.search-input {
+
+.news-search-input {
   margin-left: 10px;
   padding: 8px 12px;
   border-radius: 20px;
   border: 1px solid #ccc;
   outline: none;
-  position:absolute;
+  position: absolute;
   right: 20px;
   top: 35px;
   transform: translateY(-50%);
@@ -748,6 +703,7 @@ font-family: Inter Regular;
   font-size: 19px;
   cursor: pointer;
 }
+
 .notification-dropdown {
   position: absolute;
   right: 0;
@@ -759,6 +715,7 @@ font-family: Inter Regular;
   box-shadow: 0 4px 12px rgba(0,0,0,0.2);
   padding: 10px;
 }
+
 .badge {
   position: absolute;
   top: -6px;
@@ -773,12 +730,14 @@ font-family: Inter Regular;
   justify-content: center;
   align-items: center;
 }
+
 .notification-item {
   padding: 8px;
   border-bottom: 1px solid #eee;
   font-size: 12px;
   cursor: pointer;
 }
+
 .notification-item:hover {
   background: #f2f2f2;
 }
