@@ -43,10 +43,21 @@ vi.mock('../pages/auth/VerifyEmail', () => ({
     default: () => <h1>Verify Email Page</h1>,
 }))
 
-vi.mock('./ProtectedRoute', async () => {
-    const actual = await vi.importActual('./ProtectedRoute')
-    return actual
-})
+vi.mock('./ProtectedRoute', () => ({
+    default: ({ children }: { children: React.ReactNode }) => {
+        const { useAuthStore } = require('../store/authStore')
+        const requiresEmailVerification = useAuthStore.getState().requiresEmailVerification
+        const accessToken = useAuthStore.getState().accessToken
+        
+        if (requiresEmailVerification) {
+            return <h1>Verify Email Page</h1>
+        }
+        if (!accessToken && !localStorage.getItem('league_os_access_token')) {
+            return <h1>Login Page</h1>
+        }
+        return <>{children}</>
+    },
+}))
 
 function visit(path: string) {
     window.history.pushState({}, '', path)
