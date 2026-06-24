@@ -17,7 +17,6 @@ export default function AboutUs() {
 
   const state = location.state as LocationState | null;
 
-  const [showSearch, setShowSearch] = useState(false);
   const [activeTab, setActiveTab] = useState(state?.tab ?? "about");
 
   return (
@@ -47,20 +46,26 @@ export default function AboutUs() {
           >
             How It Works
           </li>
+           <li
+            className={activeTab === "a-league" ? "active" : ""}
+            onClick={() => setActiveTab("league")}
+          >
+            About Leagues
+          </li>
+           <li
+            className={activeTab === "a-club" ? "active" : ""}
+            onClick={() => setActiveTab("a-club")}
+          >
+            About Club
+          </li>
         </div>
 
         <div className="navbar-icons">
           <div className="search-container">
-            {showSearch && (
-              <input
-                type="text"
-                placeholder="Search..."
-                className="search-input"
-              />
-            )}
+           
             <FiSearch
               className="icon"
-              onClick={() => setShowSearch(!showSearch)}
+              
             />
           </div>
         </div>
@@ -82,9 +87,7 @@ export default function AboutUs() {
               </p>
               <button className="aboutus-main-btn">Learn More</button>
             </div>
-            <div className="about-main-image">
-              <img src={aboutImage} alt="UFE League sports" />
-            </div>
+            
           </div>
         )}
 
@@ -217,6 +220,8 @@ export default function AboutUs() {
             </section>
           </div>
         )}
+
+        
       </div>
 
       <Footer />
