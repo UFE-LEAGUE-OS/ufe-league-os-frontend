@@ -1,6 +1,5 @@
 import React from 'react'
 import { render, screen } from '@testing-library/react'
-import { Navigate } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import AppRoutes from './AppRoutes'
 import { useAuthStore } from '../store/authStore'
