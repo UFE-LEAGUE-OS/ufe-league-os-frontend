@@ -108,101 +108,6 @@
   padding: 48px 24px 80px;
 }
 
-/* ── Spotlight Banner ── */
-.unions-spotlight {
-  margin-bottom: 48px;
-  padding: 32px 36px;
-  border-radius: 20px;
-  display: flex;
-  align-items: center;
-  gap: 24px;
-  flex-wrap: wrap;
-  position: relative;
-  overflow: hidden;
-  cursor: pointer;
-  transition: all 0.4s ease;
-}
-
-.unions-spotlight:hover {
-  transform: translateY(-2px);
-}
-
-.unions-spotlight__bg-emoji {
-  position: absolute;
-  top: -40px;
-  right: -40px;
-  font-size: 8rem;
-  opacity: 0.08;
-  pointer-events: none;
-}
-
-.unions-spotlight__emoji {
-  font-size: 3rem;
-}
-
-.unions-spotlight__content {
-  flex: 1;
-  min-width: 200px;
-}
-
-.unions-spotlight__eyebrow {
-  margin: 0 0 4px;
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  letter-spacing: 0.15em;
-  font-weight: 700;
-}
-
-.unions-spotlight__title {
-  margin: 0 0 6px;
-  font-size: 1.4rem;
-  font-weight: 800;
-}
-
-.unions-spotlight__desc {
-  margin: 0;
-  color: #94A3B8;
-  font-size: 0.9rem;
-  line-height: 1.6;
-}
-
-.unions-spotlight__btn {
-  padding: 10px 20px;
-  border-radius: 10px;
-  border: none;
-  color: #fff;
-  font-size: 0.85rem;
-  font-weight: 700;
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: opacity 0.2s;
-}
-
-.unions-spotlight__btn:hover {
-  opacity: 0.85;
-}
-
-.unions-spotlight__dots {
-  position: absolute;
-  bottom: 12px;
-  right: 16px;
-  display: flex;
-  gap: 6px;
-}
-
-.unions-spotlight__dot {
-  height: 6px;
-  border-radius: 3px;
-  transition: all 0.3s;
-  cursor: pointer;
-  background: rgba(255, 255, 255, 0.2);
-  width: 6px;
-}
-
-.unions-spotlight__dot--active {
-  width: 18px;
-}
-
 /* ── Controls ── */
 .unions-controls {
   display: flex;
@@ -228,63 +133,11 @@
   border-color: rgba(124, 58, 237, 0.5);
 }
 
-.unions-sort {
-  padding: 11px 14px;
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: #080D1A;
-  color: #94A3B8;
-  font-size: 0.85rem;
-  cursor: pointer;
-  outline: none;
-}
-
-.unions-view-toggle {
-  display: flex;
-  border-radius: 10px;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.unions-view-toggle__btn {
-  padding: 10px 16px;
-  border: none;
-  color: #64748B;
-  font-size: 0.85rem;
-  cursor: pointer;
-  font-weight: 600;
-  background: transparent;
-  transition: all 0.2s;
-}
-
-.unions-view-toggle__btn--active {
-  background: #7C3AED;
-  color: #fff;
-}
-
-.unions-timeline-btn {
-  padding: 10px 16px;
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: transparent;
-  color: #64748B;
-  font-size: 0.85rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.unions-timeline-btn--active {
-  background: rgba(124, 58, 237, 0.2);
-  color: #A5B4FC;
-}
-
 /* ── Sport Filters ── */
 .unions-sport-filters {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-bottom: 12px;
 }
 
 .unions-sport-filters__btn {
@@ -305,128 +158,11 @@
   color: #fff;
 }
 
-/* ── Status Filter Pills ── */
-.unions-status-filters {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 28px;
-}
-
-.unions-status-filters__btn {
-  padding: 6px 14px;
-  border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: transparent;
-  font-size: 0.78rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s;
-  color: #64748B;
-}
-
-.unions-status-filters__btn--all.active {
-  background: rgba(124, 58, 237, 0.2);
-  color: #A5B4FC;
-  border: none;
-}
-
-.unions-status-filters__btn--active-status.active {
-  background: rgba(16, 185, 129, 0.2);
-  color: #10B981;
-  border: none;
-}
-
-.unions-status-filters__btn--developing.active {
-  background: rgba(245, 158, 11, 0.2);
-  color: #F59E0B;
-  border: none;
-}
-
 /* ── Results Count ── */
 .unions-results-count {
   color: #64748B;
   font-size: 0.85rem;
   margin-bottom: 24px;
-}
-
-/* ── Timeline ── */
-.unions-timeline {
-  margin-bottom: 48px;
-  padding: 32px 24px;
-  border-radius: 20px;
-  background: #080D1A;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.unions-timeline__heading {
-  margin: 0 0 28px;
-  font-size: 1rem;
-  font-weight: 700;
-  color: #94A3B8;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-}
-
-.unions-timeline__track {
-  position: relative;
-  padding-left: 32px;
-}
-
-.unions-timeline__line {
-  position: absolute;
-  left: 10px;
-  top: 0;
-  bottom: 0;
-  width: 2px;
-  background: rgba(255, 255, 255, 0.06);
-  border-radius: 2px;
-}
-
-.unions-timeline__item {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 24px;
-  cursor: pointer;
-  transition: opacity 0.2s;
-}
-
-.unions-timeline__item:last-child {
-  margin-bottom: 0;
-}
-
-.unions-timeline__item:hover {
-  opacity: 0.75;
-}
-
-.unions-timeline__dot {
-  position: absolute;
-  left: 4px;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  border: 2px solid #080D1A;
-  flex-shrink: 0;
-}
-
-.unions-timeline__year {
-  font-weight: 800;
-  font-size: 0.9rem;
-  min-width: 44px;
-}
-
-.unions-timeline__name {
-  font-weight: 700;
-  font-size: 0.9rem;
-  color: #F8FAFC;
-}
-
-.unions-timeline__badge {
-  padding: 2px 8px;
-  border-radius: 6px;
-  font-size: 0.68rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
 }
 
 /* ── Cards Grid ── */
@@ -436,19 +172,11 @@
   gap: 16px;
 }
 
-.unions-list {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
 /* ── Union Card ── */
 .union-card {
   padding: 28px;
   border-radius: 20px;
   background: #080D1A;
-  border: 1px solid rgba(148, 163, 184, 0.08);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
   cursor: pointer;
   transition: all 0.25s ease;
 }
@@ -457,11 +185,18 @@
   transform: translateY(-4px);
 }
 
-.union-card--list {
-  padding: 20px 28px;
+.union-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.union-card__header-left {
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 16px;
 }
 
 .union-card__icon {
@@ -473,23 +208,6 @@
   justify-content: center;
   font-size: 1.8rem;
   flex-shrink: 0;
-}
-
-.union-card__body {
-  flex: 1;
-}
-
-.union-card__header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 12px;
-  margin-bottom: 10px;
-  margin-top: 16px;
-}
-
-.union-card__header--list {
-  margin-top: 0;
 }
 
 .union-card__badges {
@@ -526,11 +244,6 @@
   color: #F59E0B;
 }
 
-.union-card__hq {
-  font-size: 0.7rem;
-  color: #475569;
-}
-
 .union-card__title {
   margin: 0;
   font-size: 1.05rem;
@@ -539,30 +252,9 @@
   line-height: 1.2;
 }
 
-.union-card__meta {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-shrink: 0;
-}
-
-.union-card__share {
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
-  padding: 4px 10px;
-  font-size: 0.75rem;
-  cursor: pointer;
-  transition: all 0.2s;
-  color: #475569;
-}
-
-.union-card__share--copied {
-  color: #10B981;
-}
-
 .union-card__founded {
   text-align: right;
+  flex-shrink: 0;
 }
 
 .union-card__founded-label {
@@ -616,37 +308,86 @@
   letter-spacing: 0.08em;
 }
 
-/* ── Social Links ── */
-.union-card__social {
-  display: flex;
-  gap: 8px;
-  margin-top: 14px;
+/* ── Expanded Section ── */
+.union-card__expanded {
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding-top: 16px;
+  margin-top: 4px;
 }
 
-.union-card__social-link {
-  padding: 5px 12px;
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.03);
-  color: #64748B;
+.union-card__focus-heading {
+  margin: 0 0 10px;
   font-size: 0.75rem;
+  color: #64748B;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-weight: 700;
+}
+
+.union-card__focus-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.union-card__focus-tag {
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.union-card__actions {
+  display: flex;
+  gap: 10px;
+}
+
+.union-card__action-btn {
+  flex: 1;
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.union-card__action-btn:hover {
+  opacity: 0.85;
+}
+
+.union-card__website-link {
+  flex: 1;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: transparent;
+  color: #94A3B8;
+  font-size: 0.85rem;
+  font-weight: 700;
   text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: color 0.2s;
 }
 
-.union-card__social-link:hover {
+.union-card__website-link:hover {
   color: #F8FAFC;
 }
 
-.union-card__social-link--twitter:hover { color: #1DA1F2; }
-.union-card__social-link--instagram:hover { color: #E1306C; }
-.union-card__social-link--youtube:hover { color: #FF0000; }
+/* ── Expand Hint ── */
+.union-card__expand-hint {
+  text-align: center;
+  margin-top: 12px;
+}
 
-/* ── List mode arrow ── */
-.union-card__arrow {
+.union-card__expand-hint span {
+  font-size: 0.75rem;
   color: #475569;
-  font-size: 1.2rem;
-  flex-shrink: 0;
 }
 
 /* ── Empty State ── */
@@ -723,10 +464,6 @@
     grid-template-columns: 1fr;
   }
 
-  .unions-spotlight {
-    padding: 24px 20px;
-  }
-
   .unions-cta {
     padding: 32px 20px;
   }
@@ -734,105 +471,4 @@
   .unions-cta__title {
     font-size: 1.5rem;
   }
-
-  .union-card--list {
-    flex-wrap: wrap;
-  }
-}
-
-/* Card header layout */
-.union-card__header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 16px;
-  margin-bottom: 16px;
-}
-
-.union-card__header-left {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-/* Expanded section */
-.union-card__expanded {
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
-  padding-top: 16px;
-  margin-top: 4px;
-}
-
-.union-card__focus-heading {
-  margin: 0 0 10px;
-  font-size: 0.75rem;
-  color: #64748B;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  font-weight: 700;
-}
-
-.union-card__focus-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 20px;
-}
-
-.union-card__focus-tag {
-  padding: 6px 12px;
-  border-radius: 8px;
-  font-size: 0.78rem;
-  font-weight: 600;
-}
-
-.union-card__actions {
-  display: flex;
-  gap: 10px;
-}
-
-.union-card__action-btn {
-  flex: 1;
-  padding: 10px;
-  border-radius: 10px;
-  border: none;
-  color: #fff;
-  font-size: 0.85rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: opacity 0.2s;
-}
-
-.union-card__action-btn:hover {
-  opacity: 0.85;
-}
-
-.union-card__website-link {
-  flex: 1;
-  padding: 10px;
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: transparent;
-  color: #94A3B8;
-  font-size: 0.85rem;
-  font-weight: 700;
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: color 0.2s;
-}
-
-.union-card__website-link:hover {
-  color: #F8FAFC;
-}
-
-/* Expand hint */
-.union-card__expand-hint {
-  text-align: center;
-  margin-top: 12px;
-}
-
-.union-card__expand-hint span {
-  font-size: 0.75rem;
-  color: #475569;
 }
