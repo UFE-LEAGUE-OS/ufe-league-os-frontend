@@ -1,3 +1,4 @@
+import React from 'react'
 import { render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import AppRoutes from './AppRoutes'
@@ -45,10 +46,9 @@ vi.mock('../pages/auth/VerifyEmail', () => ({
 
 vi.mock('./ProtectedRoute', () => ({
     default: ({ children }: { children: React.ReactNode }) => {
-        const { useAuthStore } = require('../store/authStore')
         const requiresEmailVerification = useAuthStore.getState().requiresEmailVerification
         const accessToken = useAuthStore.getState().accessToken
-        
+
         if (requiresEmailVerification) {
             return <h1>Verify Email Page</h1>
         }
