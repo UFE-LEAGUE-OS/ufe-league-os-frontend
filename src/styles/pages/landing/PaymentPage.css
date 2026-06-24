@@ -1,0 +1,531 @@
+/* RESET */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Inter", Arial, sans-serif;
+}
+.payment-page {
+  min-height: 100vh;
+  background:
+    linear-gradient(rgba(2,6,23,0.8), rgba(2,6,23,0.9)),
+    url("/images/basketball-card.png");
+  background-size: cover;
+  background-position: center;
+}
+
+/* PAGE WRAPPER (safer than styling body directly in React apps) */
+
+
+/* NAVBAR */
+.news-navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 40px;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+/* LOGO */
+.navbar-logo img {
+  height: 38px;
+}
+
+/* LINKS */
+.navbar-links {
+  display: flex;
+  padding-left: 10%; 
+  align-items: center;
+  gap: 28px;
+}
+
+.navbar-links a {
+  text-decoration: none;
+  color: #cbd5e1;
+  font-size: 16px;
+  transition: 0.3s;
+  position: relative;
+ 
+}
+
+.navbar-links a:hover {
+  color: #6d28d9;
+}
+
+.navbar-links a::after {
+  content: "";
+  position: absolute;
+  bottom: -6px;
+  left: 0;
+  width: 0%;
+  height: 2px;
+  background: #6d28d9;
+  transition: 0.3s;
+}
+
+.navbar-links a:hover::after {
+  width: 100%;
+}
+
+/* PROFILE */
+.profile-wrapper {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(56, 189, 248, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.profile-wrapper:hover {
+  transform: scale(1.05);
+}
+
+/* INTRO */
+.payment-intro {
+  text-align: center;
+  padding: 60px 20px 20px;
+  max-width: 800px;
+  margin: auto;
+}
+
+.payment-intro h1 {
+  font-size: 36px;
+  color: white;
+  margin-bottom: 10px;
+}
+
+.payment-intro p {
+  color: #94a3b8;
+  line-height: 1.6;
+}
+
+/* TOGGLE */
+.payment-toggle {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin: 20px 0 40px;
+  flex-wrap: wrap;
+}
+
+.payment-toggle button {
+  padding: 10px 18px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: #0b1220;
+  color: #cbd5e1;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.payment-toggle button:hover {
+  border-color: #6d28d9;
+  color: #6d28d9;
+}
+
+.payment-toggle .active {
+ background: linear-gradient(90deg, #6d28d9, #4f46e5);
+  color: white;
+  border: none;
+}
+
+/* HERO */
+.payment-hero {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  padding: 40px 20px;
+  flex-wrap: wrap;
+  align-content: flex-start;
+}
+
+/* CARD */
+.hero-card {
+  width: 420px;
+  padding: 30px;
+  border-radius: 18px;
+  background: linear-gradient(145deg, #0b1220, #111827);
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+  height: fit-content;
+}
+
+.hero-card:hover {
+  transform: translateY(-6px);
+}
+
+/* LEFT */
+.membership-left h2,
+.membership-right h2 {
+  color: #6d28d9;
+  margin-bottom: 10px;
+}
+
+.membership-left p {
+  color: #94a3b8;
+  margin-bottom: 15px;
+}
+
+.benefits {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  color: #e2e8f0;
+}
+
+.badge {
+  margin-top: 15px;
+  padding: 6px 12px;
+  display: inline-block;
+  background: rgba(56, 189, 248, 0.15);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: 20px;
+  font-size: 12px;
+  color: #6d28d9;
+}
+
+/* PRICE */
+.price-box {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.price-box h1 {
+  font-size: 36px;
+}
+
+/* SUMMARY */
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  color: #cbd5e1;
+}
+
+.summary-row.total {
+  color: #6d28d9;
+  font-weight: bold;
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+/* BUTTON */
+.pay-btn {
+  width: 100%;
+  padding: 14px;
+  margin-top: 20px;
+  border: none;
+  border-radius: 12px;
+ background: linear-gradient(90deg, #6d28d9, #4f46e5);
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.pay-btn:hover {
+  transform: translateY(-2px);
+}
+
+/* SELECT */
+.hero-card select {
+  width: 100%;
+  padding: 12px;
+  margin: 10px 0 20px;
+  border-radius: 10px;
+  background: #0b1220;
+  color: white;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.hero-card select:focus {
+  border-color: #6d28d9;
+}
+
+/* Moile Responsive...................... */
+@media (max-width: 768px) {
+
+  /* NAVBAR */
+  .news-navbar {
+    padding: 12px 16px;
+  }
+
+  .navbar-links {
+    display: none; /* later we can replace with hamburger menu */
+  }
+
+  /* INTRO TEXT */
+  .payment-intro {
+    padding: 30px 16px 10px;
+  }
+
+  .payment-intro h1 {
+    font-size: 24px;
+  }
+
+  .payment-intro p {
+    font-size: 14px;
+  }
+
+  /* TOGGLE BUTTONS */
+  .payment-toggle {
+    flex-direction: column;
+    gap: 10px;
+    padding: 0 16px;
+  }
+
+  .payment-toggle button {
+    width: 100%;
+  }
+
+  /* HERO LAYOUT */
+  .payment-hero {
+    flex-direction: column;
+    padding: 20px 16px;
+    gap: 16px;
+  }
+
+  /* CARDS */
+  .hero-card {
+    width: 100%;
+    padding: 20px;
+  }
+
+  /* TEXT SIZE FIX */
+  .hero-card h2 {
+    font-size: 18px;
+  }
+ 
+
+  .summary-row {
+    font-size: 14px;
+  }
+
+  /* PAYMENT METHODS */
+  .method-card {
+    flex-direction: row;
+    padding: 10px;
+  }
+
+  .method-card img {
+    width: 28px;
+    height: 28px;
+  }
+
+  /* INPUT FIX */
+  .hero-card input,
+  .hero-card select {
+    font-size: 14px;
+    padding: 10px;
+  }
+ 
+  /* BUTTON */
+  .pay-btn {
+    padding: 12px;
+    font-size: 14px;
+  }
+}
+
+.payment-methods {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.method-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  background: #0b1220;
+  border: 1px solid rgba(255,255,255,0.08);
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+/* Image on the left */
+.method-card img {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  order: 1;
+}
+
+/* Text in the middle */
+.method-card span {
+  color: #cbd5e1;
+  flex: 1;
+  order: 2;
+}
+
+/* Radio button on the right */
+.method-card input {
+  display: inline-block;
+  margin-left: 50%;
+  order: 3;
+  width: 18px;
+  height: 18px;
+  accent-color: #6d28d9;
+}
+
+.method-card span {
+  color: #cbd5e1;
+  font-size: 14px;
+}
+
+/* hover */
+.method-card:hover {
+  border-color: #6d28d9;
+  transform: translateY(-2px);
+}
+
+/* active state */
+.method-card.active {
+  border: 1px solid #6d28d9;
+  background: rgba(56, 189, 248, 0.08);
+}
+
+.match-info {
+  margin: 20px 0 20px;
+  padding: 20px;
+  border-radius: 12px;
+  background: rgba(56, 189, 248, 0.05);
+  border: 1px solid rgba(56, 189, 248, 0.1);
+ align-content: center;
+ width: 90%;
+}
+
+.match-info h3 {
+  color: rgba(255, 68, 0, 0.63);
+  margin-bottom: 6px;
+}
+
+.match-info p {
+  color: #94a3b8;
+  font-size: 12px;
+  margin: 10px 0;
+  display: inline;
+
+}
+.match-info span{
+  color: white;
+}
+
+.hero-card input {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  background: #0b1220;
+  border: 1px solid rgba(255,255,255,0.1);
+  color: white;
+  outline: none;
+}
+
+.payment-intro h1 span{
+  color: orangered;
+}
+
+/*..........pop up........*/
+.payment-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+
+.confirmation-card {
+
+  width: 420px;
+  padding: 30px;
+
+  background: #111827;
+
+  border-radius: 18px;
+
+  border: 1px solid rgba(255,255,255,0.1);
+
+  box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+
+}
+
+
+.confirmation-card h2 {
+
+  text-align: center;
+  color: orangered;
+  margin-bottom: 20px;
+
+}
+
+
+.confirm-row {
+
+ display:flex;
+ justify-content:space-between;
+ padding:12px 0;
+
+ color:#cbd5e1;
+
+ border-bottom:1px solid rgba(255,255,255,0.08);
+
+}
+
+
+.confirm-row.total {
+
+ color:#6d28d9;
+ font-weight:bold;
+
+}
+
+
+.confirmation-buttons {
+
+ display:flex;
+ gap:15px;
+ margin-top:25px;
+
+}
+
+
+.confirmation-buttons button {
+
+ flex:1;
+ padding:12px;
+ border-radius:10px;
+ border:none;
+ cursor:pointer;
+
+}
+
+
+.cancel-btn {
+
+ background:#374151;
+ color:white;
+
+}
+
+
+.confirm-btn {
+
+ background:linear-gradient(90deg,#6d28d9,#4f46e5);
+ color:white;
+
+}

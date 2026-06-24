@@ -3,7 +3,7 @@ import logo from '../assets/logo.png';
 import { Link } from 'react-router-dom';
 import { FaFacebook, FaInstagram, FaYoutube, FaTiktok } from 'react-icons/fa';
 import { FaXTwitter } from 'react-icons/fa6';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 
 function Footer() {
   const navigate = useNavigate();
@@ -18,13 +18,13 @@ function Footer() {
           </p>
         </div>
 
-        <div className="footer-col">
-          <h4>PLATFORM</h4>
-          <a onClick={() => navigate('/About', { state: { tab: 'about' } })} style={{ cursor: 'pointer' }}>About Us</a>
-          <a onClick={() => navigate('/About', { state: { tab: 'how-it-works' } })} style={{ cursor: 'pointer' }}>How It Works</a>
-          <a onClick={() => navigate('/for-leagues')} style={{ cursor: 'pointer' }}>For Leagues</a>
-          <a onClick={() => navigate('/for-clubs')} style={{ cursor: 'pointer' }}>For Clubs</a>
-        </div>
+       <div className="footer-col">
+  <h4>PLATFORM</h4>
+<Link to="/about" state={{ tab: "about" }}>About Us</Link>
+<Link to="/about" state={{ tab: "how-it-works" }}> How It Works</Link>
+<Link to="/about" state={{ tab: "a-league" }}>For Leagues</Link>
+<Link to="/about" state={{ tab: "a-club" }}>For Clubs</Link>
+</div>
 
         <div className="footer-col">
           <h4>COMPETITIONS</h4>

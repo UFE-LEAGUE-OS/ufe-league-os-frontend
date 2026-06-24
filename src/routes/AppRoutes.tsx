@@ -3,7 +3,9 @@ import {
     Navigate,
     Route,
     Routes,
+   
 } from 'react-router-dom';
+
 import { type ReactNode } from 'react';
 
 import {
@@ -57,6 +59,7 @@ import MembershipSuccessPage from '../pages/memberships/MembershipSuccessPage';
 import MembershipFailedPage from '../pages/memberships/MembershipFailedPage';
 import MyMembershipsPage from '../pages/memberships/MyMembershipsPage';
 import ProtectedRoute from './ProtectedRoute';
+import Payments from '../pages/PaymentPage';
 
 function protectedPage(page: ReactNode) {
     return <ProtectedRoute>{page}</ProtectedRoute>;
@@ -66,6 +69,7 @@ export default function AppRoutes() {
     return (
         <Router>
             <AuthRequiredGate />
+
             <Routes>
                 <Route path="/" element={<Landing />} />
                 <Route path="/login" element={<Login />} />
@@ -76,6 +80,7 @@ export default function AppRoutes() {
                 <Route path="/verify-email" element={<VerifyEmail />} />
 
                 <Route path="/dashboard" element={protectedPage(<Navigate to="/dashboard/fan" replace />)} />
+
                 <Route element={protectedPage(<AuthenticatedLayout />)}>
                     <Route path="/dashboard/fan" element={<Dashboard />} />
                     <Route path="/profile" element={<Profile />} />
@@ -86,6 +91,7 @@ export default function AppRoutes() {
                     <Route path="/profile/notifications" element={<ProfileNotifications />} />
                     <Route path="/profile/privacy" element={<ProfilePrivacy />} />
                     <Route path="/profile/support" element={<ProfileSupport />} />
+
                     <Route path="/memberships" element={<ExploreMembershipsPage />} />
                     <Route path="/memberships/:clubSlug" element={<ClubMembershipDetailPage />} />
                     <Route path="/memberships/:clubSlug/checkout" element={<MembershipCheckoutPage />} />
@@ -93,6 +99,7 @@ export default function AppRoutes() {
                     <Route path="/memberships/:clubSlug/failed" element={<MembershipFailedPage />} />
                     <Route path="/dashboard/memberships" element={<MyMembershipsPage />} />
                 </Route>
+
                 <Route path="/edit-profile" element={protectedPage(<Navigate to="/profile/edit" replace />)} />
 
                 <Route path="/sports" element={<SportsPage />} />
@@ -118,8 +125,10 @@ export default function AppRoutes() {
                 <Route path="/fixtures" element={<Fixtures />} />
                 <Route path="/results" element={<Results />} />
                 <Route path="/support" element={<Support />} />
-
                 <Route path="/about" element={<AboutUs />} />
+
+                {/* ✅ FIX: Payments route */}
+                <Route path="/payments" element={<Payments />} />
             </Routes>
         </Router>
     );
