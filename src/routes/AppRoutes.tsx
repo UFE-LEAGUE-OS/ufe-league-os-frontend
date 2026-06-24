@@ -24,7 +24,7 @@ import {
 
 import Personalize from '../pages/auth/Personalize';
 // Change to the new path
-import NewsSection from "../pages/landing/NewsPage";
+import NewsSection from "../pages/NewsPage";
 import ProfileEdit from '../pages/fan/ProfileEdit';
 import ProfileInterests from '../pages/fan/ProfileInterests';
 import ProfileClubs from '../pages/fan/ProfileClubs';
