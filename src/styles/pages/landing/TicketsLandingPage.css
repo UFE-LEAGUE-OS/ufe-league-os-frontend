@@ -97,7 +97,7 @@
   padding: 0.55rem 1.4rem;
   border-radius: 8px;
   border: none;
-  background: #7C3AED;   /* was #5b6270 — now matches Log In purple */
+  background: #7C3AED;
   color: #fff;
   font-size: 0.85rem;
   font-weight: 700;
@@ -224,13 +224,13 @@
   border-color: rgba(124, 58, 237, 0.4);
 }
 
-   /* ── Card Header ── */
+/* ── Card Header ── */
 .match-card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1.25rem;
-  gap: 1rem; /* add this */
+  gap: 1rem;
 }
 
 .match-date {
@@ -355,7 +355,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 1rem; /* add space between  and buy ticket button */
+  gap: 1rem;
 }
 
 .tier-price {
@@ -519,7 +519,6 @@
   }
 }
 
-
 .tickets-page {
   position: relative;
   min-height: 100vh;
@@ -527,7 +526,7 @@
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
-  background-color: #0a0a1a; /* fallback while image loads */
+  background-color: #0a0a1a;
 }
 
 .tickets-page::before {
@@ -539,14 +538,6 @@
   pointer-events: none;
 }
 
-/* .tickets-nav,
-.tickets-main,
-.footer {
-  position: relative;
-  z-index: 1;
-} */
-
-.navbar,
 .tickets-main,
 .footer {
   position: relative;
