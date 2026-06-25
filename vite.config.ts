@@ -1,6 +1,7 @@
 import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 import { fileURLToPath } from 'node:url'
+import path from 'node:path'
 
 const projectRoot = fileURLToPath(new URL('.', import.meta.url))
 
@@ -11,7 +12,10 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      'react-transition-group/TransitionGroupContext': 'react-transition-group/cjs/TransitionGroupContext.js', // ← fix
+      'react-transition-group/TransitionGroupContext': path.resolve('./node_modules/react-transition-group/cjs/TransitionGroupContext.js'),
+      'react-transition-group/Transition': path.resolve('./node_modules/react-transition-group/cjs/Transition.js'),
+      'react-transition-group/CSSTransition': path.resolve('./node_modules/react-transition-group/cjs/CSSTransition.js'),
+      'react-transition-group/TransitionGroup': path.resolve('./node_modules/react-transition-group/cjs/TransitionGroup.js'),
     },
   },
   test: {
