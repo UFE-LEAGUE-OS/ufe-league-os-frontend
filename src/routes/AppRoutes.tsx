@@ -60,6 +60,7 @@ import MembershipFailedPage from '../pages/memberships/MembershipFailedPage';
 import MyMembershipsPage from '../pages/memberships/MyMembershipsPage';
 import ProtectedRoute from './ProtectedRoute';
 import Payments from '../pages/PaymentPage';
+import FanPollsPage from '../pages/fan/FanPollsPage'; // ← new
 
 function protectedPage(page: ReactNode) {
     return <ProtectedRoute>{page}</ProtectedRoute>;
@@ -98,6 +99,9 @@ export default function AppRoutes() {
                     <Route path="/memberships/:clubSlug/success" element={<MembershipSuccessPage />} />
                     <Route path="/memberships/:clubSlug/failed" element={<MembershipFailedPage />} />
                     <Route path="/dashboard/memberships" element={<MyMembershipsPage />} />
+
+                    {/* Fan Interaction */}
+                    <Route path="/fan/polls" element={<FanPollsPage />} /> {/* ← new */}
                 </Route>
 
                 <Route path="/edit-profile" element={protectedPage(<Navigate to="/profile/edit" replace />)} />
@@ -127,7 +131,6 @@ export default function AppRoutes() {
                 <Route path="/support" element={<Support />} />
                 <Route path="/about" element={<AboutUs />} />
 
-                {/* ✅ FIX: Payments route */}
                 <Route path="/payments" element={<Payments />} />
             </Routes>
         </Router>
