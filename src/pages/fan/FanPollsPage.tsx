@@ -2,7 +2,7 @@ import { ThemeProvider, createTheme, CssBaseline } from "@mui/material";
 import Navbar from "../../components/FanInteraction/Navbar";
 import Sidebar from "../../components/FanInteraction/Sidebar";
 import PollsHub from "./PollsHub";   // ← relative path
-import "./styles/global.css";
+import "../../styles/pages/FanInteractionGlobal.css";
 
 const darkTheme = createTheme({
   palette: {
