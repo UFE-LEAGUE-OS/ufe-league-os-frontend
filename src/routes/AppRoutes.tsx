@@ -58,6 +58,7 @@ import MembershipCheckoutPage from '../pages/memberships/MembershipCheckoutPage'
 import MembershipSuccessPage from '../pages/memberships/MembershipSuccessPage';
 import MembershipFailedPage from '../pages/memberships/MembershipFailedPage';
 import MyMembershipsPage from '../pages/memberships/MyMembershipsPage';
+import MyTicketsPage from '../pages/fan/MyTicketsPage';
 import ProtectedRoute from './ProtectedRoute';
 import Payments from '../pages/PaymentPage';
 
@@ -98,6 +99,7 @@ export default function AppRoutes() {
                     <Route path="/memberships/:clubSlug/success" element={<MembershipSuccessPage />} />
                     <Route path="/memberships/:clubSlug/failed" element={<MembershipFailedPage />} />
                     <Route path="/dashboard/memberships" element={<MyMembershipsPage />} />
+                    <Route path="/dashboard/tickets" element={<MyTicketsPage />} />
                 </Route>
 
                 <Route path="/edit-profile" element={protectedPage(<Navigate to="/profile/edit" replace />)} />
