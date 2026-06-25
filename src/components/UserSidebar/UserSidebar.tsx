@@ -52,7 +52,7 @@ const sidebarSections: SidebarSection[] = [
         title: "Fan Hub",
         links: [
             { label: "My Matches", href: "/fixtures", icon: CalendarDays },
-            { label: "My Tickets", href: "/tickets", icon: Ticket },
+            { label: "My Tickets", href: "/dashboard/tickets", icon: Ticket },
             { label: "My Memberships", href: "/dashboard/memberships", icon: Trophy },
             { label: "Watchlist", href: "/dashboard/watchlist", icon: Heart },
             { label: "News Feed", href: "/dashboard/news", icon: Newspaper },
