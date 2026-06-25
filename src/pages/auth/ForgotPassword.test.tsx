@@ -72,7 +72,10 @@ describe('ForgotPassword page', () => {
       })
     })
 
-    expect(screen.getByRole('status')).toHaveTextContent(/password reset successful/i)
+    await waitFor(() => {
+      expect(screen.getByRole('status')).toHaveTextContent(/password reset successful/i)
+    })
+
     await waitFor(() => {
       expect(timeoutSpy).toHaveBeenCalledWith(expect.any(Function), 2000)
     })
