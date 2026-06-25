@@ -133,36 +133,34 @@ export default function ForgotPassword() {
   };
 
   const handleResetPassword = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  event.preventDefault()
+  if (validation.disabled) return
 
-    if (validation.disabled) return;
+  setIsResetting(true)
 
-    setIsResetting(true);
-    setSuccessMessage('Password reset successful. Redirecting to login...');
-    setStep('success');
-    setResetCode('');
-    setNewPassword('');
-    setConfirmPassword('');
-    setHasRequestedCode(false);
-
+  try {
+    await resetPassword({
+      email: email.trim().toLowerCase(),
+      code: resetCode.trim(),
+      password: newPassword,
+      confirm_password: confirmPassword,
+    })
+    // ← everything moves here, AFTER the await
+    setSuccessMessage('Password reset successful. Redirecting to login...')
+    setStep('success')
+    setResetCode('')
+    setNewPassword('')
+    setConfirmPassword('')
+    setHasRequestedCode(false)
     window.setTimeout(() => {
-      navigate('/login', { replace: true });
-    }, 2000);
-
-    try {
-      await resetPassword({
-        email: email.trim().toLowerCase(),
-        code: resetCode.trim(),
-        password: newPassword,
-        confirm_password: confirmPassword,
-      });
-    } catch {
-      return;
-    } finally {
-      setIsResetting(false);
-    }
-  };
-
+      navigate('/login', { replace: true })
+    }, 2000)
+  } catch {
+    return
+  } finally {
+    setIsResetting(false)
+  }
+}
   return (
     <PageShell className="auth-page login-page">
       <main className="login-layout">

@@ -6,7 +6,7 @@ import ShareOutlinedIcon from "@mui/icons-material/ShareOutlined";
 import TimerOutlinedIcon from "@mui/icons-material/TimerOutlined";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
-import "../styles/PollsHub.css";
+import "../../styles/pages/fan/PollsHub.css";
 
 const pollOptions = [
   { id: 0, label: "Heathens", percent: 45 },
