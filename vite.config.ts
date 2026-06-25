@@ -9,6 +9,11 @@ export default defineConfig({
   root: projectRoot,
   base: process.env.VITE_BASE_PATH ?? './',
   plugins: [react()],
+  resolve: {
+    alias: {
+      'react-transition-group/TransitionGroupContext': 'react-transition-group/cjs/TransitionGroupContext.js', // ← fix
+    },
+  },
   test: {
     root: projectRoot,
     environment: 'jsdom',
