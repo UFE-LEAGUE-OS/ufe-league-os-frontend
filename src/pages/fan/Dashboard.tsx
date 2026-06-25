@@ -226,7 +226,7 @@ function FanDashboardPage() {
                                 </div>
 
                                 <div className={styles.matchActions}>
-                                    <Link to="/tickets">Tickets</Link>
+                                    <Link to="/dashboard/tickets">Tickets</Link>
                                     <button type="button" aria-label={`Set alert for ${match.home}`}>
                                         <Bell size={18} strokeWidth={2.2} />
                                     </button>
@@ -323,7 +323,7 @@ function FanDashboardPage() {
                 <section className={`${styles.panel} ${styles.ticketPanel}`}>
                     <div className={styles.panelHeader}>
                         <h2>My Tickets</h2>
-                        <Link to="/tickets">View All</Link>
+                        <Link to="/dashboard/tickets">View All</Link>
                     </div>
 
                     <div className={styles.ticketContent}>
@@ -349,7 +349,7 @@ function FanDashboardPage() {
                         </div>
                     </div>
 
-                    <Link to="/tickets" className={styles.panelFooterLink}>
+                    <Link to="/dashboard/tickets" className={styles.panelFooterLink}>
                         View All Tickets →
                     </Link>
                 </section>

@@ -19,7 +19,7 @@ const navItems = [
     { label: "Competitions", href: "/" },
     { label: "News", href: "/" },
     { label: "Club Memberships", href: "/memberships" },
-    { label: "Tickets", href: "/" },
+    { label: "Tickets", href: "/dashboard/tickets" },
 ];
 
 const dropdownNavItems = new Set(["Sport", "Leagues", "Clubs", "Competitions"]);
@@ -101,7 +101,7 @@ const searchableItems = [
     {
         title: "Tickets",
         description: "Find upcoming match tickets and QR tickets.",
-        href: "/tickets",
+        href: "/dashboard/tickets",
         type: "Ticketing",
     },
     {
