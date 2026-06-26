@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { SPORT_CONFIGS, PLAYERS } from './fantasyData';
 import type { Sport, Format, FantasyPlayer } from './fantasyData';
@@ -74,11 +74,8 @@ export default function FantasyTeamBuilder() {
   const totalSlots   = allSlots.length;
 
   /* club count */
-  const clubCounts = useMemo(() => {
-    const counts: Record<string, number> = {};
-    squadPlayers.forEach(p => { counts[p.club] = (counts[p.club] ?? 0) + 1; });
-    return counts;
-  }, [squadPlayers]);
+  const clubCounts: Record<string, number> = {};
+  squadPlayers.forEach(p => { clubCounts[p.club] = (clubCounts[p.club] ?? 0) + 1; });
 
   const maxClub   = 4;
   const topClub   = Object.entries(clubCounts).sort((a, b) => b[1] - a[1])[0];
@@ -98,19 +95,17 @@ export default function FantasyTeamBuilder() {
 
   /* player pool filtered */
   const usedIds = new Set(squadPlayers.map(p => p.id));
-  const pool = useMemo(() => {
-    return allPlayers
-      .filter(p => !usedIds.has(p.id))
-      .filter(p => posFilter === 'ALL' || p.position === posFilter)
-      .filter(p =>
-        p.name.toLowerCase().includes(search.toLowerCase()) ||
-        p.club.toLowerCase().includes(search.toLowerCase())
-      )
-      .filter(p => !activePos || p.position === activePos)
-      .filter(p => remaining >= p.cost)
-      .filter(p => !p.club || (clubCounts[p.club] ?? 0) < maxClub)
-      .sort((a, b) => b.totalPts - a.totalPts);
-  }, [allPlayers, usedIds, posFilter, search, activePos, remaining, clubCounts]);
+  const pool = allPlayers
+    .filter(p => !usedIds.has(p.id))
+    .filter(p => posFilter === 'ALL' || p.position === posFilter)
+    .filter(p =>
+      p.name.toLowerCase().includes(search.toLowerCase()) ||
+      p.club.toLowerCase().includes(search.toLowerCase())
+    )
+    .filter(p => !activePos || p.position === activePos)
+    .filter(p => remaining >= p.cost)
+    .filter(p => !p.club || (clubCounts[p.club] ?? 0) < maxClub)
+    .sort((a, b) => b.totalPts - a.totalPts);
 
   const assignPlayer = (slotId: string, player: FantasyPlayer) => {
     setSquad(prev => ({ ...prev, [slotId]: player }));
