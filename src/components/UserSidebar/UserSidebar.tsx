@@ -17,6 +17,7 @@ import {
     Trophy,
     User,
     Users,
+    Swords,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { NavLink } from "react-router-dom";
@@ -54,6 +55,7 @@ const sidebarSections: SidebarSection[] = [
             { label: "My Matches", href: "/fixtures", icon: CalendarDays },
             { label: "My Tickets", href: "/dashboard/tickets", icon: Ticket },
             { label: "My Memberships", href: "/dashboard/memberships", icon: Trophy },
+            { label: "Fantasy", href: "/fantasy", icon: Swords },
             { label: "Watchlist", href: "/dashboard/watchlist", icon: Heart },
             { label: "News Feed", href: "/dashboard/news", icon: Newspaper },
             { label: "Rewards & Benefits", href: "/profile/clubs", icon: Star },

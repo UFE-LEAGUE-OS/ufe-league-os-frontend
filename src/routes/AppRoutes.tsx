@@ -52,11 +52,16 @@ import NationalBasketballLeague from '../pages/leagues/NationalBasketballLeague'
 import NileSpecialPremiership from '../pages/leagues/NileSpecialPremiership';
 import SmackLeague from '../pages/leagues/SmackLeague';
 import BudoLeague from '../pages/leagues/BudoLeague';
-import ExploreMembershipsPage from '../pages/memberships/ExploreMembershipsPage';
+import FantasyPage from '../pages/fantasy/FantasyPage';
+import FantasySportSelect from '../pages/fantasy/FantasySportSelect';
+import FantasyCreateJoin from '../pages/fantasy/FantasyCreateJoin';
+import FantasyTeamBuilder from '../pages/fantasy/FantasyTeamBuilder';
+import FantasyPlayerMarket from '../pages/fantasy/FantasyPlayerMarket';
 import ClubMembershipDetailPage from '../pages/memberships/ClubMembershipDetailPage';
 import MembershipCheckoutPage from '../pages/memberships/MembershipCheckoutPage';
 import MembershipSuccessPage from '../pages/memberships/MembershipSuccessPage';
 import MembershipFailedPage from '../pages/memberships/MembershipFailedPage';
+import ExploreMembershipsPage from '../pages/memberships/ExploreMembershipsPage';
 import MyMembershipsPage from '../pages/memberships/MyMembershipsPage';
 import MyTicketsPage from '../pages/fan/MyTicketsPage';
 import ProtectedRoute from './ProtectedRoute';
@@ -104,6 +109,12 @@ export default function AppRoutes() {
                     {/* Fan Interaction */}
                     <Route path="/fan/polls" element={<FanPollsPage />} /> {/* ← new */}
                     <Route path="/dashboard/tickets" element={<MyTicketsPage />} />
+                    {/* Fantasy — protected, requires login */}
+                    <Route path="/fantasy" element={<FantasyPage />} />
+                    <Route path="/fantasy/select" element={<FantasySportSelect />} />
+                    <Route path="/fantasy/create-league" element={<FantasyCreateJoin />} />
+                    <Route path="/fantasy/team-builder" element={<FantasyTeamBuilder />} />
+                    <Route path="/fantasy/player-market" element={<FantasyPlayerMarket />} />
                 </Route>
 
                 <Route path="/edit-profile" element={protectedPage(<Navigate to="/profile/edit" replace />)} />
