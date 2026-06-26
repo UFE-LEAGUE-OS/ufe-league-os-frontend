@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './FantasyPage.module.css';
 import uplLogo from '../../assets/star-times-upl.svg';
@@ -117,7 +117,6 @@ const statusStyle: Record<string, { bg: string; color: string }> = {
 export default function FantasyPage() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabId>('overview');
-  const [joinCode, setJoinCode] = useState('');
 
   const tabs: { id: TabId; label: string }[] = [
     { id: 'overview',   label: 'Overview' },

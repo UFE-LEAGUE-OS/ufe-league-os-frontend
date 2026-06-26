@@ -64,7 +64,7 @@ export default function FantasyTeamBuilder() {
   const [search, setSearch] = useState('');
   const [posFilter, setPosFilter] = useState('ALL');
   const [captainId, setCaptainId] = useState<string | null>(null);
-  const [saved, setSaved] = useState(false);
+  const [saved] = useState(false);
 
   const squadPlayers = Object.values(squad);
   const spent        = squadPlayers.reduce((s, p) => s + p.cost, 0);
