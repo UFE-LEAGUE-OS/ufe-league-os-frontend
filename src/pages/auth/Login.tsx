@@ -1,5 +1,7 @@
 import { useState, type ChangeEvent, type FormEvent, type ReactNode } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { GoogleLogin, type CredentialResponse } from '@react-oauth/google';
+import axios from 'axios';
 import PersonOutlinedIcon from '@mui/icons-material/PersonOutlined';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
@@ -9,12 +11,12 @@ import EmojiEventsOutlinedIcon from '@mui/icons-material/EmojiEventsOutlined';
 import EventNoteOutlinedIcon from '@mui/icons-material/EventNoteOutlined';
 import { GlassCard, PageShell } from '../../components/site/LeagueUI.js';
 import { useAuth } from '../../hooks/useAuth.js';
-import { buildGoogleAuthUrl } from './loginUtils.js';
 import {
     getSafeAuthRedirect,
     VERIFY_EMAIL_ROUTE,
     type AuthFlowState,
 } from '../../utils/authFlow.js';
+
 import '../../styles/pages/auth/login.css';
 
 type LoginErrors = {
@@ -137,10 +139,6 @@ export default function Login() {
     const postLoginRedirect = getSafeAuthRedirect(locationState?.postLoginRedirect);
 
     const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-    const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID?.trim();
-    const googleRedirectUri =
-        import.meta.env.VITE_GOOGLE_REDIRECT_URI?.trim() ||
-        `${apiBaseUrl}/api/accounts/google/callback/`;
 
     const clearError = (field: keyof LoginErrors) => {
         setErrors((current) => ({
@@ -226,20 +224,42 @@ export default function Login() {
         }
     };
 
-    const handleGoogleLogin = () => {
-        const url = buildGoogleAuthUrl({
-            apiBaseUrl,
-            googleClientId,
-            googleRedirectUri,
-        });
+    const handleGoogleSuccess = async (credentialResponse: CredentialResponse) => {
+        const credential = credentialResponse.credential;
 
-        if (!url) {
-            setGoogleLoginMessage('Google sign-in is not configured yet.');
+        if (!credential) {
+            setGoogleLoginMessage('Google sign-in failed: no credential received.');
             return;
         }
 
-        setGoogleLoginMessage('');
-        window.location.assign(url);
+        try {
+            const response = await axios.post(
+                `${apiBaseUrl}/api/accounts/google/`,
+                {
+                    credential,
+                }
+            );
+
+            const result = response.data as LoginResult;
+
+            if (result.requires_email_verification) {
+                navigate(VERIFY_EMAIL_ROUTE, {
+                    replace: true,
+                    state: {
+                        email: getUserEmail(result.user?.email),
+                        message: 'Please verify your email address before continuing.',
+                        postLoginRedirect: postLoginRedirect ?? resolveDashboardRoute(result),
+                    },
+                });
+                return;
+            }
+
+            navigate(postLoginRedirect ?? resolveDashboardRoute(result), { replace: true });
+        } catch (error) {
+            setErrors({
+                general: getLoginErrorMessage(error),
+            });
+        }
     };
 
     return (
@@ -368,12 +388,10 @@ export default function Login() {
                                 <span>OR</span>
                             </div>
 
-                            <button type="button" className="login-google" onClick={handleGoogleLogin}>
-                                <span className="google-mark" aria-hidden="true">
-                                    G
-                                </span>
-                                <span>Continue with Google</span>
-                            </button>
+                            <GoogleLogin
+                                onSuccess={handleGoogleSuccess}
+                                onError={() => setGoogleLoginMessage('Google sign-in failed.')}
+                            />
 
                             {googleLoginMessage ? (
                                 <p className="auth-message auth-message-warning" role="status" aria-live="polite">

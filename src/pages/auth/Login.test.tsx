@@ -3,7 +3,6 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import Login from './Login'
-import { buildGoogleAuthUrl } from './loginUtils'
 
 const navigateMock = vi.hoisted(() => vi.fn())
 const loginMock = vi.hoisted(() => vi.fn())
@@ -22,20 +21,6 @@ vi.mock('../../hooks/useAuth.js', () => ({
     login: loginMock,
   }),
 }))
-
-describe('buildGoogleAuthUrl', () => {
-  it('builds the Google OAuth redirect URL from the configured values', () => {
-    expect(
-      buildGoogleAuthUrl({
-        apiBaseUrl: 'http://localhost:8000',
-        googleClientId: 'client-123',
-        googleRedirectUri: 'https://league.example.com/google/callback',
-      }),
-    ).toBe(
-      'https://accounts.google.com/o/oauth2/v2/auth?client_id=client-123&redirect_uri=https%3A%2F%2Fleague.example.com%2Fgoogle%2Fcallback&response_type=code&scope=openid+email+profile&access_type=offline&prompt=select_account',
-    )
-  })
-})
 
 describe('Login page', () => {
   beforeEach(() => {
