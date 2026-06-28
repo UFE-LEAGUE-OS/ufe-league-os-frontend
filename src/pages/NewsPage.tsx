@@ -1,5 +1,4 @@
-import "../styles/pages/landing/NewsPage.css"
-
+import "../styles/pages/NewsPage.css"
 import { useNavigate, useLocation } from "react-router-dom";
 import { FiBell, FiUser, FiSearch } from "react-icons/fi";
 import { FaArrowRight } from "react-icons/fa6";
