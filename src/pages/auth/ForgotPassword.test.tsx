@@ -51,13 +51,16 @@ describe('ForgotPassword page', () => {
       })
     })
 
-    await user.type(screen.getByPlaceholderText(/enter the 6-digit code/i), '12a34b')
-    expect(screen.getByDisplayValue('1234')).toBeInTheDocument()
+    await user.type(screen.getByPlaceholderText(/enter the 6-digit code/i), '12a34b56')
+    expect(screen.getByDisplayValue('123456')).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: /^verify code$/i }))
 
+    await waitFor(() => {
+      expect(container.querySelectorAll('input[type="password"]')).toHaveLength(2)
+    })
+
     const passwordInputs = container.querySelectorAll('input[type="password"]')
-    expect(passwordInputs).toHaveLength(2)
 
     await user.type(passwordInputs[0], 'NewStrongPass1!')
     await user.type(passwordInputs[1], 'NewStrongPass1!')
@@ -66,7 +69,7 @@ describe('ForgotPassword page', () => {
     await waitFor(() => {
       expect(resetPasswordMock).toHaveBeenCalledWith({
         email: 'user@example.com',
-        code: '1234',
+        code: '123456',
         password: 'NewStrongPass1!',
         confirm_password: 'NewStrongPass1!',
       })
@@ -77,10 +80,10 @@ describe('ForgotPassword page', () => {
     })
 
     await waitFor(() => {
-      expect(timeoutSpy).toHaveBeenCalledWith(expect.any(Function), 2000)
+      expect(timeoutSpy).toHaveBeenCalledWith(expect.any(Function), 1800)
     })
 
-    const timeoutCall = timeoutSpy.mock.calls.find(([, delay]) => delay === 2000)
+    const timeoutCall = timeoutSpy.mock.calls.find(([, delay]) => delay === 1800)
     const timerCallback = timeoutCall?.[0]
     expect(typeof timerCallback).toBe('function')
 
@@ -88,6 +91,11 @@ describe('ForgotPassword page', () => {
       timerCallback()
     }
 
-    expect(navigateMock).toHaveBeenCalledWith('/login', { replace: true })
+    expect(navigateMock).toHaveBeenCalledWith('/login', {
+      replace: true,
+      state: {
+        message: 'Password reset successful. Please log in with your new password.',
+      },
+    })
   })
 })

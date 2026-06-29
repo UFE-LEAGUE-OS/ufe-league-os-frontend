@@ -64,6 +64,7 @@ import MembershipFailedPage from '../pages/memberships/MembershipFailedPage';
 import ExploreMembershipsPage from '../pages/memberships/ExploreMembershipsPage';
 import MyMembershipsPage from '../pages/memberships/MyMembershipsPage';
 import MyTicketsPage from '../pages/fan/MyTicketsPage';
+import TicketDetailPage from '../pages/fan/TicketDetailPage';
 import ProtectedRoute from './ProtectedRoute';
 import Payments from '../pages/PaymentPage';
 import FanPollsPage from '../pages/fan/FanPollsPage'; // ← new
@@ -109,6 +110,7 @@ export default function AppRoutes() {
                     {/* Fan Interaction */}
                     <Route path="/fan/polls" element={<FanPollsPage />} /> {/* ← new */}
                     <Route path="/dashboard/tickets" element={<MyTicketsPage />} />
+                    <Route path="/dashboard/tickets/:ticketId" element={<TicketDetailPage />} />
                     {/* Fantasy — protected, requires login */}
                     <Route path="/fantasy" element={<FantasyPage />} />
                     <Route path="/fantasy/select" element={<FantasySportSelect />} />
