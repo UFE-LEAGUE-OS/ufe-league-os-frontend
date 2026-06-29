@@ -23,9 +23,9 @@ import {
   type RegisterFormValues,
 } from './registerUtils.js';
 import '../../styles/pages/auth/register.css';
-import { usePasswordValidation } from '../../hooks/usePasswordValidation.js';
-import { PERSONALIZE_ROUTE, VERIFY_EMAIL_ROUTE } from '../../utils/authFlow.js';
-import { savePendingOnboardingSession } from '../../utils/onboardingSession.js';
+import { usePasswordValidation } from '../../hooks/usePasswordValidation.ts';
+import { PERSONALIZE_ROUTE, VERIFY_EMAIL_ROUTE } from '../../utils/authFlow.ts';
+import { savePendingOnboardingSession } from '../../utils/onboardingSession.ts';
 
 const features = [
   {
@@ -409,7 +409,7 @@ export default function Register() {
                     id="register-password"
                     name="password"
                     type={showPassword ? 'text' : 'password'}
-                    placeholder="Create a secure password"
+                    placeholder="Enter your password"
                     autoComplete="new-password"
                     value={formValues.password}
                     onChange={(event) => updateField('password', event.target.value)}

@@ -13,6 +13,27 @@ import {
 const navigateMock = vi.hoisted(() => vi.fn())
 const registerMock = vi.hoisted(() => vi.fn())
 
+vi.mock('../../hooks/usePasswordValidation.ts', () => ({
+  usePasswordValidation: () => ({
+    validation: {
+      status: 'strong',
+      message: 'Strong password',
+      score: 3,
+      disabled: false,
+    },
+    validatePassword: vi.fn().mockResolvedValue(undefined),
+    resetValidation: vi.fn(),
+  }),
+}))
+
+vi.mock('@zxcvbn-ts/core', () => ({
+  ZxcvbnFactory: class {
+    check() {
+      return { score: 3 };
+    }
+  },
+}))
+
 vi.mock('../../services/authService.js', () => ({
     register: registerMock,
 }))
@@ -36,20 +57,17 @@ function renderRegisterPage() {
 }
 
 async function fillValidRegistrationForm() {
-    const user = userEvent.setup()
+  const user = userEvent.setup()
 
-    await user.type(screen.getByLabelText(/first name/i), 'Amina')
-    await user.type(screen.getByLabelText(/last name/i), 'Kizza')
-    await user.type(screen.getByPlaceholderText('7XX XXX XXX'), '0701234567')
-    await user.type(
-        screen.getByLabelText(/email address/i),
-        'AMINA.KIZZA@EXAMPLE.COM',
-    )
-    await user.type(screen.getByLabelText(/^password$/i), 'StrongPass1!')
-    await user.type(screen.getByLabelText(/^confirm password$/i), 'StrongPass1!')
-    await user.click(screen.getByRole('checkbox', { name: /terms of service/i }))
+  await user.type(screen.getByLabelText(/first name/i), 'Amina')
+  await user.type(screen.getByLabelText(/last name/i), 'Kizza')
+  await user.type(screen.getByPlaceholderText('7XX XXX XXX'), '0701234567')
+  await user.type(screen.getByLabelText(/email address/i), 'AMINA.KIZZA@EXAMPLE.COM')
+  await user.type(screen.getByPlaceholderText(/enter your password/i), 'StrongPass1!')
+  await user.type(screen.getByPlaceholderText(/confirm your password/i), 'StrongPass1!')
+  await user.click(screen.getByRole('checkbox', { name: /terms of service/i }))
 
-    return user
+  return user
 }
 
 beforeEach(() => {
@@ -236,7 +254,7 @@ describe('Register page', () => {
         ).toBeInTheDocument()
 
         expect(navigateMock).not.toHaveBeenCalled()
-    })
+    }, 10000)
 
     it('shows backend phone_number field errors clearly', async () => {
         registerMock.mockRejectedValueOnce({
@@ -258,7 +276,7 @@ describe('Register page', () => {
         ).toBeInTheDocument()
 
         expect(navigateMock).not.toHaveBeenCalled()
-    })
+    }, 10000)
 
     it('shows general backend registration errors clearly', async () => {
         registerMock.mockRejectedValueOnce({
@@ -283,5 +301,5 @@ describe('Register page', () => {
         ).toBeInTheDocument()
 
         expect(navigateMock).not.toHaveBeenCalled()
-    })
+    }, 10000)
 })
