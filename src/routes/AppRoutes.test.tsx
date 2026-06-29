@@ -84,7 +84,7 @@ describe('AppRoutes protected routes', () => {
 
     it('allows users with auth store access token to view /profile', () => {
         useAuthStore.getState().setAuth({
-            user: { email: 'fan@example.com', role: 'FAN' },
+            user: { email: 'fan@example.com', role: 'fan' },
             access: 'access-token',
             refresh: 'refresh-token',
             requiresEmailVerification: false,
@@ -97,7 +97,7 @@ describe('AppRoutes protected routes', () => {
 
     it('redirects signed-in users with unverified email to verification before protected pages', () => {
         useAuthStore.getState().setAuth({
-            user: { email: 'fan@example.com', role: 'FAN' },
+            user: { email: 'fan@example.com', role: 'fan' },
             access: 'access-token',
             refresh: 'refresh-token',
             requiresEmailVerification: true,
