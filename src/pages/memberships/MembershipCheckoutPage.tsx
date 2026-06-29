@@ -5,6 +5,7 @@ import {
     Crown,
     FileText,
     Lock,
+    Loader2,
     Mail,
     Phone,
     ReceiptText,
@@ -17,6 +18,7 @@ import type { FormEvent } from "react";
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useCurrentUser } from "../../hooks/useCurrentUser";
+import { initializeMembershipCheckout } from "../../services/membershipCheckoutService";
 import styles from "./MembershipCheckoutPage.module.css";
 
 const checkoutMemberships = [
@@ -161,6 +163,7 @@ function MembershipCheckoutPage() {
     );
     const [acceptedTerms, setAcceptedTerms] = useState(false);
     const [statusMessage, setStatusMessage] = useState("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     if (!membership) {
         return (
@@ -191,7 +194,7 @@ function MembershipCheckoutPage() {
     const serviceFee = Math.round(selectedTier.price * 0.03);
     const totalAmount = selectedTier.price + serviceFee;
 
-    function handleCheckoutSubmit(event: FormEvent<HTMLFormElement>) {
+    async function handleCheckoutSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
 
         if (!acceptedTerms) {
@@ -199,8 +202,45 @@ function MembershipCheckoutPage() {
             return;
         }
 
-        setStatusMessage("Checkout confirmed locally. Backend membership payment endpoint will be connected when available.");
-        navigate(`/memberships/${membershipSlug}/success?tier=${selectedTierIdForRedirect}`);
+        setIsSubmitting(true);
+        setStatusMessage("");
+
+        try {
+            const response = await initializeMembershipCheckout({
+                demo_plan_code: selectedTier.id,
+            });
+
+            localStorage.setItem(
+                "league_os_pending_membership_checkout",
+                JSON.stringify({
+                    tx_ref: response.tx_ref,
+                    club_slug: membershipSlug,
+                    tier_id: selectedTierIdForRedirect,
+                    payment_id: response.payment.id,
+                    subscription_id: response.subscription.id,
+                }),
+            );
+
+            if (response.checkout_url) {
+                window.location.assign(response.checkout_url);
+                return;
+            }
+
+            navigate("/memberships/payment/processing", {
+                replace: true,
+                state: {
+                    tx_ref: response.tx_ref,
+                    club_slug: membershipSlug,
+                    tier_id: selectedTierIdForRedirect,
+                },
+            });
+        } catch {
+            setStatusMessage(
+                "Membership checkout could not be initialized. Please try again or contact support.",
+            );
+        } finally {
+            setIsSubmitting(false);
+        }
     }
 
     return (
@@ -337,9 +377,18 @@ function MembershipCheckoutPage() {
                                 </span>
                             </label>
 
-                            <button type="submit">
-                                <ShoppingCart size={18} strokeWidth={2.4} aria-hidden="true" />
-                                Initialize Flutterwave Checkout
+                            <button type="submit" disabled={isSubmitting}>
+                                {isSubmitting ? (
+                                    <>
+                                        <Loader2 size={18} strokeWidth={2.4} aria-hidden="true" />
+                                        Redirecting...
+                                    </>
+                                ) : (
+                                    <>
+                                        <ShoppingCart size={18} strokeWidth={2.4} aria-hidden="true" />
+                                        Pay with Flutterwave
+                                    </>
+                                )}
                             </button>
                         </form>
                     </section>
