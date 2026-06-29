@@ -8,7 +8,7 @@ import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined';
 import EmojiEventsOutlinedIcon from '@mui/icons-material/EmojiEventsOutlined';
 import EventNoteOutlinedIcon from '@mui/icons-material/EventNoteOutlined';
 import { GlassCard, PageShell } from '../../components/site/LeagueUI.js';
-import BackButton from '../../components/site/BackButton.js';
+import BackButton from '../../components/BackButton.js';
 import { useAuth } from '../../hooks/useAuth.js';
 import { buildGoogleAuthUrl } from './loginUtils.js';
 import {
