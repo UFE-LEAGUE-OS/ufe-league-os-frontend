@@ -37,10 +37,10 @@ describe('authService', () => {
     expect(axiosMock.post).toHaveBeenNthCalledWith(2, '/accounts/login/', { email: 'fan@example.com' })
     expect(axiosMock.post).toHaveBeenNthCalledWith(3, '/accounts/verify-otp/', { code: '123456' })
     expect(axiosMock.post).toHaveBeenNthCalledWith(4, '/accounts/resend-otp/', { email: 'fan@example.com' })
-    expect(axiosMock.post).toHaveBeenNthCalledWith(5, '/accounts/request-password-reset/', {
+    expect(axiosMock.post).toHaveBeenNthCalledWith(5, '/accounts/password-reset/request/', {
       email: 'fan@example.com',
     })
-    expect(axiosMock.post).toHaveBeenNthCalledWith(6, '/accounts/reset-password/', { code: '123456' })
+    expect(axiosMock.post).toHaveBeenNthCalledWith(6, '/accounts/password-reset/confirm/', { code: '123456' })
   })
 
   it('routes profile management calls to the expected backend endpoints', async () => {
