@@ -10,7 +10,7 @@ import SportsSoccerIcon from '@mui/icons-material/SportsSoccer';
 import type { SvgIconComponent } from '@mui/icons-material';
 import { PageShell } from '../../components/site/LeagueUI.js';
 import { DASHBOARD_ROUTE } from '../../utils/authFlow.js';
-import '../../styles/pages/auth/personalize.css';
+import '../../styles/pages/personalize.css';
 
 type Item = { id: string; name: string; sub?: string; emoji?: string };
 
