@@ -7,6 +7,10 @@ import Login from './Login'
 const navigateMock = vi.hoisted(() => vi.fn())
 const loginMock = vi.hoisted(() => vi.fn())
 
+vi.mock('@react-oauth/google', () => ({
+  GoogleLogin: () => <div data-testid="google-login" />,
+}))
+
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom')
 
