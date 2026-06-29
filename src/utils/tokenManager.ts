@@ -2,7 +2,10 @@ const ACCESS_TOKEN_KEY = 'league_os_access_token';
 const REFRESH_TOKEN_KEY = 'league_os_refresh_token';
 
 export const getToken = () =>
-  localStorage.getItem(ACCESS_TOKEN_KEY) || localStorage.getItem('access_token');
+  localStorage.getItem(ACCESS_TOKEN_KEY) ||
+  localStorage.getItem('access_token') ||
+  sessionStorage.getItem(ACCESS_TOKEN_KEY) ||
+  sessionStorage.getItem('access_token');
 
 export const setToken = (token: string) => {
   localStorage.setItem(ACCESS_TOKEN_KEY, token);
@@ -10,7 +13,10 @@ export const setToken = (token: string) => {
 };
 
 export const getRefreshToken = () =>
-  localStorage.getItem(REFRESH_TOKEN_KEY) || localStorage.getItem('refresh_token');
+  localStorage.getItem(REFRESH_TOKEN_KEY) ||
+  localStorage.getItem('refresh_token') ||
+  sessionStorage.getItem(REFRESH_TOKEN_KEY) ||
+  sessionStorage.getItem('refresh_token');
 
 export const setRefreshToken = (token: string) => {
   localStorage.setItem(REFRESH_TOKEN_KEY, token);

@@ -4,6 +4,7 @@ import '../../styles/pages/landing/TicketsLandingPage.css';
 import BackButton from '../../components/BackButton';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
+import { getToken } from '../../utils/tokenManager.js';
 import logo from '../../assets/logo.png'; 
 import kccaLogo from '../../assets/kcca.png';
 import vipersLogo from '../../assets/Vipers_SC.jpg';
@@ -223,9 +224,7 @@ export default function TicketsLandingPage() {
   const [activeLeague, setActiveLeague] = useState('All Leagues');
   const [activeTier, setActiveTier] = useState<TicketTier>('all');
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
-  const isLoggedIn = Boolean(
-    localStorage.getItem('league_os_access_token') || localStorage.getItem('access_token'),
-  );
+  const isLoggedIn = Boolean(getToken());
 
   const leagues = [
     'All Leagues',
@@ -239,9 +238,7 @@ export default function TicketsLandingPage() {
   });
 
   const handleBuyTicket = (matchId: string, tier: 'vip' | 'ordinary') => {
-    const hasAccessToken = Boolean(localStorage.getItem('league_os_access_token'));
-
-    if (!hasAccessToken) {
+    if (!getToken()) {
       setShowLoginPrompt(true);
       return;
     }
