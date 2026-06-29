@@ -31,13 +31,12 @@ function Hero() {
                 Go to Dashboard
               </button>
             ) : (
-              <button className="btn-outline" onClick={() => navigate('/register')}>
+              <button className="btn-primary" onClick={() => navigate('/register')}>
                 Sign Up
               </button>
             )}
           </div>
         </div>
-
         <div className="hero-stats">
           <div className="stat">
             <span className="stat-number">20+</span>
@@ -57,7 +56,6 @@ function Hero() {
           </div>
         </div>
       </div>
-
       <div className="hero-features">
         <div className="feature">
           <span className="feature-icon">🌐</span> Live Scores & Stats
