@@ -1,5 +1,7 @@
 import { useState, type ChangeEvent, type FormEvent, type ReactNode } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { GoogleLogin, type CredentialResponse } from '@react-oauth/google';
+import axios from 'axios';
 import PersonOutlinedIcon from '@mui/icons-material/PersonOutlined';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
@@ -8,17 +10,14 @@ import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined';
 import EmojiEventsOutlinedIcon from '@mui/icons-material/EmojiEventsOutlined';
 import EventNoteOutlinedIcon from '@mui/icons-material/EventNoteOutlined';
 import { GlassCard, PageShell } from '../../components/site/LeagueUI.js';
-import BackButton from '../../components/BackButton.js';
 import { useAuth } from '../../hooks/useAuth.js';
-import { buildGoogleAuthUrl } from './loginUtils.js';
 import {
     getSafeAuthRedirect,
     VERIFY_EMAIL_ROUTE,
     type AuthFlowState,
 } from '../../utils/authFlow.js';
-import '../../styles/pages/auth/login.css';
 
-// ── Types ─────────────────────────────────────────────────────────────────────
+import '../../styles/pages/auth/login.css';
 
 type LoginErrors = {
     identifier?: string;
@@ -52,8 +51,6 @@ type ApiError = {
     };
 };
 
-// ── Static data ───────────────────────────────────────────────────────────────
-
 const features = [
     {
         title: 'For Fans',
@@ -74,8 +71,6 @@ const features = [
         icon: EventNoteOutlinedIcon,
     },
 ];
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
 
 function LoginFieldIcon({ children }: { children: ReactNode }) {
     return (
@@ -127,29 +122,23 @@ function getUserEmail(value: unknown) {
     return typeof value === 'string' && value.includes('@') ? value : undefined;
 }
 
-// ── Component ─────────────────────────────────────────────────────────────────
-
 export default function Login() {
     const location = useLocation();
     const navigate = useNavigate();
     const { login } = useAuth();
 
-    const [showPassword, setShowPassword]       = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
     const [googleLoginMessage, setGoogleLoginMessage] = useState('');
-    const [identifier, setIdentifier]           = useState('');
-    const [password, setPassword]               = useState('');
-    const [errors, setErrors]                   = useState<LoginErrors>({});
-    const [isSubmitting, setIsSubmitting]       = useState(false);
+    const [identifier, setIdentifier] = useState('');
+    const [password, setPassword] = useState('');
+    const [errors, setErrors] = useState<LoginErrors>({});
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const locationState      = location.state as AuthFlowState | null;
-    const locationMessage    = locationState?.message ?? '';
-    const postLoginRedirect  = getSafeAuthRedirect(locationState?.postLoginRedirect);
+    const locationState = location.state as AuthFlowState | null;
+    const locationMessage = locationState?.message ?? '';
+    const postLoginRedirect = getSafeAuthRedirect(locationState?.postLoginRedirect);
 
-    const apiBaseUrl      = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-    const googleClientId  = import.meta.env.VITE_GOOGLE_CLIENT_ID?.trim();
-    const googleRedirectUri =
-        import.meta.env.VITE_GOOGLE_REDIRECT_URI?.trim() ||
-        `${apiBaseUrl}/api/accounts/google/callback/`;
+    const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
     const clearError = (field: keyof LoginErrors) => {
         setErrors((current) => ({
@@ -235,29 +224,46 @@ export default function Login() {
         }
     };
 
-    const handleGoogleLogin = () => {
-        const url = buildGoogleAuthUrl({
-            apiBaseUrl,
-            googleClientId,
-            googleRedirectUri,
-        });
+    const handleGoogleSuccess = async (credentialResponse: CredentialResponse) => {
+        const credential = credentialResponse.credential;
 
-        if (!url) {
-            setGoogleLoginMessage('Google sign-in is not configured yet.');
+        if (!credential) {
+            setGoogleLoginMessage('Google sign-in failed: no credential received.');
             return;
         }
 
-        setGoogleLoginMessage('');
-        window.location.assign(url);
+        try {
+            const response = await axios.post(
+                `${apiBaseUrl}/api/accounts/google/`,
+                {
+                    credential,
+                }
+            );
+
+            const result = response.data as LoginResult;
+
+            if (result.requires_email_verification) {
+                navigate(VERIFY_EMAIL_ROUTE, {
+                    replace: true,
+                    state: {
+                        email: getUserEmail(result.user?.email),
+                        message: 'Please verify your email address before continuing.',
+                        postLoginRedirect: postLoginRedirect ?? resolveDashboardRoute(result),
+                    },
+                });
+                return;
+            }
+
+            navigate(postLoginRedirect ?? resolveDashboardRoute(result), { replace: true });
+        } catch (error) {
+            setErrors({
+                general: getLoginErrorMessage(error),
+            });
+        }
     };
 
     return (
         <PageShell className="auth-page login-page">
-            {/* ── Back to landing page ── */}
-            <div className="login-back-wrap">
-                <BackButton to="/" label="Back" />
-            </div>
-
             <main className="login-layout">
                 <section className="login-story">
                     <div className="login-hero-copy">
@@ -267,8 +273,8 @@ export default function Login() {
                             <span className="login-hero-accent">One Platform.</span>
                         </h1>
                         <p>
-                            League OS is Uganda's unified platform for fans, teams, leagues and
-                            partners. Follow. Engage. Support.
+                            League OS is Uganda's unified platform for fans, teams, leagues and partners.
+                            Follow. Engage. Support.
                         </p>
                     </div>
 
@@ -299,11 +305,7 @@ export default function Login() {
                             </h2>
                             <p>Log in to continue your League OS experience.</p>
                             {locationMessage ? (
-                                <p
-                                    className="auth-message auth-message-success"
-                                    role="status"
-                                    aria-live="polite"
-                                >
+                                <p className="auth-message auth-message-success" role="status" aria-live="polite">
                                     {locationMessage}
                                 </p>
                             ) : null}
@@ -329,17 +331,11 @@ export default function Login() {
                                         value={identifier}
                                         onChange={handleIdentifierChange}
                                         aria-invalid={Boolean(errors.identifier)}
-                                        aria-describedby={
-                                            errors.identifier ? 'login-identifier-error' : undefined
-                                        }
+                                        aria-describedby={errors.identifier ? 'login-identifier-error' : undefined}
                                     />
                                 </div>
                                 {errors.identifier ? (
-                                    <p
-                                        id="login-identifier-error"
-                                        className="login-footnote login-footnote-error"
-                                        role="alert"
-                                    >
+                                    <p id="login-identifier-error" className="login-footnote login-footnote-error" role="alert">
                                         {errors.identifier}
                                     </p>
                                 ) : null}
@@ -358,9 +354,7 @@ export default function Login() {
                                         value={password}
                                         onChange={handlePasswordChange}
                                         aria-invalid={Boolean(errors.password)}
-                                        aria-describedby={
-                                            errors.password ? 'login-password-error' : undefined
-                                        }
+                                        aria-describedby={errors.password ? 'login-password-error' : undefined}
                                     />
                                     <button
                                         type="button"
@@ -369,19 +363,11 @@ export default function Login() {
                                         aria-pressed={showPassword}
                                         onClick={() => setShowPassword((current) => !current)}
                                     >
-                                        {showPassword ? (
-                                            <VisibilityOutlinedIcon />
-                                        ) : (
-                                            <VisibilityOffOutlinedIcon />
-                                        )}
+                                        {showPassword ? <VisibilityOutlinedIcon /> : <VisibilityOffOutlinedIcon />}
                                     </button>
                                 </div>
                                 {errors.password ? (
-                                    <p
-                                        id="login-password-error"
-                                        className="login-footnote login-footnote-error"
-                                        role="alert"
-                                    >
+                                    <p id="login-password-error" className="login-footnote login-footnote-error" role="alert">
                                         {errors.password}
                                     </p>
                                 ) : null}
@@ -394,11 +380,7 @@ export default function Login() {
                                 </Link>
                             </div>
 
-                            <button
-                                type="submit"
-                                className="login-submit"
-                                disabled={isSubmitting}
-                            >
+                            <button type="submit" className="login-submit" disabled={isSubmitting}>
                                 {isSubmitting ? 'Logging in...' : 'Log In'}
                             </button>
 
@@ -406,30 +388,19 @@ export default function Login() {
                                 <span>OR</span>
                             </div>
 
-                            <button
-                                type="button"
-                                className="login-google"
-                                onClick={handleGoogleLogin}
-                            >
-                                <span className="google-mark" aria-hidden="true">
-                                    G
-                                </span>
-                                <span>Continue with Google</span>
-                            </button>
+                            <GoogleLogin
+                                onSuccess={handleGoogleSuccess}
+                                onError={() => setGoogleLoginMessage('Google sign-in failed.')}
+                            />
 
                             {googleLoginMessage ? (
-                                <p
-                                    className="auth-message auth-message-warning"
-                                    role="status"
-                                    aria-live="polite"
-                                >
+                                <p className="auth-message auth-message-warning" role="status" aria-live="polite">
                                     {googleLoginMessage}
                                 </p>
                             ) : null}
 
                             <p className="login-footnote">
-                                Don't have an account?{' '}
-                                <Link to="/register">Sign Up</Link>
+                                Don't have an account? <Link to="/register">Sign Up</Link>
                             </p>
                         </form>
                     </div>
