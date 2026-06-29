@@ -1,3 +1,4 @@
+import React from 'react'
 import { MemoryRouter } from 'react-router-dom'
 import { GoogleOAuthProvider } from '@react-oauth/google'
 import { render, screen } from '@testing-library/react'
@@ -9,6 +10,7 @@ const navigateMock = vi.hoisted(() => vi.fn())
 const loginMock = vi.hoisted(() => vi.fn())
 
 vi.mock('@react-oauth/google', () => ({
+  GoogleOAuthProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
   GoogleLogin: () => <div data-testid="google-login" />,
 }))
 
