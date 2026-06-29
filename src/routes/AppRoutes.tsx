@@ -68,6 +68,10 @@ import TicketDetailPage from '../pages/fan/TicketDetailPage';
 import ProtectedRoute from './ProtectedRoute';
 import Payments from '../pages/PaymentPage';
 import FanPollsPage from '../pages/fan/FanPollsPage'; // ← new
+import TicketCheckoutPage from '../pages/tickets/TicketCheckoutPage';
+import TicketPaymentProcessingPage from '../pages/tickets/TicketPaymentProcessingPage';
+import TicketPaymentSuccessPage from '../pages/tickets/TicketPaymentSuccessPage';
+import TicketPaymentFailedPage from '../pages/tickets/TicketPaymentFailedPage';
 
 function protectedPage(page: ReactNode) {
     return <ProtectedRoute>{page}</ProtectedRoute>;
@@ -112,6 +116,10 @@ export default function AppRoutes() {
                     <Route path="/fan/polls" element={<FanPollsPage />} /> {/* ← new */}
                     <Route path="/dashboard/tickets" element={<MyTicketsPage />} />
                     <Route path="/dashboard/tickets/:ticketId" element={<TicketDetailPage />} />
+                    <Route path="/tickets/:matchId/checkout" element={<TicketCheckoutPage />} />
+                    <Route path="/tickets/payment/processing" element={<TicketPaymentProcessingPage />} />
+                    <Route path="/tickets/payment/success" element={<TicketPaymentSuccessPage />} />
+                    <Route path="/tickets/payment/failed" element={<TicketPaymentFailedPage />} />
                     {/* Fantasy — protected, requires login */}
                     <Route path="/fantasy" element={<FantasyPage />} />
                     <Route path="/fantasy/select" element={<FantasySportSelect />} />

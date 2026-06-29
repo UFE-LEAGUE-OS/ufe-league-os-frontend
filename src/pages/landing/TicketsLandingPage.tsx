@@ -4,8 +4,10 @@ import '../../styles/pages/landing/TicketsLandingPage.css';
 import BackButton from '../../components/BackButton';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
+import { getToken } from '../../utils/tokenManager.js';
 import logo from '../../assets/logo.png'; 
 import kccaLogo from '../../assets/kcca.png';
+import vipersLogo from '../../assets/Vipers_SC.jpg';
 import scVillaLogo from '../../assets/sc-villa.png';
 import kobsLogo from '../../assets/kobs.jpg';
 import piratesLogo from '../../assets/standic-pirates.png';
@@ -41,7 +43,7 @@ const matches: Match[] = [
     homeTeam: 'KCCA FC',
     homeLogo: kccaLogo,
     awayTeam: 'Vipers SC',
-    awayLogo: '',
+    awayLogo: vipersLogo,
     venue: 'MTN Omondi Stadium, Lugogo',
     vipPrice: 50000,
     ordinaryPrice: 10000,
@@ -222,6 +224,7 @@ export default function TicketsLandingPage() {
   const [activeLeague, setActiveLeague] = useState('All Leagues');
   const [activeTier, setActiveTier] = useState<TicketTier>('all');
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  const isLoggedIn = Boolean(getToken());
 
   const leagues = [
     'All Leagues',
@@ -234,8 +237,13 @@ export default function TicketsLandingPage() {
     return activeLeague === 'All Leagues' || match.league === activeLeague;
   });
 
-  const handleBuyTicket = () => {
-    setShowLoginPrompt(true);
+  const handleBuyTicket = (matchId: string, tier: 'vip' | 'ordinary') => {
+    if (!getToken()) {
+      setShowLoginPrompt(true);
+      return;
+    }
+
+    navigate(`/tickets/${matchId}/checkout?tier=${tier}`);
   };
 
   const formatPrice = (price: number) => `UGX ${price.toLocaleString()}`;
@@ -255,9 +263,20 @@ export default function TicketsLandingPage() {
         {/* Page actions: Back + Sign Up (page-specific, not in the global navbar) */}
         <div className="tickets-page-actions">
           <BackButton />
-          <button className="signup-btn" onClick={() => navigate('/register')}>
-            Sign Up
-          </button>
+          {isLoggedIn ? (
+            <div className="tickets-auth-actions">
+              <button type="button" onClick={() => navigate('/dashboard/tickets')}>
+                My Tickets
+              </button>
+              <button type="button" onClick={() => navigate('/dashboard/wallet')}>
+                Wallet
+              </button>
+            </div>
+          ) : (
+            <button className="signup-btn" onClick={() => navigate('/register')}>
+              Sign Up
+            </button>
+          )}
         </div>
 
         {/* Header */}
@@ -333,7 +352,10 @@ export default function TicketsLandingPage() {
                     </div>
                     <div className="tier-price-row">
                       <span className="tier-price">{formatPrice(match.vipPrice)}</span>
-                      <button className="buy-btn buy-btn-vip" onClick={handleBuyTicket}>
+                      <button
+                        className="buy-btn buy-btn-vip"
+                        onClick={() => handleBuyTicket(match.id, 'vip')}
+                      >
                         Buy VIP
                       </button>
                     </div>
@@ -348,7 +370,10 @@ export default function TicketsLandingPage() {
                     </div>
                     <div className="tier-price-row">
                       <span className="tier-price">{formatPrice(match.ordinaryPrice)}</span>
-                      <button className="buy-btn buy-btn-ordinary" onClick={handleBuyTicket}>
+                      <button
+                        className="buy-btn buy-btn-ordinary"
+                        onClick={() => handleBuyTicket(match.id, 'ordinary')}
+                      >
                         Buy Ticket
                       </button>
                     </div>
