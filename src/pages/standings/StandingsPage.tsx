@@ -357,6 +357,20 @@ function StandingsPage() {
                 <span>→</span>
               </Link>
             </section>
+
+            <section className={styles.bottomCta} style={{ marginTop: '1rem' }}>
+              <div className={styles.competitionLogo}>
+                <img src="https://img.icons8.com/fluency/96/fantasy.png" alt="" style={{ width: 58, height: 58 }} />
+              </div>
+              <div>
+                <h2>Build your fantasy team</h2>
+                <p>Pick real players from these standings and compete in fantasy leagues.</p>
+              </div>
+              <Link to="/fantasy">
+                Play Fantasy
+                <span>→</span>
+              </Link>
+            </section>
           </section>
         </div>
         <Footer />
