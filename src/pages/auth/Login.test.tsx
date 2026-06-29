@@ -1,16 +1,21 @@
+import React from 'react'
 import { MemoryRouter } from 'react-router-dom'
+import { GoogleOAuthProvider } from '@react-oauth/google'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import Login from './Login'
-import { buildGoogleAuthUrl } from './loginUtils'
 
 const navigateMock = vi.hoisted(() => vi.fn())
 const loginMock = vi.hoisted(() => vi.fn())
 
+vi.mock('@react-oauth/google', () => ({
+  GoogleOAuthProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  GoogleLogin: () => <div data-testid="google-login" />,
+}))
+
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom')
-
   return {
     ...actual,
     useNavigate: () => navigateMock,
@@ -23,19 +28,15 @@ vi.mock('../../hooks/useAuth.js', () => ({
   }),
 }))
 
-describe('buildGoogleAuthUrl', () => {
-  it('builds the Google OAuth redirect URL from the configured values', () => {
-    expect(
-      buildGoogleAuthUrl({
-        apiBaseUrl: 'http://localhost:8000',
-        googleClientId: 'client-123',
-        googleRedirectUri: 'https://league.example.com/google/callback',
-      }),
-    ).toBe(
-      'https://accounts.google.com/o/oauth2/v2/auth?client_id=client-123&redirect_uri=https%3A%2F%2Fleague.example.com%2Fgoogle%2Fcallback&response_type=code&scope=openid+email+profile&access_type=offline&prompt=select_account',
-    )
-  })
-})
+function renderLogin(initialEntries?: { pathname: string; state?: object }[]) {
+  return render(
+    <GoogleOAuthProvider clientId="test-client-id">
+      <MemoryRouter initialEntries={initialEntries}>
+        <Login />
+      </MemoryRouter>
+    </GoogleOAuthProvider>,
+  )
+}
 
 describe('Login page', () => {
   beforeEach(() => {
@@ -46,11 +47,7 @@ describe('Login page', () => {
   it('renders the sign-in form and toggles password visibility', async () => {
     const user = userEvent.setup()
 
-    render(
-      <MemoryRouter>
-        <Login />
-      </MemoryRouter>,
-    )
+    renderLogin()
 
     expect(screen.getByRole('heading', { name: /welcome back/i })).toBeInTheDocument()
     expect(screen.getByPlaceholderText('Enter phone number or email')).toBeInTheDocument()
@@ -59,19 +56,13 @@ describe('Login page', () => {
     const toggleButton = screen.getByRole('button', { name: /show password/i })
 
     expect(passwordInput).toHaveAttribute('type', 'password')
-
     await user.click(toggleButton)
-
     expect(passwordInput).toHaveAttribute('type', 'text')
     expect(screen.getByRole('button', { name: /hide password/i })).toBeInTheDocument()
   })
 
   it('shows a success message passed from email verification', () => {
-    render(
-      <MemoryRouter initialEntries={[{ pathname: '/login', state: { message: 'Your email has been verified. You can now sign in.' } }]}>
-        <Login />
-      </MemoryRouter>,
-    )
+    renderLogin([{ pathname: '/login', state: { message: 'Your email has been verified. You can now sign in.' } }])
 
     expect(screen.getByRole('status')).toHaveTextContent(/email has been verified/i)
   })
@@ -90,11 +81,7 @@ describe('Login page', () => {
       },
     })
 
-    render(
-      <MemoryRouter initialEntries={[{ pathname: '/login', state: { postLoginRedirect: '/profile' } }]}>
-        <Login />
-      </MemoryRouter>,
-    )
+    renderLogin([{ pathname: '/login', state: { postLoginRedirect: '/profile' } }])
 
     await user.type(screen.getByPlaceholderText('Enter phone number or email'), 'fan@example.com')
     await user.type(screen.getByPlaceholderText('Enter your password'), 'StrongPassword123')
@@ -122,11 +109,7 @@ describe('Login page', () => {
       },
     })
 
-    render(
-      <MemoryRouter>
-        <Login />
-      </MemoryRouter>,
-    )
+    renderLogin()
 
     await user.type(screen.getByPlaceholderText('Enter phone number or email'), 'fan@example.com')
     await user.type(screen.getByPlaceholderText('Enter your password'), 'StrongPassword123')
@@ -145,11 +128,7 @@ describe('Login page', () => {
   it('does not submit or redirect when the login form is empty', async () => {
     const user = userEvent.setup()
 
-    render(
-      <MemoryRouter>
-        <Login />
-      </MemoryRouter>,
-    )
+    renderLogin()
 
     await user.click(screen.getByRole('button', { name: /^log in$/i }))
 
@@ -170,11 +149,7 @@ describe('Login page', () => {
       },
     })
 
-    render(
-      <MemoryRouter>
-        <Login />
-      </MemoryRouter>,
-    )
+    renderLogin()
 
     await user.type(screen.getByPlaceholderText('Enter phone number or email'), 'wrong@example.com')
     await user.type(screen.getByPlaceholderText('Enter your password'), 'WrongPassword123')
@@ -202,11 +177,7 @@ describe('Login page', () => {
       },
     })
 
-    render(
-      <MemoryRouter>
-        <Login />
-      </MemoryRouter>,
-    )
+    renderLogin()
 
     await user.type(screen.getByPlaceholderText('Enter phone number or email'), 'fan@example.com')
     await user.type(screen.getByPlaceholderText('Enter your password'), 'StrongPassword123')
@@ -233,11 +204,7 @@ describe('Login page', () => {
       },
     })
 
-    render(
-      <MemoryRouter initialEntries={[{ pathname: '/login', state: { postLoginRedirect: '/memberships' } }]}>
-        <Login />
-      </MemoryRouter>,
-    )
+    renderLogin([{ pathname: '/login', state: { postLoginRedirect: '/memberships' } }])
 
     await user.type(screen.getByPlaceholderText('Enter phone number or email'), 'fan@example.com')
     await user.type(screen.getByPlaceholderText('Enter your password'), 'StrongPassword123')

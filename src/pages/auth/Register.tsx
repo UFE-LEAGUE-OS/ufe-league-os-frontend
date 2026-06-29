@@ -23,9 +23,9 @@ import {
   type RegisterFormValues,
 } from './registerUtils.js';
 import '../../styles/pages/auth/register.css';
-import { usePasswordValidation } from '../../hooks/usePasswordValidation.js';
-import { PERSONALIZE_ROUTE, VERIFY_EMAIL_ROUTE } from '../../utils/authFlow.js';
-import { savePendingOnboardingSession } from '../../utils/onboardingSession.js';
+import { usePasswordValidation } from '../../hooks/usePasswordValidation.ts';
+import { PERSONALIZE_ROUTE, VERIFY_EMAIL_ROUTE } from '../../utils/authFlow.ts';
+import { savePendingOnboardingSession } from '../../utils/onboardingSession.ts';
 
 const features = [
   {
@@ -78,7 +78,6 @@ function FieldIcon({ children }: { children: ReactNode }) {
 function PasswordStrengthIndicator({
   status,
   message,
-  score,
 }: {
   status: string;
   message: string;
@@ -86,21 +85,9 @@ function PasswordStrengthIndicator({
 }) {
   if (!status || status === 'idle') return null;
 
-  const statusClass = `status-${status}`;
-
   return (
-    <div className={`password-status ${statusClass}`}>
+    <div className={`password-status status-${status}`}>
       <span className="password-status-text">{message}</span>
-      {status === 'medium' || status === 'strong' ? (
-        <div className="password-strength-bar" aria-hidden="true">
-          {[0, 1, 2, 3].map((i) => (
-            <span
-              key={i}
-              className={`password-strength-bar-segment${i <= score ? ' active' : ''}`}
-            />
-          ))}
-        </div>
-      ) : null}
     </div>
   );
 }
@@ -409,7 +396,7 @@ export default function Register() {
                     id="register-password"
                     name="password"
                     type={showPassword ? 'text' : 'password'}
-                    placeholder="Create a secure password"
+                    placeholder="Enter your password"
                     autoComplete="new-password"
                     value={formValues.password}
                     onChange={(event) => updateField('password', event.target.value)}

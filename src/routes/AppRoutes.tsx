@@ -123,6 +123,7 @@ export default function AppRoutes() {
                     <Route path="/tickets/payment/processing" element={<TicketPaymentProcessingPage />} />
                     <Route path="/tickets/payment/success" element={<TicketPaymentSuccessPage />} />
                     <Route path="/tickets/payment/failed" element={<TicketPaymentFailedPage />} />
+
                     {/* Fantasy — protected, requires login */}
                     <Route path="/fantasy" element={<FantasyPage />} />
                     <Route path="/fantasy/select" element={<FantasySportSelect />} />
@@ -158,7 +159,6 @@ export default function AppRoutes() {
                 <Route path="/results" element={<Results />} />
                 <Route path="/support" element={<Support />} />
                 <Route path="/about" element={<AboutUs />} />
-
                 <Route path="/payments" element={<Payments />} />
             </Routes>
         </Router>

@@ -1,12 +1,14 @@
 import axios from "axios";
 import { getToken } from "../utils/tokenManager.js";
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ??
-  "https://ufe-league-os-backend.onrender.com/api";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "/api";
+
+const normalisedApiBaseUrl = API_BASE_URL.endsWith("/")
+  ? API_BASE_URL
+  : `${API_BASE_URL}/`;
 
 export const api = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: normalisedApiBaseUrl,
   headers: {
     "Content-Type": "application/json",
   },

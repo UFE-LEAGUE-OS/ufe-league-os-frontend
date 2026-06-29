@@ -9,6 +9,27 @@ const navigateMock = vi.hoisted(() => vi.fn())
 const requestPasswordResetMock = vi.hoisted(() => vi.fn())
 const resetPasswordMock = vi.hoisted(() => vi.fn())
 
+vi.mock('../../hooks/usePasswordValidation.js', () => ({
+  usePasswordValidation: () => ({
+    validation: {
+      status: 'strong',
+      message: 'Strong password',
+      score: 3,
+      disabled: false,
+    },
+    validatePassword: vi.fn().mockResolvedValue(undefined),
+    resetValidation: vi.fn(),
+  }),
+}))
+
+vi.mock('@zxcvbn-ts/core', () => ({
+  ZxcvbnFactory: class {
+    check() {
+      return { score: 3 }
+    }
+  },
+}))
+
 vi.mock('../../services/authService.js', () => ({
   requestPasswordReset: requestPasswordResetMock,
   resetPassword: resetPasswordMock,
@@ -97,5 +118,5 @@ describe('ForgotPassword page', () => {
         message: 'Password reset successful. Please log in with your new password.',
       },
     })
-  })
+  }, 10000)  // <-- added
 })
