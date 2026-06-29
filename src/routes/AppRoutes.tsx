@@ -68,11 +68,12 @@ import MyTicketsPage from '../pages/fan/MyTicketsPage';
 import TicketDetailPage from '../pages/fan/TicketDetailPage';
 import ProtectedRoute from './ProtectedRoute';
 import Payments from '../pages/PaymentPage';
-import FanPollsPage from '../pages/fan/FanPollsPage'; // ← new
+import FanPollsPage from '../pages/fan/FanPollsPage';
 import TicketCheckoutPage from '../pages/tickets/TicketCheckoutPage';
 import TicketPaymentProcessingPage from '../pages/tickets/TicketPaymentProcessingPage';
 import TicketPaymentSuccessPage from '../pages/tickets/TicketPaymentSuccessPage';
 import TicketPaymentFailedPage from '../pages/tickets/TicketPaymentFailedPage';
+import MatchCentrePage from '../pages/MatchCentrePage';
 
 function protectedPage(page: ReactNode) {
     return <ProtectedRoute>{page}</ProtectedRoute>;
@@ -115,7 +116,7 @@ export default function AppRoutes() {
                     <Route path="/dashboard/memberships" element={<MyMembershipsPage />} />
 
                     {/* Fan Interaction */}
-                    <Route path="/fan/polls" element={<FanPollsPage />} /> {/* ← new */}
+                    <Route path="/fan/polls" element={<FanPollsPage />} />
                     <Route path="/dashboard/tickets" element={<MyTicketsPage />} />
                     <Route path="/dashboard/tickets/:ticketId" element={<TicketDetailPage />} />
                     <Route path="/tickets/:matchId/checkout" element={<TicketCheckoutPage />} />
@@ -152,6 +153,7 @@ export default function AppRoutes() {
                 <Route path="/leagues/national-basketball-league" element={<NationalBasketballLeague />} />
                 <Route path="/leagues/budo-league" element={<BudoLeague />} />
                 <Route path="/leagues/smack-league" element={<SmackLeague />} />
+                <Route path="/match-centre" element={<MatchCentrePage />} />
                 <Route path="/fixtures" element={<Fixtures />} />
                 <Route path="/results" element={<Results />} />
                 <Route path="/support" element={<Support />} />

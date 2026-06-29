@@ -1,0 +1,814 @@
+/* ═══════════════════════════════════════════════
+   MATCH CENTRE PAGE — scoped to .mc-* classes
+   Design tokens from project brief
+   ═══════════════════════════════════════════════ */
+
+/* ── Page shell ─────────────────────────────── */
+.mc-page {
+  background-color: #00030D;
+  color: #ffffff;
+  font-family: 'Inter', sans-serif;
+  min-height: 100vh;
+}
+
+/* ── Breadcrumb ─────────────────────────────── */
+.mc-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 40px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: #9CA3AF;
+}
+.mc-bc-link {
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.mc-bc-link:hover { color: #ffffff; }
+.mc-bc-sep { color: #4B5563; }
+.mc-bc-current { color: #ffffff; }
+
+/* ── Hero card ──────────────────────────────── */
+.mc-hero {
+  margin: 0 40px 32px;
+  background: linear-gradient(160deg, #0d0f1e 0%, #12131F 60%, #0a0c19 100%);
+  border: 1px solid #1e2340;
+  border-radius: 16px;
+  padding: 28px 40px 24px;
+  text-align: center;
+}
+
+.mc-league-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid #1e2340;
+  border-radius: 999px;
+  padding: 6px 16px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #d1d5db;
+  margin-bottom: 14px;
+}
+.mc-flag { font-size: 14px; }
+.mc-dot { color: #4B5563; }
+
+.mc-datetime {
+  font-size: 13px;
+  color: #9CA3AF;
+  margin-bottom: 6px;
+}
+
+.mc-kickoff {
+  font-size: 36px;
+  font-weight: 800;
+  color: #8135FA;
+  letter-spacing: 0.04em;
+  margin-bottom: 28px;
+}
+
+/* Teams row */
+.mc-teams-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 24px;
+  margin-bottom: 28px;
+}
+
+.mc-team {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+/* ── Team crest with real images ────────────── */
+.mc-team-crest {
+  width: 120px;
+  height: 120px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #12131F;
+  border: 1px solid #1e2340;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mc-crest-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.mc-team-name {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: #ffffff;
+}
+.mc-team-position {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: #9CA3AF;
+}
+
+/* Centre VS / timer */
+.mc-centre {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.mc-vs {
+  font-size: 32px;
+  font-weight: 800;
+  color: #1e2340;
+  letter-spacing: 0.1em;
+}
+
+.mc-live-badge {
+  background: #F97316;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  padding: 3px 12px;
+  border-radius: 999px;
+}
+
+.mc-timer {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.mc-timer-unit {
+  font-size: 36px;
+  font-weight: 800;
+  color: #ffffff;
+  font-variant-numeric: tabular-nums;
+  min-width: 48px;
+  text-align: center;
+}
+.mc-timer-colon {
+  font-size: 32px;
+  font-weight: 800;
+  color: #8135FA;
+  margin-bottom: 2px;
+}
+
+.mc-timer-labels {
+  display: flex;
+  gap: 0;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: #9CA3AF;
+  width: 100%;
+  justify-content: space-between;
+  padding: 0 4px;
+}
+
+/* Venue strip */
+.mc-venue-strip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+  padding-top: 16px;
+  border-top: 1px solid #1e2340;
+}
+.mc-venue-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #9CA3AF;
+}
+
+/* ── Body layout ─────────────────────────────── */
+.mc-body {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 24px;
+  padding: 0 40px 40px;
+  align-items: start;
+}
+
+/* ── Main column ─────────────────────────────── */
+.mc-main { display: flex; flex-direction: column; gap: 0; }
+
+/* Tab bar */
+.mc-tabs {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #1e2340;
+  margin-bottom: 20px;
+}
+
+.mc-tab-list { display: flex; gap: 0; }
+
+.mc-tab {
+  background: none;
+  border: none;
+  color: #9CA3AF;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 14px 18px;
+  cursor: pointer;
+  position: relative;
+  transition: color 0.2s;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+.mc-tab:hover { color: #ffffff; }
+.mc-tab--active {
+  color: #ffffff;
+  border-bottom-color: #F97316;
+}
+
+.mc-tab-actions { display: flex; gap: 10px; }
+
+.mc-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid #1e2340;
+  border-radius: 8px;
+  color: #d1d5db;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+.mc-action-btn:hover {
+  background: rgba(255,255,255,0.09);
+  border-color: #8135FA;
+}
+
+/* Cards */
+.mc-overview {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.mc-card {
+  background: #12131F;
+  border: 1px solid #1e2340;
+  border-radius: 12px;
+  padding: 20px 24px;
+}
+
+.mc-card-title {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #9CA3AF;
+  margin-bottom: 16px;
+  text-transform: uppercase;
+}
+
+/* Form Guide */
+.mc-form-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.mc-form-row:last-child { margin-bottom: 0; }
+
+.mc-form-team-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.mc-form-team-dot--kcca { background: #F97316; }
+.mc-form-team-dot--vipers { background: #8135FA; }
+
+.mc-form-team-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #ffffff;
+  min-width: 72px;
+}
+
+.mc-form-results {
+  display: flex;
+  gap: 5px;
+}
+
+.mc-form-badge {
+  width: 26px;
+  height: 26px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
+  color: #ffffff;
+}
+.mc-form-badge--w { background: #16a34a; }
+.mc-form-badge--l { background: #DC2626; }
+.mc-form-badge--d { background: #4B5563; }
+
+/* Head to Head */
+.mc-h2h-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.mc-h2h-num {
+  font-size: 28px;
+  font-weight: 800;
+  color: #8135FA;
+}
+.mc-h2h-num--vipers { color: #F97316; }
+.mc-h2h-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #9CA3AF;
+  margin-top: 2px;
+}
+
+.mc-h2h-bar {
+  display: flex;
+  height: 5px;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+.mc-h2h-bar-fill--kcca { background: #8135FA; }
+.mc-h2h-bar-fill--draw { background: #4B5563; }
+.mc-h2h-bar-fill--vipers { background: #F97316; }
+
+.mc-h2h-team-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  font-weight: 600;
+  color: #9CA3AF;
+  letter-spacing: 0.06em;
+}
+
+/* Venue card */
+.mc-venue-card {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  background: #12131F;
+  border: 1px solid #1e2340;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.mc-venue-img {
+  min-height: 180px;
+  position: relative;
+  overflow: hidden;
+}
+
+.mc-venue-img-real {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  position: absolute;
+  inset: 0;
+}
+
+.mc-venue-details {
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mc-venue-table { margin-bottom: 12px; }
+.mc-venue-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 7px 0;
+  border-bottom: 1px solid #1e2340;
+  font-size: 13px;
+}
+.mc-venue-row:last-child { border-bottom: none; }
+.mc-venue-key { color: #9CA3AF; }
+.mc-venue-val { font-weight: 700; color: #ffffff; }
+
+.mc-venue-guide-btn {
+  background: none;
+  border: 1px solid #1e2340;
+  border-radius: 8px;
+  color: #9CA3AF;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  padding: 9px 16px;
+  cursor: pointer;
+  width: 100%;
+  transition: border-color 0.2s, color 0.2s;
+}
+.mc-venue-guide-btn:hover { border-color: #8135FA; color: #ffffff; }
+
+/* Match News */
+.mc-news-section { display: flex; flex-direction: column; gap: 14px; }
+
+.mc-news-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.mc-news-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #ffffff;
+}
+.mc-news-viewall {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #8135FA;
+  cursor: pointer;
+}
+.mc-news-viewall:hover { color: #9b55fb; }
+
+.mc-news-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.mc-news-card {
+  background: #12131F;
+  border: 1px solid #1e2340;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+.mc-news-card:hover { border-color: #8135FA; }
+
+/* ── News image with real photo ─────────────── */
+.mc-news-img {
+  width: 100%;
+  height: 160px;
+  overflow: hidden;
+  position: relative;
+}
+
+.mc-news-img-real {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+.mc-news-card:hover .mc-news-img-real {
+  transform: scale(1.04);
+}
+
+.mc-news-content { padding: 12px 14px 14px; }
+.mc-news-headline {
+  font-size: 13px;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 6px;
+  line-height: 1.4;
+}
+.mc-news-excerpt {
+  font-size: 12px;
+  color: #9CA3AF;
+  line-height: 1.5;
+}
+
+/* Tab placeholder */
+.mc-tab-placeholder {
+  background: #12131F;
+  border: 1px solid #1e2340;
+  border-radius: 12px;
+  padding: 60px;
+  text-align: center;
+  color: #9CA3AF;
+  font-size: 14px;
+}
+
+/* ── Sidebar ──────────────────────────────────── */
+.mc-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.mc-sidebar-card {
+  background: #12131F;
+  border: 1px solid #1e2340;
+  border-radius: 12px;
+  padding: 18px 20px;
+}
+
+.mc-sidebar-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.mc-sidebar-card-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 10px;
+  display: block;
+}
+
+.mc-sidebar-icon { color: #9CA3AF; }
+
+.mc-sidebar-desc {
+  font-size: 12px;
+  color: #9CA3AF;
+  line-height: 1.5;
+  margin-bottom: 14px;
+}
+
+.mc-ticket-features { margin-bottom: 16px; }
+.mc-ticket-feature {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #d1d5db;
+  margin-bottom: 8px;
+}
+.mc-feature-check {
+  color: #16a34a;
+  font-weight: 800;
+  font-size: 14px;
+}
+
+.mc-get-tickets-btn {
+  width: 100%;
+  background: #8135FA;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 0;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background-color 0.2s ease, transform 0.15s ease;
+  margin-bottom: 8px;
+}
+.mc-get-tickets-btn:hover {
+  background: #9b55fb;
+  transform: scale(1.04);
+}
+
+.mc-tickets-starting {
+  text-align: center;
+  font-size: 11px;
+  color: #9CA3AF;
+}
+
+/* Ticket tiers */
+.mc-tier-list { display: flex; flex-direction: column; gap: 14px; margin-bottom: 16px; }
+
+.mc-tier-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mc-tier-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.mc-tier-dot--vip      { background: #F97316; }
+.mc-tier-dot--vvip     { background: #8135FA; }
+.mc-tier-dot--ordinary { background: #DC2626; }
+
+.mc-tier-info { flex: 1; }
+.mc-tier-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #ffffff;
+}
+.mc-tier-sub {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: #9CA3AF;
+}
+.mc-tier-price {
+  font-size: 13px;
+  font-weight: 700;
+  color: #d1d5db;
+}
+
+.mc-buy-tickets-btn {
+  width: 100%;
+  background: rgba(129, 53, 250, 0.15);
+  border: 1px solid #8135FA;
+  border-radius: 8px;
+  color: #8135FA;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  padding: 12px 0;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.15s ease;
+}
+.mc-buy-tickets-btn:hover {
+  background: #8135FA;
+  color: #ffffff;
+  transform: scale(1.04);
+}
+
+/* Match Officials */
+.mc-officials-list { display: flex; flex-direction: column; gap: 14px; }
+
+.mc-official-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mc-official-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #1e2340;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9CA3AF;
+  flex-shrink: 0;
+}
+
+.mc-official-role {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #9CA3AF;
+  margin-bottom: 2px;
+}
+.mc-official-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+/* ── CTA Banner ──────────────────────────────── */
+.mc-cta-banner {
+  margin: 8px 40px 0;
+  background: linear-gradient(110deg, #0d0f1e 0%, #12131F 50%, #1a0d2e 100%);
+  border: 1px solid #1e2340;
+  border-radius: 16px;
+  padding: 40px 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  position: relative;
+  overflow: hidden;
+  min-height: 140px;
+}
+
+.mc-cta-left { max-width: 480px; }
+
+.mc-cta-title {
+  font-size: 24px;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0 0 10px;
+  line-height: 1.2;
+}
+
+.mc-cta-desc {
+  font-size: 13px;
+  color: #9CA3AF;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.mc-cta-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* ── CTA buttons — same hover as landing page login ── */
+.mc-cta-register {
+  background-color: #8135FA;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  height: 44px;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.2s ease, transform 0.15s ease;
+}
+.mc-cta-register:hover {
+  background-color: #9b55fb;
+  transform: scale(1.04);
+}
+
+.mc-cta-login {
+  background-color: transparent;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  height: 44px;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+}
+.mc-cta-login:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.6);
+  transform: scale(1.04);
+}
+
+/* ── Responsive ──────────────────────────────── */
+@media (max-width: 1024px) {
+  .mc-body {
+    grid-template-columns: 1fr;
+    padding: 0 20px 32px;
+  }
+  .mc-sidebar {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .mc-sidebar .mc-sidebar-card:last-child {
+    grid-column: 1 / -1;
+  }
+  .mc-hero { margin: 0 20px 24px; }
+  .mc-breadcrumb { padding: 14px 20px; }
+  .mc-cta-banner { margin: 8px 20px 0; }
+}
+
+@media (max-width: 768px) {
+  .mc-hero { padding: 20px; }
+  .mc-kickoff { font-size: 26px; }
+  .mc-teams-row { gap: 12px; }
+  .mc-team-crest { width: 80px; height: 80px; }
+  .mc-team-name { font-size: 16px; }
+  .mc-timer-unit { font-size: 26px; }
+  .mc-venue-card { grid-template-columns: 1fr; }
+  .mc-venue-img { min-height: 180px; }
+  .mc-news-grid { grid-template-columns: 1fr; }
+  .mc-sidebar { grid-template-columns: 1fr; }
+  .mc-sidebar .mc-sidebar-card:last-child { grid-column: auto; }
+  .mc-cta-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 28px 24px;
+  }
+  .mc-cta-title { font-size: 18px; }
+  .mc-tabs { flex-wrap: wrap; gap: 8px; }
+  .mc-tab-actions { order: -1; width: 100%; justify-content: flex-end; }
+}
+
+@media (max-width: 480px) {
+  .mc-cta-actions { flex-direction: column; width: 100%; }
+  .mc-cta-register,
+  .mc-cta-login { width: 100%; justify-content: center; }
+}
