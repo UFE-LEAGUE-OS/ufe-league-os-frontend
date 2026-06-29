@@ -16,6 +16,7 @@ import {
     VERIFY_EMAIL_ROUTE,
     type AuthFlowState,
 } from '../../utils/authFlow.js';
+import BackButton from '../../components/BackButton.js';
 
 import '../../styles/pages/auth/login.css';
 
@@ -235,9 +236,7 @@ export default function Login() {
         try {
             const response = await axios.post(
                 `${apiBaseUrl}/api/accounts/google/`,
-                {
-                    credential,
-                }
+                { credential }
             );
 
             const result = response.data as LoginResult;
@@ -264,6 +263,10 @@ export default function Login() {
 
     return (
         <PageShell className="auth-page login-page">
+            <div className="login-back-wrap">
+                <BackButton to="/" label="Back to home" />
+            </div>
+
             <main className="login-layout">
                 <section className="login-story">
                     <div className="login-hero-copy">
@@ -388,10 +391,12 @@ export default function Login() {
                                 <span>OR</span>
                             </div>
 
-                            <GoogleLogin
-                                onSuccess={handleGoogleSuccess}
-                                onError={() => setGoogleLoginMessage('Google sign-in failed.')}
-                            />
+                            <div style={{ display: 'flex', justifyContent: 'center' }}>
+                                <GoogleLogin
+                                    onSuccess={handleGoogleSuccess}
+                                    onError={() => setGoogleLoginMessage('Google sign-in failed.')}
+                                />
+                            </div>
 
                             {googleLoginMessage ? (
                                 <p className="auth-message auth-message-warning" role="status" aria-live="polite">
