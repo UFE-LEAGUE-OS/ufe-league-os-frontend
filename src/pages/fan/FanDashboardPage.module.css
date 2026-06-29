@@ -23,6 +23,13 @@
     font-size: 16px;
 }
 
+.headerActions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
 .customizeButton {
     height: 42px;
     border-radius: 6px;
@@ -572,6 +579,15 @@
 .panelFooterLink {
     display: inline-flex;
     margin-top: 18px;
+}
+
+.logoutButton {
+    color: #ffb4b4;
+    border-color: rgba(255, 107, 107, 0.58);
+}
+
+.logoutButton:hover {
+    background: rgba(255, 107, 107, 0.12);
 }
 
 .customizeButton:hover,
