@@ -7,6 +7,7 @@ import {
     Megaphone,
     MessageSquare,
     Moon,
+    RefreshCw,
     Save,
     ShieldCheck,
     Smartphone,
@@ -15,8 +16,17 @@ import {
     XCircle,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import {
+    getNotificationInbox,
+    markAllNotificationsRead,
+    markNotificationRead,
+} from "../../services/notificationService";
+import type {
+    AppNotification,
+    NotificationCategory,
+} from "../../services/notificationService";
 import styles from "./NotificationsPage.module.css";
 
 interface ChannelPreference {
@@ -43,6 +53,8 @@ interface AlertGroup {
     icon: LucideIcon;
     alerts: AlertPreference[];
 }
+
+type CategoryFilter = "ALL" | NotificationCategory;
 
 const initialChannels: ChannelPreference[] = [
     {
@@ -198,31 +210,15 @@ const initialAlertGroups: AlertGroup[] = [
     },
 ];
 
-const recentNotifications = [
-    {
-        id: "notice-001",
-        title: "KCB KOBS Gold Membership confirmed",
-        description: "Your club membership payment was successful.",
-        time: "Today, 10:24 AM",
-        status: "Delivered",
-        icon: CheckCircle2,
-    },
-    {
-        id: "notice-002",
-        title: "KOBS vs Heathens ticket available",
-        description: "Tickets are now open for your followed club.",
-        time: "Yesterday, 4:12 PM",
-        status: "Delivered",
-        icon: Ticket,
-    },
-    {
-        id: "notice-003",
-        title: "City Oilers payment still pending",
-        description: "Your payment is awaiting gateway confirmation.",
-        time: "Yesterday, 11:38 AM",
-        status: "Pending",
-        icon: Clock,
-    },
+const categoryFilters: Array<{ label: string; value: CategoryFilter }> = [
+    { label: "All", value: "ALL" },
+    { label: "Tickets", value: "TICKET" },
+    { label: "Payments", value: "PAYMENT" },
+    { label: "Memberships", value: "MEMBERSHIP" },
+    { label: "Fantasy", value: "FANTASY" },
+    { label: "Matches", value: "MATCH" },
+    { label: "Clubs", value: "CLUB" },
+    { label: "System", value: "SYSTEM" },
 ];
 
 function getPriorityClass(priority: AlertPreference["priority"]) {
@@ -237,12 +233,43 @@ function getPriorityClass(priority: AlertPreference["priority"]) {
     return styles.lowPriority;
 }
 
+function getNotificationIcon(category: NotificationCategory) {
+    if (category === "TICKET") return Ticket;
+    if (category === "PAYMENT") return CheckCircle2;
+    if (category === "MEMBERSHIP") return Trophy;
+    if (category === "FANTASY") return Trophy;
+    if (category === "MATCH") return CalendarDays;
+    if (category === "CLUB") return Megaphone;
+    return MessageSquare;
+}
+
+function formatNotificationDate(value: string) {
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+        return "Just now";
+    }
+
+    return date.toLocaleString(undefined, {
+        dateStyle: "medium",
+        timeStyle: "short",
+    });
+}
+
 function NotificationsPage() {
     const [channels, setChannels] = useState<ChannelPreference[]>(initialChannels);
     const [alertGroups, setAlertGroups] =
         useState<AlertGroup[]>(initialAlertGroups);
     const [quietHoursEnabled, setQuietHoursEnabled] = useState(true);
     const [saveMessage, setSaveMessage] = useState("");
+    const [notifications, setNotifications] = useState<AppNotification[]>([]);
+    const [unreadCount, setUnreadCount] = useState(0);
+    const [totalNotifications, setTotalNotifications] = useState(0);
+    const [isLoadingInbox, setIsLoadingInbox] = useState(true);
+    const [isRefreshingInbox, setIsRefreshingInbox] = useState(false);
+    const [inboxError, setInboxError] = useState("");
+    const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("ALL");
+    const [unreadOnly, setUnreadOnly] = useState(false);
 
     const enabledChannels = channels.filter((channel) => channel.enabled).length;
 
@@ -254,6 +281,58 @@ function NotificationsPage() {
         (total, group) => total + group.alerts.length,
         0,
     );
+
+    const latestNotifications = useMemo(
+        () => notifications.slice(0, 6),
+        [notifications],
+    );
+
+    const loadNotifications = useCallback(
+        async (options?: { silent?: boolean }) => {
+            if (options?.silent) {
+                setIsRefreshingInbox(true);
+            } else {
+                setIsLoadingInbox(true);
+            }
+
+            setInboxError("");
+
+            try {
+                const response = await getNotificationInbox({
+                    limit: 25,
+                    offset: 0,
+                    unreadOnly,
+                    category: categoryFilter === "ALL" ? undefined : categoryFilter,
+                });
+
+                setNotifications(response.results);
+                setUnreadCount(response.unread_count);
+                setTotalNotifications(response.count);
+            } catch {
+                setInboxError(
+                    "We could not load your notifications. Please check your connection and try again.",
+                );
+            } finally {
+                setIsLoadingInbox(false);
+                setIsRefreshingInbox(false);
+            }
+        },
+        [categoryFilter, unreadOnly],
+    );
+
+    useEffect(() => {
+        const timeoutId = window.setTimeout(() => {
+            void loadNotifications();
+        }, 0);
+
+        return () => {
+            window.clearTimeout(timeoutId);
+        };
+    }, [loadNotifications]);
+
+    function notifyHeaderBadgeChanged() {
+        window.dispatchEvent(new Event("leagueos:notifications-updated"));
+    }
 
     function toggleChannel(channelId: string) {
         setChannels((currentChannels) =>
@@ -289,7 +368,47 @@ function NotificationsPage() {
     }
 
     function handleSave() {
-        setSaveMessage("Notification preferences saved locally for now.");
+        setSaveMessage(
+            "Notification preference UI saved for this session. The live inbox below is connected to the backend.",
+        );
+    }
+
+    async function handleMarkRead(notificationId: number) {
+        try {
+            const updatedNotification = await markNotificationRead(notificationId);
+
+            setNotifications((currentNotifications) =>
+                currentNotifications.map((notification) =>
+                    notification.id === notificationId
+                        ? updatedNotification
+                        : notification,
+                ),
+            );
+
+            setUnreadCount((currentCount) => Math.max(0, currentCount - 1));
+            notifyHeaderBadgeChanged();
+        } catch {
+            setInboxError("Could not mark that notification as read.");
+        }
+    }
+
+    async function handleMarkAllRead() {
+        try {
+            const response = await markAllNotificationsRead();
+
+            setNotifications((currentNotifications) =>
+                currentNotifications.map((notification) => ({
+                    ...notification,
+                    is_read: true,
+                    read_at: notification.read_at ?? new Date().toISOString(),
+                })),
+            );
+
+            setUnreadCount(response.unread_count);
+            notifyHeaderBadgeChanged();
+        } catch {
+            setInboxError("Could not mark all notifications as read.");
+        }
     }
 
     return (
@@ -298,19 +417,31 @@ function NotificationsPage() {
                 <div>
                     <h1>Notifications</h1>
                     <p>
-                        Choose how League OS should alert you about clubs, matches, tickets,
-                        payments, memberships and news.
+                        Choose how League OS should alert you and review real alerts
+                        delivered to your fan dashboard inbox.
                     </p>
                 </div>
 
-                <button
-                    type="button"
-                    className={styles.primaryHeaderAction}
-                    onClick={handleSave}
-                >
-                    <Save size={18} strokeWidth={2.4} aria-hidden="true" />
-                    Save Preferences
-                </button>
+                <div className={styles.headerActionGroup}>
+                    <button
+                        type="button"
+                        className={styles.secondaryHeaderAction}
+                        onClick={() => void loadNotifications({ silent: true })}
+                        disabled={isRefreshingInbox}
+                    >
+                        <RefreshCw size={18} strokeWidth={2.4} aria-hidden="true" />
+                        {isRefreshingInbox ? "Refreshing..." : "Refresh Inbox"}
+                    </button>
+
+                    <button
+                        type="button"
+                        className={styles.primaryHeaderAction}
+                        onClick={handleSave}
+                    >
+                        <Save size={18} strokeWidth={2.4} aria-hidden="true" />
+                        Save Preferences
+                    </button>
+                </div>
             </header>
 
             {saveMessage ? (
@@ -320,12 +451,19 @@ function NotificationsPage() {
                 </div>
             ) : null}
 
+            {inboxError ? (
+                <div className={styles.errorMessage} role="alert">
+                    <XCircle size={19} strokeWidth={2.4} aria-hidden="true" />
+                    {inboxError}
+                </div>
+            ) : null}
+
             <section className={styles.summaryGrid} aria-label="Notification summary">
                 <article className={`${styles.summaryCard} ${styles.purple}`}>
                     <div>
-                        <p>Enabled Channels</p>
-                        <strong>{enabledChannels}</strong>
-                        <span>Out of {channels.length}</span>
+                        <p>Unread Alerts</p>
+                        <strong>{unreadCount}</strong>
+                        <span>From backend inbox</span>
                     </div>
 
                     <Bell size={38} strokeWidth={2.1} aria-hidden="true" />
@@ -333,12 +471,12 @@ function NotificationsPage() {
 
                 <article className={`${styles.summaryCard} ${styles.green}`}>
                     <div>
-                        <p>Active Alerts</p>
-                        <strong>{enabledAlerts}</strong>
-                        <span>Out of {totalAlerts}</span>
+                        <p>Inbox Total</p>
+                        <strong>{totalNotifications}</strong>
+                        <span>Current filter</span>
                     </div>
 
-                    <CheckCircle2 size={38} strokeWidth={2.1} aria-hidden="true" />
+                    <MessageSquare size={38} strokeWidth={2.1} aria-hidden="true" />
                 </article>
 
                 <article className={`${styles.summaryCard} ${styles.orange}`}>
@@ -353,13 +491,147 @@ function NotificationsPage() {
 
                 <article className={`${styles.summaryCard} ${styles.blue}`}>
                     <div>
-                        <p>Recent Alerts</p>
-                        <strong>{recentNotifications.length}</strong>
-                        <span>Last 48 hours</span>
+                        <p>Enabled Channels</p>
+                        <strong>{enabledChannels}</strong>
+                        <span>{enabledAlerts} of {totalAlerts} alert types on</span>
                     </div>
 
-                    <MessageSquare size={38} strokeWidth={2.1} aria-hidden="true" />
+                    <CheckCircle2 size={38} strokeWidth={2.1} aria-hidden="true" />
                 </article>
+            </section>
+
+            <section className={styles.panel}>
+                <div className={styles.panelHeader}>
+                    <div>
+                        <h2>Notification Inbox</h2>
+                        <p>
+                            These notifications are loaded from the backend and can be
+                            marked as read.
+                        </p>
+                    </div>
+
+                    <button
+                        type="button"
+                        className={styles.secondaryHeaderAction}
+                        onClick={handleMarkAllRead}
+                        disabled={unreadCount === 0}
+                    >
+                        Mark all as read
+                    </button>
+                </div>
+
+                <div className={styles.inboxToolbar} aria-label="Notification filters">
+                    {categoryFilters.map((filter) => (
+                        <button
+                            type="button"
+                            key={filter.value}
+                            className={`${styles.filterButton} ${
+                                categoryFilter === filter.value
+                                    ? styles.activeFilterButton
+                                    : ""
+                            }`}
+                            onClick={() => setCategoryFilter(filter.value)}
+                        >
+                            {filter.label}
+                        </button>
+                    ))}
+
+                    <button
+                        type="button"
+                        className={`${styles.filterButton} ${
+                            unreadOnly ? styles.activeFilterButton : ""
+                        }`}
+                        onClick={() => setUnreadOnly((currentValue) => !currentValue)}
+                    >
+                        Unread only
+                    </button>
+                </div>
+
+                {isLoadingInbox ? (
+                    <div className={styles.emptyState}>
+                        <Clock size={26} strokeWidth={2.3} aria-hidden="true" />
+                        <strong>Loading notifications...</strong>
+                        <p>Please wait while we fetch your inbox.</p>
+                    </div>
+                ) : notifications.length === 0 ? (
+                    <div className={styles.emptyState}>
+                        <Bell size={26} strokeWidth={2.3} aria-hidden="true" />
+                        <strong>No notifications found</strong>
+                        <p>
+                            You have no notifications for the selected filter. Ticket
+                            confirmations, QR tickets and payment alerts will appear here.
+                        </p>
+                    </div>
+                ) : (
+                    <div className={styles.fullInboxList}>
+                        {notifications.map((notification) => {
+                            const NotificationIcon = getNotificationIcon(
+                                notification.category,
+                            );
+
+                            return (
+                                <article
+                                    className={`${styles.inboxItem} ${
+                                        notification.is_read ? "" : styles.unreadInboxItem
+                                    }`}
+                                    key={notification.id}
+                                >
+                                    <span>
+                                        <NotificationIcon
+                                            size={21}
+                                            strokeWidth={2.3}
+                                            aria-hidden="true"
+                                        />
+                                    </span>
+
+                                    <div>
+                                        <div className={styles.notificationTitleRow}>
+                                            <h3>{notification.title}</h3>
+
+                                            {!notification.is_read ? (
+                                                <em className={styles.unreadBadge}>Unread</em>
+                                            ) : null}
+                                        </div>
+
+                                        <p>
+                                            {notification.message ||
+                                                "Open this notification for more details."}
+                                        </p>
+
+                                        <small>
+                                            {notification.category_label} •{" "}
+                                            {formatNotificationDate(notification.created_at)}
+                                        </small>
+                                    </div>
+
+                                    <div className={styles.notificationActions}>
+                                        {notification.action_url ? (
+                                            <Link to={notification.action_url}>Open</Link>
+                                        ) : null}
+
+                                        {!notification.is_read ? (
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    void handleMarkRead(notification.id)
+                                                }
+                                            >
+                                                Mark read
+                                            </button>
+                                        ) : (
+                                            <CheckCircle2
+                                                className={styles.deliveredIcon}
+                                                size={19}
+                                                strokeWidth={2.4}
+                                                aria-hidden="true"
+                                            />
+                                        )}
+                                    </div>
+                                </article>
+                            );
+                        })}
+                    </div>
+                )}
             </section>
 
             <div className={styles.layoutGrid}>
@@ -369,8 +641,8 @@ function NotificationsPage() {
                             <div>
                                 <h2>Notification Channels</h2>
                                 <p>
-                                    These control where alerts are sent. Backend integration will
-                                    later persist these settings to your fan profile.
+                                    These controls are ready for the backend preference
+                                    endpoint. The inbox above is already live.
                                 </p>
                             </div>
                         </div>
@@ -382,8 +654,11 @@ function NotificationsPage() {
                                 return (
                                     <button
                                         type="button"
-                                        className={`${styles.channelCard} ${channel.enabled ? styles.channelCardEnabled : ""
-                                            } ${styles[channel.tone]}`}
+                                        className={`${styles.channelCard} ${
+                                            channel.enabled
+                                                ? styles.channelCardEnabled
+                                                : ""
+                                        } ${styles[channel.tone]}`}
                                         key={channel.id}
                                         onClick={() => toggleChannel(channel.id)}
                                     >
@@ -518,49 +793,67 @@ function NotificationsPage() {
                             </span>
 
                             <div>
-                                <h2>Recent Notifications</h2>
-                                <p>Latest alerts sent to your account.</p>
+                                <h2>Latest Alerts</h2>
+                                <p>Most recent backend notifications.</p>
                             </div>
                         </div>
 
                         <div className={styles.recentList}>
-                            {recentNotifications.map((notification) => {
-                                const NotificationIcon = notification.icon;
+                            {latestNotifications.length === 0 ? (
+                                <div className={styles.emptyMiniState}>
+                                    No recent alerts yet.
+                                </div>
+                            ) : (
+                                latestNotifications.map((notification) => {
+                                    const NotificationIcon = getNotificationIcon(
+                                        notification.category,
+                                    );
 
-                                return (
-                                    <article className={styles.recentItem} key={notification.id}>
-                                        <span>
-                                            <NotificationIcon
-                                                size={20}
-                                                strokeWidth={2.3}
-                                                aria-hidden="true"
-                                            />
-                                        </span>
+                                    return (
+                                        <article
+                                            className={styles.recentItem}
+                                            key={notification.id}
+                                        >
+                                            <span>
+                                                <NotificationIcon
+                                                    size={20}
+                                                    strokeWidth={2.3}
+                                                    aria-hidden="true"
+                                                />
+                                            </span>
 
-                                        <div>
-                                            <h3>{notification.title}</h3>
-                                            <p>{notification.description}</p>
-                                            <small>{notification.time}</small>
-                                        </div>
+                                            <div>
+                                                <h3>{notification.title}</h3>
+                                                <p>
+                                                    {notification.message ||
+                                                        notification.category_label}
+                                                </p>
+                                                <small>
+                                                    {formatNotificationDate(
+                                                        notification.created_at,
+                                                    )}
+                                                </small>
+                                            </div>
 
-                                        {notification.status === "Delivered" ? (
-                                            <CheckCircle2
-                                                className={styles.deliveredIcon}
-                                                size={18}
-                                                strokeWidth={2.4}
-                                                aria-hidden="true"
-                                            />
-                                        ) : (
-                                            <Clock
-                                                className={styles.pendingIcon}
-                                                size={18}
-                                                strokeWidth={2.4}
-                                                aria-hidden="true"
-                                            />
-                                        )}
-                                    </article>
-                                );
-                            })}
+                                            {notification.is_read ? (
+                                                <CheckCircle2
+                                                    className={styles.deliveredIcon}
+                                                    size={18}
+                                                    strokeWidth={2.4}
+                                                    aria-hidden="true"
+                                                />
+                                            ) : (
+                                                <Clock
+                                                    className={styles.pendingIcon}
+                                                    size={18}
+                                                    strokeWidth={2.4}
+                                                    aria-hidden="true"
+                                                />
+                                            )}
+                                        </article>
+                                    );
+                                })
+                            )}
                         </div>
                     </section>
 

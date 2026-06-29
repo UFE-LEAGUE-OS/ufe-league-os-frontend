@@ -2,14 +2,16 @@ import {
     Bell,
     CalendarDays,
     Crown,
+    LogOut,
     QrCode,
     Settings2,
     Star,
     Ticket,
     Users,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useCurrentUser } from "../../hooks/useCurrentUser";
+import { useAuth } from "../../hooks/useAuth";
 import styles from "./FanDashboardPage.module.css";
 
 const summaryCards = [
@@ -163,6 +165,19 @@ const benefits = [
 
 function FanDashboardPage() {
     const { currentUser } = useCurrentUser();
+    const { logout } = useAuth();
+    const navigate = useNavigate();
+
+    function handleLogout() {
+        logout();
+        navigate("/login", {
+            replace: true,
+            state: {
+                message: "You have been logged out.",
+            },
+        });
+    }
+
     return (
         <section className={styles.page}>
             <div className={styles.pageHeader}>
@@ -171,10 +186,21 @@ function FanDashboardPage() {
                     <p>Here&apos;s what&apos;s happening in your world.</p>
                 </div>
 
-                <button type="button" className={styles.customizeButton}>
-                    <Settings2 size={18} strokeWidth={2.3} aria-hidden="true" />
-                    Customize Dashboard
-                </button>
+                <div className={styles.headerActions}>
+                    <button type="button" className={styles.customizeButton}>
+                        <Settings2 size={18} strokeWidth={2.3} aria-hidden="true" />
+                        Customize Dashboard
+                    </button>
+
+                    <button
+                        type="button"
+                        className={`${styles.customizeButton} ${styles.logoutButton}`}
+                        onClick={handleLogout}
+                    >
+                        <LogOut size={18} strokeWidth={2.3} aria-hidden="true" />
+                        Logout
+                    </button>
+                </div>
             </div>
 
             <div className={styles.summaryGrid}>

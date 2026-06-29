@@ -1,9 +1,14 @@
 import { useNavigate } from 'react-router-dom';
+import { useAuthStore } from '../store/authStore.js';
+import { getToken } from '../utils/tokenManager.js';
 import './Hero.css';
 import heroImage from '../assets/hero.png';
 
 function Hero() {
   const navigate = useNavigate();
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const isAuthenticated = Boolean(accessToken || getToken());
+
   return (
     <section className="hero" style={{ backgroundImage: `url(${heroImage})` }}>
       <div className="hero-top">
@@ -21,7 +26,15 @@ function Hero() {
               Browse Competitions <span className="btn-arrow"> </span>
             </button>
             <button className="btn-outline">Become a sponsor</button>
-            <button className="btn-outline" onClick={() => navigate('/register')}>Sign Up</button>
+            {isAuthenticated ? (
+              <button className="btn-outline" onClick={() => navigate('/dashboard/fan')}>
+                Go to Dashboard
+              </button>
+            ) : (
+              <button className="btn-outline" onClick={() => navigate('/register')}>
+                Sign Up
+              </button>
+            )}
           </div>
         </div>
 

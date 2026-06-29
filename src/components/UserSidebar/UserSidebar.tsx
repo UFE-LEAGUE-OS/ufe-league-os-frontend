@@ -87,6 +87,10 @@ const sidebarSections: SidebarSection[] = [
     },
 ];
 
+interface UserSidebarProps {
+    isCollapsed?: boolean;
+}
+
 const quickActions = [
     { label: "Explore Competitions", href: "/competitions", icon: Trophy },
     { label: "Browse Clubs", href: "/clubs", icon: Users },
@@ -94,10 +98,10 @@ const quickActions = [
     { label: "Explore Club Memberships", href: "/memberships", icon: ShieldCheck },
 ];
 
-function UserSidebar() {
+function UserSidebar({ isCollapsed = false }: UserSidebarProps) {
     const { currentUser } = useCurrentUser();
     return (
-        <aside className={styles.sidebar}>
+        <aside className={`${styles.sidebar} ${isCollapsed ? styles.collapsedSidebar : ""}`}>
             <div className={styles.userCard}>
                 <span className={styles.avatar}>{currentUser.avatarInitials}</span>
 
