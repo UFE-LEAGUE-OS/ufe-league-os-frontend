@@ -96,6 +96,7 @@ export default function AppRoutes() {
                     <Route path="/profile/interests" element={<ProfileInterests />} />
                     <Route path="/profile/clubs" element={<ProfileClubs />} />
                     <Route path="/profile/payments" element={<ProfilePayments />} />
+                    <Route path="/dashboard/wallet" element={<ProfilePayments />} />
                     <Route path="/profile/notifications" element={<ProfileNotifications />} />
                     <Route path="/profile/privacy" element={<ProfilePrivacy />} />
                     <Route path="/profile/support" element={<ProfileSupport />} />
