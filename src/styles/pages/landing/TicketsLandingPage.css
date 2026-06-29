@@ -365,10 +365,7 @@
 }
 
 .buy-btn {
-  padding: 0.45rem 1.1rem;
-  border-radius: 8px;
   border: none;
-  font-size: 0.85rem;
   font-weight: 700;
   cursor: pointer;
   transition: opacity 0.2s;
@@ -614,3 +611,37 @@
     grid-template-columns: 1fr;
   }
 }
+
+.match-buy-row {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.75rem;
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.match-buy-seats {
+  font-size: 0.82rem;
+  color: #888;
+  text-align: center;
+}
+
+.buy-btn-ordinary {
+  background: #7C3AED;
+  color: #fff;
+  width: 100%;
+  padding: 1rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 700;
+  border-radius: 14px;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.buy-btn-ordinary:hover {
+  opacity: 0.88;
+}
+
