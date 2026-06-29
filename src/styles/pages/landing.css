@@ -1,9 +1,9 @@
 .landing-page {
   background:
-    radial-gradient(circle at top, rgba(3, 16, 45, 0.06), rgba(3, 16, 45, 0.7) 58%),
-    radial-gradient(circle at left bottom, rgba(44, 104, 255, 0.28), transparent 34%),
-    radial-gradient(circle at right bottom, rgba(124, 58, 237, 0.2), transparent 30%),
-    linear-gradient(180deg, rgba(2, 5, 14, 0.95), rgba(2, 5, 14, 0.86)),
+    radial-gradient(circle at top, rgba(3, 16, 45, 0.06), rgba(3, 16, 45, 0.5) 58%),
+    radial-gradient(circle at left bottom, rgba(44, 104, 255, 0.15), transparent 34%),
+    radial-gradient(circle at right bottom, rgba(124, 58, 237, 0.1), transparent 30%),
+    linear-gradient(180deg, rgba(2, 5, 14, 0.6), rgba(2, 5, 14, 0.6)),
     url('../../assets/stadium-bg.svg');
   background-position: center center;
   background-repeat: no-repeat;
