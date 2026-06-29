@@ -68,13 +68,7 @@ import MyTicketsPage from '../pages/fan/MyTicketsPage';
 import TicketDetailPage from '../pages/fan/TicketDetailPage';
 import ProtectedRoute from './ProtectedRoute';
 import Payments from '../pages/PaymentPage';
-<<<<<<< HEAD
 
-=======
-<<<<<<< Updated upstream
-=======
-
->>>>>>> b059106 (Update AppRoutes)
 import FanPollsPage from '../pages/fan/FanPollsPage'; // ← new
 import TicketCheckoutPage from '../pages/tickets/TicketCheckoutPage';
 import TicketPaymentProcessingPage from '../pages/tickets/TicketPaymentProcessingPage';

@@ -23,7 +23,7 @@ export default function AboutUs() {
   const [sportTab, setSportTab] = useState("football");
   const [clubTab, setClubTab] = useState("football");
 
-  // ─── Nav ────────────────────────────────────────────────────────────────────
+  // ..........................Nav................... 
   const navItems = [
     { key: "about", label: "About Us" },
     { key: "how-it-works", label: "How It Works" },
@@ -31,7 +31,7 @@ export default function AboutUs() {
     { key: "a-club", label: "About Clubs" },
   ];
 
-  // ─── League data ────────────────────────────────────────────────────────────
+  // .....................League data ...............
   const leagues = {
     football: {
       img: footballImg,
@@ -65,7 +65,7 @@ export default function AboutUs() {
     },
   };
 
-  // ─── Club data ───────────────────────────────────────────────────────────────
+  // .............. Club data ..........................
   const clubs = {
     football: {
       img: footballImg,
@@ -120,7 +120,7 @@ export default function AboutUs() {
   return (
     <div className="about-us">
 
-      {/* ── NAVBAR ─────────────────────────────────────────────────────────── */}
+      {/*................... NAVBAR .....................*/}
       <nav className="news-navbar">
         <div className="navbar-logo" onClick={() => navigate("/")} style={{ cursor: "pointer" }}>
           <img src={logo} alt="Logo" />
@@ -146,7 +146,7 @@ export default function AboutUs() {
 
       <div className="about-main-hero">
 
-        {/* ── ABOUT ─────────────────────────────────────────────────────────── */}
+        {/* ............... ABOUT ......................... */}
         {activeTab === "about" && (
           <div className="about-main-overlay">
             <div className="about-main-content">
@@ -191,7 +191,7 @@ export default function AboutUs() {
           </div>
         )}
 
-        {/* ── HOW IT WORKS ──────────────────────────────────────────────────── */}
+        {/* ................... HOW IT WORKS .......................... */}
         {activeTab === "how-it-works" && (
           <div className="how-it-works-page">
 
@@ -265,10 +265,10 @@ export default function AboutUs() {
               <h2>Built For The Entire Sports Ecosystem</h2>
               <div className="h-users-grid">
                 {[
-                  ["🏆", "Leagues", "Manage competitions, governance and standings."],
-                  ["⚽", "Clubs", "Manage teams, players and operations."],
-                  ["👥", "Fans", "Follow teams and engage with sports."],
-                  ["🤝", "Sponsors", "Build profiles and track development."],
+                  ["", "Leagues", "Manage competitions, governance and standings."],
+                  ["", "Clubs", "Manage teams, players and operations."],
+                  ["", "Fans", "Follow teams and engage with sports."],
+                  ["", "Sponsors", "Build profiles and track development."],
                 ].map(([icon, title, desc]) => (
                   <div className="h-user-card" key={title}>
                     <h3>{icon} {title}</h3>
@@ -287,7 +287,7 @@ export default function AboutUs() {
           </div>
         )}
 
-        {/* ── LEAGUES ───────────────────────────────────────────────────────── */}
+        {/* .............. LEAGUES...........................*/}
         {activeTab === "league" && (
           <div className="about-leagues">
             <div className="sport-tabs">
@@ -318,7 +318,7 @@ export default function AboutUs() {
           </div>
         )}
 
-        {/* ── CLUBS ─────────────────────────────────────────────────────────── */}
+        {/* ................... CLUBS ......................... */}
         {activeTab === "a-club" && (
           <div className="about-leagues">
             <div className="sport-tabs">
