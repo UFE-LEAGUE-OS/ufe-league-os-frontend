@@ -61,6 +61,7 @@ import ClubMembershipDetailPage from '../pages/memberships/ClubMembershipDetailP
 import MembershipCheckoutPage from '../pages/memberships/MembershipCheckoutPage';
 import MembershipSuccessPage from '../pages/memberships/MembershipSuccessPage';
 import MembershipFailedPage from '../pages/memberships/MembershipFailedPage';
+import MembershipPaymentProcessingPage from '../pages/memberships/MembershipPaymentProcessingPage';
 import ExploreMembershipsPage from '../pages/memberships/ExploreMembershipsPage';
 import MyMembershipsPage from '../pages/memberships/MyMembershipsPage';
 import MyTicketsPage from '../pages/fan/MyTicketsPage';
@@ -110,6 +111,7 @@ export default function AppRoutes() {
                     <Route path="/memberships/:clubSlug/checkout" element={<MembershipCheckoutPage />} />
                     <Route path="/memberships/:clubSlug/success" element={<MembershipSuccessPage />} />
                     <Route path="/memberships/:clubSlug/failed" element={<MembershipFailedPage />} />
+                    <Route path="/memberships/payment/processing" element={<MembershipPaymentProcessingPage />} />
                     <Route path="/dashboard/memberships" element={<MyMembershipsPage />} />
 
                     {/* Fan Interaction */}
