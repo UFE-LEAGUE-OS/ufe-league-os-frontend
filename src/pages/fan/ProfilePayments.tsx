@@ -4,7 +4,6 @@ import {
     Banknote,
     CheckCircle2,
     Clock,
-    CreditCard,
     Download,
     FileText,
     RefreshCw,
@@ -122,27 +121,6 @@ const payments: PaymentRecord[] = [
         receiptNo: "LOS-RCPT-0008",
         description: "Refund processed after fixture postponement.",
         icon: RefreshCw,
-    },
-];
-
-const paymentMethods = [
-    {
-        id: "mtn",
-        title: "MTN Mobile Money",
-        detail: "+256 77X XXX XXX",
-        status: "Default",
-    },
-    {
-        id: "airtel",
-        title: "Airtel Money",
-        detail: "+256 75X XXX XXX",
-        status: "Available",
-    },
-    {
-        id: "card",
-        title: "Visa / Mastercard",
-        detail: "Cards supported through Flutterwave",
-        status: "Checkout only",
     },
 ];
 
@@ -420,28 +398,6 @@ function WalletPaymentCenter() {
                                     </article>
                                 );
                             })}
-                        </div>
-                    </section>
-
-                    <section className={styles.panel}>
-                        <div className={styles.panelHeader}>
-                            <div>
-                                <h2>Saved Payment Options</h2>
-                                <p>Placeholder payment methods for future checkout preferences.</p>
-                            </div>
-                        </div>
-
-                        <div className={styles.paymentMethodGrid}>
-                            {paymentMethods.map((method) => (
-                                <article className={styles.paymentMethodCard} key={method.id}>
-                                    <CreditCard size={24} strokeWidth={2.3} aria-hidden="true" />
-                                    <div>
-                                        <h3>{method.title}</h3>
-                                        <p>{method.detail}</p>
-                                    </div>
-                                    <span>{method.status}</span>
-                                </article>
-                            ))}
                         </div>
                     </section>
                 </main>
