@@ -1,6 +1,6 @@
 import "../styles/pages/NewsPage.css"
 import { useNavigate, useLocation } from "react-router-dom";
-import { FiBell, FiUser, FiSearch } from "react-icons/fi";
+
 import { FaArrowRight } from "react-icons/fa6";
 import logo from "../assets/logo.png";
 import heroImg from "../assets/basketball-card.png";
@@ -18,36 +18,43 @@ export default function NewsSection() {
     return (
         <div className="news-page">
             <nav className="news-navbar">
-                <div className="navbar-logo" onClick={() => navigate('/')}
-                    style={{ cursor: 'pointer' }}><img src={logo} alt="Logo" /></div>
-                <div className="navbar-links">
-                    <li>Overview</li>
-                    <li>Clubs</li>
-                    <li onClick={() => navigate('/competitions')}>Competitions</li>
-                    <li>Unions</li>
-                    <li className={location.pathname === "/news" ? "active" : ""}>News</li>
-                </div>
-                <div className="navbar-icons">
-                    <div className="search-container">
-                       
-                        <FiSearch className="icon" />
-                    </div>
+    {/* Logo */}
+    <div
+        className="navbar-logo"
+        onClick={() => navigate('/')}
+        style={{ cursor: 'pointer' }}
+    >
+        <img src={logo} alt="Logo" />
+    </div>
 
-                    <div className="notification-wrapper">
-                        <FiBell className="icon" />
+    {/* Links */}
+    <ul className="navbar-links">
+        <li>Overview</li>
+        <li>Clubs</li>
+        <li onClick={() => navigate('/competitions')}>Competitions</li>
+        <li>Unions</li>
+        <li className={location.pathname === "/news" ? "active" : ""}>
+            News
+        </li>
+    </ul>
 
-                    </div>
+    {/* RIGHT SIDE ACTIONS (NEW) */}
+    <div className="navbar-actions">
+        <button
+            className="login-btn"
+            onClick={() => navigate('/login')}
+        >
+            Login
+        </button>
 
-                    <div className="profile-wrapper">
-
-                        <FiUser
-                            className="icon"
-
-                        />
-
-                    </div>
-                </div>
-            </nav>
+        <button
+            className="signup-btn"
+            onClick={() => navigate('/register')}
+        >
+            Sign Up
+        </button>
+    </div>
+</nav>
 
             <section className="hero-section">
                 <div className="hero-image">
@@ -113,7 +120,7 @@ export default function NewsSection() {
                     <div className="hero-card">
                         <div className="results-header">
                             <h3>Rugby Results</h3>
-                            <button className="view-table">View full table</button>
+                            <button className="view-table" onClick={() => navigate("/results")}>View full table</button>
                         </div>
                         <div className="results-table">
                             <div className="results-row header">

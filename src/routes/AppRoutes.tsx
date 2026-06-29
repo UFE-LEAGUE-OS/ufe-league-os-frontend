@@ -68,11 +68,14 @@ import MyTicketsPage from '../pages/fan/MyTicketsPage';
 import TicketDetailPage from '../pages/fan/TicketDetailPage';
 import ProtectedRoute from './ProtectedRoute';
 import Payments from '../pages/PaymentPage';
+
 import FanPollsPage from '../pages/fan/FanPollsPage'; // ← new
 import TicketCheckoutPage from '../pages/tickets/TicketCheckoutPage';
 import TicketPaymentProcessingPage from '../pages/tickets/TicketPaymentProcessingPage';
 import TicketPaymentSuccessPage from '../pages/tickets/TicketPaymentSuccessPage';
 import TicketPaymentFailedPage from '../pages/tickets/TicketPaymentFailedPage';
+
+
 
 function protectedPage(page: ReactNode) {
     return <ProtectedRoute>{page}</ProtectedRoute>;
@@ -156,6 +159,7 @@ export default function AppRoutes() {
                 <Route path="/results" element={<Results />} />
                 <Route path="/support" element={<Support />} />
                 <Route path="/about" element={<AboutUs />} />
+
 
                 <Route path="/payments" element={<Payments />} />
             </Routes>
