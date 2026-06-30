@@ -78,6 +78,8 @@ import TicketPaymentProcessingPage from '../pages/tickets/TicketPaymentProcessin
 import TicketPaymentSuccessPage from '../pages/tickets/TicketPaymentSuccessPage';
 import TicketPaymentFailedPage from '../pages/tickets/TicketPaymentFailedPage';
 import MatchCentrePage from '../pages/MatchCentrePage';
+import MVPVotingPage from '../pages/fan/MVPVotingPage';
+
 
 function protectedPage(page: ReactNode) {
     return <ProtectedRoute>{page}</ProtectedRoute>;
@@ -96,6 +98,7 @@ export default function AppRoutes() {
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/personalize" element={<Personalize />} />
                 <Route path="/verify-email" element={<VerifyEmail />} />
+                <Route path="/fan/mvp-voting" element={<MVPVotingPage />} />
 
                 <Route path="/dashboard" element={protectedPage(<Navigate to="/dashboard/fan" replace />)} />
 
