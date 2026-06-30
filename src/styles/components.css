@@ -51,23 +51,22 @@
 .page {
   position: relative;
   z-index: 1;
-  width: min(1460px, calc(100% - 48px));
-  margin: 0 auto;
-  /* Utilizes the new responsive container */
   padding: 22px 0 54px;
-  box-sizing: border-box;
 }
 
 .topbar {
   position: relative;
   z-index: 2;
-  width: min(1460px, calc(100% - 48px));
-  margin: 0 auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 14px;
   padding: 18px 0 6px;
+  /* Inherit container properties for responsive width and padding */
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
 }
 
 .topbar-compact {
@@ -1225,4 +1224,14 @@
     padding: 4px;
     border-radius: 999px;
   }
+}
+
+/* Responsive Footer Adjustments */
+@media (max-width: 768px) {
+  .footer-content {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+}
 }
