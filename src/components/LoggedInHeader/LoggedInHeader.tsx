@@ -2,13 +2,17 @@ import {
     Bell,
     ChevronDown,
     ChevronDownIcon,
+    LayoutDashboard,
+    LogOut,
     Search,
+    User,
     X,
 } from "lucide-react";
 import type { FormEvent } from "react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import leagueLogo from "../../assets/logos/league-os-horizontal.png";
+import { useAuth } from "../../hooks/useAuth.js";
 import { useCurrentUser } from "../../hooks/useCurrentUser";
 import styles from "./LoggedInHeader.module.css";
 
@@ -114,9 +118,12 @@ const searchableItems = [
 
 function LoggedInHeader() {
     const { currentUser } = useCurrentUser();
+    const { logout } = useAuth();
     const navigate = useNavigate();
+    const userMenuRef = useRef<HTMLDivElement>(null);
 
     const [isSearchOpen, setIsSearchOpen] = useState(false);
+    const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const normalizedQuery = searchQuery.trim().toLowerCase();
 
@@ -133,6 +140,37 @@ function LoggedInHeader() {
             })
             .slice(0, 8);
     }, [normalizedQuery]);
+
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (
+                userMenuRef.current &&
+                !userMenuRef.current.contains(event.target as Node)
+            ) {
+                setIsUserMenuOpen(false);
+            }
+        }
+
+        document.addEventListener("mousedown", handleClickOutside);
+
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
+
+    function handleLogout() {
+        setIsUserMenuOpen(false);
+        logout();
+
+        navigate("/login", {
+            replace: true,
+            state: {
+                message: "You have been logged out.",
+            },
+        });
+    }
+
+
 
     function closeSearch() {
         setIsSearchOpen(false);
@@ -189,16 +227,57 @@ function LoggedInHeader() {
                     <Bell size={25} strokeWidth={2.2} />
                 </Link>
 
-                <button type="button" className={styles.userButton}>
-                    <span className={styles.avatar}>{currentUser.avatarInitials}</span>
+                <div className={styles.userMenu} ref={userMenuRef}>
+                    <button
+                        type="button"
+                        className={styles.userButton}
+                        aria-haspopup="menu"
+                        aria-expanded={isUserMenuOpen}
+                        onClick={() => setIsUserMenuOpen((currentValue) => !currentValue)}
+                    >
+                        <span className={styles.avatar}>{currentUser.avatarInitials}</span>
 
-                    <span className={styles.userText}>
-                        <strong>{currentUser.name}</strong>
-                        <small>View Profile</small>
-                    </span>
+                        <span className={styles.userText}>
+                            <strong>{currentUser.name}</strong>
+                            <small>View Profile</small>
+                        </span>
 
-                    <ChevronDown size={18} strokeWidth={2.5} aria-hidden="true" />
-                </button>
+                        <ChevronDown size={18} strokeWidth={2.5} aria-hidden="true" />
+                    </button>
+
+                    {isUserMenuOpen ? (
+                        <div className={styles.userDropdown} role="menu">
+                            <button
+                                type="button"
+                                role="menuitem"
+                                onClick={() => {
+                                    setIsUserMenuOpen(false);
+                                    navigate("/dashboard/fan");
+                                }}
+                            >
+                                <LayoutDashboard size={16} strokeWidth={2.4} />
+                                Dashboard
+                            </button>
+
+                            <button
+                                type="button"
+                                role="menuitem"
+                                onClick={() => {
+                                    setIsUserMenuOpen(false);
+                                    navigate("/profile");
+                                }}
+                            >
+                                <User size={16} strokeWidth={2.4} />
+                                View Profile
+                            </button>
+
+                            <button type="button" role="menuitem" onClick={handleLogout}>
+                                <LogOut size={16} strokeWidth={2.4} />
+                                Log Out
+                            </button>
+                        </div>
+                    ) : null}
+                </div>
             </div>
 
             {isSearchOpen ? (

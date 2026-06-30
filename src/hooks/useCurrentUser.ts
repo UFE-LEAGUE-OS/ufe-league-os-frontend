@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { fetchProfile } from '../services/authService.js';
 import { useAuthStore } from '../store/authStore.js';
+import { getToken } from '../utils/tokenManager.js';
 import {
   currentUser as fallbackCurrentUser,
   mapProfileToCurrentUser,
@@ -13,28 +14,40 @@ export function useCurrentUser() {
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
 
+  const refreshProfile = useCallback(async () => {
+    if (!getToken()) {
+      setProfile(null);
+      setIsLoading(false);
+      setErrorMessage('');
+      return null;
+    }
+
+    setIsLoading(true);
+    setErrorMessage('');
+
+    try {
+      const response = await fetchProfile();
+      setProfile(response.data as BackendProfile);
+      return response.data as BackendProfile;
+    } catch {
+      setErrorMessage('Could not load the latest profile details.');
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     let active = true;
 
     async function loadProfile() {
-      setIsLoading(true);
-      setErrorMessage('');
+      const latestProfile = await refreshProfile();
 
-      try {
-        const response = await fetchProfile();
-
-        if (!active) return;
-
-        setProfile(response.data as BackendProfile);
-      } catch {
-        if (!active) return;
-
-        setErrorMessage('Could not load the latest profile details.');
-      } finally {
-        if (active) {
-          setIsLoading(false);
-        }
+      if (!active || !latestProfile) {
+        return;
       }
+
+      setProfile(latestProfile);
     }
 
     void loadProfile();
@@ -42,7 +55,7 @@ export function useCurrentUser() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [refreshProfile]);
 
   const currentUser = useMemo(() => {
     return mapProfileToCurrentUser(profile ?? authUser ?? null);
@@ -53,5 +66,6 @@ export function useCurrentUser() {
     profile: profile ?? authUser,
     isLoading,
     errorMessage,
+    refreshProfile,
   };
 }

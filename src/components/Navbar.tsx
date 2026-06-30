@@ -12,6 +12,7 @@ import {
 import './Navbar.css';
 import logo from '../assets/logo.png';
 import { useAuth } from '../hooks/useAuth.js';
+import { useCurrentUser } from '../hooks/useCurrentUser.js';
 import { useAuthStore } from '../store/authStore.js';
 import { getToken } from '../utils/tokenManager.js';
 
@@ -58,6 +59,7 @@ function Navbar({ links = defaultNavLinks }: NavbarProps) {
 
   const accessToken = useAuthStore((state) => state.accessToken);
   const user = useAuthStore((state) => state.user);
+  const { currentUser } = useCurrentUser();
 
   const isAuthenticated = Boolean(accessToken || getToken());
 
@@ -79,18 +81,29 @@ function Navbar({ links = defaultNavLinks }: NavbarProps) {
 
   const fullName = typeof user?.full_name === 'string' ? user.full_name.trim() : '';
   const firstName = typeof user?.first_name === 'string' ? user.first_name.trim() : '';
+  const username = typeof user?.username === 'string' ? user.username.trim() : '';
   const email = typeof user?.email === 'string' ? user.email.trim() : '';
 
+  const storeDisplayName =
+    fullName ||
+    firstName ||
+    username ||
+    (email.includes('@') ? email.split('@')[0] : '');
+
   const displayName =
-    fullName || firstName || (email.includes('@') ? email.split('@')[0] : 'Fan');
+    currentUser.name && currentUser.name !== 'Fan'
+      ? currentUser.name
+      : storeDisplayName || 'Fan';
 
   const initials =
-    displayName
-      .split(' ')
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((part) => part[0]?.toUpperCase() ?? '')
-      .join('') || 'F';
+    currentUser.avatarInitials && currentUser.avatarInitials !== 'F'
+      ? currentUser.avatarInitials
+      : displayName
+          .split(' ')
+          .filter(Boolean)
+          .slice(0, 2)
+          .map((part) => part[0]?.toUpperCase() ?? '')
+          .join('') || 'F';
 
   const handleSearchToggle = () => {
     setSearchOpen((currentValue) => !currentValue);
