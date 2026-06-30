@@ -104,26 +104,6 @@
     justify-content: center;
 }
 
-.notificationButton span {
-    position: absolute;
-    top: 0;
-    right: 1px;
-
-    min-width: 18px;
-    height: 18px;
-    border-radius: 999px;
-    padding: 0 5px;
-
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-
-    color: #ffffff;
-    background: var(--color-vivid-violet);
-    font-size: 11px;
-    font-weight: 900;
-}
-
 .userButton {
     min-width: 190px;
     height: 54px;

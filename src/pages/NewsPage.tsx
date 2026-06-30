@@ -1,52 +1,28 @@
 import "../styles/pages/NewsPage.css"
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import { FaArrowRight } from "react-icons/fa6";
-import logo from "../assets/logo.png";
 import heroImg from "../assets/basketball-card.png";
 import news1 from "../assets/rugby-card.png";
 import news2 from "../assets/hero.png";
 import news3 from "../assets/basketball-card.png";
 import Footer from "../components/Footer.tsx";
+import Navbar from "../components/Navbar";
+
+const newsNavLinks = [
+    { label: "Overview", route: "/" },
+    { label: "Clubs", route: "/clubs" },
+    { label: "Competitions", route: "/competitions" },
+    { label: "Unions", route: "/unions" },
+    { label: "News", route: "/news" },
+];
 
 export default function NewsSection() {
     const navigate = useNavigate();
-    const location = useLocation();
-    
-
 
     return (
         <div className="news-page">
-            <header className="topbar">
-                {/* Logo */}
-                <a href="/" className="brand-lockup" onClick={(e) => { e.preventDefault(); navigate('/'); }}>
-                    <img src={logo} alt="Logo" className="league-logo-image league-logo-image-wordmark" />
-                </a>
-
-                {/* Links */}
-                <nav className="topnav">
-                    <a href="#">Overview</a>
-                    <a href="#">Clubs</a>
-                    <a href="/competitions" onClick={(e) => { e.preventDefault(); navigate('/competitions'); }}>Competitions</a>
-                    <a href="#">Unions</a>
-                    <a href="/news" className={location.pathname === "/news" ? "active" : ""} onClick={(e) => { e.preventDefault(); navigate('/news'); }}>
-                        News
-                    </a>
-                </nav>
-
-                {/* RIGHT SIDE ACTIONS */}
-                <div className="topbar-auth-actions">
-                    <button
-                        className="button button-ghost"
-                        onClick={() => navigate('/login')}
-                    >
-                        Login
-                    </button>
-                    <button className="button button-primary" onClick={() => navigate('/register')}>
-                        Sign Up
-                    </button>
-                </div>
-            </header>
+            <Navbar links={newsNavLinks} />
 
             <section className="hero-section">
                 <div className="hero-image">

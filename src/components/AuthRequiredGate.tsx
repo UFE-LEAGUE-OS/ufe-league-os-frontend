@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiX } from 'react-icons/fi';
 import logo from "../assets/logos/league-os-horizontal.png";
+import { getToken } from "../utils/tokenManager.js";
 import './AuthRequiredGate.css';
 
 type AuthAction = 'membership' | 'tickets' | 'follow' | 'checkout' | 'fantasy' | 'polls' | 'mvp' | 'quizzes' | 'default';
@@ -64,12 +65,7 @@ const AUTH_MESSAGES: Record<AuthAction, { title: string; message: string; note: 
 };
 
 function hasAuthToken() {
-  return Boolean(
-    localStorage.getItem('league_os_access_token') ||
-      localStorage.getItem('access_token') ||
-      sessionStorage.getItem('league_os_access_token') ||
-      sessionStorage.getItem('access_token'),
-  );
+  return Boolean(getToken());
 }
 
 function getElementPath(element: Element) {

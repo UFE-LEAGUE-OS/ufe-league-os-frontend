@@ -10,6 +10,7 @@ import blazersLogo from '../assets/nam-blazers.png';
 import logo from '../assets/logo.png';
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { getToken } from "../utils/tokenManager.js";
 
 
 const clubs = [
@@ -21,6 +22,20 @@ const clubs = [
   { name: 'PLATINUM HEATHENS', type: 'Rugby Club', tagline: 'Yellow Machine', logo: platinumLogo },
   { name: 'NAMUWONGO BLAZERS', type: 'Basketball Club', tagline: 'The Slum Dwellers', logo: blazersLogo },
 ];
+
+function getMembershipSlug(clubName: string) {
+  const slugMap: Record<string, string> = {
+    'KCCA FC': 'kcca-fc',
+    'KCB KOBS': 'kobs',
+    'IMPIS RFC': 'impis-rfc',
+    'SC Villa': 'sc-villa',
+    'STANBIC BLACK PIRATES': 'black-pirates',
+    'PLATINUM HEATHENS': 'platinum-heathens',
+    'NAMUWONGO BLAZERS': 'namuwongo-blazers',
+  };
+
+  return slugMap[clubName] ?? 'kobs';
+}
 
 
 
@@ -117,6 +132,17 @@ function FeaturedClubs() {
 
   const navigate = useNavigate();
 
+  function handleBecomeMember(clubName: string) {
+    const membershipSlug = getMembershipSlug(clubName);
+
+    if (getToken()) {
+      navigate(`/memberships/${membershipSlug}`);
+      return;
+    }
+
+    setShowPopup(true);
+  }
+
 
 
   useEffect(()=>{
@@ -149,9 +175,9 @@ function FeaturedClubs() {
           FEATURED CLUBS
         </h2>
 
-        <a href="#" className="view-all-link">
+        <button type="button" className="view-all-link" onClick={() => navigate('/clubs')}>
           View All Clubs
-        </a>
+        </button>
 
       </div>
 
@@ -195,7 +221,7 @@ function FeaturedClubs() {
 
             <button 
               className="become-member-btn"
-              onClick={()=>setShowPopup(true)}
+              onClick={() => handleBecomeMember(club.name)}
             >
               Become Member
             </button>
