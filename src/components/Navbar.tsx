@@ -1,10 +1,39 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useState, useRef, useEffect } from 'react';
-import { FiBell, FiChevronDown, FiLogOut, FiSearch, FiX } from 'react-icons/fi';
+import {
+  FiBell,
+  FiChevronDown,
+  FiGrid,
+  FiLogOut,
+  FiSearch,
+  FiUser,
+  FiX,
+} from 'react-icons/fi';
 import './Navbar.css';
 import logo from '../assets/logo.png';
 import { useAuth } from '../hooks/useAuth.js';
 import { useAuthStore } from '../store/authStore.js';
+import { getToken } from '../utils/tokenManager.js';
+
+type NavbarLink = {
+  label: string;
+  route: string;
+  showArrow?: boolean;
+};
+
+type NavbarProps = {
+  links?: NavbarLink[];
+};
+
+const defaultNavLinks: NavbarLink[] = [
+  { label: 'Sport', route: '/sports', showArrow: true },
+  { label: 'Leagues', route: '/leagues', showArrow: true },
+  { label: 'Clubs', route: '/clubs', showArrow: true },
+  { label: 'Competitions', route: '/competitions', showArrow: true },
+  { label: 'News', route: '/news' },
+  { label: 'Club Memberships', route: '/memberships' },
+  { label: 'Tickets', route: '/tickets' },
+];
 
 const leagueItems = [
   { name: 'Uganda Premier League', route: '/leagues/uganda-premier-league' },
@@ -14,37 +43,47 @@ const leagueItems = [
   { name: 'SMACK League', route: '/leagues/smack-league' },
 ];
 
-function Navbar() {
+function Navbar({ links = defaultNavLinks }: NavbarProps) {
   const navigate = useNavigate();
   const location = useLocation();
+  const { logout } = useAuth();
+
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [leaguesOpen, setLeaguesOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+
   const leaguesRef = useRef<HTMLLIElement>(null);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const user = useAuthStore((state) => state.user);
+
+  const isAuthenticated = Boolean(accessToken || getToken());
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (leaguesRef.current && !leaguesRef.current.contains(event.target as Node)) {
         setLeaguesOpen(false);
       }
+
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setUserMenuOpen(false);
+      }
     };
+
     document.addEventListener('mousedown', handleClickOutside);
+
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
-
-  const { logout } = useAuth();
-  const accessToken = useAuthStore((state) => state.accessToken);
-  const user = useAuthStore((state) => state.user);
-  const isAuthenticated = Boolean(
-    accessToken ||
-      localStorage.getItem('league_os_access_token') ||
-      localStorage.getItem('access_token'),
-  );
 
   const fullName = typeof user?.full_name === 'string' ? user.full_name.trim() : '';
   const firstName = typeof user?.first_name === 'string' ? user.first_name.trim() : '';
   const email = typeof user?.email === 'string' ? user.email.trim() : '';
-  const displayName = fullName || firstName || (email.includes('@') ? email.split('@')[0] : 'Fan');
+
+  const displayName =
+    fullName || firstName || (email.includes('@') ? email.split('@')[0] : 'Fan');
+
   const initials =
     displayName
       .split(' ')
@@ -54,31 +93,45 @@ function Navbar() {
       .join('') || 'F';
 
   const handleSearchToggle = () => {
-    setSearchOpen(!searchOpen);
+    setSearchOpen((currentValue) => !currentValue);
     setSearchQuery('');
   };
 
-  const handleKeyDown = (e: { key: string }) => {
-    if (e.key === 'Escape') {
+  const handleKeyDown = (event: { key: string }) => {
+    if (event.key === 'Escape') {
       setSearchOpen(false);
       setSearchQuery('');
     }
-    if (e.key === 'Enter' && searchQuery.trim()) {
+
+    if (event.key === 'Enter' && searchQuery.trim()) {
       navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
       handleSearchToggle();
     }
   };
 
-  const isActive = (path: string) => location.pathname.startsWith(path);
+  const isActive = (path: string) => {
+    if (path === '/') {
+      return location.pathname === '/';
+    }
+
+    return location.pathname.startsWith(path);
+  };
 
   const handleLogout = () => {
+    setUserMenuOpen(false);
     logout();
+
     navigate('/login', {
       replace: true,
       state: {
         message: 'You have been logged out.',
       },
     });
+  };
+
+  const goToProfileRoute = (route: string) => {
+    setUserMenuOpen(false);
+    navigate(route);
   };
 
   return (
@@ -99,73 +152,65 @@ function Navbar() {
             className="search-input"
             placeholder="Search competitions, clubs, players..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(event) => setSearchQuery(event.target.value)}
             onKeyDown={handleKeyDown}
             autoFocus
           />
-          <button className="search-close" onClick={handleSearchToggle}>
+          <button className="search-close" onClick={handleSearchToggle} aria-label="Close search">
             <FiX size={16} />
           </button>
         </div>
       ) : (
         <ul className="navbar-links">
-          <li
-            className={isActive('/sports') ? 'active-link' : ''}
-            onClick={() => navigate('/sports')}
-          >
-            Sport <span className="arrow">▾</span>
-          </li>
-          <li
-            ref={leaguesRef}
-            className={`${isActive('/leagues') ? 'active-link' : ''} nav-dropdown-trigger`}
-            onMouseEnter={() => setLeaguesOpen(true)}
-            onMouseLeave={() => setLeaguesOpen(false)}
-          >
-            Leagues <span className="arrow">▾</span>
-            {leaguesOpen && (
-              <ul className="nav-dropdown">
-                {leagueItems.map((item) => (
-                  <li
-                    key={item.route}
-                    className="nav-dropdown-item"
-                    onClick={() => { navigate(item.route); setLeaguesOpen(false); }}
-                  >
-                    {item.name}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </li>
-          <li
-            className={isActive('/clubs') ? 'active-link' : ''}
-            onClick={() => navigate('/clubs')}
-          >
-            Clubs <span className="arrow">▾</span>
-          </li>
-          <li
-            className={isActive('/competitions') ? 'active-link' : ''}
-            onClick={() => navigate('/competitions')}
-          >
-            Competitions <span className="arrow">▾</span>
-          </li>
-          <li
-            className={isActive('/news') ? 'active-link' : ''}
-            onClick={() => navigate('/news')}
-          >
-            News
-          </li>
-          <li
-            className={isActive('/memberships') ? 'active-link' : ''}
-            onClick={() => navigate('/memberships')}
-          >
-            Membership
-          </li>
-          <li
-            className={isActive('/tickets') ? 'active-link' : ''}
-            onClick={() => navigate('/tickets')}
-          >
-            Tickets
-          </li>
+          {links.map((item) => {
+            const hasLeagueDropdown = item.label === 'Leagues';
+
+            return (
+              <li
+                key={item.label}
+                ref={hasLeagueDropdown ? leaguesRef : null}
+                className={`${isActive(item.route) ? 'active-link' : ''} ${
+                  hasLeagueDropdown ? 'nav-dropdown-trigger' : ''
+                }`}
+                onClick={() => {
+                  if (!hasLeagueDropdown) {
+                    navigate(item.route);
+                  }
+                }}
+                onMouseEnter={() => {
+                  if (hasLeagueDropdown) {
+                    setLeaguesOpen(true);
+                  }
+                }}
+                onMouseLeave={() => {
+                  if (hasLeagueDropdown) {
+                    setLeaguesOpen(false);
+                  }
+                }}
+              >
+                {item.label}
+                {item.showArrow ? <span className="arrow">▾</span> : null}
+
+                {hasLeagueDropdown && leaguesOpen ? (
+                  <ul className="nav-dropdown">
+                    {leagueItems.map((league) => (
+                      <li
+                        key={league.route}
+                        className="nav-dropdown-item"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          navigate(league.route);
+                          setLeaguesOpen(false);
+                        }}
+                      >
+                        {league.name}
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+              </li>
+            );
+          })}
         </ul>
       )}
 
@@ -182,24 +227,60 @@ function Navbar() {
 
             {isAuthenticated ? (
               <div className="navbar-auth-actions">
-                <button className="navbar-notification-btn" aria-label="Notifications">
+                <button
+                  className="navbar-notification-btn"
+                  aria-label="Notifications"
+                  title="Notifications"
+                  onClick={() => navigate('/profile/notifications')}
+                >
                   <FiBell size={20} />
-                  <span className="navbar-notification-badge">3</span>
                 </button>
 
-                <button className="navbar-user-chip" onClick={() => navigate('/profile')}>
-                  <span className="navbar-user-avatar">{initials}</span>
-                  <span className="navbar-user-copy">
-                    <strong>{displayName}</strong>
-                    <small>View Profile</small>
-                  </span>
-                  <FiChevronDown className="navbar-user-chevron" size={16} />
-                </button>
+                <div className="navbar-user-menu" ref={userMenuRef}>
+                  <button
+                    type="button"
+                    className="navbar-user-chip"
+                    aria-haspopup="menu"
+                    aria-expanded={userMenuOpen}
+                    onClick={() => setUserMenuOpen((currentValue) => !currentValue)}
+                  >
+                    <span className="navbar-user-avatar">{initials}</span>
 
-                <button className="logout-btn" onClick={handleLogout}>
-                  <FiLogOut size={16} />
-                  Logout
-                </button>
+                    <span className="navbar-user-copy">
+                      <strong>{displayName}</strong>
+                      <small>View Profile</small>
+                    </span>
+
+                    <FiChevronDown className="navbar-user-chevron" size={16} />
+                  </button>
+
+                  {userMenuOpen ? (
+                    <div className="navbar-user-dropdown" role="menu">
+                      <button
+                        type="button"
+                        role="menuitem"
+                        onClick={() => goToProfileRoute('/dashboard/fan')}
+                      >
+                        <FiGrid size={16} />
+                        Dashboard
+                      </button>
+
+                      <button
+                        type="button"
+                        role="menuitem"
+                        onClick={() => goToProfileRoute('/profile')}
+                      >
+                        <FiUser size={16} />
+                        View Profile
+                      </button>
+
+                      <button type="button" role="menuitem" onClick={handleLogout}>
+                        <FiLogOut size={16} />
+                        Log Out
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
               </div>
             ) : (
               <button className="login-btn" onClick={() => navigate('/login')}>
