@@ -145,7 +145,7 @@ a {
 /* Tablet and smaller desktops */
 @media (min-width: 769px) {
   .container {
-    max-width: 960px;
+    max-width: 1100px; /* Widen the container for tablets */
   }
   :root {
     font-size: 15px; /* Slightly smaller for tablets */
@@ -155,7 +155,7 @@ a {
 /* Large desktops */
 @media (min-width: 1280px) {
   .container {
-    max-width: 1200px;
+    max-width: 1440px; /* Widen the container for desktops */
   }
 }
 
