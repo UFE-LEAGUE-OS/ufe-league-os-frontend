@@ -4,6 +4,7 @@ export type BackendProfile = {
   phone_number?: string;
   first_name?: string;
   last_name?: string;
+  username?: string;
   full_name?: string;
   role?: string;
   role_display?: string;
@@ -16,6 +17,12 @@ export type BackendProfile = {
   is_email_verified?: boolean;
   is_phone_verified?: boolean;
   date_joined?: string;
+  location?: string;
+  favourite_sport?: string;
+  favorite_sport?: string;
+  bio?: string;
+  gender?: string;
+  date_of_birth?: string;
 };
 
 export type CurrentUser = {
@@ -123,6 +130,8 @@ export function mapProfileToCurrentUser(profile?: BackendProfile | null): Curren
     email: clean(profile.email, currentUser.email),
     phoneNumber: clean(profile.phone_number, currentUser.phoneNumber),
     fanId: profile.id ? `LOS-FAN-${String(profile.id).padStart(6, '0')}` : currentUser.fanId,
+    location: clean(profile.location, currentUser.location),
+    favoriteSport: clean(profile.favourite_sport || profile.favorite_sport, currentUser.favoriteSport),
     membership: roleLabel,
     avatarInitials: getInitials(name),
     memberSince: formatDate(profile.date_joined),
