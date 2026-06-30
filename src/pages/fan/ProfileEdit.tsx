@@ -10,9 +10,10 @@ import {
     X,
 } from "lucide-react";
 import type { FormEvent } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useCurrentUser } from "../../hooks/useCurrentUser";
+import type { BackendProfile } from "../../data/currentUser";
 import { updateProfile } from "../../services/authService.js";
 import styles from "./EditProfilePage.module.css";
 
@@ -29,20 +30,49 @@ interface EditProfileFormState {
     bio: string;
 }
 
-function createInitialFormState(currentUser: ReturnType<typeof useCurrentUser>["currentUser"]): EditProfileFormState {
+function cleanProfileValue(value: unknown, fallback = "") {
+    return typeof value === "string" && value.trim() ? value.trim() : fallback;
+}
+
+function createInitialFormState(
+    currentUser: ReturnType<typeof useCurrentUser>["currentUser"],
+    profile?: BackendProfile | null,
+): EditProfileFormState {
     const nameParts = currentUser.name.split(" ");
+    const firstName = cleanProfileValue(profile?.first_name, nameParts[0] ?? "");
+    const lastName = cleanProfileValue(
+        profile?.last_name,
+        nameParts.slice(1).join(" ") || "",
+    );
+    const email = cleanProfileValue(
+        profile?.email,
+        currentUser.email === "No email available" ? "" : currentUser.email,
+    );
 
     return {
-        firstName: nameParts[0] ?? "",
-        lastName: nameParts.slice(1).join(" ") || "",
-        username: currentUser.email.includes("@") ? currentUser.email.split("@")[0] ?? "" : "",
-        email: currentUser.email === "No email available" ? "" : currentUser.email,
-        phone: currentUser.phoneNumber === "No phone number added" ? "" : currentUser.phoneNumber,
-        location: currentUser.location,
-        dateOfBirth: "",
-        gender: "Prefer not to say",
-        favoriteSport: currentUser.favoriteSport,
-        bio: "Passionate Ugandan sports fan following rugby, football, basketball, and community leagues.",
+        firstName,
+        lastName,
+        username:
+            cleanProfileValue(profile?.username) ||
+            (email.includes("@") ? email.split("@")[0] ?? "" : ""),
+        email,
+        phone: cleanProfileValue(
+            profile?.phone_number,
+            currentUser.phoneNumber === "No phone number added"
+                ? ""
+                : currentUser.phoneNumber,
+        ),
+        location: cleanProfileValue(profile?.location, currentUser.location),
+        dateOfBirth: cleanProfileValue(profile?.date_of_birth),
+        gender: cleanProfileValue(profile?.gender, "Prefer not to say"),
+        favoriteSport: cleanProfileValue(
+            profile?.favourite_sport || profile?.favorite_sport,
+            currentUser.favoriteSport,
+        ),
+        bio: cleanProfileValue(
+            profile?.bio,
+            "Passionate Ugandan sports fan following rugby, football, basketball, and community leagues.",
+        ),
     };
 }
 
@@ -54,17 +84,26 @@ const completionItems = [
 ];
 
 function EditProfilePage() {
-    const { currentUser } = useCurrentUser();
+    const { currentUser, profile, isLoading, refreshProfile } = useCurrentUser();
     const [formData, setFormData] = useState<EditProfileFormState>(() =>
-        createInitialFormState(currentUser),
+        createInitialFormState(currentUser, profile),
     );
     const [saveMessage, setSaveMessage] = useState("");
     const [isSaving, setIsSaving] = useState(false);
+    const [hasEditedForm, setHasEditedForm] = useState(false);
+
+    useEffect(() => {
+        if (!hasEditedForm) {
+            setFormData(createInitialFormState(currentUser, profile));
+        }
+    }, [currentUser, hasEditedForm, profile]);
 
     function updateField<Key extends keyof EditProfileFormState>(
         field: Key,
         value: EditProfileFormState[Key],
     ) {
+        setHasEditedForm(true);
+
         setFormData((currentData) => ({
             ...currentData,
             [field]: value,
@@ -85,8 +124,17 @@ function EditProfilePage() {
             await updateProfile({
                 first_name: formData.firstName,
                 last_name: formData.lastName,
+                username: formData.username,
                 phone_number: formData.phone,
+                location: formData.location,
+                date_of_birth: formData.dateOfBirth || null,
+                gender: formData.gender,
+                favourite_sport: formData.favoriteSport,
+                bio: formData.bio,
             });
+
+            setHasEditedForm(false);
+            await refreshProfile();
 
             setSaveMessage("Profile changes saved successfully.");
         } catch {
@@ -101,7 +149,11 @@ function EditProfilePage() {
             <header className={styles.pageHeader}>
                 <div>
                     <h1>Edit Profile</h1>
-                    <p>Update your account information and public fan profile.</p>
+                    <p>
+                        {isLoading
+                            ? "Loading your latest profile information..."
+                            : "Update your account information and public fan profile."}
+                    </p>
                 </div>
 
                 <Link to="/profile" className={styles.closeButton}>
