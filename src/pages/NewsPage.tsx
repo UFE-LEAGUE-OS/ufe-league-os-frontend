@@ -17,44 +17,36 @@ export default function NewsSection() {
 
     return (
         <div className="news-page">
-            <nav className="news-navbar">
-    {/* Logo */}
-    <div
-        className="navbar-logo"
-        onClick={() => navigate('/')}
-        style={{ cursor: 'pointer' }}
-    >
-        <img src={logo} alt="Logo" />
-    </div>
+            <header className="topbar">
+                {/* Logo */}
+                <a href="/" className="brand-lockup" onClick={(e) => { e.preventDefault(); navigate('/'); }}>
+                    <img src={logo} alt="Logo" className="league-logo-image league-logo-image-wordmark" />
+                </a>
 
-    {/* Links */}
-    <ul className="navbar-links">
-        <li>Overview</li>
-        <li>Clubs</li>
-        <li onClick={() => navigate('/competitions')}>Competitions</li>
-        <li>Unions</li>
-        <li className={location.pathname === "/news" ? "active" : ""}>
-            News
-        </li>
-    </ul>
+                {/* Links */}
+                <nav className="topnav">
+                    <a href="#">Overview</a>
+                    <a href="#">Clubs</a>
+                    <a href="/competitions" onClick={(e) => { e.preventDefault(); navigate('/competitions'); }}>Competitions</a>
+                    <a href="#">Unions</a>
+                    <a href="/news" className={location.pathname === "/news" ? "active" : ""} onClick={(e) => { e.preventDefault(); navigate('/news'); }}>
+                        News
+                    </a>
+                </nav>
 
-    {/* RIGHT SIDE ACTIONS (NEW) */}
-    <div className="navbar-actions">
-        <button
-            className="login-btn"
-            onClick={() => navigate('/login')}
-        >
-            Login
-        </button>
-
-        <button
-            className="signup-btn"
-            onClick={() => navigate('/register')}
-        >
-            Sign Up
-        </button>
-    </div>
-</nav>
+                {/* RIGHT SIDE ACTIONS */}
+                <div className="topbar-auth-actions">
+                    <button
+                        className="button button-ghost"
+                        onClick={() => navigate('/login')}
+                    >
+                        Login
+                    </button>
+                    <button className="button button-primary" onClick={() => navigate('/register')}>
+                        Sign Up
+                    </button>
+                </div>
+            </header>
 
             <section className="hero-section">
                 <div className="hero-image">
