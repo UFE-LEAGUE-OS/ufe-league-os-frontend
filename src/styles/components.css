@@ -1117,11 +1117,9 @@
 }
 
 .topnav {
-  order: 3; /* Move nav to the next line */
-  width: 100%;
   order: 0; /* Keep nav on the same line */
   justify-content: flex-start;
-  padding-bottom: 8px;
+  flex: 1; /* Allow the nav to take up available space */
   overflow-x: auto; /* Enable horizontal scrolling */
   -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
   scrollbar-width: none; /* Hide scrollbar for Firefox */
