@@ -6,10 +6,11 @@ import {
     X,
 } from "lucide-react";
 import type { FormEvent } from "react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import leagueLogo from "../../assets/logos/league-os-horizontal.png";
 import { useCurrentUser } from "../../hooks/useCurrentUser";
+import { getUnreadNotificationCount } from "../../services/notificationService";
 import styles from "./LoggedInHeader.module.css";
 
 const navItems = [
@@ -19,7 +20,7 @@ const navItems = [
     { label: "Competitions", href: "/" },
     { label: "News", href: "/" },
     { label: "Club Memberships", href: "/memberships" },
-    { label: "Tickets", href: "/" },
+    { label: "Tickets", href: "/dashboard/tickets" },
 ];
 
 const dropdownNavItems = new Set(["Sport", "Leagues", "Clubs", "Competitions"]);
@@ -101,7 +102,7 @@ const searchableItems = [
     {
         title: "Tickets",
         description: "Find upcoming match tickets and QR tickets.",
-        href: "/tickets",
+        href: "/dashboard/tickets",
         type: "Ticketing",
     },
     {
@@ -118,6 +119,49 @@ function LoggedInHeader() {
 
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
+    const [unreadNotifications, setUnreadNotifications] = useState(0);
+
+    useEffect(() => {
+        let isMounted = true;
+
+        async function loadUnreadNotifications() {
+            try {
+                const count = await getUnreadNotificationCount();
+
+                if (isMounted) {
+                    setUnreadNotifications(count);
+                }
+            } catch {
+                if (isMounted) {
+                    setUnreadNotifications(0);
+                }
+            }
+        }
+
+        void loadUnreadNotifications();
+
+        function handleNotificationsUpdated() {
+            void loadUnreadNotifications();
+        }
+
+        window.addEventListener(
+            "leagueos:notifications-updated",
+            handleNotificationsUpdated,
+        );
+
+        const intervalId = window.setInterval(() => {
+            void loadUnreadNotifications();
+        }, 60000);
+
+        return () => {
+            isMounted = false;
+            window.clearInterval(intervalId);
+            window.removeEventListener(
+                "leagueos:notifications-updated",
+                handleNotificationsUpdated,
+            );
+        };
+    }, []);
 
     const normalizedQuery = searchQuery.trim().toLowerCase();
 
@@ -181,14 +225,20 @@ function LoggedInHeader() {
                     <Search size={28} strokeWidth={2.3} />
                 </button>
 
-                <button
-                    type="button"
+                <Link
+                    to="/profile/notifications"
                     className={styles.notificationButton}
-                    aria-label="Notifications"
+                    aria-label={
+                        unreadNotifications > 0
+                            ? `${unreadNotifications} unread notifications`
+                            : "Notifications"
+                    }
                 >
                     <Bell size={25} strokeWidth={2.2} />
-                    <span>3</span>
-                </button>
+                    {unreadNotifications > 0 ? (
+                        <span>{unreadNotifications > 99 ? "99+" : unreadNotifications}</span>
+                    ) : null}
+                </Link>
 
                 <button type="button" className={styles.userButton}>
                     <span className={styles.avatar}>{currentUser.avatarInitials}</span>

@@ -551,3 +551,390 @@
         grid-template-columns: 1fr;
     }
 }
+
+.headerActionGroup {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.secondaryHeaderAction {
+    min-height: 42px;
+    border-radius: 6px;
+    padding: 0 18px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+
+    font-family: var(--font-subhead);
+    font-size: 13px;
+    font-weight: 900;
+    text-decoration: none;
+    cursor: pointer;
+
+    transition:
+        transform 0.2s ease,
+        background-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.secondaryHeaderAction:hover:not(:disabled) {
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.secondaryHeaderAction:disabled {
+    cursor: not-allowed;
+    opacity: 0.58;
+}
+
+.errorMessage {
+    min-height: 50px;
+    border-radius: 8px;
+    padding: 0 18px;
+    margin-bottom: 20px;
+
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    color: #ffb4b4;
+    border: 1px solid rgba(255, 107, 107, 0.4);
+    background: linear-gradient(
+        135deg,
+        rgba(255, 107, 107, 0.14),
+        rgba(15, 23, 42, 0.78)
+    );
+
+    font-size: 14px;
+    font-weight: 900;
+}
+
+.inboxToolbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+}
+
+.filterButton {
+    min-height: 34px;
+    border-radius: 999px;
+    padding: 0 13px;
+
+    color: rgba(255, 255, 255, 0.72);
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+
+    font-size: 12px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.activeFilterButton,
+.filterButton:hover {
+    color: #ffffff;
+    background: rgba(123, 63, 242, 0.2);
+    border-color: rgba(123, 63, 242, 0.48);
+}
+
+.fullInboxList {
+    display: grid;
+    gap: 12px;
+}
+
+.inboxItem {
+    border-radius: 10px;
+    padding: 15px;
+
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 14px;
+
+    background: rgba(15, 23, 42, 0.54);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.unreadInboxItem {
+    background: linear-gradient(
+        135deg,
+        rgba(123, 63, 242, 0.16),
+        rgba(15, 23, 42, 0.7)
+    );
+    border-color: rgba(123, 63, 242, 0.42);
+}
+
+.inboxItem > span {
+    width: 42px;
+    height: 42px;
+    border-radius: 999px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    color: var(--color-vivid-violet);
+    background: rgba(123, 63, 242, 0.14);
+    border: 1px solid rgba(123, 63, 242, 0.32);
+}
+
+.notificationTitleRow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.notificationTitleRow h3,
+.inboxItem h3 {
+    margin: 0;
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 900;
+}
+
+.inboxItem p {
+    margin: 6px 0 0;
+    color: rgba(255, 255, 255, 0.64);
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.inboxItem small {
+    display: block;
+    margin-top: 7px;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.unreadBadge {
+    min-height: 22px;
+    border-radius: 999px;
+    padding: 0 9px;
+
+    display: inline-flex;
+    align-items: center;
+
+    color: #facc15;
+    background: rgba(250, 204, 21, 0.1);
+    border: 1px solid rgba(250, 204, 21, 0.26);
+
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.notificationActions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.notificationActions a,
+.notificationActions button {
+    min-height: 30px;
+    border-radius: 999px;
+    padding: 0 11px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    color: #ffffff;
+    background: rgba(123, 63, 242, 0.16);
+    border: 1px solid rgba(123, 63, 242, 0.36);
+
+    font-size: 11px;
+    font-weight: 900;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.emptyState,
+.emptyMiniState {
+    border-radius: 10px;
+    padding: 22px;
+
+    display: grid;
+    justify-items: center;
+    text-align: center;
+    gap: 8px;
+
+    color: rgba(255, 255, 255, 0.68);
+    background: rgba(15, 23, 42, 0.5);
+    border: 1px dashed rgba(255, 255, 255, 0.16);
+}
+
+.emptyState strong {
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 900;
+}
+
+.emptyState p {
+    max-width: 560px;
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.emptyMiniState {
+    justify-items: start;
+    text-align: left;
+    padding: 16px;
+    font-size: 13px;
+}
+
+@media (max-width: 760px) {
+    .inboxItem {
+        grid-template-columns: 40px minmax(0, 1fr);
+    }
+
+    .notificationActions {
+        grid-column: 1 / -1;
+        justify-content: flex-start;
+    }
+
+    .headerActionGroup {
+        justify-content: flex-start;
+    }
+}
+
+/* Screenshot-inspired notification inbox refinements */
+.page {
+    max-width: 1480px;
+    margin: 0 auto;
+}
+
+.pageHeader {
+    padding-top: 6px;
+}
+
+.pageHeader h1 {
+    font-family: var(--font-heading);
+    font-style: italic;
+    text-transform: uppercase;
+    letter-spacing: -0.035em;
+}
+
+.panel {
+    background:
+        radial-gradient(circle at 100% 0%, rgba(123, 63, 242, 0.16), transparent 35%),
+        linear-gradient(135deg, rgba(3, 11, 26, 0.94), rgba(2, 6, 23, 0.78));
+    border-color: rgba(148, 163, 184, 0.18);
+}
+
+.layoutGrid {
+    grid-template-columns: minmax(0, 1fr) 405px;
+}
+
+.fullInboxList {
+    gap: 10px;
+}
+
+.inboxItem {
+    min-height: 104px;
+    border-radius: 10px;
+    padding: 16px 18px;
+    background:
+        linear-gradient(90deg, rgba(8, 20, 42, 0.9), rgba(8, 20, 42, 0.72)),
+        radial-gradient(circle at 95% 25%, rgba(123, 63, 242, 0.12), transparent 30%);
+    border-color: rgba(148, 163, 184, 0.16);
+}
+
+.inboxItem:hover {
+    border-color: rgba(168, 85, 247, 0.48);
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.22);
+}
+
+.unreadInboxItem {
+    background:
+        linear-gradient(90deg, rgba(12, 23, 48, 0.96), rgba(10, 17, 36, 0.86)),
+        radial-gradient(circle at 95% 25%, rgba(168, 85, 247, 0.22), transparent 32%);
+}
+
+.inboxToolbar {
+    margin-top: -4px;
+    margin-bottom: 16px;
+}
+
+.filterButton {
+    min-width: 88px;
+    min-height: 42px;
+    border-radius: 7px;
+    color: #ffffff;
+    background: rgba(8, 17, 35, 0.84);
+    border-color: rgba(148, 163, 184, 0.18);
+}
+
+.activeFilterButton {
+    background: linear-gradient(135deg, #6725d8, #36106f);
+    border-color: rgba(168, 85, 247, 0.7);
+    box-shadow: 0 10px 24px rgba(123, 63, 242, 0.28);
+}
+
+.notificationActions a,
+.notificationActions button,
+.primaryHeaderAction,
+.secondaryHeaderAction {
+    border-radius: 7px;
+}
+
+.notificationActions a,
+.notificationActions button {
+    min-width: 112px;
+    min-height: 38px;
+    background: linear-gradient(135deg, #6725d8, #36106f);
+    border-color: rgba(168, 85, 247, 0.55);
+}
+
+.sideColumn .panel {
+    border-radius: 10px;
+}
+
+.channelGrid {
+    grid-template-columns: 1fr;
+}
+
+.channelCard {
+    min-height: 74px;
+    grid-template-columns: 44px minmax(0, 1fr) auto;
+}
+
+.channelIcon {
+    width: 42px;
+    height: 42px;
+}
+
+.summaryGrid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+@media (max-width: 1180px) {
+    .layoutGrid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 760px) {
+    .summaryGrid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .filterButton {
+        min-width: auto;
+    }
+}

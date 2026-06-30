@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { FiX } from 'react-icons/fi';
 import './AuthRequiredGate.css';
 
-type AuthAction = 'membership' | 'tickets' | 'follow' | 'checkout' | 'fantasy' | 'default';
+type AuthAction = 'membership' | 'tickets' | 'follow' | 'checkout' | 'fantasy' | 'polls' | 'mvp' | 'quizzes' | 'default';
 
 const AUTH_MESSAGES: Record<AuthAction, { title: string; message: string; note: string }> = {
   membership: {
@@ -35,6 +35,24 @@ const AUTH_MESSAGES: Record<AuthAction, { title: string; message: string; note: 
     message:
       'Create an account or log in to create teams, join fantasy leagues, and track your performance.',
     note: 'Fantasy activity is saved to your fan profile.',
+  },
+  polls: {
+    title: 'Login to have your say',
+    message:
+      'Create an account or log in to vote in polls and surveys. Your voice shapes the decisions that matter most to the league.',
+    note: 'Every vote counts — make yours heard.',
+  },
+  mvp: {
+    title: 'Login to participate',
+    message:
+      'Create an account or log in to vote for match winners, players of the month, and season MVPs. Your vote decides who takes the spotlight.',
+    note: 'Your vote decides the legends.',
+  },
+  quizzes: {
+    title: 'Login to play',
+    message:
+      'Create an account or log in to test your sports knowledge, compete on leaderboards, and earn bragging rights.',
+    note: 'Think you know Ugandan sport? Prove it.',
   },
   default: {
     title: 'Sign in to continue',

@@ -97,7 +97,7 @@
   padding: 0.55rem 1.4rem;
   border-radius: 8px;
   border: none;
-  background: #7C3AED;   /* was #5b6270 — now matches Log In purple */
+  background: #7C3AED;
   color: #fff;
   font-size: 0.85rem;
   font-weight: 700;
@@ -224,13 +224,13 @@
   border-color: rgba(124, 58, 237, 0.4);
 }
 
-   /* ── Card Header ── */
+/* ── Card Header ── */
 .match-card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1.25rem;
-  gap: 1rem; /* add this */
+  gap: 1rem;
 }
 
 .match-date {
@@ -355,7 +355,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 1rem; /* add space between  and buy ticket button */
+  gap: 1rem;
 }
 
 .tier-price {
@@ -519,7 +519,6 @@
   }
 }
 
-
 .tickets-page {
   position: relative;
   min-height: 100vh;
@@ -527,7 +526,7 @@
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
-  background-color: #0a0a1a; /* fallback while image loads */
+  background-color: #0a0a1a;
 }
 
 .tickets-page::before {
@@ -539,16 +538,79 @@
   pointer-events: none;
 }
 
-/* .tickets-nav,
 .tickets-main,
 .footer {
   position: relative;
   z-index: 1;
-} */
+}
 
-.navbar,
-.tickets-main,
-.footer {
-  position: relative;
-  z-index: 1;
+.tickets-auth-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.tickets-auth-actions button {
+  min-height: 38px;
+  border-radius: 8px;
+  border: 1px solid rgba(124, 58, 237, 0.45);
+  background: rgba(124, 58, 237, 0.12);
+  color: #fff;
+  padding: 0 1rem;
+  font-size: 0.85rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.tickets-auth-actions button:hover {
+  background: rgba(124, 58, 237, 0.24);
+}
+
+.ticket-market-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.ticket-market-summary article {
+  border-radius: 14px;
+  padding: 1rem;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(124, 58, 237, 0.2), transparent 42%),
+    rgba(255, 255, 255, 0.055);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.ticket-market-summary strong {
+  display: block;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.ticket-market-summary span {
+  display: block;
+  margin-top: 0.35rem;
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+@media (max-width: 900px) {
+  .ticket-market-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .tickets-auth-actions,
+  .tickets-page-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .ticket-market-summary {
+    grid-template-columns: 1fr;
+  }
 }

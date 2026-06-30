@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
-import '../../styles/pages/landing/Unions.css';
+import '../../styles/pages/landing/unions.css';
 
 type Union = {
   id: number;
@@ -271,7 +271,6 @@ export default function Unions() {
                 ))}
               </div>
 
-              {/* Expanded content */}
               {expandedId === union.id && (
                 <div className="union-card__expanded">
                   <p className="union-card__focus-heading">Key Focus Areas</p>
@@ -301,22 +300,21 @@ export default function Unions() {
                     >
                       View Competitions →
                     </button>
-                   {union.website && (
-  
-                    <a href={union.website}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                    className="union-card__website-link"
-                  >
-                    Official Website ↗
-                  </a>
-                )}
+                    {union.website && (
+                      
+                      <a href={union.website}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="union-card__website-link"
+                      >
+                        Official Website ↗
+                      </a>
+                    )}
                   </div>
                 </div>
               )}
 
-              {/* Expand hint */}
               <div className="union-card__expand-hint">
                 <span>{expandedId === union.id ? '▲ Less' : '▼ More details'}</span>
               </div>
@@ -324,30 +322,21 @@ export default function Unions() {
           ))}
         </div>
 
-        {/* Empty state */}
         {filtered.length === 0 && (
           <div className="unions-empty">
             <p className="unions-empty__icon">🔍</p>
-            <p className="unions-empty__title">
-              No unions found for "{searchQuery}"
-            </p>
-            <p className="unions-empty__hint">
-              Try a different search term or filter
-            </p>
+            <p className="unions-empty__title">No unions found for "{searchQuery}"</p>
+            <p className="unions-empty__hint">Try a different search term or filter</p>
           </div>
         )}
 
-        {/* CTA Banner */}
         <div className="unions-cta">
           <h2 className="unions-cta__title">Is Your Federation on League OS?</h2>
           <p className="unions-cta__subtitle">
             Partner with us to digitise your competitions, manage registrations,
             and engage your fan base.
           </p>
-          <button
-            onClick={() => navigate('/register')}
-            className="unions-cta__btn"
-          >
+          <button onClick={() => navigate('/register')} className="unions-cta__btn">
             Get Started →
           </button>
         </div>

@@ -1,5 +1,5 @@
 .featured-clubs {
-  background-color: #00030D;
+  background-color: transparent;
   padding: 16px 56px 24px;
   font-family: 'Inter', sans-serif;
 }
@@ -10,7 +10,7 @@
   align-items: stretch;
 }
 
-.club-card {
+.featured-clubs .club-card {
   flex: 1;
   background-color: #12131F;
   border-radius: 8px;
@@ -87,12 +87,12 @@
 }
 
 /* Hover effects */
-.club-card {
+.featured-clubs .club-card {
   transition: transform 0.2s ease, background-color 0.2s ease;
   cursor: pointer;
 }
 
-.club-card:hover {
+.featured-clubs .club-card:hover {
   transform: scale(1.03);
   background-color: #1e1f2e;
 }
@@ -101,7 +101,7 @@
   transition: transform 0.2s ease;
 }
 
-.club-card:hover .club-logo {
+.featured-clubs .club-card:hover .club-logo {
   transform: scale(1.1);
 }
 

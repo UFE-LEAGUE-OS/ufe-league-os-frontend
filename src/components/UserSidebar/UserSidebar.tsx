@@ -17,6 +17,7 @@ import {
     Trophy,
     User,
     Users,
+    Swords,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { NavLink } from "react-router-dom";
@@ -52,8 +53,9 @@ const sidebarSections: SidebarSection[] = [
         title: "Fan Hub",
         links: [
             { label: "My Matches", href: "/fixtures", icon: CalendarDays },
-            { label: "My Tickets", href: "/tickets", icon: Ticket },
+            { label: "My Tickets", href: "/dashboard/tickets", icon: Ticket },
             { label: "My Memberships", href: "/dashboard/memberships", icon: Trophy },
+            { label: "Fantasy", href: "/fantasy", icon: Swords },
             { label: "Watchlist", href: "/dashboard/watchlist", icon: Heart },
             { label: "News Feed", href: "/dashboard/news", icon: Newspaper },
             { label: "Rewards & Benefits", href: "/profile/clubs", icon: Star },
@@ -85,6 +87,10 @@ const sidebarSections: SidebarSection[] = [
     },
 ];
 
+interface UserSidebarProps {
+    isCollapsed?: boolean;
+}
+
 const quickActions = [
     { label: "Explore Competitions", href: "/competitions", icon: Trophy },
     { label: "Browse Clubs", href: "/clubs", icon: Users },
@@ -92,10 +98,10 @@ const quickActions = [
     { label: "Explore Club Memberships", href: "/memberships", icon: ShieldCheck },
 ];
 
-function UserSidebar() {
+function UserSidebar({ isCollapsed = false }: UserSidebarProps) {
     const { currentUser } = useCurrentUser();
     return (
-        <aside className={styles.sidebar}>
+        <aside className={`${styles.sidebar} ${isCollapsed ? styles.collapsedSidebar : ""}`}>
             <div className={styles.userCard}>
                 <span className={styles.avatar}>{currentUser.avatarInitials}</span>
 

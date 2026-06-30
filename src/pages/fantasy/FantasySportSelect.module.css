@@ -1,0 +1,267 @@
+.page {
+  min-height: 100%;
+  background: #02040e;
+  color: #fff;
+  font-family: 'Inter', sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 18px 24px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  background: #02040e;
+}
+
+.backBtn {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.7);
+  padding: 7px 14px;
+  border-radius: 7px;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+.backBtn:hover { border-color: #8135FA; color: #fff; }
+
+.steps {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.steps::-webkit-scrollbar { display: none; }
+
+.step {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.35);
+  white-space: nowrap;
+  padding: 4px 12px;
+  border-radius: 20px;
+  border: 1px solid transparent;
+}
+.stepActive {
+  color: #fff;
+  background: rgba(129,53,250,0.2);
+  border-color: rgba(129,53,250,0.5);
+}
+.stepArrow { color: rgba(255,255,255,0.2); font-size: 14px; }
+
+/* Body */
+.body {
+  flex: 1;
+  padding: 28px 24px;
+  max-width: 900px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.section { display: flex; flex-direction: column; gap: 16px; }
+
+.sectionFadeIn {
+  animation: fadeUp 0.3s ease;
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.sectionTitle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+  font-weight: 800;
+  margin: 0;
+}
+
+.stepNum {
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  background: #8135FA;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.sectionSub {
+  font-size: 13px;
+  color: rgba(255,255,255,0.5);
+  margin: -8px 0 0;
+}
+
+/* Sport cards */
+.sportGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.sportCard {
+  position: relative;
+  background: #0d0f1e;
+  border: 2px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+  padding: 24px 20px;
+  cursor: pointer;
+  text-align: left;
+  color: #fff;
+  font: inherit;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: border-color 0.2s, transform 0.15s;
+}
+.sportCard:hover {
+  border-color: var(--accent, #8135FA);
+  transform: translateY(-2px);
+}
+.sportCardSelected {
+  border-color: var(--accent, #8135FA);
+  background: color-mix(in srgb, var(--accent, #8135FA) 10%, #0d0f1e);
+}
+
+.sportEmoji { font-size: 2.4rem; line-height: 1; }
+
+.sportCard strong {
+  font-size: 18px;
+  font-weight: 800;
+  font-family: 'Arial Black', sans-serif;
+}
+
+.sportMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.5);
+}
+
+.sportFormats {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.formatChip {
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.6);
+}
+
+/* Format cards */
+.formatGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.formatCard {
+  position: relative;
+  background: #0d0f1e;
+  border: 2px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  padding: 20px 18px;
+  cursor: pointer;
+  text-align: left;
+  color: #fff;
+  font: inherit;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: border-color 0.2s, transform 0.15s;
+}
+.formatCard:hover {
+  border-color: var(--accent, #8135FA);
+  transform: translateY(-2px);
+}
+.formatCardSelected {
+  border-color: var(--accent, #8135FA);
+  background: color-mix(in srgb, var(--accent, #8135FA) 8%, #0d0f1e);
+}
+
+.formatIcon { font-size: 1.8rem; margin-bottom: 4px; }
+
+.formatCard strong { font-size: 15px; font-weight: 800; }
+.formatCard p { font-size: 12px; color: rgba(255,255,255,0.55); margin: 0; line-height: 1.5; }
+
+/* Selected tick */
+.selectedTick {
+  position: absolute;
+  top: 10px; right: 12px;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: #8135FA;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Summary bar */
+.summary {
+  background: #0d0f1e;
+  border: 1px solid rgba(129,53,250,0.3);
+  border-radius: 12px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.summaryInfo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  flex-wrap: wrap;
+  color: rgba(255,255,255,0.75);
+}
+.summaryInfo strong { color: #fff; }
+
+.continueBtn {
+  background: #8135FA;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s, transform 0.15s;
+}
+.continueBtn:hover { background: #9b55fb; transform: translateY(-1px); }
+
+@media (max-width: 700px) {
+  .sportGrid { grid-template-columns: 1fr; }
+  .summary { flex-direction: column; align-items: flex-start; }
+  .continueBtn { width: 100%; text-align: center; }
+}

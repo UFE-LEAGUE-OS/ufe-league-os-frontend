@@ -8,10 +8,11 @@ import LiveFixturesResults from '../../components/LiveFixturesResults';
 import FantasyLeagues from '../../components/FantasyLeagues';
 import CTABanner from '../../components/CTABanner';
 import Footer from '../../components/Footer';
+import '../../styles/pages/landing.css';
 
 export default function Landing() {
   return (
-    <>
+    <div className="landing-page">
       <Navbar />
       <Hero />
       <FeaturedCompetitions />
@@ -22,6 +23,6 @@ export default function Landing() {
       <FantasyLeagues />
       <CTABanner />
       <Footer />
-    </>
+    </div>
   );
 }

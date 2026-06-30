@@ -1,9 +1,14 @@
 import { useNavigate } from 'react-router-dom';
+import { useAuthStore } from '../store/authStore.js';
+import { getToken } from '../utils/tokenManager.js';
 import './Hero.css';
 import heroImage from '../assets/hero.png';
 
 function Hero() {
   const navigate = useNavigate();
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const isAuthenticated = Boolean(accessToken || getToken());
+
   return (
     <section className="hero" style={{ backgroundImage: `url(${heroImage})` }}>
       <div className="hero-top">
@@ -17,14 +22,21 @@ function Hero() {
             Buy tickets. Play fantasy. All the passion of Ugandan sport, in one place.
           </p>
           <div className="hero-buttons">
-            <button className="btn-outline" onClick={() => navigate('/clubs')}>
-              Browse Competitions <span className="btn-arrow"></span>
+            <button className="btn-outline" onClick={() => navigate('/competitions')}>
+              Browse Competitions <span className="btn-arrow"> </span>
             </button>
             <button className="btn-outline">Become a sponsor</button>
-            <button className="btn-outline" onClick={() => navigate('/register')}>Sign Up</button>
+            {isAuthenticated ? (
+              <button className="btn-outline" onClick={() => navigate('/dashboard/fan')}>
+                Go to Dashboard
+              </button>
+            ) : (
+              <button className="btn-primary" onClick={() => navigate('/register')}>
+                Sign Up
+              </button>
+            )}
           </div>
         </div>
-
         <div className="hero-stats">
           <div className="stat">
             <span className="stat-number">20+</span>
@@ -44,7 +56,6 @@ function Hero() {
           </div>
         </div>
       </div>
-
       <div className="hero-features">
         <div className="feature">
           <span className="feature-icon">🌐</span> Live Scores & Stats

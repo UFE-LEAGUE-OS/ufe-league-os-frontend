@@ -1,4 +1,5 @@
 import axios from "axios";
+import { getToken } from "../utils/tokenManager.js";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ??
@@ -12,7 +13,7 @@ export const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-  const accessToken = localStorage.getItem("league_os_access_token");
+  const accessToken = getToken();
 
   if (accessToken) {
     config.headers.Authorization = `Bearer ${accessToken}`;

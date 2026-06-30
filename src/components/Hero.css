@@ -126,3 +126,27 @@
 .feature-icon {
   font-size: 14px;
 }
+
+.hero .btn-primary {
+  background-color: #8135FA;
+  color: #ffffff;
+  border: 1px solid #8135FA;
+  border-radius: 5px;
+  padding: 0 18px;
+  height: 45px;
+  font-weight: 700;
+  font-size: 15px;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  transition: background-color 0.2s ease,
+              border-color 0.2s ease,
+              transform 0.15s ease,
+              font-size 0.2s ease;
+}
+
+.hero .btn-primary:hover {
+  background-color: #F97316;
+  border-color: #F97316;
+  transform: scale(1.04);
+  font-size: 15.8px;
+}

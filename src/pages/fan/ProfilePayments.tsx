@@ -1,262 +1,290 @@
 import {
     AlertTriangle,
-    CalendarDays,
+    ArrowUpRight,
+    Banknote,
     CheckCircle2,
     Clock,
-    CreditCard,
     Download,
-    ExternalLink,
     FileText,
-    Lock,
-    ReceiptText,
     RefreshCw,
+    Search,
     ShieldCheck,
     Ticket,
     Trophy,
+    WalletCards,
     XCircle,
 } from "lucide-react";
-import { useState } from "react";
+import type { LucideIcon } from "lucide-react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import styles from "./PaymentMethodsPage.module.css";
 
-const paymentStats = [
-    {
-        label: "Total Paid",
-        value: "UGX 220K",
-        detail: "Club memberships & tickets",
-        icon: CreditCard,
-        tone: "purple",
-    },
-    {
-        label: "Successful Payments",
-        value: "3",
-        detail: "Completed through checkout",
-        icon: CheckCircle2,
-        tone: "green",
-    },
-    {
-        label: "Pending Payments",
-        value: "1",
-        detail: "Awaiting confirmation",
-        icon: Clock,
-        tone: "orange",
-    },
-    {
-        label: "Receipts",
-        value: "3",
-        detail: "Available to download",
-        icon: ReceiptText,
-        tone: "blue",
-    },
-];
+type PaymentStatus = "Successful" | "Pending" | "Failed" | "Refunded";
+type PaymentCategory = "Ticket" | "Membership" | "Sponsorship" | "Wallet";
 
-const transactions = [
+interface PaymentRecord {
+    id: string;
+    title: string;
+    category: PaymentCategory;
+    beneficiary: string;
+    amount: string;
+    status: PaymentStatus;
+    date: string;
+    method: string;
+    reference: string;
+    receiptNo: string;
+    description: string;
+    icon: LucideIcon;
+}
+
+const payments: PaymentRecord[] = [
     {
-        id: "tx-kobs-gold",
-        title: "KCB KOBS Gold Membership",
-        category: "Club Membership",
-        club: "KCB KOBS",
-        amount: "UGX 120,000",
+        id: "pay-kobs-ticket",
+        title: "KCB KOBS vs Heathens RFC",
+        category: "Ticket",
+        beneficiary: "KCB KOBS",
+        amount: "UGX 40,000",
         status: "Successful",
         date: "18 May 2025",
-        reference: "LOS-KOBS-2025-001",
-        gateway: "Flutterwave Checkout",
-        icon: Trophy,
-    },
-    {
-        id: "tx-kobs-ticket",
-        title: "KCB KOBS vs Heathens RFC Ticket",
-        category: "Match Ticket",
-        club: "KCB KOBS",
-        amount: "UGX 20,000",
-        status: "Successful",
-        date: "15 May 2025",
-        reference: "LOS-TKT-2025-018",
-        gateway: "Flutterwave Checkout",
+        method: "Flutterwave • Mobile Money",
+        reference: "FLW-TKT-2025-0018",
+        receiptNo: "LOS-RCPT-0018",
+        description: "Two VIP Stand tickets for Nile Special Rugby Premiership.",
         icon: Ticket,
     },
     {
-        id: "tx-villa-silver",
-        title: "SC Villa Silver Membership",
-        category: "Club Membership",
-        club: "SC Villa",
-        amount: "UGX 80,000",
+        id: "pay-kobs-gold",
+        title: "KCB KOBS Gold Membership",
+        category: "Membership",
+        beneficiary: "KCB KOBS",
+        amount: "UGX 120,000",
         status: "Successful",
-        date: "12 Apr 2025",
-        reference: "LOS-VILLA-2025-014",
-        gateway: "Flutterwave Checkout",
+        date: "15 May 2025",
+        method: "Flutterwave • Card",
+        reference: "FLW-MEM-2025-0042",
+        receiptNo: "LOS-RCPT-0042",
+        description: "Annual Gold Membership with ticket discounts and club benefits.",
         icon: Trophy,
     },
     {
-        id: "tx-oilers-ticket",
-        title: "City Oilers vs Namuwongo Blazers Ticket",
-        category: "Match Ticket",
-        club: "City Oilers",
+        id: "pay-oilers-ticket",
+        title: "City Oilers vs Nam Blazers",
+        category: "Ticket",
+        beneficiary: "National Basketball League",
         amount: "UGX 15,000",
         status: "Pending",
         date: "Today",
-        reference: "LOS-TKT-2025-044",
-        gateway: "Flutterwave Checkout",
+        method: "Flutterwave • Mobile Money",
+        reference: "FLW-TKT-2025-0077",
+        receiptNo: "Pending",
+        description: "Pending checkout confirmation for basketball match ticket.",
         icon: Ticket,
     },
     {
-        id: "tx-pirates-membership",
+        id: "pay-pirates-bronze",
         title: "Black Pirates Bronze Membership",
-        category: "Club Membership",
-        club: "Black Pirates",
+        category: "Membership",
+        beneficiary: "Black Pirates RFC",
         amount: "UGX 50,000",
         status: "Failed",
         date: "Yesterday",
-        reference: "LOS-PIRATES-2025-009",
-        gateway: "Flutterwave Checkout",
+        method: "Flutterwave • Mobile Money",
+        reference: "FLW-MEM-2025-0031",
+        receiptNo: "Not issued",
+        description: "Payment failed before membership activation.",
         icon: Trophy,
     },
-];
-
-const receiptGroups = [
     {
-        title: "Club Membership Receipts",
-        description: "Receipts for memberships purchased from clubs.",
-        icon: Trophy,
-        items: [
-            {
-                title: "KCB KOBS Gold Membership",
-                amount: "UGX 120,000",
-                date: "18 May 2025",
-                status: "Active Membership",
-            },
-            {
-                title: "SC Villa Silver Membership",
-                amount: "UGX 80,000",
-                date: "12 Apr 2025",
-                status: "Active Membership",
-            },
-        ],
+        id: "pay-sponsor-support",
+        title: "Fan Sponsor Support Pack",
+        category: "Sponsorship",
+        beneficiary: "Nile Special Rugby League",
+        amount: "UGX 75,000",
+        status: "Successful",
+        date: "02 May 2025",
+        method: "Flutterwave • Card",
+        reference: "FLW-SPN-2025-0011",
+        receiptNo: "LOS-RCPT-0011",
+        description: "Fan sponsorship contribution for league campaign support.",
+        icon: Banknote,
     },
     {
-        title: "Ticket Receipts",
-        description: "Receipts for match tickets bought through League OS.",
-        icon: Ticket,
-        items: [
-            {
-                title: "KCB KOBS vs Heathens RFC",
-                amount: "UGX 20,000",
-                date: "15 May 2025",
-                status: "QR Ticket Issued",
-            },
-        ],
+        id: "pay-refund-kcca",
+        title: "KCCA FC vs Vipers SC Ticket Refund",
+        category: "Ticket",
+        beneficiary: "Uganda Premier League",
+        amount: "UGX 25,000",
+        status: "Refunded",
+        date: "20 Apr 2025",
+        method: "Flutterwave • Refund",
+        reference: "FLW-REF-2025-0008",
+        receiptNo: "LOS-RCPT-0008",
+        description: "Refund processed after fixture postponement.",
+        icon: RefreshCw,
     },
 ];
 
-const refundItems = [
-    {
-        title: "No active refunds",
-        description:
-            "Refund requests and disputed payments will appear here when available.",
-        status: "Clear",
-    },
+const categoryOptions: Array<"All" | PaymentCategory> = [
+    "All",
+    "Ticket",
+    "Membership",
+    "Sponsorship",
+    "Wallet",
 ];
 
-function getStatusClass(status: string) {
-    if (status === "Successful") {
-        return styles.successStatus;
-    }
-
-    if (status === "Pending") {
-        return styles.pendingStatus;
-    }
-
-    if (status === "Failed") {
-        return styles.failedStatus;
-    }
-
-    return styles.neutralStatus;
+function getStatusClass(status: PaymentStatus) {
+    if (status === "Successful") return styles.successStatus;
+    if (status === "Pending") return styles.pendingStatus;
+    if (status === "Failed") return styles.failedStatus;
+    return styles.refundedStatus;
 }
 
-function getStatusIcon(status: string) {
-    if (status === "Successful") {
-        return CheckCircle2;
-    }
-
-    if (status === "Pending") {
-        return Clock;
-    }
-
-    if (status === "Failed") {
-        return XCircle;
-    }
-
-    return ReceiptText;
+function parseAmount(value: string) {
+    const numeric = value.replace(/[^\d]/g, "");
+    return Number(numeric || 0);
 }
 
-function PaymentMethodsPage() {
-    const [checkoutPreference, setCheckoutPreference] = useState("ask-every-time");
-    const [saveMessage, setSaveMessage] = useState("");
+function PaymentStatusBadge({ status }: { status: PaymentStatus }) {
+    return (
+        <span className={getStatusClass(status)}>
+            {status === "Successful" ? (
+                <CheckCircle2 size={14} strokeWidth={2.4} aria-hidden="true" />
+            ) : null}
+            {status === "Pending" ? (
+                <Clock size={14} strokeWidth={2.4} aria-hidden="true" />
+            ) : null}
+            {status === "Failed" ? (
+                <XCircle size={14} strokeWidth={2.4} aria-hidden="true" />
+            ) : null}
+            {status === "Refunded" ? (
+                <RefreshCw size={14} strokeWidth={2.4} aria-hidden="true" />
+            ) : null}
+            {status}
+        </span>
+    );
+}
 
-    function handleSavePreference() {
-        setSaveMessage("Checkout preference saved locally for now.");
+function WalletPaymentCenter() {
+    const [activeCategory, setActiveCategory] =
+        useState<"All" | PaymentCategory>("All");
+    const [searchQuery, setSearchQuery] = useState("");
+    const [selectedPayment, setSelectedPayment] = useState<PaymentRecord>(payments[0]);
+
+    const filteredPayments = useMemo(() => {
+        const normalizedSearch = searchQuery.trim().toLowerCase();
+
+        return payments.filter((payment) => {
+            const matchesCategory =
+                activeCategory === "All" || payment.category === activeCategory;
+
+            const matchesSearch =
+                normalizedSearch.length === 0 ||
+                [
+                    payment.title,
+                    payment.beneficiary,
+                    payment.amount,
+                    payment.status,
+                    payment.reference,
+                    payment.receiptNo,
+                    payment.category,
+                ]
+                    .join(" ")
+                    .toLowerCase()
+                    .includes(normalizedSearch);
+
+            return matchesCategory && matchesSearch;
+        });
+    }, [activeCategory, searchQuery]);
+
+    const totals = useMemo(() => {
+        const successfulTotal = payments
+            .filter((payment) => payment.status === "Successful")
+            .reduce((total, payment) => total + parseAmount(payment.amount), 0);
+
+        return {
+            totalPaid: `UGX ${(successfulTotal / 1000).toFixed(0)}K`,
+            successful: payments.filter((payment) => payment.status === "Successful").length,
+            pending: payments.filter((payment) => payment.status === "Pending").length,
+            failed: payments.filter((payment) => payment.status === "Failed").length,
+        };
+    }, []);
+
+    function handleDownloadReceipt(payment: PaymentRecord) {
+        setSelectedPayment(payment);
     }
 
     return (
         <section className={styles.page}>
             <header className={styles.pageHeader}>
                 <div>
-                    <h1>Payments &amp; Receipts</h1>
+                    <span className={styles.eyebrow}>Fan Wallet</span>
+                    <h1>Wallet & Payment Center</h1>
                     <p>
-                        View club membership payments, ticket receipts, failed payments,
-                        refunds and Flutterwave checkout references.
+                        Track ticket payments, memberships, sponsorships, pending checkouts
+                        and receipts. This screen is using dummy data until admin payment
+                        workflows are completed.
                     </p>
                 </div>
 
-                <Link to="/memberships" className={styles.primaryHeaderAction}>
-                    <Trophy size={18} strokeWidth={2.4} aria-hidden="true" />
-                    Explore Club Memberships
+                <Link to="/tickets" className={styles.primaryHeaderAction}>
+                    <Ticket size={18} strokeWidth={2.4} aria-hidden="true" />
+                    Buy Tickets
                 </Link>
             </header>
 
+            <section className={styles.summaryGrid} aria-label="Payment summary">
+                <article className={`${styles.summaryCard} ${styles.purple}`}>
+                    <div>
+                        <p>Total Paid</p>
+                        <strong>{totals.totalPaid}</strong>
+                        <span>Successful payments</span>
+                    </div>
+                    <WalletCards size={38} strokeWidth={2.1} aria-hidden="true" />
+                </article>
+
+                <article className={`${styles.summaryCard} ${styles.green}`}>
+                    <div>
+                        <p>Successful</p>
+                        <strong>{totals.successful}</strong>
+                        <span>Receipts available</span>
+                    </div>
+                    <CheckCircle2 size={38} strokeWidth={2.1} aria-hidden="true" />
+                </article>
+
+                <article className={`${styles.summaryCard} ${styles.orange}`}>
+                    <div>
+                        <p>Pending</p>
+                        <strong>{totals.pending}</strong>
+                        <span>Awaiting confirmation</span>
+                    </div>
+                    <Clock size={38} strokeWidth={2.1} aria-hidden="true" />
+                </article>
+
+                <article className={`${styles.summaryCard} ${styles.red}`}>
+                    <div>
+                        <p>Failed</p>
+                        <strong>{totals.failed}</strong>
+                        <span>Retry available</span>
+                    </div>
+                    <XCircle size={38} strokeWidth={2.1} aria-hidden="true" />
+                </article>
+            </section>
+
             <section className={styles.gatewayNotice}>
                 <span>
-                    <Lock size={34} strokeWidth={2.3} aria-hidden="true" />
+                    <ShieldCheck size={28} strokeWidth={2.3} aria-hidden="true" />
                 </span>
 
                 <div>
-                    <h2>Checkout is handled securely through Flutterwave</h2>
+                    <h2>Payments are prepared for Flutterwave</h2>
                     <p>
-                        League OS records the payment status, receipt, membership or ticket
-                        outcome. The fan chooses mobile money, card or other available
-                        checkout options during the Flutterwave checkout flow.
+                        The frontend is ready for mobile money, card payments, payment
+                        receipts and retry flows. Live backend connection will come after
+                        admin dashboards and payment creation flows are completed.
                     </p>
                 </div>
 
-                <Link to="/profile/privacy">Payment Security</Link>
-            </section>
-
-            {saveMessage ? (
-                <div className={styles.saveMessage} role="status">
-                    <CheckCircle2 size={19} strokeWidth={2.4} aria-hidden="true" />
-                    {saveMessage}
-                </div>
-            ) : null}
-
-            <section className={styles.summaryGrid} aria-label="Payment summary">
-                {paymentStats.map((stat) => {
-                    const Icon = stat.icon;
-
-                    return (
-                        <article
-                            className={`${styles.summaryCard} ${styles[stat.tone]}`}
-                            key={stat.label}
-                        >
-                            <div>
-                                <p>{stat.label}</p>
-                                <strong>{stat.value}</strong>
-                                <span>{stat.detail}</span>
-                            </div>
-
-                            <Icon size={38} strokeWidth={2.1} aria-hidden="true" />
-                        </article>
-                    );
-                })}
+                <Link to="/profile/privacy">Security Settings</Link>
             </section>
 
             <div className={styles.layoutGrid}>
@@ -264,95 +292,107 @@ function PaymentMethodsPage() {
                     <section className={styles.panel}>
                         <div className={styles.panelHeader}>
                             <div>
-                                <h2>Recent Payments</h2>
-                                <p>
-                                    These are payments initiated through League OS and processed
-                                    through Flutterwave checkout.
-                                </p>
+                                <h2>Payment History</h2>
+                                <p>Dummy records covering tickets, memberships and sponsorships.</p>
                             </div>
 
-                            <button type="button">
-                                <Download size={17} strokeWidth={2.4} aria-hidden="true" />
-                                Export
-                            </button>
+                            <div className={styles.searchBox}>
+                                <Search size={16} strokeWidth={2.3} aria-hidden="true" />
+                                <input
+                                    type="search"
+                                    placeholder="Search payment, receipt, reference..."
+                                    value={searchQuery}
+                                    onChange={(event) => setSearchQuery(event.target.value)}
+                                />
+                            </div>
+                        </div>
+
+                        <div className={styles.categoryTabs}>
+                            {categoryOptions.map((category) => (
+                                <button
+                                    type="button"
+                                    key={category}
+                                    className={
+                                        activeCategory === category ? styles.activeCategoryTab : ""
+                                    }
+                                    onClick={() => setActiveCategory(category)}
+                                >
+                                    {category}
+                                </button>
+                            ))}
                         </div>
 
                         <div className={styles.transactionList}>
-                            {transactions.map((transaction) => {
-                                const TransactionIcon = transaction.icon;
-                                const StatusIcon = getStatusIcon(transaction.status);
+                            {filteredPayments.map((payment) => {
+                                const PaymentIcon = payment.icon;
 
                                 return (
-                                    <article className={styles.transactionCard} key={transaction.id}>
+                                    <article
+                                        className={styles.transactionCard}
+                                        key={payment.id}
+                                    >
                                         <span className={styles.transactionIcon}>
-                                            <TransactionIcon
-                                                size={24}
-                                                strokeWidth={2.2}
+                                            <PaymentIcon
+                                                size={26}
+                                                strokeWidth={2.3}
                                                 aria-hidden="true"
                                             />
                                         </span>
 
                                         <div className={styles.transactionInfo}>
                                             <div className={styles.transactionTitleRow}>
-                                                <h3>{transaction.title}</h3>
-
-                                                <span className={getStatusClass(transaction.status)}>
-                                                    <StatusIcon
-                                                        size={14}
-                                                        strokeWidth={2.6}
-                                                        aria-hidden="true"
-                                                    />
-                                                    {transaction.status}
-                                                </span>
+                                                <h3>{payment.title}</h3>
+                                                <PaymentStatusBadge status={payment.status} />
                                             </div>
 
-                                            <p>
-                                                {transaction.category} • {transaction.club}
-                                            </p>
+                                            <p>{payment.description}</p>
 
                                             <div className={styles.transactionMeta}>
-                                                <span>{transaction.gateway}</span>
-                                                <span>Ref: {transaction.reference}</span>
-                                                <span>{transaction.date}</span>
+                                                <span>{payment.category}</span>
+                                                <span>{payment.beneficiary}</span>
+                                                <span>{payment.method}</span>
+                                                <span>{payment.date}</span>
                                             </div>
                                         </div>
 
                                         <div className={styles.transactionAmount}>
-                                            <strong>{transaction.amount}</strong>
+                                            <strong>{payment.amount}</strong>
 
                                             <div className={styles.transactionActions}>
-                                                {transaction.status === "Successful" ? (
-                                                    <button type="button">
-                                                        <Download
-                                                            size={15}
-                                                            strokeWidth={2.4}
-                                                            aria-hidden="true"
-                                                        />
-                                                        Receipt
-                                                    </button>
-                                                ) : null}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setSelectedPayment(payment)}
+                                                >
+                                                    <FileText
+                                                        size={15}
+                                                        strokeWidth={2.3}
+                                                        aria-hidden="true"
+                                                    />
+                                                    View
+                                                </button>
 
-                                                {transaction.status === "Pending" ? (
+                                                {payment.status === "Failed" ? (
                                                     <button type="button">
                                                         <RefreshCw
                                                             size={15}
-                                                            strokeWidth={2.4}
-                                                            aria-hidden="true"
-                                                        />
-                                                        Check Status
-                                                    </button>
-                                                ) : null}
-
-                                                {transaction.status === "Failed" ? (
-                                                    <button type="button">
-                                                        <RefreshCw
-                                                            size={15}
-                                                            strokeWidth={2.4}
+                                                            strokeWidth={2.3}
                                                             aria-hidden="true"
                                                         />
                                                         Retry
                                                     </button>
-                                                ) : null}
+                                                ) : (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleDownloadReceipt(payment)}
+                                                    >
+                                                        <Download
+                                                            size={15}
+                                                            strokeWidth={2.3}
+                                                            aria-hidden="true"
+                                                        />
+                                                        Receipt
+                                                    </button>
+                                                )}
                                             </div>
                                         </div>
                                     </article>
@@ -360,120 +400,53 @@ function PaymentMethodsPage() {
                             })}
                         </div>
                     </section>
-
-                    <section className={styles.receiptGrid}>
-                        {receiptGroups.map((group) => {
-                            const GroupIcon = group.icon;
-
-                            return (
-                                <article className={styles.panel} key={group.title}>
-                                    <div className={styles.sidePanelHeader}>
-                                        <span>
-                                            <GroupIcon size={26} strokeWidth={2.3} aria-hidden="true" />
-                                        </span>
-
-                                        <div>
-                                            <h2>{group.title}</h2>
-                                            <p>{group.description}</p>
-                                        </div>
-                                    </div>
-
-                                    <div className={styles.receiptList}>
-                                        {group.items.map((item) => (
-                                            <article className={styles.receiptItem} key={item.title}>
-                                                <div>
-                                                    <h3>{item.title}</h3>
-                                                    <p>
-                                                        {item.date} • {item.status}
-                                                    </p>
-                                                </div>
-
-                                                <strong>{item.amount}</strong>
-
-                                                <button type="button">
-                                                    <Download
-                                                        size={15}
-                                                        strokeWidth={2.4}
-                                                        aria-hidden="true"
-                                                    />
-                                                    Download
-                                                </button>
-                                            </article>
-                                        ))}
-                                    </div>
-                                </article>
-                            );
-                        })}
-                    </section>
                 </main>
 
                 <aside className={styles.sideColumn}>
-                    <section className={styles.panel}>
+                    <section className={styles.receiptPanel}>
                         <div className={styles.sidePanelHeader}>
                             <span>
-                                <CreditCard size={26} strokeWidth={2.3} aria-hidden="true" />
+                                <FileText size={26} strokeWidth={2.3} aria-hidden="true" />
                             </span>
 
                             <div>
-                                <h2>Checkout Preference</h2>
-                                <p>
-                                    This only controls your preferred checkout starting point.
-                                    Flutterwave still handles the payment method selection.
-                                </p>
+                                <h2>Receipt Detail</h2>
+                                <p>Selected dummy payment receipt.</p>
                             </div>
                         </div>
 
-                        <label className={styles.preferenceOption}>
-                            <input
-                                type="radio"
-                                name="checkoutPreference"
-                                value="ask-every-time"
-                                checked={checkoutPreference === "ask-every-time"}
-                                onChange={(event) => setCheckoutPreference(event.target.value)}
-                            />
+                        <dl className={styles.receiptDetail}>
+                            <div>
+                                <dt>Title</dt>
+                                <dd>{selectedPayment.title}</dd>
+                            </div>
+                            <div>
+                                <dt>Amount</dt>
+                                <dd>{selectedPayment.amount}</dd>
+                            </div>
+                            <div>
+                                <dt>Status</dt>
+                                <dd>
+                                    <PaymentStatusBadge status={selectedPayment.status} />
+                                </dd>
+                            </div>
+                            <div>
+                                <dt>Reference</dt>
+                                <dd>{selectedPayment.reference}</dd>
+                            </div>
+                            <div>
+                                <dt>Receipt No.</dt>
+                                <dd>{selectedPayment.receiptNo}</dd>
+                            </div>
+                            <div>
+                                <dt>Gateway</dt>
+                                <dd>{selectedPayment.method}</dd>
+                            </div>
+                        </dl>
 
-                            <span>
-                                <strong>Ask every time</strong>
-                                <small>Show all available checkout options.</small>
-                            </span>
-                        </label>
-
-                        <label className={styles.preferenceOption}>
-                            <input
-                                type="radio"
-                                name="checkoutPreference"
-                                value="mobile-money-first"
-                                checked={checkoutPreference === "mobile-money-first"}
-                                onChange={(event) => setCheckoutPreference(event.target.value)}
-                            />
-
-                            <span>
-                                <strong>Start with mobile money</strong>
-                                <small>Useful for MTN MoMo or Airtel Money checkout.</small>
-                            </span>
-                        </label>
-
-                        <label className={styles.preferenceOption}>
-                            <input
-                                type="radio"
-                                name="checkoutPreference"
-                                value="card-first"
-                                checked={checkoutPreference === "card-first"}
-                                onChange={(event) => setCheckoutPreference(event.target.value)}
-                            />
-
-                            <span>
-                                <strong>Start with card checkout</strong>
-                                <small>Useful when you often pay using card options.</small>
-                            </span>
-                        </label>
-
-                        <button
-                            type="button"
-                            className={styles.fullWidthButton}
-                            onClick={handleSavePreference}
-                        >
-                            Save Preference
+                        <button type="button" className={styles.fullWidthButton}>
+                            <Download size={17} strokeWidth={2.4} aria-hidden="true" />
+                            Download Receipt
                         </button>
                     </section>
 
@@ -481,11 +454,11 @@ function PaymentMethodsPage() {
                         <AlertTriangle size={42} strokeWidth={2.3} aria-hidden="true" />
 
                         <div>
-                            <h2>Do not store sensitive payment details here</h2>
+                            <h2>Payment flow note</h2>
                             <p>
-                                League OS should avoid storing raw card numbers, PINs or mobile
-                                money credentials. Those details belong inside the secure
-                                checkout provider flow.
+                                This is still a frontend dummy-data screen. Real payments should
+                                only be connected after the club, league and admin dashboards can
+                                create payable items.
                             </p>
                         </div>
                     </section>
@@ -493,73 +466,21 @@ function PaymentMethodsPage() {
                     <section className={styles.panel}>
                         <div className={styles.sidePanelHeader}>
                             <span>
-                                <ShieldCheck size={26} strokeWidth={2.3} aria-hidden="true" />
+                                <ArrowUpRight size={26} strokeWidth={2.3} aria-hidden="true" />
                             </span>
 
                             <div>
-                                <h2>Payment Security</h2>
-                                <p>What League OS should record after checkout.</p>
+                                <h2>Quick Actions</h2>
+                                <p>Common fan payment actions.</p>
                             </div>
                         </div>
 
-                        <div className={styles.securityList}>
-                            <article>
-                                <CheckCircle2 size={19} strokeWidth={2.4} aria-hidden="true" />
-                                <div>
-                                    <strong>Payment status</strong>
-                                    <p>Successful, pending, failed or refunded.</p>
-                                </div>
-                            </article>
-
-                            <article>
-                                <CheckCircle2 size={19} strokeWidth={2.4} aria-hidden="true" />
-                                <div>
-                                    <strong>Gateway reference</strong>
-                                    <p>Reference used to verify payment records.</p>
-                                </div>
-                            </article>
-
-                            <article>
-                                <CheckCircle2 size={19} strokeWidth={2.4} aria-hidden="true" />
-                                <div>
-                                    <strong>Linked product</strong>
-                                    <p>Ticket, club membership or renewal purchased.</p>
-                                </div>
-                            </article>
+                        <div className={styles.quickActionList}>
+                            <Link to="/tickets">Buy Match Tickets</Link>
+                            <Link to="/memberships">Explore Memberships</Link>
+                            <Link to="/dashboard/tickets">View My Tickets</Link>
+                            <Link to="/profile/support">Payment Support</Link>
                         </div>
-                    </section>
-
-                    <section className={styles.panel}>
-                        <div className={styles.sidePanelHeader}>
-                            <span>
-                                <CalendarDays size={26} strokeWidth={2.3} aria-hidden="true" />
-                            </span>
-
-                            <div>
-                                <h2>Refunds &amp; Disputes</h2>
-                                <p>Track refunds, reversals and payment issues.</p>
-                            </div>
-                        </div>
-
-                        <div className={styles.refundList}>
-                            {refundItems.map((item) => (
-                                <article key={item.title}>
-                                    <FileText size={20} strokeWidth={2.3} aria-hidden="true" />
-
-                                    <div>
-                                        <strong>{item.title}</strong>
-                                        <p>{item.description}</p>
-                                    </div>
-
-                                    <span>{item.status}</span>
-                                </article>
-                            ))}
-                        </div>
-
-                        <Link to="/profile/support" className={styles.panelLink}>
-                            Report Payment Issue
-                            <ExternalLink size={15} strokeWidth={2.4} aria-hidden="true" />
-                        </Link>
                     </section>
                 </aside>
             </div>
@@ -567,4 +488,4 @@ function PaymentMethodsPage() {
     );
 }
 
-export default PaymentMethodsPage;
+export default WalletPaymentCenter;

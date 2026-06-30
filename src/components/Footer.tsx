@@ -6,7 +6,7 @@ import { FaXTwitter } from 'react-icons/fa6';
 import { useNavigate } from "react-router-dom";
 
 function Footer() {
-   const navigate = useNavigate();
+  const navigate = useNavigate();
 
   return (
     <footer className="footer">
@@ -18,20 +18,20 @@ function Footer() {
           </p>
         </div>
 
-        <div className="footer-col">
-          <h4>PLATFORM</h4>
-          <a onClick={() => navigate('/About',{ state: { tab: "about" } })} style={{ cursor: 'pointer' }}>About Us</a>
-          <a onClick={() => navigate('/About', { state: { tab: "how-it-works" } })}style={{ cursor: 'pointer' }}>How It Works</a>
-          <a href="#">For Leagues</a>
-          <a href="#">For Clubs</a>
-        </div>
+       <div className="footer-col">
+  <h4>PLATFORM</h4>
+<Link to="/about" state={{ tab: "about" }}>About Us</Link>
+<Link to="/about" state={{ tab: "how-it-works" }}> How It Works</Link>
+<Link to="/about" state={{ tab: "a-league" }}>For Leagues</Link>
+<Link to="/about" state={{ tab: "a-club" }}>For Clubs</Link>
+</div>
 
         <div className="footer-col">
           <h4>COMPETITIONS</h4>
-          <a href="#">Football</a>
-          <a href="#">Rugby</a>
-          <a href="#">Basketball</a>
-          <a href="#">All Competitions</a>
+          <a onClick={() => navigate('/competitions#football-card')} style={{ cursor: 'pointer' }}>Football</a>
+          <a onClick={() => navigate('/competitions#rugby-card')} style={{ cursor: 'pointer' }}>Rugby</a>
+          <a onClick={() => navigate('/competitions#basketball-card')} style={{ cursor: 'pointer' }}>Basketball</a>
+          <a onClick={() => navigate('/competitions')} style={{ cursor: 'pointer' }}>All Competitions</a>
         </div>
 
         <div className="footer-col">

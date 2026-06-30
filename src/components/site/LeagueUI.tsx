@@ -190,6 +190,9 @@ export function AuthTopBar({
   primaryActionLabel = 'Sign Up',
   primaryActionTo = '/register',
 }: AuthTopBarProps) {
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const isAuthenticated = Boolean(accessToken || getStoredAccessToken());
+
   return (
     <header className="register-header">
       <Link to="/" className="register-brand" aria-label="League OS home">
@@ -209,7 +212,11 @@ export function AuthTopBar({
         <button type="button" className="register-search" aria-label="Search">
           <SearchOutlinedIcon />
         </button>
-        <AuthActionButton to={primaryActionTo}>{primaryActionLabel}</AuthActionButton>
+        {isAuthenticated ? (
+          <AuthActionButton to="/dashboard/fan">Dashboard</AuthActionButton>
+        ) : (
+          <AuthActionButton to={primaryActionTo}>{primaryActionLabel}</AuthActionButton>
+        )}
       </div>
     </header>
   );

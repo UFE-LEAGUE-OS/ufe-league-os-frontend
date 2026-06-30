@@ -31,6 +31,7 @@ function Navbar() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
   const { logout } = useAuth();
   const accessToken = useAuthStore((state) => state.accessToken);
   const user = useAuthStore((state) => state.user);
@@ -169,39 +170,43 @@ function Navbar() {
       )}
 
       <div className="navbar-actions">
-        <button
-          className="search-icon"
-          aria-label="Search"
-          onClick={handleSearchToggle}
-        >
-          {searchOpen ? <FiX size={18} /> : <FiSearch size={18} />}
-        </button>
-
-        {isAuthenticated ? (
-          <div className="navbar-auth-actions">
-            <button className="navbar-notification-btn" aria-label="Notifications">
-              <FiBell size={20} />
-              <span className="navbar-notification-badge">3</span>
+        {!searchOpen && (
+          <>
+            <button
+              className="search-icon"
+              aria-label="Search"
+              onClick={handleSearchToggle}
+            >
+              <FiSearch size={18} />
             </button>
 
-            <button className="navbar-user-chip" onClick={() => navigate('/profile')}>
-              <span className="navbar-user-avatar">{initials}</span>
-              <span className="navbar-user-copy">
-                <strong>{displayName}</strong>
-                <small>View Profile</small>
-              </span>
-              <FiChevronDown className="navbar-user-chevron" size={16} />
-            </button>
+            {isAuthenticated ? (
+              <div className="navbar-auth-actions">
+                <button className="navbar-notification-btn" aria-label="Notifications">
+                  <FiBell size={20} />
+                  <span className="navbar-notification-badge">3</span>
+                </button>
 
-            <button className="logout-btn" onClick={handleLogout}>
-              <FiLogOut size={16} />
-              Logout
-            </button>
-          </div>
-        ) : (
-          <button className="login-btn" onClick={() => navigate('/login')}>
-            Log In
-          </button>
+                <button className="navbar-user-chip" onClick={() => navigate('/profile')}>
+                  <span className="navbar-user-avatar">{initials}</span>
+                  <span className="navbar-user-copy">
+                    <strong>{displayName}</strong>
+                    <small>View Profile</small>
+                  </span>
+                  <FiChevronDown className="navbar-user-chevron" size={16} />
+                </button>
+
+                <button className="logout-btn" onClick={handleLogout}>
+                  <FiLogOut size={16} />
+                  Logout
+                </button>
+              </div>
+            ) : (
+              <button className="login-btn" onClick={() => navigate('/login')}>
+                Log In
+              </button>
+            )}
+          </>
         )}
       </div>
     </nav>

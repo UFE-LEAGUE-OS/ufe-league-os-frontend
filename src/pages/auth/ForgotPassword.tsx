@@ -41,6 +41,32 @@ const features = [
 
 type RecoveryStep = 'request' | 'code' | 'password' | 'success';
 
+type ApiError = {
+  response?: {
+    data?: Record<string, string | string[] | undefined>;
+  };
+};
+
+function firstApiMessage(value?: string | string[]) {
+  if (Array.isArray(value)) return value[0];
+  return value;
+}
+
+function getResetErrorMessage(error: unknown) {
+  const data = (error as ApiError).response?.data;
+
+  return (
+    firstApiMessage(data?.detail) ||
+    firstApiMessage(data?.error) ||
+    firstApiMessage(data?.message) ||
+    firstApiMessage(data?.email) ||
+    firstApiMessage(data?.code) ||
+    firstApiMessage(data?.password) ||
+    firstApiMessage(data?.confirm_password) ||
+    'Something went wrong. Please check the details and try again.'
+  );
+}
+
 function PasswordStatusDisplay({
   status,
   message,
@@ -85,6 +111,8 @@ export default function ForgotPassword() {
   const [isVerifyingCode, setIsVerifyingCode] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+  const [infoMessage, setInfoMessage] = useState('');
   const { validation, validatePassword, resetValidation } = usePasswordValidation();
 
   const resetCodeStep = () => {
@@ -96,11 +124,16 @@ export default function ForgotPassword() {
     setShowPassword(false);
     setShowConfirmPassword(false);
     setSuccessMessage('');
+    setErrorMessage('');
+    setInfoMessage('');
     resetValidation();
   };
 
   const handleEmailChange = (event: ChangeEvent<HTMLInputElement>) => {
     setEmail(event.target.value);
+
+    setErrorMessage('');
+    setInfoMessage('');
 
     if (step !== 'request' || hasRequestedCode) {
       resetCodeStep();
@@ -110,17 +143,51 @@ export default function ForgotPassword() {
   const handleRequestCode = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    setIsRequesting(true);
-    setHasRequestedCode(true);
-    setStep('code');
-    setIsRequesting(false);
+    const normalizedEmail = email.trim().toLowerCase();
 
-    void requestPasswordReset({ email: email.trim().toLowerCase() }).catch(() => undefined);
+    setErrorMessage('');
+    setInfoMessage('');
+
+    if (!normalizedEmail || !normalizedEmail.includes('@')) {
+      setErrorMessage('Please enter a valid email address.');
+      return;
+    }
+
+    setIsRequesting(true);
+
+    try {
+      const response = await requestPasswordReset({ email: normalizedEmail });
+
+      setHasRequestedCode(true);
+      setStep('code');
+      setInfoMessage(
+        typeof response.data?.message === 'string'
+          ? response.data.message
+          : 'A password reset code has been sent to your email address.',
+      );
+    } catch (error) {
+      setErrorMessage(getResetErrorMessage(error));
+      setHasRequestedCode(false);
+      setStep('request');
+    } finally {
+      setIsRequesting(false);
+    }
   };
 
   const handleVerifyCode = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
+    const normalizedCode = normalizeCodeInput(resetCode);
+
+    setErrorMessage('');
+    setInfoMessage('');
+
+    if (normalizedCode.length !== 6) {
+      setErrorMessage('Enter the 6-digit reset code sent to your email.');
+      return;
+    }
+
+    setResetCode(normalizedCode);
     setIsVerifyingCode(true);
     setStep('password');
     setIsVerifyingCode(false);
@@ -135,34 +202,54 @@ export default function ForgotPassword() {
   const handleResetPassword = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (validation.disabled) return;
+    setErrorMessage('');
+    setInfoMessage('');
+
+    if (validation.disabled) {
+      setErrorMessage(validation.message || 'Please enter a stronger password.');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setErrorMessage('Passwords do not match.');
+      return;
+    }
 
     setIsResetting(true);
-    setSuccessMessage('Password reset successful. Redirecting to login...');
-    setStep('success');
-    setResetCode('');
-    setNewPassword('');
-    setConfirmPassword('');
-    setHasRequestedCode(false);
-
-    window.setTimeout(() => {
-      navigate('/login', { replace: true });
-    }, 2000);
 
     try {
-      await resetPassword({
+      const response = await resetPassword({
         email: email.trim().toLowerCase(),
         code: resetCode.trim(),
         password: newPassword,
         confirm_password: confirmPassword,
       });
-    } catch {
-      return;
+
+      setSuccessMessage(
+        typeof response.data?.message === 'string'
+          ? response.data.message
+          : 'Password reset successful. Redirecting to login...',
+      );
+      setStep('success');
+      setResetCode('');
+      setNewPassword('');
+      setConfirmPassword('');
+      setHasRequestedCode(false);
+
+      window.setTimeout(() => {
+        navigate('/login', {
+          replace: true,
+          state: {
+            message: 'Password reset successful. Please log in with your new password.',
+          },
+        });
+      }, 1800);
+    } catch (error) {
+      setErrorMessage(getResetErrorMessage(error));
     } finally {
       setIsResetting(false);
     }
   };
-
   return (
     <PageShell className="auth-page login-page">
       <main className="login-layout">
@@ -205,6 +292,18 @@ export default function ForgotPassword() {
                 Forgot <span>Password?</span>
               </h2>
             </header>
+
+            {errorMessage ? (
+              <p className="auth-message auth-message-error" role="alert">
+                {errorMessage}
+              </p>
+            ) : null}
+
+            {infoMessage ? (
+              <p className="auth-message auth-message-success" role="status" aria-live="polite">
+                {infoMessage}
+              </p>
+            ) : null}
 
             {step === 'request' ? (
               <form className="login-form register-form" onSubmit={handleRequestCode} noValidate autoComplete="off">
