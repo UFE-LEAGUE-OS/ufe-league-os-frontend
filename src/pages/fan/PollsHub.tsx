@@ -34,6 +34,24 @@ const livePolls = [
     timer: "14h Left",
     icon: <AccessTimeIcon fontSize="small" />,
   },
+  {
+    id: 3,
+    question: "Who will be Player of the Match in tonight's derby?",
+    timer: "Closes in 5 hrs",
+    icon: <AccessTimeIcon fontSize="small" />,
+  },
+  {
+    id: 4,
+    question: "Which stadium has the best matchday atmosphere this season?",
+    timer: "Closes in 1 day",
+    icon: <AccessTimeIcon fontSize="small" />,
+  },
+  {
+    id: 5,
+    question: "Should the league introduce a mid-season transfer window?",
+    timer: "Closes in 3 days",
+    icon: <AccessTimeIcon fontSize="small" />,
+  },
 ];
 
 const filters = ["All", "Rugby", "Basketball"];

@@ -51,7 +51,6 @@
 .page {
   position: relative;
   z-index: 1;
-  padding: 22px 0 54px;
 }
 
 .topbar {
@@ -62,8 +61,8 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  width: 100%; /* Ensure topbar spans full width */
-  padding: 0 1.5rem; /* Add padding to align content inside */
+  width: 100%;
+  padding: 1rem 1.5rem; /* Add consistent padding inside the nav */
 }
 
 .topbar-compact {
@@ -1113,14 +1112,14 @@
 /* Mobile-first: Base styles are for mobile (< 768px) */
 
 .topbar {
-  padding: 1rem; /* Keep mobile padding */
+  /* On mobile, use slightly less horizontal padding */
+  padding: 1rem;
 }
 
 .topnav {
-  order: 3; /* Move nav to the next line */
-  width: 100%;
+  order: 0; /* Keep nav on the same line */
   justify-content: flex-start;
-  padding-bottom: 8px;
+  flex: 1; /* Allow the nav to take up available space */
   overflow-x: auto; /* Enable horizontal scrolling */
   -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
   scrollbar-width: none; /* Hide scrollbar for Firefox */
