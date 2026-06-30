@@ -17,7 +17,7 @@ type FormState = {
   agreeTerms: boolean;
 };
 
-const SPORTS = ['Rugby', 'Football', 'Basketball', 'Cricket', 'Netball', 'Athletics'];
+const SPORTS = ['Rugby', 'Football', 'Basketball'];
 const AMOUNTS = ['UGX 500,000', 'UGX 1,000,000', 'UGX 2,500,000', 'UGX 5,000,000', 'UGX 10,000,000+', 'To be discussed'];
 
 export default function SponsorIndividual() {
