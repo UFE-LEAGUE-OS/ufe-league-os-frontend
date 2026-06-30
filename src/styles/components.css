@@ -62,7 +62,8 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  margin: 0 auto;
+  width: 100%; /* Ensure topbar spans full width */
+  padding: 0 1.5rem; /* Add padding to align content inside */
 }
 
 .topbar-compact {
@@ -1112,7 +1113,7 @@
 /* Mobile-first: Base styles are for mobile (< 768px) */
 
 .topbar {
-  padding: 1rem;
+  padding: 1rem; /* Keep mobile padding */
 }
 
 .topnav {

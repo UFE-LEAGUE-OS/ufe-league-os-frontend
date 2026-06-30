@@ -113,8 +113,6 @@ body {
   width: 100%;
   margin-left: auto;
   margin-right: auto;
-  padding-left: 1.5rem; /* 24px */
-  padding-right: 1.5rem; /* 24px */
 }
 
 /* Make images and media responsive */
@@ -158,7 +156,5 @@ a {
     font-size: 14px; /* Smaller for mobile phones */
   }
   .container {
-    padding-left: 1rem; /* 16px */
-    padding-right: 1rem; /* 16px */
   }
 }
