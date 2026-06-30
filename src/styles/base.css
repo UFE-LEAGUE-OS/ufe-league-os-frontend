@@ -81,16 +81,26 @@ a {
   color: #fff;
 }
 
-/* Responsive base font size */
-@media (max-width: 1024px) {
-  :root {
-    font-size: 15px; /* Slightly smaller for tablets */
-  }
+/* --- Responsive Breakpoints --- */
+
+/* Tablet and smaller desktops */
+@media (min-width: 769px) {
   .container {
     max-width: 960px;
   }
+  :root {
+    font-size: 15px; /* Slightly smaller for tablets */
+  }
 }
 
+/* Large desktops */
+@media (min-width: 1280px) {
+  .container {
+    max-width: 1200px;
+  }
+}
+
+/* Mobile devices */
 @media (max-width: 768px) {
   :root {
     font-size: 14px; /* Smaller for mobile phones */
@@ -98,11 +108,5 @@ a {
   .container {
     padding-left: 1rem; /* 16px */
     padding-right: 1rem; /* 16px */
-  }
-}
-
-@media (min-width: 1280px) {
-  .container {
-    max-width: 1200px;
   }
 }
