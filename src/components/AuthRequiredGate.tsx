@@ -95,6 +95,9 @@ function detectAction(target: Element): AuthAction | null {
 
   if (!actionableElement) return null;
 
+  // Skip elements explicitly marked as not requiring auth
+  if (actionableElement.hasAttribute('data-auth-skip')) return null;
+
   const explicitAction = actionableElement.getAttribute('data-auth-action') as AuthAction | null;
 
   if (explicitAction) return explicitAction;
