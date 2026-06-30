@@ -47,7 +47,7 @@ const Sidebar = ({ activeItem = "Polls Hub" }: SidebarProps) => {
               <ListItemIcon className="sidebar-item-icon">{item.icon}</ListItemIcon>
               <ListItemText
                 primary={item.label}
-                slotProps={{ primary: { className: "sidebar-item-label" } }}
+                primaryTypographyProps={{ className: "sidebar-item-label" }}
               />
             </ListItemButton>
           </ListItem>
@@ -76,7 +76,7 @@ const Sidebar = ({ activeItem = "Polls Hub" }: SidebarProps) => {
               <ListItemIcon className="sidebar-item-icon">{item.icon}</ListItemIcon>
               <ListItemText
                 primary={item.label}
-                slotProps={{ primary: { className: "sidebar-item-label" } }}
+                primaryTypographyProps={{ className: "sidebar-item-label" }}
               />
             </ListItemButton>
           </ListItem>
