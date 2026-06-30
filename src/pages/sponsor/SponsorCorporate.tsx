@@ -23,7 +23,7 @@ type FormState = {
   agreeTerms: boolean;
 };
 
-const SPORTS = ['Rugby', 'Football', 'Basketball', 'Cricket', 'Netball', 'Athletics'];
+const SPORTS = ['Rugby', 'Football', 'Basketball'];
 const BUDGETS = ['UGX 5,000,000', 'UGX 10,000,000', 'UGX 25,000,000', 'UGX 50,000,000', 'UGX 100,000,000+', 'To be discussed'];
 const GOALS = ['Brand Visibility', 'Community Engagement', 'Employee Activation', 'Product/Service Promotion', 'CSR Initiative', 'Matchday Activation', 'Digital/Social Media', 'Kit/Jersey Sponsorship'];
 

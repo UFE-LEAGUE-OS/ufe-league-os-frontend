@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import styles from './Sponsor.module.css';
 import qStyles from './SponsorQuickForm.module.css';
 
-const SPORTS = ['Rugby', 'Football', 'Basketball', 'Cricket', 'Netball', 'Athletics'];
+const SPORTS = ['Rugby', 'Football', 'Basketball'];
 
 export default function SponsorQuickForm() {
   const navigate = useNavigate();
