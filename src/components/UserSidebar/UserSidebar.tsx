@@ -18,6 +18,7 @@ import {
     User,
     Users,
     Swords,
+    Handshake,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { NavLink } from "react-router-dom";
@@ -56,6 +57,7 @@ const sidebarSections: SidebarSection[] = [
             { label: "My Tickets", href: "/dashboard/tickets", icon: Ticket },
             { label: "My Memberships", href: "/dashboard/memberships", icon: Trophy },
             { label: "Fantasy", href: "/fantasy", icon: Swords },
+            { label: "Become a Sponsor", href: "/sponsor/apply", icon: Handshake },
             { label: "Watchlist", href: "/dashboard/watchlist", icon: Heart },
             { label: "News Feed", href: "/dashboard/news", icon: Newspaper },
             { label: "Rewards & Benefits", href: "/profile/clubs", icon: Star },

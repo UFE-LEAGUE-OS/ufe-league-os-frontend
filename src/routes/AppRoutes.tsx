@@ -57,6 +57,10 @@ import FantasySportSelect from '../pages/fantasy/FantasySportSelect';
 import FantasyCreateJoin from '../pages/fantasy/FantasyCreateJoin';
 import FantasyTeamBuilder from '../pages/fantasy/FantasyTeamBuilder';
 import FantasyPlayerMarket from '../pages/fantasy/FantasyPlayerMarket';
+import SponsorApply from '../pages/sponsor/SponsorApply';
+import SponsorIndividual from '../pages/sponsor/SponsorIndividual';
+import SponsorCorporate from '../pages/sponsor/SponsorCorporate';
+import SponsorQuickForm from '../pages/sponsor/SponsorQuickForm';
 import ClubMembershipDetailPage from '../pages/memberships/ClubMembershipDetailPage';
 import MembershipCheckoutPage from '../pages/memberships/MembershipCheckoutPage';
 import MembershipSuccessPage from '../pages/memberships/MembershipSuccessPage';
@@ -159,6 +163,12 @@ export default function AppRoutes() {
                 <Route path="/results" element={<Results />} />
                 <Route path="/support" element={<Support />} />
                 <Route path="/about" element={<AboutUs />} />
+
+                {/* Sponsor routes — public entry, forms inside authenticated layout */}
+                <Route path="/sponsor/apply" element={<SponsorApply />} />
+                <Route path="/sponsor/individual-quick" element={<SponsorQuickForm />} />
+                <Route path="/sponsor/individual" element={<SponsorIndividual />} />
+                <Route path="/sponsor/corporate" element={<SponsorCorporate />} />
                 <Route path="/payments" element={<Payments />} />
             </Routes>
         </Router>
