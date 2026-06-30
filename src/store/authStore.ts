@@ -1,7 +1,24 @@
 import { create } from 'zustand';
 import { removeRefreshToken, removeToken, setRefreshToken, setToken } from '../utils/tokenManager.js';
 
-type AuthUser = Record<string, unknown> | null;
+export type UserRole =
+  | 'fan'
+  | 'club_admin'
+  | 'league_admin'
+  | 'union_admin'
+  | 'referee'
+  | 'ticketing_officer'
+  | 'sponsor'
+  | 'super_admin';
+
+export type AuthUser = {
+  id?: string | number;
+  email?: string;
+  full_name?: string;
+  first_name?: string;
+  role?: UserRole;
+  [key: string]: unknown;
+} | null;
 
 type AuthStore = {
   user: AuthUser;

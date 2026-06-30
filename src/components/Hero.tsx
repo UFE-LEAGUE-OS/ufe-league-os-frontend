@@ -25,7 +25,7 @@ function Hero() {
             <button className="btn-outline" onClick={() => navigate('/competitions')}>
               Browse Competitions <span className="btn-arrow"> </span>
             </button>
-            <button className="btn-outline">Become a sponsor</button>
+            <button className="btn-outline" onClick={() => navigate('/sponsor/apply')}>Become a sponsor</button>
             {isAuthenticated ? (
               <button className="btn-outline" onClick={() => navigate('/dashboard/fan')}>
                 Go to Dashboard

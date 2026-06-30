@@ -1,11 +1,11 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../styles/pages/landing/TicketsLandingPage.css';
 import BackButton from '../../components/BackButton';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 import { getToken } from '../../utils/tokenManager.js';
-import logo from '../../assets/logo.png'; 
+import logo from '../../assets/logo.png';
 import kccaLogo from '../../assets/kcca.png';
 import vipersLogo from '../../assets/Vipers_SC.jpg';
 import scVillaLogo from '../../assets/sc-villa.png';
@@ -13,8 +13,6 @@ import kobsLogo from '../../assets/kobs.jpg';
 import piratesLogo from '../../assets/standic-pirates.png';
 import platinumLogo from '../../assets/platinum-heathens.jpg';
 import blazersLogo from '../../assets/nam-blazers.png';
-
-type TicketTier = 'all' | 'vip' | 'ordinary';
 
 type Match = {
   id: string;
@@ -164,6 +162,8 @@ const matches: Match[] = [
   },
 ];
 
+// ── Sub-components ────────────────────────────────────────────────────────────
+
 function TeamBadge({ name, logo }: { name: string; logo: string }) {
   return (
     <div className="team-badge">
@@ -202,8 +202,8 @@ function LoginPromptModal({
         <img src={logo} alt="League OS" className="modal-logo" />
         <h2 className="modal-title">Sign in to buy tickets</h2>
         <p className="modal-body">
-          Create an account or log in to purchase tickets, manage your bookings, and get match-day
-          updates.
+          Create an account or log in to purchase tickets, manage your bookings, and get
+          match-day updates.
         </p>
         <div className="modal-actions">
           <button className="btn-primary" onClick={onLogin}>
@@ -219,10 +219,11 @@ function LoginPromptModal({
   );
 }
 
+// ── Page ──────────────────────────────────────────────────────────────────────
+
 export default function TicketsLandingPage() {
   const navigate = useNavigate();
   const [activeLeague, setActiveLeague] = useState('All Leagues');
-  const [activeTier, setActiveTier] = useState<TicketTier>('all');
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const isLoggedIn = Boolean(getToken());
 
@@ -233,34 +234,27 @@ export default function TicketsLandingPage() {
     'National Basketball League',
   ];
 
-  const filteredMatches = matches.filter((match) => {
-    return activeLeague === 'All Leagues' || match.league === activeLeague;
-  });
+  const filteredMatches = matches.filter(
+    (match) => activeLeague === 'All Leagues' || match.league === activeLeague,
+  );
 
-  const handleBuyTicket = (matchId: string, tier: 'vip' | 'ordinary') => {
+  const handleBuyTicket = (matchId: string) => {
     if (!getToken()) {
       setShowLoginPrompt(true);
       return;
     }
-
-    navigate(`/tickets/${matchId}/checkout?tier=${tier}`);
+    navigate(`/tickets/${matchId}/checkout`);
   };
 
-  const formatPrice = (price: number) => `UGX ${price.toLocaleString()}`;
+  const getSeatsLeft = (match: Match) =>
+    `${match.vipAvailable + match.ordinaryAvailable} seats left`;
 
-      return (
-  <div
-    className="tickets-page"
-    
-  >
-    
-
-
-
+  return (
+    <div className="tickets-page">
       <Navbar />
 
       <main className="tickets-main">
-        {/* Page actions: Back + Sign Up (page-specific, not in the global navbar) */}
+        {/* Page actions */}
         <div className="tickets-page-actions">
           <BackButton />
           {isLoggedIn ? (
@@ -288,7 +282,7 @@ export default function TicketsLandingPage() {
           <p>Browse and purchase tickets for upcoming matches.</p>
         </div>
 
-        {/* Filters */}
+        {/* League Filters */}
         <div className="tickets-filters">
           <div className="league-filters">
             {leagues.map((league) => (
@@ -298,18 +292,6 @@ export default function TicketsLandingPage() {
                 onClick={() => setActiveLeague(league)}
               >
                 {league}
-              </button>
-            ))}
-          </div>
-
-          <div className="tier-filters">
-            {(['all', 'vip', 'ordinary'] as TicketTier[]).map((tier) => (
-              <button
-                key={tier}
-                className={`tier-btn ${activeTier === tier ? 'tier-btn-active' : ''}`}
-                onClick={() => setActiveTier(tier)}
-              >
-                {tier === 'all' ? 'All Tickets' : tier === 'vip' ? '⭐ VIP' : 'Ordinary'}
               </button>
             ))}
           </div>
@@ -342,52 +324,23 @@ export default function TicketsLandingPage() {
                 {match.venue}
               </div>
 
-              {/* Ticket Tiers */}
-              <div className="ticket-tiers">
-                {(activeTier === 'all' || activeTier === 'vip') && (
-                  <div className="ticket-tier ticket-vip">
-                    <div className="tier-info">
-                      <span className="tier-label">⭐ VIP</span>
-                      <span className="tier-seats">{match.vipAvailable} seats left</span>
-                    </div>
-                    <div className="tier-price-row">
-                      <span className="tier-price">{formatPrice(match.vipPrice)}</span>
-                      <button
-                        className="buy-btn buy-btn-vip"
-                        onClick={() => handleBuyTicket(match.id, 'vip')}
-                      >
-                        Buy VIP
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {(activeTier === 'all' || activeTier === 'ordinary') && (
-                  <div className="ticket-tier ticket-ordinary">
-                    <div className="tier-info">
-                      <span className="tier-label">🎟 Ordinary</span>
-                      <span className="tier-seats">{match.ordinaryAvailable} seats left</span>
-                    </div>
-                    <div className="tier-price-row">
-                      <span className="tier-price">{formatPrice(match.ordinaryPrice)}</span>
-                      <button
-                        className="buy-btn buy-btn-ordinary"
-                        onClick={() => handleBuyTicket(match.id, 'ordinary')}
-                      >
-                        Buy Ticket
-                      </button>
-                    </div>
-                  </div>
-                )}
+              {/* Seats + Buy Ticket stacked */}
+              <div className="match-buy-row">
+                <span className="match-buy-seats">{getSeatsLeft(match)}</span>
+                <button
+                  className="buy-btn buy-btn-ordinary"
+                  onClick={() => handleBuyTicket(match.id)}
+                >
+                  Buy Ticket
+                </button>
               </div>
             </div>
           ))}
         </div>
       </main>
 
-       <Footer />
+      <Footer />
 
-        {/* Login Prompt Modal */}
       {showLoginPrompt && (
         <LoginPromptModal
           onClose={() => setShowLoginPrompt(false)}

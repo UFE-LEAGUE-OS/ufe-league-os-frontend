@@ -1,6 +1,6 @@
 import "../styles/pages/NewsPage.css"
 import { useNavigate, useLocation } from "react-router-dom";
-import { FiBell, FiUser, FiSearch } from "react-icons/fi";
+
 import { FaArrowRight } from "react-icons/fa6";
 import logo from "../assets/logo.png";
 import heroImg from "../assets/basketball-card.png";
@@ -17,37 +17,36 @@ export default function NewsSection() {
 
     return (
         <div className="news-page">
-            <nav className="news-navbar">
-                <div className="navbar-logo" onClick={() => navigate('/')}
-                    style={{ cursor: 'pointer' }}><img src={logo} alt="Logo" /></div>
-                <div className="navbar-links">
-                    <li>Overview</li>
-                    <li>Clubs</li>
-                    <li onClick={() => navigate('/competitions')}>Competitions</li>
-                    <li>Unions</li>
-                    <li className={location.pathname === "/news" ? "active" : ""}>News</li>
+            <header className="topbar">
+                {/* Logo */}
+                <a href="/" className="brand-lockup" onClick={(e) => { e.preventDefault(); navigate('/'); }}>
+                    <img src={logo} alt="Logo" className="league-logo-image league-logo-image-wordmark" />
+                </a>
+
+                {/* Links */}
+                <nav className="topnav">
+                    <a href="#">Overview</a>
+                    <a href="#">Clubs</a>
+                    <a href="/competitions" onClick={(e) => { e.preventDefault(); navigate('/competitions'); }}>Competitions</a>
+                    <a href="#">Unions</a>
+                    <a href="/news" className={location.pathname === "/news" ? "active" : ""} onClick={(e) => { e.preventDefault(); navigate('/news'); }}>
+                        News
+                    </a>
+                </nav>
+
+                {/* RIGHT SIDE ACTIONS */}
+                <div className="topbar-auth-actions">
+                    <button
+                        className="button button-ghost"
+                        onClick={() => navigate('/login')}
+                    >
+                        Login
+                    </button>
+                    <button className="button button-primary" onClick={() => navigate('/register')}>
+                        Sign Up
+                    </button>
                 </div>
-                <div className="navbar-icons">
-                    <div className="search-container">
-                       
-                        <FiSearch className="icon" />
-                    </div>
-
-                    <div className="notification-wrapper">
-                        <FiBell className="icon" />
-
-                    </div>
-
-                    <div className="profile-wrapper">
-
-                        <FiUser
-                            className="icon"
-
-                        />
-
-                    </div>
-                </div>
-            </nav>
+            </header>
 
             <section className="hero-section">
                 <div className="hero-image">
@@ -113,7 +112,7 @@ export default function NewsSection() {
                     <div className="hero-card">
                         <div className="results-header">
                             <h3>Rugby Results</h3>
-                            <button className="view-table">View full table</button>
+                            <button className="view-table" onClick={() => navigate("/results")}>View full table</button>
                         </div>
                         <div className="results-table">
                             <div className="results-row header">

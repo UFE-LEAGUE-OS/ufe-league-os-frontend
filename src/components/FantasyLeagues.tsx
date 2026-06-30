@@ -3,8 +3,10 @@ import uplLogo from '../assets/star-times-upl.svg';
 import rugbyLogo from '../assets/nile-rugby.svg';
 import smackLogo from '../assets/smack-league.svg';
 import nblLogo from '../assets/national-basketball.svg';
+import logo from '../assets/logo.png';
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+
 
 const leagues = [
   {
@@ -34,84 +36,215 @@ const leagues = [
 ];
 
 
-function FantasyLeagues() {
-  
+// POPUP COMPONENT
+function LoginPromptModal({
+  onClose,
+  onLogin,
+  onRegister,
+}: {
+  onClose: () => void;
+  onLogin: () => void;
+  onRegister: () => void;
+}) {
 
-const [showPopup, setShowPopup] = useState(false);
-const navigate = useNavigate();
-
-useEffect(() => {
-  if (showPopup) {
-    document.body.style.overflow = "hidden"; // stop scrolling
-  } else {
-    document.body.style.overflow = "auto"; // allow scrolling again
-  }
-
-  return () => {
-    document.body.style.overflow = "auto";
-  };
-}, [showPopup]);
-  
   return (
-    
-    <section className="fantasy-leagues">
-      <div className="section-header">
-        <h2 className="section-title">FANTASY PREMIER LEAGUES</h2>
-        <a href="#" className="view-all-link">View All Fantasy Leagues</a>
+    <div 
+      className="modal-overlay" 
+      onClick={onClose}
+    >
+
+      <div 
+        className="modal-card"
+        onClick={(e) => e.stopPropagation()}
+      >
+
+        <button 
+          className="modal-close"
+          onClick={onClose}
+        >
+          ✕
+        </button>
+
+
+        <img 
+          src={logo}
+          alt="League OS"
+          className="modal-logo"
+        />
+
+
+        <h2 className="modal-title">
+          Login Required
+        </h2>
+
+
+        <p className="modal-body">
+          You need to be logged in to join a fantasy league.
+          Create an account or login to continue.
+        </p>
+
+
+        <div className="modal-actions">
+
+          <button 
+            className="btn-primary"
+            onClick={onLogin}
+          >
+            Login
+          </button>
+
+
+          <button 
+            className="btn-secondary"
+            onClick={onRegister}
+          >
+            Create Account
+          </button>
+
+        </div>
+
+
+        <p className="modal-footnote">
+          Join fantasy leagues and compete with other fans.
+        </p>
+
       </div>
+
+    </div>
+  );
+}
+
+
+
+function FantasyLeagues() {
+
+  const [showPopup, setShowPopup] = useState(false);
+  const navigate = useNavigate();
+
+
+  useEffect(() => {
+
+    if(showPopup){
+      document.body.style.overflow = "hidden";
+    }
+    else{
+      document.body.style.overflow = "auto";
+    }
+
+
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+
+  }, [showPopup]);
+
+
+
+  return (
+
+    <section className="fantasy-leagues">
+
+
+      <div className="section-header">
+
+        <h2 className="section-title">
+          FANTASY PREMIER LEAGUES
+        </h2>
+
+        <a href="#" className="view-all-link">
+          View All Fantasy Leagues
+        </a>
+
+      </div>
+
+
 
       <div className="fantasy-row">
-        {leagues.map((league) => (
-          <div className="fantasy-card" key={league.name}>
+
+        {leagues.map((league)=>(
+
+          <div 
+            className="fantasy-card" 
+            key={league.name}
+          >
+
             <div className="fantasy-header">
+
               <div className="fantasy-logo">
-                <img src={league.logo} alt={league.name} />
+                <img 
+                  src={league.logo} 
+                  alt={league.name}
+                />
               </div>
+
+
               <div>
-                <h4 className="fantasy-name">{league.name}</h4>
-                <p className="fantasy-season">{league.season}</p>
+
+                <h4 className="fantasy-name">
+                  {league.name}
+                </h4>
+
+                <p className="fantasy-season">
+                  {league.season}
+                </p>
+
               </div>
+
             </div>
-            <p className="fantasy-desc">{league.desc}</p>
-            <button className="join-league-btn"  onClick={() => setShowPopup(true)}>Join League</button>
+
+
+
+            <p className="fantasy-desc">
+              {league.desc}
+            </p>
+
+
+
+            <button 
+              className="join-league-btn"
+              onClick={() => setShowPopup(true)}
+            >
+              Join League
+            </button>
+
+
           </div>
+
         ))}
-        <button className="fantasy-arrow">→</button>
+
+
+
+        {/*<button className="fantasy-arrow">
+          →
+        </button>*/}
+
+
       </div>
+
+
 
 
       {showPopup && (
-  <div className="popup-overlay">
-    <div className="popup-card">
-      <h3>Login Required</h3>
-      <p>
-        You need to be logged in to join fantasy league.
-      </p>
 
-      <div className="popup-actions">
-        <button className="log" onClick={() => navigate("/login")}>
-          Login
-        </button>
+        <LoginPromptModal
 
-        <button className="sign" onClick={() => navigate("/register")}>
-          Sign Up
-        </button>
-      </div>
+          onClose={() => setShowPopup(false)}
 
-      <button
-        className="close-btn"
-        onClick={() => setShowPopup(false)}
-      >
-        X
-      </button>
-    </div>
-  </div>
-)}
+          onLogin={() => navigate("/login")}
+
+          onRegister={() => navigate("/register")}
+
+        />
+
+      )}
+
+
+
     </section>
 
-
-
   );
+
 }
+
 
 export default FantasyLeagues;

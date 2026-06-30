@@ -582,3 +582,20 @@
     min-height: 54px;
   }
 }
+
+.login-back-wrap {
+  padding: 20px 32px 0;
+}
+
+/* Tighten the gap between the back button and the main layout on large screens */
+@media (min-width: 900px) {
+  .login-back-wrap {
+    padding: 24px 40px 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .login-back-wrap {
+    padding: 16px 20px 0;
+  }
+}

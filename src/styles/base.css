@@ -1,6 +1,88 @@
+/* --- Self-Hosted Fonts --- */
+
+/* inter-regular - latin */
+@font-face {
+  font-display: swap;
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  src: url('/fonts/inter-v13-latin-regular.woff2') format('woff2');
+}
+/* inter-500 - latin */
+@font-face {
+  font-display: swap;
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  src: url('/fonts/inter-v13-latin-500.woff2') format('woff2');
+}
+/* inter-600 - latin */
+@font-face {
+  font-display: swap;
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  src: url('/fonts/inter-v13-latin-600.woff2') format('woff2');
+}
+/* inter-700 - latin */
+@font-face {
+  font-display: swap;
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  src: url('/fonts/inter-v13-latin-700.woff2') format('woff2');
+}
+
+/* league-spartan-800 - latin */
+@font-face {
+  font-display: swap;
+  font-family: 'League Spartan';
+  font-style: normal;
+  font-weight: 800;
+  src: url('/fonts/league-spartan-v11-latin-800.woff2') format('woff2');
+}
+/* league-spartan-800italic - latin */
+@font-face {
+  font-display: swap;
+  font-family: 'League Spartan';
+  font-style: italic;
+  font-weight: 800;
+  src: url('/fonts/league-spartan-v11-latin-800italic.woff2') format('woff2');
+}
+
+/* space-grotesk-600 - latin */
+@font-face {
+  font-display: swap;
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 600;
+  src: url('/fonts/space-grotesk-v16-latin-600.woff2') format('woff2');
+}
+
+h1,
+h2 {
+  font-family: 'League Spartan';
+  font-weight: 800;
+  font-style: italic;
+  /* Fluid typography for responsive headings */
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  line-height: 1.1;
+}
+
+h3,
+h4,
+h5,
+h6 {
+  font-family: 'Space Grotesk';
+  font-weight: 600;
+  /* Fluid typography for responsive subheadings */
+  font-size: clamp(1.25rem, 3vw, 1.75rem);
+  line-height: 1.2;
+}
+
 :root {
   color-scheme: dark;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Inter';
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -16,6 +98,7 @@
 html,
 body,
 #root {
+  font-size: 16px; /* Base font size */
   min-height: 100%;
   margin: 0;
 }
@@ -23,6 +106,22 @@ body,
 body {
   min-height: 100svh;
   background: #050711;
+}
+
+/* A responsive container for page content */
+.container {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Make images and media responsive */
+img,
+video,
+picture,
+svg {
+  display: block;
+  max-width: 100%;
 }
 
 button,
@@ -37,4 +136,25 @@ a {
 ::selection {
   background: rgba(142, 84, 255, 0.35);
   color: #fff;
+}
+
+/* --- Responsive Breakpoints --- */
+
+/* Tablet and smaller desktops */
+@media (min-width: 769px) {
+  :root {
+    font-size: 15px; /* Slightly smaller for tablets */
+  }
+}
+
+/* Large desktops */
+@media (min-width: 1280px) {}
+
+/* Mobile devices */
+@media (max-width: 768px) {
+  :root {
+    font-size: 14px; /* Smaller for mobile phones */
+  }
+  .container {
+  }
 }

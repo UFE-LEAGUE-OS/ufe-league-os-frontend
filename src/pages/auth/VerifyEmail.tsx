@@ -6,7 +6,7 @@ import { useAuth } from '../../hooks/useAuth.js';
 import {
   getPendingOnboardingSession,
   clearPendingOnboardingSession,
-} from '../../utils/onboardingSession.js';
+} from '../../utils/onboardingSession.ts';
 import { getSafeAuthRedirect, LOGIN_ROUTE, PERSONALIZE_ROUTE } from '../../utils/authFlow.js';
 import '../../styles/pages/auth/verify-email.css';
 
