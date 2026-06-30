@@ -18,6 +18,9 @@ import {
     User,
     Users,
     Swords,
+    BarChart3,
+    HelpCircle,
+    Goal,
     Handshake,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -61,6 +64,14 @@ const sidebarSections: SidebarSection[] = [
             { label: "Watchlist", href: "/dashboard/watchlist", icon: Heart },
             { label: "News Feed", href: "/dashboard/news", icon: Newspaper },
             { label: "Rewards & Benefits", href: "/profile/clubs", icon: Star },
+        ],
+    },
+    {
+        title: "Fan Interaction",
+        links: [
+            { label: "Polls Hub", href: "/fan/polls", icon: BarChart3 },
+            { label: "Live Quizzes", href: "/fan/quizzes", icon: HelpCircle },
+            { label: "MVP Voting", href: "/fan/mvp-voting", icon: Goal },
         ],
     },
     {
