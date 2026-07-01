@@ -2,7 +2,7 @@
   min-height: 100%;
   background: #02040e;
   color: #fff;
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-body);
   display: flex;
   flex-direction: column;
 }
@@ -123,7 +123,7 @@
   gap: 7px;
 }
 .field label {
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;

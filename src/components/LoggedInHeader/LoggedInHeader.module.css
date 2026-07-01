@@ -168,7 +168,7 @@
 
 .userText small {
     color: rgba(255, 255, 255, 0.58);
-    font-size: 11px;
+    font-size: 14px;
     font-weight: 700;
 }
 
@@ -364,7 +364,7 @@
     background: rgba(123, 63, 242, 0.12);
     border: 1px solid rgba(123, 63, 242, 0.3);
 
-    font-size: 11px;
+    font-size: 14px;
     font-weight: 900;
     letter-spacing: 0.08em;
     text-transform: uppercase;

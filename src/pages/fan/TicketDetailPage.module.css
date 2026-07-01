@@ -195,7 +195,7 @@
 .heroMeta dt {
     margin-bottom: 8px;
     color: rgba(255, 255, 255, 0.54);
-    font-size: 11px;
+    font-size: 14px;
     font-weight: 900;
     text-transform: uppercase;
 }
@@ -347,7 +347,7 @@
 
 .qrPreview span {
     color: rgba(255, 255, 255, 0.58);
-    font-size: 11px;
+    font-size: 14px;
     font-weight: 900;
     text-transform: uppercase;
 }
@@ -531,7 +531,7 @@
 .recommendedMatch em {
     display: block;
     color: rgba(255, 255, 255, 0.72);
-    font-size: 11px;
+    font-size: 14px;
     font-style: normal;
     font-weight: 900;
 }
@@ -555,7 +555,7 @@
     display: block;
     margin: 4px 0 0;
     color: rgba(255, 255, 255, 0.58);
-    font-size: 11px;
+    font-size: 14px;
     font-weight: 700;
 }
 
@@ -570,7 +570,7 @@
     color: #ffffff;
     background: linear-gradient(135deg, #6725d8, #36106f);
     text-decoration: none;
-    font-size: 11px;
+    font-size: 14px;
     font-weight: 900;
 }
 

@@ -15,7 +15,7 @@ const categories = [
     route: '/sports/football',
   },
   {
-    title: 'Stringer together. United by rugby.',
+    title: 'Stronger together. United by rugby.',
     button: 'Explore Rugby',
     gradient: 'linear-gradient(135deg, #4C1D95, #7C3AED)',
     fadeColor: '#4C1D95',

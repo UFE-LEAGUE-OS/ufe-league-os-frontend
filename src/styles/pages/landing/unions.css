@@ -3,7 +3,7 @@
   min-height: 100vh;
   background: #03040B;
   color: #F8FAFC;
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-body);
 }
 
 /* ── Hero ── */

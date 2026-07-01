@@ -320,7 +320,7 @@
     color: var(--color-vivid-violet);
     background: rgba(123, 63, 242, 0.1);
 
-    font-size: 11px;
+    font-size: 14px;
     font-weight: 900;
 }
 
@@ -434,7 +434,7 @@
     display: inline-flex;
     align-items: center;
 
-    font-size: 11px;
+    font-size: 14px;
     font-weight: 900;
     text-transform: uppercase;
 }

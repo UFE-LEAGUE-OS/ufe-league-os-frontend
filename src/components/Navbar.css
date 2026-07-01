@@ -8,7 +8,7 @@
   background-color: #00030D;
   border-bottom: 1px solid #000000;
   color: #ffffff;
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-body);
   box-sizing: border-box;
   position: sticky;
   top: 0;
@@ -35,9 +35,9 @@
   flex: 1;
   list-style: none;
   gap: 30px;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-heading);
   font-weight: 600;
-  font-size: 15px;
+  font-size: 18px;
   margin: 0;
   padding: 0;
   flex-wrap: nowrap;
@@ -174,7 +174,7 @@
   outline: none;
   color: #ffffff;
   font-size: 14px;
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-body);
   font-weight: 500;
 }
 
@@ -406,7 +406,7 @@
   gap: 10px;
   color: rgba(255, 255, 255, 0.88);
   background: transparent;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-heading);
   font-size: 0.86rem;
   font-weight: 800;
   text-align: left;

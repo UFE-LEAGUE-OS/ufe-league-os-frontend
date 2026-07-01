@@ -73,7 +73,7 @@ export default function BasketballPage() {
   const navigate = useNavigate();
 
   return (
-    <div style={{ background: '#00030D', minHeight: '100vh', color: '#ffffff', fontFamily: 'Inter, sans-serif' }}>
+    <div style={{ background: '#00030D', minHeight: '100vh', color: '#ffffff', fontFamily: 'var(--font-body)' }}>
       <Navbar />
 
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 24px 0' }}>
@@ -91,7 +91,7 @@ export default function BasketballPage() {
           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(234,88,12,0.85) 0%, rgba(0,3,13,0.5) 100%)' }} />
           <div style={{ position: 'absolute', bottom: 36, left: 40 }}>
             <p style={{ color: '#fed7aa', fontSize: 12, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', margin: '0 0 8px' }}>FIBA · Uganda · Global</p>
-            <h1 style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', fontWeight: 900, margin: '0 0 10px', fontFamily: "'Arial Black', sans-serif", textShadow: '0 2px 8px rgba(0,0,0,0.4)' }}>Basketball</h1>
+            <h1 style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', fontWeight: 900, margin: '0 0 10px', fontFamily: "var(--font-heading)", textShadow: '0 2px 8px rgba(0,0,0,0.4)' }}>Basketball</h1>
             <p style={{ color: '#fed7aa', fontSize: '1.05rem', margin: 0, maxWidth: 480, lineHeight: 1.6 }}>
               Fast breaks. Big plays. Over 3.3 billion fans worldwide.
             </p>

@@ -445,7 +445,7 @@
 .section-title h2 {
   margin: 0;
   color: #fff;
-  font-family: 'League Spartan', sans-serif;
+  font-family: var(--font-heading);
   font-size: clamp(2rem, 4vw, 3.4rem);
   line-height: 0.95;
   letter-spacing: 0.03em;
@@ -474,7 +474,7 @@
 .verify-card h1 {
   margin: 0;
   color: #fff;
-  font-family: 'League Spartan', sans-serif;
+  font-family: var(--font-heading);
   font-size: clamp(3.5rem, 7vw, 6.9rem);
   line-height: 0.9;
   letter-spacing: 0.025em;
@@ -511,7 +511,7 @@
 .stat-card strong {
   display: block;
   color: #fff;
-  font-family: 'League Spartan', sans-serif;
+  font-family: var(--font-heading);
   font-size: 2.6rem;
   line-height: 1;
   margin-bottom: 10px;
@@ -1035,7 +1035,7 @@
   place-items: center;
   background: #8135fa;
   color: #ffffff;
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 900;
   line-height: 1;
   box-shadow: 0 0 0 2px #00030d;

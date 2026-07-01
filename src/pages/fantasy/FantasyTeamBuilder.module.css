@@ -3,7 +3,7 @@
   min-height: 100%;
   background: #02040e;
   color: #fff;
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-body);
   display: flex;
   flex-direction: column;
   position: relative;
@@ -96,7 +96,7 @@
   font-size: 24px; flex-shrink: 0;
 }
 .leagueBadge h1 {
-  font-family: 'Arial Black', Gadget, sans-serif;
+  font-family: var(--font-heading);
   font-size: clamp(1.4rem, 2.5vw, 2rem);
   font-weight: 900;
   margin: 0 0 4px;
@@ -171,14 +171,14 @@
 .squadSizeIcon { font-size: 22px; }
 .squadSizeCount { font-size: 20px; font-weight: 900; }
 .squadSizeCount strong { color: #8135FA; }
-.squadSizeRemaining { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 4px; }
+.squadSizeRemaining { font-size: 14px; color: rgba(255,255,255,0.4); margin-top: 4px; }
 
 /* Club limit */
 .clubLimit { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
 .clubLimitIcon { font-size: 22px; }
 .clubLimitNum strong { font-size: 26px; font-weight: 900; display: block; }
 .clubLimitNum span { font-size: 10px; color: rgba(255,255,255,0.4); }
-.topClubRow { font-size: 11px; color: rgba(255,255,255,0.55); }
+.topClubRow { font-size: 14px; color: rgba(255,255,255,0.55); }
 .topClubRow strong { color: #8135FA; }
 
 .viewMarketBtn {
@@ -269,7 +269,7 @@
   background: rgba(129,53,250,0.15);
   transform: scale(1.05);
 }
-.emptySlotPos { font-size: 11px; font-weight: 800; letter-spacing: 0.06em; }
+.emptySlotPos { font-size: 14px; font-weight: 800; letter-spacing: 0.06em; }
 .emptySlotPlus { font-size: 18px; color: rgba(255,255,255,0.4); margin-top: 2px; }
 
 /* ── Player card on pitch ── */
@@ -297,7 +297,7 @@
   background: rgba(239,68,68,0.7);
   border: none;
   color: #fff;
-  font-size: 11px;
+  font-size: 14px;
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   line-height: 1;
@@ -322,7 +322,7 @@
   width: 34px; height: 34px;
   border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  font-size: 11px; font-weight: 800;
+  font-size: 14px; font-weight: 800;
   color: #fff;
   margin-bottom: 4px;
   flex-shrink: 0;
@@ -356,7 +356,7 @@
   bottom: 3px; right: 3px;
   background: none; border: none;
   color: rgba(255,200,0,0.5);
-  font-size: 11px;
+  font-size: 14px;
   cursor: pointer;
   padding: 0;
   transition: color 0.15s;
@@ -385,7 +385,7 @@
   transition: background 0.15s;
 }
 .addPlayerBtn:hover { background: rgba(129,53,250,0.2); border-color: #8135FA; color: #fff; }
-.pitchHint { font-size: 11px; color: rgba(255,255,255,0.3); }
+.pitchHint { font-size: 14px; color: rgba(255,255,255,0.3); }
 
 /* ── RIGHT sidebar ── */
 .rightSidebar {
@@ -396,7 +396,7 @@
 }
 
 /* Summary rows */
-.summaryCount { font-size: 11px; font-weight: 800; color: #fff; }
+.summaryCount { font-size: 14px; font-weight: 800; color: #fff; }
 .summaryRow {
   display: flex;
   align-items: center;
@@ -433,7 +433,7 @@
 
 /* Validation */
 .validationList { display: flex; flex-direction: column; gap: 6px; }
-.valItem { font-size: 11px; display: flex; align-items: center; gap: 6px; }
+.valItem { font-size: 14px; display: flex; align-items: center; gap: 6px; }
 .valOk { color: #22c55e; }
 .valErr { color: #ef4444; }
 
@@ -524,7 +524,7 @@
   padding: 4px 10px;
   color: rgba(255,255,255,0.5);
   font: inherit;
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.15s;
