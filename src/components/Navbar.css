@@ -44,7 +44,6 @@
   cursor: pointer;
   white-space: nowrap;
   position: relative;
-  height: 75px;
   color: rgba(255,255,255,0.85);
   transition: color 0.2s ease, font-size 0.2s ease;
 }
@@ -132,6 +131,7 @@
 .login-btn:hover {
   background-color: #9b55fb;
   transform: scale(1.04);
+  color: white;
 }
 
 .search-bar {
