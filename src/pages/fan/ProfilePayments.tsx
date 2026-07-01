@@ -1,5 +1,4 @@
 import {
-    AlertTriangle,
     ArrowUpRight,
     Banknote,
     CheckCircle2,
@@ -8,10 +7,10 @@ import {
     FileText,
     RefreshCw,
     Search,
-    ShieldCheck,
     Ticket,
     Trophy,
     WalletCards,
+    X,
     XCircle,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -35,6 +34,7 @@ interface PaymentRecord {
     receiptNo: string;
     description: string;
     icon: LucideIcon;
+    logo?: string;
 }
 
 const payments: PaymentRecord[] = [
@@ -51,6 +51,7 @@ const payments: PaymentRecord[] = [
         receiptNo: "LOS-RCPT-0018",
         description: "Two VIP Stand tickets for Nile Special Rugby Premiership.",
         icon: Ticket,
+        logo: "/assets/clubs/kobs.jpg",
     },
     {
         id: "pay-kobs-gold",
@@ -65,6 +66,7 @@ const payments: PaymentRecord[] = [
         receiptNo: "LOS-RCPT-0042",
         description: "Annual Gold Membership with ticket discounts and club benefits.",
         icon: Trophy,
+        logo: "/assets/clubs/kobs.jpg",
     },
     {
         id: "pay-oilers-ticket",
@@ -79,6 +81,7 @@ const payments: PaymentRecord[] = [
         receiptNo: "Pending",
         description: "Pending checkout confirmation for basketball match ticket.",
         icon: Ticket,
+        logo: "/assets/clubs/city-oilers.png",
     },
     {
         id: "pay-pirates-bronze",
@@ -93,6 +96,7 @@ const payments: PaymentRecord[] = [
         receiptNo: "Not issued",
         description: "Payment failed before membership activation.",
         icon: Trophy,
+        logo: "/assets/clubs/black-pirates.png",
     },
     {
         id: "pay-sponsor-support",
@@ -107,6 +111,7 @@ const payments: PaymentRecord[] = [
         receiptNo: "LOS-RCPT-0011",
         description: "Fan sponsorship contribution for league campaign support.",
         icon: Banknote,
+        logo: "/assets/competitions/nile-rugby.jpg",
     },
     {
         id: "pay-refund-kcca",
@@ -121,6 +126,7 @@ const payments: PaymentRecord[] = [
         receiptNo: "LOS-RCPT-0008",
         description: "Refund processed after fixture postponement.",
         icon: RefreshCw,
+        logo: "/assets/clubs/kcca-fc.png",
     },
 ];
 
@@ -209,8 +215,15 @@ function WalletPaymentCenter() {
         };
     }, []);
 
+    const SelectedPaymentIcon = selectedPayment.icon;
+
     function handleDownloadReceipt(payment: PaymentRecord) {
         setSelectedPayment(payment);
+    }
+
+    function clearPaymentFilters() {
+        setSearchQuery("");
+        setActiveCategory("All");
     }
 
     return (
@@ -270,23 +283,6 @@ function WalletPaymentCenter() {
                 </article>
             </section>
 
-            <section className={styles.gatewayNotice}>
-                <span>
-                    <ShieldCheck size={28} strokeWidth={2.3} aria-hidden="true" />
-                </span>
-
-                <div>
-                    <h2>Payments are prepared for Flutterwave</h2>
-                    <p>
-                        The frontend is ready for mobile money, card payments, payment
-                        receipts and retry flows. Live backend connection will come after
-                        admin dashboards and payment creation flows are completed.
-                    </p>
-                </div>
-
-                <Link to="/profile/privacy">Security Settings</Link>
-            </section>
-
             <div className={styles.layoutGrid}>
                 <main className={styles.mainColumn}>
                     <section className={styles.panel}>
@@ -304,6 +300,17 @@ function WalletPaymentCenter() {
                                     value={searchQuery}
                                     onChange={(event) => setSearchQuery(event.target.value)}
                                 />
+
+                                {searchQuery ? (
+                                    <button
+                                        type="button"
+                                        className={styles.clearSearchButton}
+                                        aria-label="Clear payment search"
+                                        onClick={() => setSearchQuery("")}
+                                    >
+                                        <X size={15} strokeWidth={2.4} />
+                                    </button>
+                                ) : null}
                             </div>
                         </div>
 
@@ -318,25 +325,36 @@ function WalletPaymentCenter() {
                                     onClick={() => setActiveCategory(category)}
                                 >
                                     {category}
+                                    <span>
+                                        {category === "All"
+                                            ? payments.length
+                                            : payments.filter((payment) => payment.category === category)
+                                                  .length}
+                                    </span>
                                 </button>
                             ))}
                         </div>
 
                         <div className={styles.transactionList}>
-                            {filteredPayments.map((payment) => {
-                                const PaymentIcon = payment.icon;
+                            {filteredPayments.length > 0 ? (
+                                filteredPayments.map((payment) => {
+                                    const PaymentIcon = payment.icon;
 
-                                return (
+                                    return (
                                     <article
                                         className={styles.transactionCard}
                                         key={payment.id}
                                     >
                                         <span className={styles.transactionIcon}>
-                                            <PaymentIcon
-                                                size={26}
-                                                strokeWidth={2.3}
-                                                aria-hidden="true"
-                                            />
+                                            {payment.logo ? (
+                                                <img src={payment.logo} alt="" aria-hidden="true" />
+                                            ) : (
+                                                <PaymentIcon
+                                                    size={26}
+                                                    strokeWidth={2.3}
+                                                    aria-hidden="true"
+                                                />
+                                            )}
                                         </span>
 
                                         <div className={styles.transactionInfo}>
@@ -361,6 +379,7 @@ function WalletPaymentCenter() {
                                             <div className={styles.transactionActions}>
                                                 <button
                                                     type="button"
+                                                    className={styles.viewButton}
                                                     onClick={() => setSelectedPayment(payment)}
                                                 >
                                                     <FileText
@@ -372,7 +391,7 @@ function WalletPaymentCenter() {
                                                 </button>
 
                                                 {payment.status === "Failed" ? (
-                                                    <button type="button">
+                                                    <button type="button" className={styles.retryButton}>
                                                         <RefreshCw
                                                             size={15}
                                                             strokeWidth={2.3}
@@ -383,6 +402,7 @@ function WalletPaymentCenter() {
                                                 ) : (
                                                     <button
                                                         type="button"
+                                                        className={styles.receiptButton}
                                                         onClick={() => handleDownloadReceipt(payment)}
                                                     >
                                                         <Download
@@ -396,9 +416,39 @@ function WalletPaymentCenter() {
                                             </div>
                                         </div>
                                     </article>
-                                );
-                            })}
+                                    );
+                                })
+                            ) : (
+                                <section className={styles.paymentEmptyState}>
+                                    <Search size={38} strokeWidth={2.2} aria-hidden="true" />
+                                    <h2>No payments found</h2>
+                                    <p>
+                                        Try another search term, change the category filter, or clear
+                                        the filters to see all payment records.
+                                    </p>
+
+                                    <div>
+                                        <button type="button" onClick={clearPaymentFilters}>
+                                            Clear Filters
+                                        </button>
+                                        <Link to="/tickets">Buy Tickets</Link>
+                                    </div>
+                                </section>
+                            )}
                         </div>
+                    </section>
+
+                    <section className={styles.paymentPartnerBanner} aria-label="Sponsored payment partner placement">
+                        <div>
+                            <span>Sponsored</span>
+                            <h2>Payment Partner Slot</h2>
+                            <p>
+                                Use this space for Flutterwave, mobile money partners, bank offers,
+                                ticket cashback, membership discounts or sponsor payment campaigns.
+                            </p>
+                        </div>
+
+                        <Link to="/sponsor/apply">Explore Partner Options →</Link>
                     </section>
                 </main>
 
@@ -412,6 +462,25 @@ function WalletPaymentCenter() {
                             <div>
                                 <h2>Receipt Detail</h2>
                                 <p>Selected dummy payment receipt.</p>
+                            </div>
+                        </div>
+
+                        <div className={styles.receiptSummary}>
+                            <span className={styles.receiptLogo}>
+                                {selectedPayment.logo ? (
+                                    <img src={selectedPayment.logo} alt="" aria-hidden="true" />
+                                ) : (
+                                    <SelectedPaymentIcon
+                                        size={26}
+                                        strokeWidth={2.3}
+                                        aria-hidden="true"
+                                    />
+                                )}
+                            </span>
+
+                            <div>
+                                <strong>{selectedPayment.title}</strong>
+                                <p>{selectedPayment.category} • {selectedPayment.beneficiary}</p>
                             </div>
                         </div>
 
@@ -448,19 +517,6 @@ function WalletPaymentCenter() {
                             <Download size={17} strokeWidth={2.4} aria-hidden="true" />
                             Download Receipt
                         </button>
-                    </section>
-
-                    <section className={styles.warningCard}>
-                        <AlertTriangle size={42} strokeWidth={2.3} aria-hidden="true" />
-
-                        <div>
-                            <h2>Payment flow note</h2>
-                            <p>
-                                This is still a frontend dummy-data screen. Real payments should
-                                only be connected after the club, league and admin dashboards can
-                                create payable items.
-                            </p>
-                        </div>
                     </section>
 
                     <section className={styles.panel}>

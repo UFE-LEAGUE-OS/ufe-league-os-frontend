@@ -1,6 +1,7 @@
 import {
     Bell,
     CalendarDays,
+    Check,
     Crown,
     Heart,
     Plus,
@@ -10,43 +11,117 @@ import {
     Ticket,
     Trophy,
     Users,
+    X,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import styles from "./MyClubsPage.module.css";
 
-const summaryCards = [
+interface Club {
+    id: string;
+    slug: string;
+    name: string;
+    sport: "Rugby" | "Football" | "Basketball";
+    type: string;
+    logo: string;
+    members: string;
+    membership: string;
+    nextMatch?: string;
+    reason?: string;
+}
+
+interface Membership {
+    id: string;
+    slug: string;
+    clubName: string;
+    tier: string;
+    sport: string;
+    status: string;
+    validUntil: string;
+    renewal: string;
+    logo: string;
+    tone: "purple" | "blue" | "orange" | "green";
+    benefits: string[];
+}
+
+interface ClubMatch {
+    id: string;
+    club: string;
+    opponent: string;
+    competition: string;
+    date: string;
+    time: string;
+    venue: string;
+    logo: string;
+}
+
+const initialFollowedClubs: Club[] = [
     {
-        label: "Followed Clubs",
-        value: "6",
-        detail: "Across 3 sports",
-        icon: ShieldCheck,
-        tone: "purple",
+        id: "kobs",
+        slug: "kobs",
+        name: "KCB KOBS",
+        sport: "Rugby",
+        type: "Rugby Club",
+        logo: "/assets/clubs/kobs.jpg",
+        members: "12.4K fans",
+        membership: "Gold Member",
+        nextMatch: "vs Heathens RFC",
     },
     {
-        label: "Active Club Memberships",
-        value: "2",
-        detail: "KOBS & SC Villa",
-        icon: Crown,
-        tone: "orange",
+        id: "sc-villa",
+        slug: "sc-villa",
+        name: "SC Villa",
+        sport: "Football",
+        type: "Football Club",
+        logo: "/assets/clubs/sc-villa.png",
+        members: "45.1K fans",
+        membership: "Silver Member",
+        nextMatch: "vs Vipers SC",
     },
     {
-        label: "Upcoming Club Matches",
-        value: "3",
-        detail: "Next 7 days",
-        icon: CalendarDays,
-        tone: "blue",
+        id: "city-oilers",
+        slug: "city-oilers",
+        name: "City Oilers",
+        sport: "Basketball",
+        type: "Basketball Club",
+        logo: "/assets/clubs/city-oilers.png",
+        members: "8.7K fans",
+        membership: "Not a member",
+        nextMatch: "vs Namuwongo Blazers",
     },
     {
-        label: "Saved Benefits",
-        value: "8",
-        detail: "Ready to use",
-        icon: Star,
-        tone: "green",
+        id: "vipers",
+        slug: "vipers-sc",
+        name: "Vipers SC",
+        sport: "Football",
+        type: "Football Club",
+        logo: "/assets/clubs/vipers-sc.png",
+        members: "39.8K fans",
+        membership: "Not a member",
+    },
+    {
+        id: "black-pirates",
+        slug: "black-pirates",
+        name: "Black Pirates",
+        sport: "Rugby",
+        type: "Rugby Club",
+        logo: "/assets/clubs/black-pirates.png",
+        members: "10.2K fans",
+        membership: "Not a member",
+    },
+    {
+        id: "kcca",
+        slug: "kcca-fc",
+        name: "KCCA FC",
+        sport: "Football",
+        type: "Football Club",
+        logo: "/assets/clubs/kcca-fc.png",
+        members: "33.6K fans",
+        membership: "Not a member",
     },
 ];
 
-const activeMemberships = [
+const activeMemberships: Membership[] = [
     {
         id: "kobs-gold",
         slug: "kobs",
@@ -85,64 +160,7 @@ const activeMemberships = [
     },
 ];
 
-const followedClubs = [
-    {
-        id: "kobs",
-        slug: "kobs",
-        name: "KCB KOBS",
-        sport: "Rugby Club",
-        logo: "/assets/clubs/kobs.jpg",
-        members: "12.4K fans",
-        membership: "Gold Member",
-    },
-    {
-        id: "sc-villa",
-        slug: "sc-villa",
-        name: "SC Villa",
-        sport: "Football Club",
-        logo: "/assets/clubs/sc-villa.png",
-        members: "45.1K fans",
-        membership: "Silver Member",
-    },
-    {
-        id: "city-oilers",
-        slug: "city-oilers",
-        name: "City Oilers",
-        sport: "Basketball Club",
-        logo: "/assets/clubs/city-oilers.png",
-        members: "8.7K fans",
-        membership: "Not a member",
-    },
-    {
-        id: "vipers",
-        slug: "vipers-sc",
-        name: "Vipers SC",
-        sport: "Football Club",
-        logo: "/assets/clubs/vipers-sc.png",
-        members: "39.8K fans",
-        membership: "Not a member",
-    },
-    {
-        id: "black-pirates",
-        slug: "black-pirates",
-        name: "Black Pirates",
-        sport: "Rugby Club",
-        logo: "/assets/clubs/black-pirates.png",
-        members: "10.2K fans",
-        membership: "Not a member",
-    },
-    {
-        id: "kcca",
-        slug: "kcca-fc",
-        name: "KCCA FC",
-        sport: "Football Club",
-        logo: "/assets/clubs/kcca-fc.png",
-        members: "33.6K fans",
-        membership: "Not a member",
-    },
-];
-
-const upcomingClubMatches = [
+const upcomingClubMatches: ClubMatch[] = [
     {
         id: "kobs-heathens",
         club: "KCB KOBS",
@@ -175,46 +193,127 @@ const upcomingClubMatches = [
     },
 ];
 
-const recommendedClubs = [
+const recommendedClubs: Club[] = [
     {
         id: "heathens",
+        slug: "heathens",
         name: "Platinum Credit Heathens",
-        sport: "Rugby Club",
+        sport: "Rugby",
+        type: "Rugby Club",
         reason: "Popular with rugby fans",
         logo: "/assets/clubs/platinum-heathens.jpg",
+        members: "11.1K fans",
+        membership: "Not a member",
     },
     {
         id: "namuwongo-blazers",
+        slug: "namuwongo-blazers",
         name: "Namuwongo Blazers",
-        sport: "Basketball Club",
+        sport: "Basketball",
+        type: "Basketball Club",
         reason: "You follow basketball",
         logo: "/assets/clubs/namuwongo-blazers.png",
+        members: "6.4K fans",
+        membership: "Not a member",
     },
     {
         id: "express",
+        slug: "express-fc",
         name: "Express FC",
-        sport: "Football Club",
+        sport: "Football",
+        type: "Football Club",
         reason: "Trending in football",
         logo: "/assets/clubs/express-fc.png",
+        members: "28.7K fans",
+        membership: "Not a member",
     },
 ];
 
+const sportFilters = ["All", "Rugby", "Football", "Basketball"] as const;
+
 function MyClubsPage() {
     const [searchQuery, setSearchQuery] = useState("");
+    const [activeSportFilter, setActiveSportFilter] =
+        useState<(typeof sportFilters)[number]>("All");
+    const [followedClubs, setFollowedClubs] = useState(initialFollowedClubs);
+    const [dismissedRecommendationIds, setDismissedRecommendationIds] = useState<string[]>([]);
 
     const normalizedSearchQuery = searchQuery.trim().toLowerCase();
 
     const filteredFollowedClubs = useMemo(() => {
-        if (!normalizedSearchQuery) {
-            return followedClubs;
-        }
-
         return followedClubs.filter((club) => {
-            const searchableText = `${club.name} ${club.sport} ${club.membership}`;
+            const matchesSport =
+                activeSportFilter === "All" || club.sport === activeSportFilter;
 
-            return searchableText.toLowerCase().includes(normalizedSearchQuery);
+            const searchableText = `${club.name} ${club.type} ${club.membership} ${club.sport}`;
+
+            const matchesSearch =
+                !normalizedSearchQuery ||
+                searchableText.toLowerCase().includes(normalizedSearchQuery);
+
+            return matchesSport && matchesSearch;
         });
-    }, [normalizedSearchQuery]);
+    }, [activeSportFilter, followedClubs, normalizedSearchQuery]);
+
+    const visibleRecommendations = recommendedClubs.filter(
+        (club) =>
+            !followedClubs.some((followedClub) => followedClub.id === club.id) &&
+            !dismissedRecommendationIds.includes(club.id),
+    );
+
+    const summaryCards = [
+        {
+            label: "Followed Clubs",
+            value: String(followedClubs.length),
+            detail: "Across 3 sports",
+            icon: ShieldCheck,
+            tone: "purple",
+        },
+        {
+            label: "Active Club Memberships",
+            value: String(activeMemberships.length),
+            detail: "Digital cards ready",
+            icon: Crown,
+            tone: "orange",
+        },
+        {
+            label: "Upcoming Club Matches",
+            value: String(upcomingClubMatches.length),
+            detail: "Next 7 days",
+            icon: CalendarDays,
+            tone: "blue",
+        },
+        {
+            label: "Saved Benefits",
+            value: "8",
+            detail: "Ready to use",
+            icon: Star,
+            tone: "green",
+        },
+    ];
+
+    function followRecommendedClub(club: Club) {
+        setFollowedClubs((currentClubs) => [
+            ...currentClubs,
+            {
+                ...club,
+                membership: "Not a member",
+            },
+        ]);
+
+        setDismissedRecommendationIds((currentIds) => [...currentIds, club.id]);
+    }
+
+    function unfollowClub(clubId: string) {
+        setFollowedClubs((currentClubs) =>
+            currentClubs.filter((club) => club.id !== clubId),
+        );
+    }
+
+    function clearSearch() {
+        setSearchQuery("");
+        setActiveSportFilter("All");
+    }
 
     return (
         <section className={styles.page}>
@@ -239,15 +338,15 @@ function MyClubsPage() {
                 </span>
 
                 <div>
-                    <h2>How club memberships work</h2>
+                    <h2>Your Club Hub</h2>
                     <p>
-                        Club memberships are created and managed by clubs. League OS helps
-                        fans discover club tiers, purchase memberships, store digital
-                        membership cards, receive club benefits and renew when needed.
+                        This page summarizes the clubs you follow, active memberships,
+                        upcoming fixtures, benefits and suggested clubs. Full discovery
+                        still happens on the public Clubs page.
                     </p>
                 </div>
 
-                <Link to="/memberships">Explore Club Memberships</Link>
+                <Link to="/profile/interests">Manage Interests</Link>
             </section>
 
             <section className={styles.summaryGrid} aria-label="Club summary">
@@ -276,121 +375,209 @@ function MyClubsPage() {
                     <section className={styles.panel}>
                         <div className={styles.panelHeader}>
                             <div>
+                                <h2>Followed Clubs</h2>
+                                <p>
+                                    Clubs you follow affect your dashboard, news feed,
+                                    fixtures and ticket alerts.
+                                </p>
+                            </div>
+
+                            <Link to="/clubs">View All Clubs</Link>
+                        </div>
+
+                        <div className={styles.clubToolbar}>
+                            <div className={styles.searchCard}>
+                                <Search size={20} strokeWidth={2.3} aria-hidden="true" />
+
+                                <input
+                                    type="search"
+                                    placeholder="Search your followed clubs..."
+                                    value={searchQuery}
+                                    onChange={(event) => setSearchQuery(event.target.value)}
+                                />
+
+                                {searchQuery ? (
+                                    <button type="button" onClick={() => setSearchQuery("")}>
+                                        <X size={17} strokeWidth={2.4} />
+                                    </button>
+                                ) : null}
+                            </div>
+
+                            <div className={styles.filterPills}>
+                                {sportFilters.map((filter) => (
+                                    <button
+                                        type="button"
+                                        key={filter}
+                                        className={
+                                            activeSportFilter === filter
+                                                ? styles.activeFilterPill
+                                                : ""
+                                        }
+                                        onClick={() => setActiveSportFilter(filter)}
+                                    >
+                                        {filter}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {filteredFollowedClubs.length > 0 ? (
+                            <div className={styles.clubGrid}>
+                                {filteredFollowedClubs.map((club) => (
+                                    <article className={styles.clubCard} key={club.id}>
+                                        <div className={styles.clubLogoWrap}>
+                                            <img src={club.logo} alt="" aria-hidden="true" />
+                                        </div>
+
+                                        <div>
+                                            <h3>{club.name}</h3>
+                                            <p>{club.type}</p>
+                                            <span>{club.members}</span>
+                                        </div>
+
+                                        <div className={styles.clubMembershipStatus}>
+                                            {club.membership === "Not a member" ? (
+                                                <span className={styles.notMember}>
+                                                    Not a member
+                                                </span>
+                                            ) : (
+                                                <span className={styles.memberBadge}>
+                                                    {club.membership}
+                                                </span>
+                                            )}
+                                        </div>
+
+                                        {club.nextMatch ? (
+                                            <small className={styles.nextMatch}>
+                                                Next: {club.nextMatch}
+                                            </small>
+                                        ) : null}
+
+                                        <div className={styles.clubActions}>
+                                            <Link to={`/clubs/${club.slug}`}>View Club</Link>
+
+                                            {club.membership === "Not a member" ? (
+                                                <Link to={`/memberships/${club.slug}`}>
+                                                    Join Club
+                                                </Link>
+                                            ) : (
+                                                <Link to="/dashboard/memberships">
+                                                    View Membership
+                                                </Link>
+                                            )}
+
+                                            <button
+                                                type="button"
+                                                onClick={() => unfollowClub(club.id)}
+                                            >
+                                                Unfollow
+                                            </button>
+                                        </div>
+                                    </article>
+                                ))}
+
+                                <Link to="/clubs" className={styles.followMoreClubCard}>
+                                    <span>
+                                        <Plus size={34} strokeWidth={2.4} aria-hidden="true" />
+                                    </span>
+
+                                    <div>
+                                        <h3>Follow More Clubs</h3>
+                                        <p>Discover clubs, teams and leagues to personalize your dashboard.</p>
+                                    </div>
+
+                                    <strong>Browse Clubs →</strong>
+                                </Link>
+                            </div>
+                        ) : (
+                            <section className={styles.emptyState}>
+                                <Heart size={38} strokeWidth={2.2} aria-hidden="true" />
+                                <h2>No clubs match your filters</h2>
+                                <p>
+                                    Try a different sport, clear your search, or browse all
+                                    clubs to follow more teams.
+                                </p>
+
+                                <div>
+                                    <button type="button" onClick={clearSearch}>
+                                        Clear Filters
+                                    </button>
+                                    <Link to="/clubs">Browse Clubs</Link>
+                                </div>
+                            </section>
+                        )}
+                    </section>
+
+                    <section className={styles.panel}>
+                        <div className={styles.panelHeader}>
+                            <div>
                                 <h2>Active Club Memberships</h2>
                                 <p>
-                                    These are memberships you have purchased from clubs through
-                                    League OS.
+                                    Memberships you have purchased from clubs through League OS.
                                 </p>
                             </div>
 
                             <Link to="/memberships">View Club Memberships</Link>
                         </div>
 
-                        <div className={styles.membershipList}>
-                            {activeMemberships.map((membership) => (
-                                <article
-                                    className={`${styles.membershipCard} ${styles[membership.tone]}`}
-                                    key={membership.id}
-                                >
-                                    <div className={styles.membershipTop}>
-                                        <img src={membership.logo} alt="" aria-hidden="true" />
+                        {activeMemberships.length > 0 ? (
+                            <div className={styles.membershipList}>
+                                {activeMemberships.map((membership) => (
+                                    <article
+                                        className={`${styles.membershipCard} ${styles[membership.tone]}`}
+                                        key={membership.id}
+                                    >
+                                        <div className={styles.membershipTop}>
+                                            <img src={membership.logo} alt="" aria-hidden="true" />
 
-                                        <div>
-                                            <h3>{membership.clubName}</h3>
-                                            <p>{membership.sport}</p>
+                                            <div>
+                                                <h3>{membership.clubName}</h3>
+                                                <p>{membership.sport}</p>
+                                            </div>
+
+                                            <span>{membership.status}</span>
                                         </div>
 
-                                        <span>{membership.status}</span>
-                                    </div>
+                                        <div className={styles.membershipTier}>
+                                            <Crown
+                                                size={30}
+                                                strokeWidth={2.2}
+                                                aria-hidden="true"
+                                            />
 
-                                    <div className={styles.membershipTier}>
-                                        <Crown size={30} strokeWidth={2.2} aria-hidden="true" />
-
-                                        <div>
-                                            <strong>{membership.tier}</strong>
-                                            <p>Valid until {membership.validUntil}</p>
-                                            <small>{membership.renewal}</small>
+                                            <div>
+                                                <strong>{membership.tier}</strong>
+                                                <p>Valid until {membership.validUntil}</p>
+                                                <small>{membership.renewal}</small>
+                                            </div>
                                         </div>
-                                    </div>
 
-                                    <div className={styles.benefitList}>
-                                        {membership.benefits.map((benefit) => (
-                                            <span key={benefit}>{benefit}</span>
-                                        ))}
-                                    </div>
+                                        <div className={styles.benefitList}>
+                                            {membership.benefits.map((benefit) => (
+                                                <span key={benefit}>{benefit}</span>
+                                            ))}
+                                        </div>
 
-                                    <div className={styles.membershipActions}>
-                                        <Link to="/dashboard/memberships">View Card</Link>
-                                        <Link to={`/memberships/${membership.slug}`}>
-                                            Renew / Upgrade
-                                        </Link>
-                                    </div>
-                                </article>
-                            ))}
-                        </div>
-                    </section>
-
-                    <section className={styles.panel}>
-                        <div className={styles.panelHeader}>
-                            <div>
-                                <h2>Followed Clubs</h2>
-                                <p>
-                                    Clubs you follow affect your dashboard, news feed, fixtures
-                                    and ticket alerts.
-                                </p>
-                            </div>
-
-                            <Link to="/profile/interests">Manage Interests</Link>
-                        </div>
-
-                        <div className={styles.searchCard}>
-                            <Search size={20} strokeWidth={2.3} aria-hidden="true" />
-
-                            <input
-                                type="search"
-                                placeholder="Search your followed clubs..."
-                                value={searchQuery}
-                                onChange={(event) => setSearchQuery(event.target.value)}
-                            />
-                        </div>
-
-                        <div className={styles.clubGrid}>
-                            {filteredFollowedClubs.map((club) => (
-                                <article className={styles.clubCard} key={club.id}>
-                                    <div className={styles.clubLogoWrap}>
-                                        <img src={club.logo} alt="" aria-hidden="true" />
-                                    </div>
-
-                                    <div>
-                                        <h3>{club.name}</h3>
-                                        <p>{club.sport}</p>
-                                        <span>{club.members}</span>
-                                    </div>
-
-                                    <div className={styles.clubMembershipStatus}>
-                                        {club.membership === "Not a member" ? (
-                                            <span className={styles.notMember}>Not a member</span>
-                                        ) : (
-                                            <span className={styles.memberBadge}>
-                                                {club.membership}
-                                            </span>
-                                        )}
-                                    </div>
-
-                                    <div className={styles.clubActions}>
-                                        <Link to="/clubs">View Club</Link>
-
-                                        {club.membership === "Not a member" ? (
-                                            <Link to={`/memberships/${club.slug}`}>Join Club</Link>
-                                        ) : (
-                                            <Link to="/dashboard/memberships">
-                                                View Membership
+                                        <div className={styles.membershipActions}>
+                                            <Link to="/dashboard/memberships">View Card</Link>
+                                            <Link to={`/memberships/${membership.slug}`}>
+                                                Renew / Upgrade
                                             </Link>
-                                        )}
-                                    </div>
-                                </article>
-                            ))}
-                        </div>
+                                        </div>
+                                    </article>
+                                ))}
+                            </div>
+                        ) : (
+                            <section className={styles.emptyState}>
+                                <Crown size={38} strokeWidth={2.2} aria-hidden="true" />
+                                <h2>No active memberships yet</h2>
+                                <p>
+                                    Join a club membership to unlock benefits, ticket discounts
+                                    and digital membership cards.
+                                </p>
+                                <Link to="/memberships">Explore Memberships</Link>
+                            </section>
+                        )}
                     </section>
                 </main>
 
@@ -423,7 +610,11 @@ function MyClubsPage() {
 
                                     <div className={styles.matchActions}>
                                         <Link to="/tickets">
-                                            <Ticket size={16} strokeWidth={2.2} aria-hidden="true" />
+                                            <Ticket
+                                                size={16}
+                                                strokeWidth={2.2}
+                                                aria-hidden="true"
+                                            />
                                             Tickets
                                         </Link>
 
@@ -447,24 +638,41 @@ function MyClubsPage() {
                             </div>
                         </div>
 
-                        <div className={styles.recommendedList}>
-                            {recommendedClubs.map((club) => (
-                                <article className={styles.recommendedItem} key={club.id}>
-                                    <img src={club.logo} alt="" aria-hidden="true" />
+                        {visibleRecommendations.length > 0 ? (
+                            <div className={styles.recommendedList}>
+                                {visibleRecommendations.map((club) => (
+                                    <article className={styles.recommendedItem} key={club.id}>
+                                        <img src={club.logo} alt="" aria-hidden="true" />
 
-                                    <div>
-                                        <h3>{club.name}</h3>
-                                        <p>{club.sport}</p>
-                                        <small>{club.reason}</small>
-                                    </div>
+                                        <div>
+                                            <h3>{club.name}</h3>
+                                            <p>{club.type}</p>
+                                            <small>
+                                                {club.reason ?? "Recommended"}
+                                            </small>
+                                        </div>
 
-                                    <button type="button">
-                                        <Heart size={17} strokeWidth={2.3} aria-hidden="true" />
-                                        Follow
-                                    </button>
-                                </article>
-                            ))}
-                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => followRecommendedClub(club)}
+                                        >
+                                            <Heart
+                                                size={17}
+                                                strokeWidth={2.3}
+                                                aria-hidden="true"
+                                            />
+                                            Follow
+                                        </button>
+                                    </article>
+                                ))}
+                            </div>
+                        ) : (
+                            <section className={styles.compactEmptyState}>
+                                <Check size={28} strokeWidth={2.4} aria-hidden="true" />
+                                <h3>You are all caught up</h3>
+                                <p>No new recommendations for now.</p>
+                            </section>
+                        )}
                     </section>
 
                     <section className={styles.clubSupportCard}>
@@ -474,8 +682,8 @@ function MyClubsPage() {
                             <h2>Support your club directly</h2>
                             <p>
                                 Club membership payments should go to the club or its approved
-                                payment account. League OS only manages the experience and
-                                records the membership.
+                                payment account. League OS manages the fan experience and the
+                                membership record.
                             </p>
                         </div>
 
