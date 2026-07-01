@@ -2,21 +2,28 @@ import {
     CalendarDays,
     CheckCircle2,
     CircleHelp,
+    Clock3,
     Download,
     MapPin,
     QrCode,
+    ReceiptText,
     Search,
     Share2,
     Ticket,
     Timer,
+    WalletCards,
+    X,
     XCircle,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import styles from "./MyTicketsPage.module.css";
 
 type TicketStatus = "Confirmed" | "Completed" | "Cancelled";
+type TicketTab = "upcoming" | "past" | "orders";
 
-type FanTicket = {
+interface FanTicket {
     id: string;
     competition: string;
     dateDay: string;
@@ -35,9 +42,10 @@ type FanTicket = {
     status: TicketStatus;
     orderId: string;
     bookedOn: string;
-};
+    gate: string;
+}
 
-type RecommendedTicket = {
+interface RecommendedTicket {
     id: string;
     dateDay: string;
     dateMonth: string;
@@ -47,7 +55,15 @@ type RecommendedTicket = {
     venue: string;
     price: string;
     image: string;
-};
+}
+
+interface SummaryCard {
+    label: string;
+    value: string;
+    detail: string;
+    icon: LucideIcon;
+    tone: "purple" | "blue" | "orange" | "green";
+}
 
 const upcomingTickets: FanTicket[] = [
     {
@@ -65,6 +81,7 @@ const upcomingTickets: FanTicket[] = [
         ticketType: "VIP Stand",
         quantity: 2,
         seat: "A12, A13",
+        gate: "Gate B",
         price: "UGX 120,000",
         status: "Confirmed",
         orderId: "#ORD-845672",
@@ -75,16 +92,17 @@ const upcomingTickets: FanTicket[] = [
         competition: "Nile Special Rugby Premiership",
         dateDay: "01",
         dateMonth: "Jun",
-        title: "Pirates RFC vs Black Pirates",
+        title: "Black Pirates vs Impis RFC",
         homeLogo: "/assets/clubs/black-pirates.png",
         awayLogo: "/assets/clubs/impis-rfc.jpg",
-        homeTeam: "Pirates RFC",
-        awayTeam: "Black Pirates",
+        homeTeam: "Black Pirates",
+        awayTeam: "Impis RFC",
         dateTime: "Sun, 01 Jun 2025 • 2:00 PM EAT",
         venue: "Legends Rugby Grounds, Namboole",
         ticketType: "Regular",
         quantity: 3,
         seat: "B45, B46, B47",
+        gate: "Gate A",
         price: "UGX 45,000",
         status: "Confirmed",
         orderId: "#ORD-845112",
@@ -108,6 +126,7 @@ const pastTickets: FanTicket[] = [
         ticketType: "Regular",
         quantity: 2,
         seat: "C22, C23",
+        gate: "Gate C",
         price: "UGX 40,000",
         status: "Completed",
         orderId: "#ORD-842009",
@@ -168,6 +187,27 @@ function StatusBadge({ status }: { status: TicketStatus }) {
     );
 }
 
+function EmptyState({
+    title,
+    message,
+    actionLabel,
+    actionTo,
+}: {
+    title: string;
+    message: string;
+    actionLabel: string;
+    actionTo: string;
+}) {
+    return (
+        <section className={styles.emptyState}>
+            <Ticket size={42} strokeWidth={2.2} aria-hidden="true" />
+            <h2>{title}</h2>
+            <p>{message}</p>
+            <Link to={actionTo}>{actionLabel}</Link>
+        </section>
+    );
+}
+
 function TicketCard({ ticket, isPast = false }: { ticket: FanTicket; isPast?: boolean }) {
     return (
         <article className={styles.ticketCard}>
@@ -192,6 +232,7 @@ function TicketCard({ ticket, isPast = false }: { ticket: FanTicket; isPast?: bo
                     <CalendarDays size={15} strokeWidth={2.2} aria-hidden="true" />
                     {ticket.dateTime}
                 </p>
+
                 <p>
                     <MapPin size={15} strokeWidth={2.2} aria-hidden="true" />
                     {ticket.venue}
@@ -200,31 +241,42 @@ function TicketCard({ ticket, isPast = false }: { ticket: FanTicket; isPast?: bo
 
             <dl className={styles.ticketMeta}>
                 <div>
-                    <dt>Ticket Type</dt>
+                    <dt>Type</dt>
                     <dd>{ticket.ticketType}</dd>
                 </div>
+
                 <div>
                     <dt>Qty</dt>
                     <dd>{ticket.quantity}</dd>
                 </div>
+
+                <div>
+                    <dt>Gate</dt>
+                    <dd>{ticket.gate}</dd>
+                </div>
+
                 <div>
                     <dt>Seat</dt>
                     <dd>{ticket.seat}</dd>
                 </div>
+
                 <div>
                     <dt>Price</dt>
                     <dd>{ticket.price}</dd>
                 </div>
+
                 <div>
                     <dt>Status</dt>
                     <dd>
                         <StatusBadge status={ticket.status} />
                     </dd>
                 </div>
+
                 <div>
                     <dt>Order ID</dt>
                     <dd>{ticket.orderId}</dd>
                 </div>
+
                 <div>
                     <dt>Booked On</dt>
                     <dd>{ticket.bookedOn}</dd>
@@ -233,18 +285,20 @@ function TicketCard({ ticket, isPast = false }: { ticket: FanTicket; isPast?: bo
 
             <div className={styles.ticketActions}>
                 <Link to={`/dashboard/tickets/${ticket.id}`} className={styles.primaryAction}>
-                    <Ticket size={16} strokeWidth={2.2} aria-hidden="true" />
-                    {isPast ? "View Details" : "View Ticket"}
+                    <QrCode size={16} strokeWidth={2.2} aria-hidden="true" />
+                    {isPast ? "View Details" : "Open QR"}
                 </Link>
+
                 {!isPast ? (
                     <>
                         <button type="button">
                             <Download size={16} strokeWidth={2.2} aria-hidden="true" />
                             Download
                         </button>
+
                         <button type="button">
                             <Share2 size={16} strokeWidth={2.2} aria-hidden="true" />
-                            Transfer Ticket
+                            Transfer
                         </button>
                     </>
                 ) : null}
@@ -258,6 +312,7 @@ function RecommendedCard({ ticket }: { ticket: RecommendedTicket }) {
         <article className={styles.recommendedCard}>
             <div className={styles.recommendedImageWrap}>
                 <img src={ticket.image} alt="" aria-hidden="true" />
+
                 <span>
                     <strong>{ticket.dateDay}</strong>
                     {ticket.dateMonth}
@@ -267,10 +322,12 @@ function RecommendedCard({ ticket }: { ticket: RecommendedTicket }) {
             <div className={styles.recommendedContent}>
                 <p>{ticket.competition}</p>
                 <h3>{ticket.title}</h3>
+
                 <span>
                     <CalendarDays size={14} strokeWidth={2.2} aria-hidden="true" />
                     {ticket.dateTime}
                 </span>
+
                 <span>
                     <MapPin size={14} strokeWidth={2.2} aria-hidden="true" />
                     {ticket.venue}
@@ -286,90 +343,303 @@ function RecommendedCard({ ticket }: { ticket: RecommendedTicket }) {
 }
 
 function MyTicketsPage() {
+    const [activeTab, setActiveTab] = useState<TicketTab>("upcoming");
+    const [searchQuery, setSearchQuery] = useState("");
+
+    const allTickets = useMemo(() => [...upcomingTickets, ...pastTickets], []);
+
+    const summaryCards: SummaryCard[] = [
+        {
+            label: "Upcoming Tickets",
+            value: String(upcomingTickets.length),
+            detail: "Ready for QR scan",
+            icon: Ticket,
+            tone: "purple",
+        },
+        {
+            label: "Past Tickets",
+            value: String(pastTickets.length),
+            detail: "Available in history",
+            icon: Timer,
+            tone: "blue",
+        },
+        {
+            label: "Total Orders",
+            value: String(allTickets.length),
+            detail: "Ticket purchases",
+            icon: ReceiptText,
+            tone: "orange",
+        },
+        {
+            label: "Wallet Status",
+            value: "Active",
+            detail: "QR tickets enabled",
+            icon: WalletCards,
+            tone: "green",
+        },
+    ];
+
+    const normalizedSearchQuery = searchQuery.trim().toLowerCase();
+
+    const searchedUpcomingTickets = useMemo(
+        () =>
+            upcomingTickets.filter((ticket) =>
+                `${ticket.title} ${ticket.competition} ${ticket.venue} ${ticket.orderId}`
+                    .toLowerCase()
+                    .includes(normalizedSearchQuery),
+            ),
+        [normalizedSearchQuery],
+    );
+
+    const searchedPastTickets = useMemo(
+        () =>
+            pastTickets.filter((ticket) =>
+                `${ticket.title} ${ticket.competition} ${ticket.venue} ${ticket.orderId}`
+                    .toLowerCase()
+                    .includes(normalizedSearchQuery),
+            ),
+        [normalizedSearchQuery],
+    );
+
+    const searchedOrders = useMemo(
+        () =>
+            allTickets.filter((ticket) =>
+                `${ticket.title} ${ticket.competition} ${ticket.venue} ${ticket.orderId}`
+                    .toLowerCase()
+                    .includes(normalizedSearchQuery),
+            ),
+        [allTickets, normalizedSearchQuery],
+    );
+
+    const nextTicket = upcomingTickets[0];
+
     return (
         <section className={styles.page}>
-            <div className={styles.breadcrumb}>Home / Profile / My Tickets</div>
+            <header className={styles.pageHeader}>
+                <div>
+                    <h1>My Tickets</h1>
+                    <p>
+                        View, download, transfer and manage your upcoming and past match
+                        tickets from one fan wallet.
+                    </p>
+                </div>
 
-            <header className={styles.hero}>
+                <Link to="/tickets" className={styles.primaryHeaderAction}>
+                    <Ticket size={18} strokeWidth={2.4} aria-hidden="true" />
+                    Buy Tickets
+                </Link>
+            </header>
+
+            <section className={styles.walletHero}>
                 <div>
                     <span className={styles.eyebrow}>Fan Ticket Wallet</span>
-                    <h1>My Tickets</h1>
-                    <p>View, download and manage your upcoming and past match tickets.</p>
+                    <h2>Matchday access in one place</h2>
+                    <p>
+                        Your QR ticket, order details, transfer options and ticket history
+                        are organized here.
+                    </p>
                 </div>
 
                 <div className={styles.heroSearch}>
                     <Search size={18} strokeWidth={2.2} aria-hidden="true" />
-                    <input type="search" placeholder="Search by match, club, order ID..." />
+                    <input
+                        type="search"
+                        placeholder="Search by match, club, venue or order ID..."
+                        value={searchQuery}
+                        onChange={(event) => setSearchQuery(event.target.value)}
+                    />
+
+                    {searchQuery ? (
+                        <button
+                            type="button"
+                            aria-label="Clear ticket search"
+                            onClick={() => setSearchQuery("")}
+                        >
+                            <X size={17} strokeWidth={2.4} />
+                        </button>
+                    ) : null}
                 </div>
-            </header>
+            </section>
+
+            <section className={styles.summaryGrid} aria-label="Ticket wallet summary">
+                {summaryCards.map((card) => {
+                    const Icon = card.icon;
+
+                    return (
+                        <article
+                            className={`${styles.summaryCard} ${styles[card.tone]}`}
+                            key={card.label}
+                        >
+                            <div>
+                                <p>{card.label}</p>
+                                <strong>{card.value}</strong>
+                                <span>{card.detail}</span>
+                            </div>
+
+                            <Icon size={38} strokeWidth={2.1} aria-hidden="true" />
+                        </article>
+                    );
+                })}
+            </section>
 
             <div className={styles.tabs} aria-label="Ticket sections">
-                <button type="button" className={styles.activeTab}>My Tickets</button>
-                <button type="button">Orders</button>
-                <button type="button">Resale Requests</button>
+                <button
+                    type="button"
+                    className={activeTab === "upcoming" ? styles.activeTab : ""}
+                    onClick={() => setActiveTab("upcoming")}
+                >
+                    Upcoming <span>{upcomingTickets.length}</span>
+                </button>
+
+                <button
+                    type="button"
+                    className={activeTab === "past" ? styles.activeTab : ""}
+                    onClick={() => setActiveTab("past")}
+                >
+                    Past <span>{pastTickets.length}</span>
+                </button>
+
+                <button
+                    type="button"
+                    className={activeTab === "orders" ? styles.activeTab : ""}
+                    onClick={() => setActiveTab("orders")}
+                >
+                    Orders <span>{allTickets.length}</span>
+                </button>
             </div>
 
             <div className={styles.layoutGrid}>
                 <main className={styles.ticketColumn}>
-                    <section className={styles.ticketSection}>
-                        <div className={styles.sectionHeader}>
-                            <h2>
-                                <Ticket size={18} strokeWidth={2.3} aria-hidden="true" />
-                                Upcoming Tickets
-                            </h2>
-                            <Link to="/tickets">View All Upcoming →</Link>
-                        </div>
+                    {activeTab === "upcoming" ? (
+                        <section className={styles.ticketSection}>
+                            <div className={styles.sectionHeader}>
+                                <h2>
+                                    <Ticket size={18} strokeWidth={2.3} aria-hidden="true" />
+                                    Upcoming Tickets
+                                </h2>
 
-                        <div className={styles.ticketList}>
-                            {upcomingTickets.map((ticket) => (
-                                <TicketCard ticket={ticket} key={ticket.id} />
-                            ))}
-                        </div>
-                    </section>
+                                <Link to="/tickets">View Upcoming Matches →</Link>
+                            </div>
 
-                    <section className={styles.ticketSection}>
-                        <div className={styles.sectionHeader}>
-                            <h2>
-                                <Timer size={18} strokeWidth={2.3} aria-hidden="true" />
-                                Past Tickets
-                            </h2>
-                            <Link to="/tickets">View All Past →</Link>
-                        </div>
+                            {searchedUpcomingTickets.length > 0 ? (
+                                <div className={styles.ticketList}>
+                                    {searchedUpcomingTickets.map((ticket) => (
+                                        <TicketCard ticket={ticket} key={ticket.id} />
+                                    ))}
+                                </div>
+                            ) : (
+                                <EmptyState
+                                    title="No upcoming tickets found"
+                                    message="Try another search or buy tickets for an upcoming match."
+                                    actionLabel="Buy Tickets"
+                                    actionTo="/tickets"
+                                />
+                            )}
+                        </section>
+                    ) : null}
 
-                        <div className={styles.ticketList}>
-                            {pastTickets.map((ticket) => (
-                                <TicketCard ticket={ticket} isPast key={ticket.id} />
-                            ))}
-                        </div>
-                    </section>
+                    {activeTab === "past" ? (
+                        <section className={styles.ticketSection}>
+                            <div className={styles.sectionHeader}>
+                                <h2>
+                                    <Clock3 size={18} strokeWidth={2.3} aria-hidden="true" />
+                                    Past Tickets
+                                </h2>
+
+                                <Link to="/tickets">Browse Matches →</Link>
+                            </div>
+
+                            {searchedPastTickets.length > 0 ? (
+                                <div className={styles.ticketList}>
+                                    {searchedPastTickets.map((ticket) => (
+                                        <TicketCard ticket={ticket} isPast key={ticket.id} />
+                                    ))}
+                                </div>
+                            ) : (
+                                <EmptyState
+                                    title="No past tickets found"
+                                    message="Past tickets and completed match access will appear here."
+                                    actionLabel="Browse Fixtures"
+                                    actionTo="/fixtures"
+                                />
+                            )}
+                        </section>
+                    ) : null}
+
+                    {activeTab === "orders" ? (
+                        <section className={styles.ticketSection}>
+                            <div className={styles.sectionHeader}>
+                                <h2>
+                                    <ReceiptText size={18} strokeWidth={2.3} aria-hidden="true" />
+                                    Ticket Orders
+                                </h2>
+
+                                <Link to="/profile/payments">View Payments →</Link>
+                            </div>
+
+                            {searchedOrders.length > 0 ? (
+                                <div className={styles.orderList}>
+                                    {searchedOrders.map((ticket) => (
+                                        <article className={styles.orderCard} key={ticket.id}>
+                                            <div>
+                                                <span>{ticket.orderId}</span>
+                                                <h3>{ticket.title}</h3>
+                                                <p>{ticket.bookedOn}</p>
+                                            </div>
+
+                                            <dl>
+                                                <div>
+                                                    <dt>Amount</dt>
+                                                    <dd>{ticket.price}</dd>
+                                                </div>
+
+                                                <div>
+                                                    <dt>Qty</dt>
+                                                    <dd>{ticket.quantity}</dd>
+                                                </div>
+
+                                                <div>
+                                                    <dt>Status</dt>
+                                                    <dd>
+                                                        <StatusBadge status={ticket.status} />
+                                                    </dd>
+                                                </div>
+                                            </dl>
+
+                                            <Link to={`/dashboard/tickets/${ticket.id}`}>
+                                                View Order
+                                            </Link>
+                                        </article>
+                                    ))}
+                                </div>
+                            ) : (
+                                <EmptyState
+                                    title="No orders found"
+                                    message="Your ticket orders and receipts will appear here after purchase."
+                                    actionLabel="Buy Tickets"
+                                    actionTo="/tickets"
+                                />
+                            )}
+                        </section>
+                    ) : null}
 
                     <section className={styles.helpCard}>
                         <div>
                             <CircleHelp size={24} strokeWidth={2.3} aria-hidden="true" />
+
                             <div>
                                 <h2>Need Help?</h2>
                                 <p>
-                                    If you have questions about tickets, transfers or downloads,
-                                    our support team can help.
+                                    If you have questions about tickets, transfers, downloads
+                                    or QR access, support can help.
                                 </p>
                             </div>
                         </div>
+
                         <Link to="/profile/support">Contact Support</Link>
                     </section>
-                </main>
 
-                <aside className={styles.sideColumn}>
-                    <section className={styles.qrPreviewCard}>
-                        <span>Next Ticket</span>
-                        <h2>KCB KOBS vs Heathens RFC</h2>
-                        <div className={styles.qrBox}>
-                            <QrCode size={96} strokeWidth={2.3} aria-hidden="true" />
-                        </div>
-                        <p>Gate B • VIP Stand • Seats A12, A13</p>
-                        <Link to="/dashboard/tickets/kobs-heathens-vip">Open QR Ticket</Link>
-                    </section>
-
-                    <section className={styles.recommendedPanel}>
+                    <section className={`${styles.recommendedPanel} ${styles.mainRecommendedPanel}`}>
                         <div className={styles.sectionHeader}>
                             <h2>Recommended For You</h2>
                             <Link to="/tickets">View All</Link>
@@ -380,6 +650,67 @@ function MyTicketsPage() {
                                 <RecommendedCard ticket={ticket} key={ticket.id} />
                             ))}
                         </div>
+                    </section>
+                </main>
+
+                <aside className={styles.sideColumn}>
+                    {nextTicket ? (
+                        <section className={styles.qrPreviewCard}>
+                            <span>Next Ticket</span>
+                            <h2>{nextTicket.title}</h2>
+
+                            <div className={styles.qrBox}>
+                                <QrCode size={96} strokeWidth={2.3} aria-hidden="true" />
+                            </div>
+
+                            <p>
+                                {nextTicket.gate} • {nextTicket.ticketType} • Seats{" "}
+                                {nextTicket.seat}
+                            </p>
+
+                            <Link to={`/dashboard/tickets/${nextTicket.id}`}>
+                                Open QR Ticket
+                            </Link>
+                        </section>
+                    ) : (
+                        <section className={styles.qrPreviewCard}>
+                            <span>No active QR</span>
+                            <h2>No upcoming ticket yet</h2>
+
+                            <div className={styles.qrBoxMuted}>
+                                <QrCode size={84} strokeWidth={2.3} aria-hidden="true" />
+                            </div>
+
+                            <p>Your next QR ticket will appear here after purchase.</p>
+
+                            <Link to="/tickets">Buy Tickets</Link>
+                        </section>
+                    )}
+
+                    <section className={styles.ticketTipsCard}>
+                        <h2>Ticket Tips</h2>
+
+                        <ul>
+                            <li>Open your QR ticket before reaching the gate.</li>
+                            <li>Download your ticket if your network may be weak.</li>
+                            <li>Use Transfer only when sending a ticket to another fan.</li>
+                        </ul>
+
+                        <Link to="/profile/support">Ticket Support →</Link>
+                    </section>
+
+                    <section className={styles.sponsorPlacementCard} aria-label="Sponsored matchday placement">
+                        <span>Sponsored</span>
+
+                        <div>
+                            <h2>Matchday Partner Slot</h2>
+                            <p>
+                                Reserve this space for sponsor offers, ticket bundles,
+                                club promotions or matchday campaigns.
+                            </p>
+                        </div>
+
+                        <Link to="/sponsor/apply">View Sponsorship Options →</Link>
                     </section>
                 </aside>
             </div>

@@ -34,6 +34,7 @@ export type CurrentUser = {
   favoriteSport: string;
   membership: string;
   avatarInitials: string;
+  avatarUrl?: string | null;
   memberSince: string;
   isEmailVerified: boolean;
   isPhoneVerified: boolean;
@@ -60,6 +61,7 @@ export const currentUser: CurrentUser = {
   favoriteSport: 'Rugby',
   membership: 'Fan / Member',
   avatarInitials: 'F',
+  avatarUrl: null,
   memberSince: 'Recently',
   isEmailVerified: false,
   isPhoneVerified: false,
@@ -134,6 +136,7 @@ export function mapProfileToCurrentUser(profile?: BackendProfile | null): Curren
     favoriteSport: clean(profile.favourite_sport || profile.favorite_sport, currentUser.favoriteSport),
     membership: roleLabel,
     avatarInitials: getInitials(name),
+    avatarUrl: clean(profile.avatar_url || profile.avatar) || null,
     memberSince: formatDate(profile.date_joined),
     isEmailVerified: Boolean(profile.is_email_verified),
     isPhoneVerified: Boolean(profile.is_phone_verified),
