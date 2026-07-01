@@ -49,7 +49,9 @@ export function usePasswordValidation() {
 
     // 3. Strength meter (zxcvbn)
     try {
-      const { zxcvbn } = await import('@zxcvbn-ts/core');
+      const zxcvbnModule = await import('@zxcvbn-ts/core');
+      const zxcvbn =
+        (zxcvbnModule as any).zxcvbn ?? (zxcvbnModule as any).default;
       const result = zxcvbn(value);
       const score = result.score;
 
