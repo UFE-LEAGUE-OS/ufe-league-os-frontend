@@ -13,26 +13,29 @@
 
 .pageHeader h1 {
     margin: 0;
-    font-size: clamp(32px, 3vw, 46px);
+    font-size: clamp(34px, 4vw, 52px);
     font-weight: 900;
     letter-spacing: -0.045em;
 }
 
 .pageHeader p {
-    max-width: 760px;
+    max-width: 820px;
     margin: 8px 0 0;
     color: rgba(255, 255, 255, 0.68);
-    font-size: 17px;
+    font-size: 16px;
+    line-height: 1.55;
 }
 
 .backLink,
 .panelLink,
-.saveCard button {
-    border-radius: 6px;
+.saveActions button,
+.emptySearchState button {
+    border-radius: 8px;
 
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    gap: 8px;
 
     font-family: var(--font-subhead);
     font-weight: 900;
@@ -46,12 +49,12 @@
 }
 
 .backLink {
-    height: 42px;
+    min-height: 42px;
     padding: 0 18px;
 
-    color: var(--color-vivid-violet);
-    background: rgba(2, 6, 23, 0.38);
-    border: 1px solid rgba(123, 63, 242, 0.7);
+    color: #ffffff;
+    background: rgba(123, 63, 242, 0.12);
+    border: 1px solid rgba(123, 63, 242, 0.68);
 
     font-size: 13px;
 }
@@ -71,10 +74,11 @@
 }
 
 .heroCard,
-.searchCard,
+.toolbarCard,
 .interestSection,
 .sidePanel,
-.saveCard {
+.saveCard,
+.emptySearchState {
     background: linear-gradient(
         135deg,
         rgba(15, 23, 42, 0.9),
@@ -86,12 +90,12 @@
 }
 
 .heroCard {
-    min-height: 220px;
-    border-radius: 12px;
+    min-height: 208px;
+    border-radius: 14px;
     padding: 30px;
 
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 220px;
+    grid-template-columns: minmax(0, 1fr) 210px;
     align-items: center;
     gap: 30px;
 
@@ -124,13 +128,13 @@
     max-width: 720px;
     margin: 12px 0 0;
     color: rgba(255, 255, 255, 0.66);
-    font-size: 16px;
+    font-size: 15px;
     line-height: 1.55;
 }
 
 .summaryStat {
-    min-height: 150px;
-    border-radius: 12px;
+    min-height: 148px;
+    border-radius: 14px;
     padding: 20px;
 
     display: grid;
@@ -138,11 +142,7 @@
     text-align: center;
 
     background:
-        radial-gradient(
-            circle at 50% 20%,
-            rgba(123, 63, 242, 0.28),
-            transparent 42%
-        ),
+        radial-gradient(circle at 50% 20%, rgba(123, 63, 242, 0.28), transparent 42%),
         rgba(15, 23, 42, 0.72);
 
     border: 1px solid rgba(123, 63, 242, 0.28);
@@ -166,17 +166,26 @@
     font-size: 12px;
 }
 
+.toolbarCard {
+    border-radius: 12px;
+    padding: 16px;
+
+    display: grid;
+    gap: 14px;
+}
+
 .searchCard {
-    min-height: 58px;
+    min-height: 52px;
     border-radius: 9px;
-    padding: 0 18px;
+    padding: 0 14px;
 
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 12px;
 
     color: rgba(255, 255, 255, 0.48);
     background: rgba(15, 23, 42, 0.78);
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .searchCard:focus-within {
@@ -193,15 +202,57 @@
     background: transparent;
 
     font: inherit;
-    font-size: 15px;
+    font-size: 14px;
 }
 
 .searchCard input::placeholder {
     color: rgba(255, 255, 255, 0.38);
 }
 
+.searchCard button {
+    width: 34px;
+    height: 34px;
+    border: 0;
+    border-radius: 999px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    color: rgba(255, 255, 255, 0.68);
+    background: rgba(255, 255, 255, 0.06);
+    cursor: pointer;
+}
+
+.tabs {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.tabs button {
+    min-height: 36px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.11);
+    padding: 0 15px;
+
+    color: rgba(255, 255, 255, 0.68);
+    background: rgba(255, 255, 255, 0.045);
+
+    font-size: 13px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.tabs .activeTab {
+    color: #ffffff;
+    background: rgba(123, 63, 242, 0.24);
+    border-color: rgba(123, 63, 242, 0.66);
+}
+
 .interestSection {
-    border-radius: 10px;
+    border-radius: 12px;
     padding: 24px;
 }
 
@@ -253,8 +304,8 @@
 }
 
 .preferenceCard {
-    min-height: 86px;
-    border-radius: 10px;
+    min-height: 88px;
+    border-radius: 12px;
     padding: 14px 42px 14px 14px;
 
     position: relative;
@@ -336,25 +387,10 @@
     background: var(--color-vivid-violet);
 }
 
-.purple.preferenceCardSelected {
-    border-color: rgba(168, 85, 247, 0.85);
-}
-
-.orange.preferenceCardSelected {
-    border-color: rgba(255, 90, 24, 0.75);
-}
-
-.blue.preferenceCardSelected {
-    border-color: rgba(47, 140, 255, 0.75);
-}
-
-.green.preferenceCardSelected {
-    border-color: rgba(34, 197, 94, 0.75);
-}
-
 .sidePanel,
-.saveCard {
-    border-radius: 10px;
+.saveCard,
+.emptySearchState {
+    border-radius: 12px;
     padding: 22px;
 }
 
@@ -366,6 +402,45 @@
     gap: 14px;
 }
 
+.selectedChips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 9px;
+}
+
+.selectedChips button {
+    min-height: 34px;
+    border-radius: 999px;
+    border: 1px solid rgba(123, 63, 242, 0.38);
+    padding: 4px 10px 4px 5px;
+
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+
+    color: #ffffff;
+    background: rgba(123, 63, 242, 0.12);
+
+    font-size: 12px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.selectedChips img {
+    width: 24px;
+    height: 24px;
+    border-radius: 999px;
+    object-fit: cover;
+    background: #ffffff;
+}
+
+.emptySelectedText {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.56);
+    font-size: 13px;
+    line-height: 1.45;
+}
+
 .preferenceRows {
     display: grid;
     gap: 14px;
@@ -373,7 +448,7 @@
 
 .toggleRow {
     min-height: 68px;
-    border-radius: 8px;
+    border-radius: 10px;
     padding: 14px;
 
     display: grid;
@@ -411,7 +486,7 @@
 
 .panelLink {
     width: 100%;
-    height: 42px;
+    min-height: 42px;
     margin-top: 18px;
 
     color: var(--color-vivid-violet);
@@ -427,11 +502,7 @@
 
     border-color: rgba(123, 63, 242, 0.42);
     background:
-        radial-gradient(
-            circle at 80% 10%,
-            rgba(123, 63, 242, 0.3),
-            transparent 38%
-        ),
+        radial-gradient(circle at 80% 10%, rgba(123, 63, 242, 0.3), transparent 38%),
         linear-gradient(135deg, rgba(15, 23, 42, 0.92), rgba(2, 6, 23, 0.78));
 }
 
@@ -446,34 +517,90 @@
     border: 1px solid rgba(123, 63, 242, 0.34);
 }
 
-.saveCard button {
-    height: 46px;
-    border: 0;
+.saveMessage {
+    margin: 0;
+    border-radius: 8px;
+    padding: 10px 12px;
+
+    color: #ffffff !important;
+    background: rgba(34, 197, 94, 0.12);
+    border: 1px solid rgba(34, 197, 94, 0.26);
+
+    font-size: 13px !important;
+    font-weight: 900;
+}
+
+.saveActions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.saveActions button {
+    min-height: 44px;
+    border: 1px solid rgba(123, 63, 242, 0.62);
 
     color: #ffffff;
     background: var(--color-vivid-violet);
 
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.saveActions button:last-child {
+    color: rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 0.055);
+    border-color: rgba(255, 255, 255, 0.14);
+}
+
+.emptySearchState {
+    min-height: 280px;
+
+    display: grid;
+    place-items: center;
+    text-align: center;
+}
+
+.emptySearchState h2 {
+    margin: 12px 0 0;
+    color: #ffffff;
+    font-size: 22px;
+}
+
+.emptySearchState p {
+    max-width: 360px;
+    margin: 8px auto 0;
+    color: rgba(255, 255, 255, 0.62);
     font-size: 14px;
+    line-height: 1.45;
+}
+
+.emptySearchState button {
+    min-height: 40px;
+    margin-top: 16px;
+    padding: 0 16px;
+
+    color: #ffffff;
+    background: rgba(123, 63, 242, 0.16);
+    border: 1px solid rgba(123, 63, 242, 0.6);
+
     cursor: pointer;
 }
 
 .backLink:hover,
-.panelLink:hover {
+.panelLink:hover,
+.saveActions button:hover,
+.emptySearchState button:hover {
     transform: translateY(-2px);
-    background: rgba(123, 63, 242, 0.14);
-}
-
-.saveCard button:hover,
-.saveCard button:focus-visible {
-    transform: translateY(-2px);
-    background: #a855f7;
-    box-shadow: 0 16px 32px rgba(123, 63, 242, 0.34);
+    background: rgba(123, 63, 242, 0.18);
 }
 
 .backLink:focus-visible,
 .panelLink:focus-visible,
-.saveCard button:focus-visible,
-.preferenceCard:focus-visible {
+.saveActions button:focus-visible,
+.preferenceCard:focus-visible,
+.tabs button:focus-visible,
+.selectedChips button:focus-visible {
     outline: 3px solid rgba(123, 63, 242, 0.78);
     outline-offset: 4px;
 }
@@ -511,11 +638,273 @@
         flex-direction: column;
     }
 
+    .heroCard {
+        padding: 24px;
+    }
+
     .optionGrid {
         grid-template-columns: 1fr;
     }
 
     .toggleRow {
         grid-template-columns: 1fr;
+    }
+
+    .saveActions {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+/* Profile interests refinement pass */
+
+.layoutGrid {
+    align-items: start;
+}
+
+.sideColumn {
+    position: sticky;
+    top: 24px;
+    align-self: start;
+}
+
+.tabs button {
+    gap: 7px;
+}
+
+.tabs button span {
+    min-width: 24px;
+    height: 22px;
+    border-radius: 999px;
+    padding: 0 7px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    color: rgba(255, 255, 255, 0.72);
+    background: rgba(255, 255, 255, 0.08);
+
+    font-size: 11px;
+    font-weight: 900;
+}
+
+.tabs .activeTab span {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.16);
+}
+
+.browseHelpers {
+    border-radius: 12px;
+    padding: 18px 20px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    flex-wrap: wrap;
+
+    background:
+        radial-gradient(circle at 8% 0%, rgba(123, 63, 242, 0.18), transparent 34%),
+        rgba(15, 23, 42, 0.72);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.browseHelpers h2 {
+    margin: 0;
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: 900;
+}
+
+.browseHelpers p {
+    max-width: 680px;
+    margin: 6px 0 0;
+    color: rgba(255, 255, 255, 0.62);
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.browseHelpers > div:last-child {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.browseHelpers a {
+    min-height: 38px;
+    border-radius: 8px;
+    padding: 0 14px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    color: #ffffff;
+    background: rgba(123, 63, 242, 0.12);
+    border: 1px solid rgba(123, 63, 242, 0.58);
+
+    font-size: 13px;
+    font-weight: 900;
+    text-decoration: none;
+}
+
+.browseHelpers a:hover,
+.browseHelpers a:focus-visible {
+    background: rgba(123, 63, 242, 0.22);
+}
+
+.interestSections {
+    min-height: 420px;
+}
+
+.interestSection {
+    min-height: 292px;
+}
+
+.optionGrid {
+    align-items: stretch;
+}
+
+.preferenceCard {
+    min-height: 92px;
+}
+
+.selectedChips {
+    max-height: 230px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+.selectedChips::-webkit-scrollbar {
+    width: 6px;
+}
+
+.selectedChips::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.16);
+}
+
+.selectedChips button {
+    max-width: 100%;
+}
+
+.selectedChips button img {
+    flex: 0 0 auto;
+}
+
+.saveCard {
+    padding: 20px;
+}
+
+.saveCard > svg {
+    width: 54px;
+    height: 54px;
+}
+
+.saveCard h2 {
+    font-size: 20px;
+}
+
+.saveCard p {
+    font-size: 13px;
+}
+
+.saveActions button {
+    min-height: 42px;
+}
+
+.sidePanel {
+    overflow: hidden;
+}
+
+.toggleRow {
+    min-height: 64px;
+}
+
+.toggleRow input {
+    flex: 0 0 auto;
+}
+
+@media (max-width: 1360px) {
+    .sideColumn {
+        position: static;
+    }
+
+    .selectedChips {
+        max-height: none;
+    }
+}
+
+@media (max-width: 680px) {
+    .browseHelpers {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .browseHelpers > div:last-child {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .browseHelpers a {
+        width: 100%;
+    }
+
+    .interestSections,
+    .interestSection {
+        min-height: auto;
+    }
+}
+
+
+/* Section-level View All links */
+
+.sectionIntro {
+    position: relative;
+}
+
+.sectionViewAll {
+    min-height: 36px;
+    border-radius: 8px;
+    padding: 0 13px;
+    margin-left: auto;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+
+    color: #ffffff;
+    background: rgba(123, 63, 242, 0.12);
+    border: 1px solid rgba(123, 63, 242, 0.56);
+
+    font-size: 13px;
+    font-weight: 900;
+    text-decoration: none;
+
+    transition:
+        transform 0.18s ease,
+        background-color 0.18s ease,
+        border-color 0.18s ease;
+}
+
+.sectionViewAll:hover,
+.sectionViewAll:focus-visible {
+    transform: translateY(-2px);
+    background: rgba(123, 63, 242, 0.22);
+    border-color: rgba(168, 85, 247, 0.76);
+}
+
+@media (max-width: 680px) {
+    .sectionIntro {
+        align-items: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .sectionViewAll {
+        width: 100%;
+        margin-left: 62px;
     }
 }
