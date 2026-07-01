@@ -9,9 +9,11 @@ import {
     Ticket,
     Users,
 } from "lucide-react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useCurrentUser } from "../../hooks/useCurrentUser";
 import { useAuth } from "../../hooks/useAuth";
+import DashboardEmptyState from "../../components/DashboardEmptyState/DashboardEmptyState";
 import styles from "./FanDashboardPage.module.css";
 
 const summaryCards = [
@@ -24,7 +26,7 @@ const summaryCards = [
     },
     {
         label: "Upcoming Matches",
-        value: "3",
+        value: "4",
         detail: "Next 7 Days",
         icon: CalendarDays,
         tone: "blue",
@@ -86,6 +88,17 @@ const upcomingMatches = [
         homeLogo: "/assets/clubs/kobs.jpg",
         awayLogo: "/assets/clubs/buffaloes.png",
     },
+    {
+        id: "pirates-hippos",
+        home: "Black Pirates",
+        away: "Jinja Hippos",
+        sport: "Rugby",
+        date: "Wed, 22 May 2025",
+        time: "4:30 PM",
+        venue: "Kings Park Arena, Bweyogerere",
+        homeLogo: "/assets/clubs/black-pirates.png",
+        awayLogo: "/assets/clubs/jinja-hippos.png",
+    },
 ];
 
 const followedClubs = [
@@ -137,6 +150,13 @@ const latestNews = [
         time: "1 day ago",
         image: "/assets/news/stadium-news.png",
     },
+    {
+        id: "league-super-cup",
+        category: "Preview",
+        title: "Super Cup weekend set to open the new community league calendar",
+        time: "2 days ago",
+        image: "/assets/news/super-cup.png",
+    },
 ];
 
 const memberships = [
@@ -156,17 +176,30 @@ const memberships = [
     },
 ];
 
-const benefits = [
-    "10% Ticket Discounts",
-    "Exclusive Content",
-    "Early Access to Tickets",
-    "Member Only Events",
-];
+const activeTicket = {
+    competition: "Nile Special Rugby Premiership",
+    home: "KCB KOBS",
+    away: "Heathens RFC",
+    date: "Sat, 18 May 2025",
+    time: "4:00 PM",
+    venue: "Kings Park Stadium",
+    stand: "Regular Stand",
+    gate: "Gate B",
+    row: "Row 12",
+    seat: "Seat 23",
+};
 
 function FanDashboardPage() {
     const { currentUser } = useCurrentUser();
     const { logout } = useAuth();
     const navigate = useNavigate();
+    const [isCustomizeOpen, setIsCustomizeOpen] = useState(false);
+    const [isCompactView, setIsCompactView] = useState(false);
+
+    const matchSlots = Array.from({ length: 4 }, (_, index) => upcomingMatches[index] ?? null);
+    const clubSlots = Array.from({ length: 4 }, (_, index) => followedClubs[index] ?? null);
+    const newsSlots = Array.from({ length: 4 }, (_, index) => latestNews[index] ?? null);
+    const membershipSlots = Array.from({ length: 2 }, (_, index) => memberships[index] ?? null);
 
     function handleLogout() {
         logout();
@@ -179,15 +212,22 @@ function FanDashboardPage() {
     }
 
     return (
-        <section className={styles.page}>
+        <section className={`${styles.page} ${isCompactView ? styles.compactPage : ""}`}>
             <div className={styles.pageHeader}>
                 <div>
-                    <h1>Welcome back, {currentUser.name.split(" ")[0]}! 👋</h1>
+                    <h1>Welcome back, {currentUser.name.split(" ")[0]}!</h1>
                     <p>Here&apos;s what&apos;s happening in your world.</p>
                 </div>
 
                 <div className={styles.headerActions}>
-                    <button type="button" className={styles.customizeButton}>
+                    <button
+                        type="button"
+                        className={`${styles.customizeButton} ${isCustomizeOpen ? styles.activeCustomizeButton : ""
+                            }`}
+                        onClick={() => setIsCustomizeOpen((currentValue) => !currentValue)}
+                        aria-expanded={isCustomizeOpen}
+                        aria-controls="dashboard-customize-panel"
+                    >
                         <Settings2 size={18} strokeWidth={2.3} aria-hidden="true" />
                         Customize Dashboard
                     </button>
@@ -202,6 +242,32 @@ function FanDashboardPage() {
                     </button>
                 </div>
             </div>
+
+            {isCustomizeOpen && (
+                <div className={styles.customizePanel} id="dashboard-customize-panel">
+                    <div>
+                        <h2>Customize Dashboard</h2>
+                        <p>
+                            Adjust your dashboard view for easier scanning. We can later persist
+                            these preferences to the backend.
+                        </p>
+                    </div>
+
+                    <label className={styles.customizeOption}>
+                        <input
+                            type="checkbox"
+                            checked={isCompactView}
+                            onChange={(event) => setIsCompactView(event.target.checked)}
+                        />
+                        Use compact dashboard cards
+                    </label>
+
+                    <div className={styles.customizeLinks}>
+                        <Link to="/profile/clubs">Manage followed clubs</Link>
+                        <Link to="/profile/notifications">Notification preferences</Link>
+                    </div>
+                </div>
+            )}
 
             <div className={styles.summaryGrid}>
                 {summaryCards.map((card) => {
@@ -232,33 +298,57 @@ function FanDashboardPage() {
                     </div>
 
                     <div className={styles.matchList}>
-                        {upcomingMatches.map((match) => (
-                            <article className={styles.matchItem} key={match.id}>
-                                <div className={styles.matchTeams}>
-                                    <img src={match.homeLogo} alt="" aria-hidden="true" />
+                        {matchSlots.map((match, index) =>
+                            match ? (
+                                <article
+                                    className={styles.matchItem}
+                                    key={match.id}
+                                    tabIndex={0}
+                                >
+                                    <div className={styles.matchTeams}>
+                                        <img src={match.homeLogo} alt="" aria-hidden="true" />
 
-                                    <div>
-                                        <h3>{match.home}</h3>
-                                        <p>{match.sport}</p>
-                                        <span>
-                                            {match.date} • {match.time}
-                                        </span>
-                                        <small>{match.venue}</small>
+                                        <div>
+                                            <h3>{match.home}</h3>
+                                            <p>{match.sport}</p>
+                                            <span>
+                                                {match.date} • {match.time}
+                                            </span>
+                                            <small>{match.venue}</small>
+                                        </div>
+
+                                        <strong>VS</strong>
+
+                                        <div className={styles.awayTeamBlock}>
+                                            <img src={match.awayLogo} alt="" aria-hidden="true" />
+                                            <small className={styles.awayTeamName}>{match.away}</small>
+                                        </div>
                                     </div>
 
-                                    <strong>VS</strong>
+                                    <div className={styles.matchActions}>
+                                        <Link to="/dashboard/tickets">Tickets</Link>
+                                        <button
+                                            type="button"
+                                            aria-label={`Set alert for ${match.home}`}
+                                        >
+                                            <Bell size={18} strokeWidth={2.2} />
+                                        </button>
+                                    </div>
+                                </article>
+                            ) : (
+                                <article
+                                    className={`${styles.matchItem} ${styles.matchPlaceholder}`}
+                                    key={`match-placeholder-${index}`}
+                                >
+                                    <div>
+                                        <h3>Fixture slot open</h3>
+                                        <p>New match details will appear here once published.</p>
+                                    </div>
 
-                                    <img src={match.awayLogo} alt="" aria-hidden="true" />
-                                </div>
-
-                                <div className={styles.matchActions}>
-                                    <Link to="/dashboard/tickets">Tickets</Link>
-                                    <button type="button" aria-label={`Set alert for ${match.home}`}>
-                                        <Bell size={18} strokeWidth={2.2} />
-                                    </button>
-                                </div>
-                            </article>
-                        ))}
+                                    <Link to="/fixtures">Browse Fixtures</Link>
+                                </article>
+                            )
+                        )}
                     </div>
 
                     <Link to="/fixtures" className={styles.panelFooterLink}>
@@ -273,16 +363,28 @@ function FanDashboardPage() {
                     </div>
 
                     <div className={styles.clubGrid}>
-                        {followedClubs.map((club) => (
-                            <Link to="/clubs" className={styles.clubCard} key={club.id}>
-                                <span>
-                                    <img src={club.logo} alt="" aria-hidden="true" />
-                                </span>
+                        {clubSlots.map((club, index) =>
+                            club ? (
+                                <Link to="/clubs" className={styles.clubCard} key={club.id}>
+                                    <span>
+                                        <img src={club.logo} alt="" aria-hidden="true" />
+                                    </span>
 
-                                <strong>{club.name}</strong>
-                                <small>{club.sport}</small>
-                            </Link>
-                        ))}
+                                    <strong>{club.name}</strong>
+                                    <small>{club.sport}</small>
+                                </Link>
+                            ) : (
+                                <Link
+                                    to="/clubs"
+                                    className={`${styles.clubCard} ${styles.clubPlaceholder}`}
+                                    key={`club-placeholder-${index}`}
+                                >
+                                    <span>+</span>
+                                    <strong>Follow a club</strong>
+                                    <small>Personalize your dashboard</small>
+                                </Link>
+                            )
+                        )}
                     </div>
 
                     <p className={styles.helperText}>
@@ -301,17 +403,33 @@ function FanDashboardPage() {
                     </div>
 
                     <div className={styles.newsList}>
-                        {latestNews.map((news) => (
-                            <Link to="/news" className={styles.newsItem} key={news.id}>
-                                <img src={news.image} alt="" aria-hidden="true" />
+                        {newsSlots.map((news, index) =>
+                            news ? (
+                                <Link to="/news" className={styles.newsItem} key={news.id}>
+                                    <img src={news.image} alt="" aria-hidden="true" />
 
-                                <div>
-                                    <span>{news.category}</span>
-                                    <h3>{news.title}</h3>
-                                    <p>{news.time}</p>
-                                </div>
-                            </Link>
-                        ))}
+                                    <div>
+                                        <span>{news.category}</span>
+                                        <h3>{news.title}</h3>
+                                        <p>{news.time}</p>
+                                    </div>
+                                </Link>
+                            ) : (
+                                <Link
+                                    to="/news"
+                                    className={`${styles.newsItem} ${styles.newsPlaceholder}`}
+                                    key={`news-placeholder-${index}`}
+                                >
+                                    <div className={styles.newsPlaceholderImage}>📰</div>
+
+                                    <div>
+                                        <span>Update pending</span>
+                                        <h3>More club and league news will appear here.</h3>
+                                        <p>Check back soon</p>
+                                    </div>
+                                </Link>
+                            )
+                        )}
                     </div>
                 </section>
 
@@ -322,23 +440,39 @@ function FanDashboardPage() {
                     </div>
 
                     <div className={styles.membershipList}>
-                        {memberships.map((membership) => (
-                            <article className={styles.membershipItem} key={membership.id}>
-                                <img src={membership.logo} alt="" aria-hidden="true" />
+                        {membershipSlots.map((membership, index) =>
+                            membership ? (
+                                <article className={styles.membershipItem} key={membership.id}>
+                                    <img src={membership.logo} alt="" aria-hidden="true" />
 
-                                <div>
-                                    <h3>{membership.club}</h3>
-                                    <p>{membership.sport}</p>
-                                </div>
+                                    <div>
+                                        <h3>{membership.club}</h3>
+                                        <p>{membership.sport}</p>
+                                    </div>
 
-                                <span>
-                                    Valid Until
-                                    <strong>{membership.validUntil}</strong>
-                                </span>
+                                    <span>
+                                        Valid Until
+                                        <strong>{membership.validUntil}</strong>
+                                    </span>
 
-                                <Link to="/dashboard/memberships">View Card</Link>
-                            </article>
-                        ))}
+                                    <Link to="/dashboard/memberships">View Card</Link>
+                                </article>
+                            ) : (
+                                <article
+                                    className={`${styles.membershipItem} ${styles.membershipPlaceholder}`}
+                                    key={`membership-placeholder-${index}`}
+                                >
+                                    <div className={styles.membershipPlaceholderIcon}>♕</div>
+
+                                    <div>
+                                        <h3>No membership yet</h3>
+                                        <p>Join a club to unlock benefits.</p>
+                                    </div>
+
+                                    <Link to="/memberships">Explore</Link>
+                                </article>
+                            )
+                        )}
                     </div>
 
                     <Link to="/dashboard/memberships" className={styles.panelFooterLink}>
@@ -352,66 +486,44 @@ function FanDashboardPage() {
                         <Link to="/dashboard/tickets">View All</Link>
                     </div>
 
-                    <div className={styles.ticketContent}>
-                        <div>
-                            <p>Nile Special Rugby Premiership</p>
-                            <h3>
-                                KCB KOBS
-                                <span>vs</span>
-                                Heathens RFC
-                            </h3>
-                            <p>Sat, 18 May 2025 • 4:00 PM</p>
-                            <p>Kings Park Stadium</p>
-                        </div>
+                    {activeTicket ? (
+                        <div className={styles.ticketContent}>
+                            <div>
+                                <p>{activeTicket.competition}</p>
+                                <h3>
+                                    {activeTicket.home}
+                                    <span>vs</span>
+                                    {activeTicket.away}
+                                </h3>
+                                <p>
+                                    {activeTicket.date} • {activeTicket.time}
+                                </p>
+                                <p>{activeTicket.venue}</p>
+                            </div>
 
-                        <div className={styles.qrTicket}>
-                            <span>Regular Stand</span>
-                            <strong>Gate B</strong>
-                            <p>Row 12</p>
-                            <p>Seat 23</p>
-                            <div className={styles.fakeQr}>
-                                <QrCode size={68} strokeWidth={2.5} aria-hidden="true" />
+                            <div className={styles.qrTicket}>
+                                <span>{activeTicket.stand}</span>
+                                <strong>{activeTicket.gate}</strong>
+                                <p>{activeTicket.row}</p>
+                                <p>{activeTicket.seat}</p>
+                                <div className={styles.fakeQr}>
+                                    <QrCode size={68} strokeWidth={2.5} aria-hidden="true" />
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    ) : (
+                        <DashboardEmptyState
+                            icon="🎟"
+                            title="No active tickets"
+                            message="Your upcoming match tickets will appear here after purchase."
+                            actionLabel="Buy Tickets"
+                            actionTo="/tickets"
+                            compact
+                        />
+                    )}
 
                     <Link to="/dashboard/tickets" className={styles.panelFooterLink}>
                         View All Tickets →
-                    </Link>
-                </section>
-
-                <section className={`${styles.panel} ${styles.rewardsPanel}`}>
-                    <div className={styles.panelHeader}>
-                        <h2>Rewards &amp; Benefits</h2>
-                        <Link to="/profile/clubs">View All</Link>
-                    </div>
-
-                    <div className={styles.rewardSummary}>
-                        <Star size={40} strokeWidth={2.2} aria-hidden="true" />
-
-                        <div>
-                            <strong>1,250</strong>
-                            <p>Total Points</p>
-                        </div>
-
-                        <div className={styles.rewardProgress}>
-                            <span>Next Reward</span>
-                            <strong>1,500 pts</strong>
-                            <div>
-                                <span />
-                            </div>
-                            <small>250 pts to go</small>
-                        </div>
-                    </div>
-
-                    <div className={styles.benefitGrid}>
-                        {benefits.map((benefit) => (
-                            <span key={benefit}>{benefit}</span>
-                        ))}
-                    </div>
-
-                    <Link to="/profile/clubs" className={styles.panelFooterLink}>
-                        Explore All Benefits →
                     </Link>
                 </section>
             </div>

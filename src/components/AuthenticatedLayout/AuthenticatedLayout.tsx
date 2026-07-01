@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { Outlet } from "react-router-dom";
-import LoggedInHeader from "../LoggedInHeader/LoggedInHeader";
+import AuthenticatedFooter from "../AuthenticatedFooter/AuthenticatedFooter";
+import MobileFanNavigation from "../MobileFanNavigation/MobileFanNavigation";
 import UserSidebar from "../UserSidebar/UserSidebar";
 import styles from "./AuthenticatedLayout.module.css";
 
@@ -10,8 +11,6 @@ function AuthenticatedLayout() {
 
     return (
         <div className={styles.shell}>
-            <LoggedInHeader />
-
             <div
                 className={`${styles.body} ${
                     isSidebarCollapsed ? styles.bodySidebarCollapsed : ""
@@ -41,12 +40,20 @@ function AuthenticatedLayout() {
                     )}
                 </button>
 
-                <UserSidebar isCollapsed={isSidebarCollapsed} />
+                <div className={styles.desktopSidebar}>
+                    <UserSidebar isCollapsed={isSidebarCollapsed} />
+                </div>
 
-                <main className={styles.content}>
-                    <Outlet />
-                </main>
+                <div className={styles.contentArea}>
+                    <main className={styles.content}>
+                        <Outlet />
+                    </main>
+
+                    <AuthenticatedFooter />
+                </div>
             </div>
+
+            <MobileFanNavigation />
         </div>
     );
 }
