@@ -57,9 +57,9 @@
   position: relative;
   z-index: 2;
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
-  justify-content: space-between;
+  justify-content: space-between; /* Pushes logo and actions to the ends */
   gap: 1rem;
   width: 100%;
   padding: 1rem 1.5rem; /* Add consistent padding inside the nav */
@@ -1119,7 +1119,7 @@
 .topnav {
   order: 0; /* Keep nav on the same line */
   justify-content: flex-start;
-  flex: 1; /* Allow the nav to take up available space */
+  min-width: 0; /* Prevent flex item from overflowing its container */
   overflow-x: auto; /* Enable horizontal scrolling */
   -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
   scrollbar-width: none; /* Hide scrollbar for Firefox */
@@ -1131,7 +1131,7 @@
 
 .topbar-actions,
 .topbar-auth-actions {
-  margin-left: auto; /* Push actions to the right, opposite the brand */
+  /* No longer needed with justify-content: space-between */
 }
 
 .topbar-user-name,
@@ -1184,8 +1184,9 @@
   .topnav {
     order: 0; /* Reset order */
     width: auto;
-    overflow-x: visible; /* Disable scrolling */
-    margin: 0 auto; /* Center the nav links */
+    justify-content: center; /* Center the links on desktop */
+    flex: 1; /* Allow nav to fill space on desktop */
+    overflow-x: visible; /* Disable scrolling on large screens */
   }
 
   .topbar-user-name,
