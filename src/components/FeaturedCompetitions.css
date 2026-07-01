@@ -1,7 +1,7 @@
 .featured-competitions {
   background-color: transparent;
   padding: 16px 56px 24px;
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-body);
 }
 
 .section-header {
@@ -12,7 +12,7 @@
 }
 
 .section-title {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-heading);
   font-size: 14px;
   font-weight: 600;
   color: #8135FA;

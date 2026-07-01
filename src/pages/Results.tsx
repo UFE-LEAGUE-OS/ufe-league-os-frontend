@@ -130,7 +130,7 @@ function Results() {
   const dates = Object.keys(groupedResults).sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
 
   return (
-    <div style={{ background: '#00030D', minHeight: '100vh', fontFamily: 'Inter, sans-serif', color: '#fff' }}>
+    <div style={{ background: '#00030D', minHeight: '100vh', fontFamily: 'var(--font-body)', color: '#fff' }}>
       <style>{styles}</style>
       <Navbar />
 
@@ -151,7 +151,7 @@ function Results() {
           onMouseLeave={e => e.currentTarget.style.color = '#9CA3AF'}>
             ← Back to Home
           </Link>
-          <h1 style={{ fontFamily: 'League Spartan, sans-serif', fontSize: '2.8rem', fontStyle: 'italic', fontWeight: 800, marginBottom: 8 }}>
+          <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2.8rem', fontStyle: 'italic', fontWeight: 800, marginBottom: 8 }}>
             RESULTS
           </h1>
           <p style={{ color: '#9CA3AF', fontSize: '0.95rem', maxWidth: 600 }}>
@@ -174,7 +174,7 @@ function Results() {
                 border: '1px solid #1F2937',
                 background: league === 'All' ? '#8135FA' : 'transparent',
                 color: league === 'All' ? '#fff' : '#9CA3AF',
-                fontFamily: 'Space Grotesk, sans-serif', fontWeight: 600,
+                fontFamily: 'var(--font-heading)', fontWeight: 600,
                 fontSize: '0.8rem', cursor: 'pointer', transition: 'all 0.2s',
               }}
               onMouseEnter={e => { if (league !== 'All') { e.currentTarget.style.borderColor = '#8135FA'; e.currentTarget.style.color = '#fff'; }}}
@@ -187,11 +187,11 @@ function Results() {
 
         {/* Latest Results by Date */}
         <section style={{ marginBottom: 48 }}>
-          <h2 style={{ fontFamily: 'Space Grotesk, sans-serif', fontWeight: 600, fontSize: '1.15rem', marginBottom: 20 }}>LATEST RESULTS</h2>
+          <h2 style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: '1.15rem', marginBottom: 20 }}>LATEST RESULTS</h2>
           {dates.map(date => (
             <div key={date} style={{ marginBottom: 16 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
-                <span className="results-date-header" style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: '0.85rem', fontWeight: 600, color: '#9CA3AF' }}>
+                <span className="results-date-header" style={{ fontFamily: 'var(--font-heading)', fontSize: '0.85rem', fontWeight: 600, color: '#9CA3AF' }}>
                   {new Date(date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
                 </span>
                 <div style={{ flex: 1, height: 1, background: '#1F2937' }} />
@@ -205,7 +205,7 @@ function Results() {
                     <div key={i} className="results-row" style={{ display: 'grid', gridTemplateColumns: '140px 1fr 90px 1fr 120px', gap: 12, alignItems: 'center', padding: '14px 20px', borderBottom: '1px solid #1F2937', fontSize: '0.85rem', transition: 'background 0.2s' }}
                          onMouseEnter={e => (e.currentTarget.style.background = '#1a1f3a')}
                          onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-                      <span className="comp-col" style={{ fontSize: '0.7rem', color: '#9CA3AF', fontFamily: 'Space Grotesk, sans-serif', fontWeight: 600 }}>
+                      <span className="comp-col" style={{ fontSize: '0.7rem', color: '#9CA3AF', fontFamily: 'var(--font-heading)', fontWeight: 600 }}>
                         <span style={{ color: leagueColors[f.league], marginRight: 4 }}>●</span> {f.competition}
                       </span>
                       <span style={{ fontWeight: winner === 'home' ? 800 : 400, textAlign: 'right', color: winner === 'home' ? '#fff' : '#9CA3AF' }}>{f.teamA}</span>
@@ -228,13 +228,13 @@ function Results() {
         {/* League Standings */}
         <section>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
-            <h2 style={{ fontFamily: 'Space Grotesk, sans-serif', fontWeight: 600, fontSize: '1.15rem', margin: 0 }}>LEAGUE STANDINGS</h2>
+            <h2 style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: '1.15rem', margin: 0 }}>LEAGUE STANDINGS</h2>
             <img src={standingsImg} alt="" style={{ height: 24, opacity: 0.4 }} />
           </div>
           <div className="results-standings-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
             {Object.entries(standings).map(([league, rows]) => (
               <div key={league} style={{ background: '#12131F', borderRadius: 8, padding: 16, border: '1px solid #1F2937' }}>
-                <h3 style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: '0.9rem', fontWeight: 600, marginBottom: 12, color: leagueColors[league], display: 'flex', alignItems: 'center', gap: 6 }}>
+                <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '0.9rem', fontWeight: 600, marginBottom: 12, color: leagueColors[league], display: 'flex', alignItems: 'center', gap: 6 }}>
                   <span style={{ width: 8, height: 8, borderRadius: '50%', background: leagueColors[league] }} />
                   {leagueNames[league]}
                 </h3>

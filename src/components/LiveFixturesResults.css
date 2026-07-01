@@ -3,7 +3,7 @@
   gap: 16px;
   padding: 16px 56px 24px;
   background-color: transparent;
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-body);
 }
 
 .fixtures-col {
@@ -46,7 +46,7 @@
 }
 
 .match-league {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-heading);
   font-weight: 600;
   color: #9CA3AF;
   font-size: 10px;
@@ -63,7 +63,7 @@
 
 .match-time {
   color: #9CA3AF;
-  font-size: 11px;
+  font-size: 14px;
   text-align: right;
 }
 /* Hover effects */

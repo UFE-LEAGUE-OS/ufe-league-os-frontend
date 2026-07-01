@@ -281,7 +281,7 @@
     display: inline-flex;
     align-items: center;
 
-    font-size: 11px;
+    font-size: 14px;
     font-weight: 900;
     text-transform: uppercase;
 }
@@ -757,7 +757,7 @@
     background: rgba(123, 63, 242, 0.16);
     border: 1px solid rgba(123, 63, 242, 0.36);
 
-    font-size: 11px;
+    font-size: 14px;
     font-weight: 900;
     text-decoration: none;
     cursor: pointer;

@@ -87,7 +87,7 @@
 
 .hero-scoreboard strong {
   color: #fff;
-  font-family: 'League Spartan', sans-serif;
+  font-family: var(--font-heading);
   font-size: 4rem;
   line-height: 1;
   font-weight: 800;
@@ -166,7 +166,7 @@
 .cta-banner h2 {
   margin: 0;
   max-width: 13ch;
-  font-family: 'League Spartan', sans-serif;
+  font-family: var(--font-heading);
   font-size: clamp(2.2rem, 4vw, 3.8rem);
   line-height: 0.92;
   text-transform: uppercase;

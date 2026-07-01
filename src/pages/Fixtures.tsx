@@ -69,7 +69,7 @@ function Fixtures() {
   const upcomingFixtures = fixtures.filter(f => f.status === 'upcoming');
 
   return (
-    <div style={{ background: '#00030D', minHeight: '100vh', fontFamily: 'Inter, sans-serif', color: '#fff' }}>
+    <div style={{ background: '#00030D', minHeight: '100vh', fontFamily: 'var(--font-body)', color: '#fff' }}>
       <style>{styles}</style>
       <Navbar />
 
@@ -90,7 +90,7 @@ function Fixtures() {
           onMouseLeave={e => e.currentTarget.style.color = '#9CA3AF'}>
             ← Back to Home
           </Link>
-          <h1 style={{ fontFamily: 'League Spartan, sans-serif', fontSize: '2.8rem', fontStyle: 'italic', fontWeight: 800, marginBottom: 8 }}>
+          <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2.8rem', fontStyle: 'italic', fontWeight: 800, marginBottom: 8 }}>
             FIXTURES
           </h1>
           <p style={{ color: '#9CA3AF', fontSize: '0.95rem', maxWidth: 600 }}>
@@ -113,7 +113,7 @@ function Fixtures() {
                 border: '1px solid #1F2937',
                 background: league === 'All' ? '#8135FA' : 'transparent',
                 color: league === 'All' ? '#fff' : '#9CA3AF',
-                fontFamily: 'Space Grotesk, sans-serif', fontWeight: 600,
+                fontFamily: 'var(--font-heading)', fontWeight: 600,
                 fontSize: '0.8rem', cursor: 'pointer', transition: 'all 0.2s',
               }}
               onMouseEnter={e => { if (league !== 'All') { e.currentTarget.style.borderColor = '#8135FA'; e.currentTarget.style.color = '#fff'; }}}
@@ -127,14 +127,14 @@ function Fixtures() {
         {/* Live Now */}
         {liveFixtures.length > 0 && (
           <section style={{ marginBottom: 40 }}>
-            <h2 style={{ fontFamily: 'Space Grotesk, sans-serif', fontWeight: 600, fontSize: '1.15rem', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <h2 style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: '1.15rem', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
               <span style={{ display: 'inline-block', width: 10, height: 10, borderRadius: '50%', background: '#DC2626', animation: 'pulse 1.5s infinite' }} />
               LIVE NOW
             </h2>
             <div style={{ background: '#12131F', borderRadius: 8, overflow: 'hidden' }}>
               {liveFixtures.map((f, i) => (
                 <div key={i} className="fixtures-live-grid" style={{ display: 'grid', gridTemplateColumns: '140px 1fr auto 1fr 80px', gap: 12, alignItems: 'center', padding: '14px 20px', borderBottom: '1px solid #1F2937' }}>
-                  <span className="comp-col" style={{ fontSize: '0.75rem', color: '#9CA3AF', fontFamily: 'Space Grotesk, sans-serif', fontWeight: 600 }}>{f.competition}</span>
+                  <span className="comp-col" style={{ fontSize: '0.75rem', color: '#9CA3AF', fontFamily: 'var(--font-heading)', fontWeight: 600 }}>{f.competition}</span>
                   <span style={{ fontWeight: 600, textAlign: 'right' }}>{f.teamA}</span>
                   <span style={{ fontWeight: 800, color: '#F97316', textAlign: 'center', fontSize: '1.1rem' }}>{f.scoreA} - {f.scoreB}</span>
                   <span style={{ fontWeight: 600 }}>{f.teamB}</span>
@@ -147,7 +147,7 @@ function Fixtures() {
 
         {/* Upcoming Fixtures */}
         <section style={{ marginBottom: 40 }}>
-          <h2 style={{ fontFamily: 'Space Grotesk, sans-serif', fontWeight: 600, fontSize: '1.15rem', marginBottom: 16 }}>UPCOMING FIXTURES</h2>
+          <h2 style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: '1.15rem', marginBottom: 16 }}>UPCOMING FIXTURES</h2>
           <div style={{ background: '#12131F', borderRadius: 8, overflow: 'hidden' }}>
             <div className="fixtures-upcoming-header" style={{ display: 'grid', gridTemplateColumns: '140px 1fr 90px 1fr 80px 120px', gap: 12, padding: '12px 20px', borderBottom: '1px solid #1F2937', color: '#6B7280', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
               <span className="comp-col">Competition</span>
@@ -161,7 +161,7 @@ function Fixtures() {
               <div key={i} className="fixtures-upcoming-row" style={{ display: 'grid', gridTemplateColumns: '140px 1fr 90px 1fr 80px 120px', gap: 12, alignItems: 'center', padding: '14px 20px', borderBottom: '1px solid #1F2937', fontSize: '0.85rem', transition: 'background 0.2s' }}
                    onMouseEnter={e => (e.currentTarget.style.background = '#1a1f3a')}
                    onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-                <span className="comp-col" style={{ fontSize: '0.7rem', color: '#9CA3AF', fontFamily: 'Space Grotesk, sans-serif', fontWeight: 600 }}>{f.competition}</span>
+                <span className="comp-col" style={{ fontSize: '0.7rem', color: '#9CA3AF', fontFamily: 'var(--font-heading)', fontWeight: 600 }}>{f.competition}</span>
                 <span style={{ fontWeight: 600, textAlign: 'right' }}>{f.teamA}</span>
                 <span style={{ color: '#6B7280', textAlign: 'center' }}>-</span>
                 <span style={{ fontWeight: 600 }}>{f.teamB}</span>
@@ -176,7 +176,7 @@ function Fixtures() {
 
         {/* Fixtures Calendar */}
         <section>
-          <h2 style={{ fontFamily: 'Space Grotesk, sans-serif', fontWeight: 600, fontSize: '1.15rem', marginBottom: 16 }}>FIXTURES CALENDAR</h2>
+          <h2 style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: '1.15rem', marginBottom: 16 }}>FIXTURES CALENDAR</h2>
           <div className="fixtures-calendar" style={{ background: '#12131F', borderRadius: 8, padding: 24, border: '1px solid #1F2937' }}>
             <div className="fixtures-calendar-days" style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 8, marginBottom: 16 }}>
               {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (

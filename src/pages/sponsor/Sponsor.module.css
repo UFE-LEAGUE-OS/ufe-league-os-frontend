@@ -8,7 +8,7 @@
   background-position: center center;
   background-attachment: fixed;
   color: #fff;
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-body);
   display: flex;
   flex-direction: column;
 }
@@ -73,7 +73,7 @@
 /* ── Hero text (type select page) ── */
 .heroText { margin-bottom: 28px; }
 .heroText h1 {
-  font-family: 'Arial Black', Gadget, sans-serif;
+  font-family: var(--font-heading);
   font-size: clamp(1.8rem, 3vw, 2.6rem);
   font-weight: 900;
   margin: 0 0 10px;
@@ -193,7 +193,7 @@
   color: rgba(255,255,255,0.7);
   margin: 0;
 }
-.sectionHint { font-size: 11px; color: rgba(255,255,255,0.4); margin: -6px 0 0; }
+.sectionHint { font-size: 14px; color: rgba(255,255,255,0.4); margin: -6px 0 0; }
 
 .fieldRow { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 
@@ -203,7 +203,7 @@
   gap: 6px;
 }
 .field label {
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 700;
   letter-spacing: 0.07em;
   text-transform: uppercase;
@@ -230,7 +230,7 @@
 .field textarea::placeholder { color: rgba(255,255,255,0.25); }
 .field select option { background: #0d0f1e; color: #fff; }
 
-.fieldError { font-size: 11px; color: #f87171; }
+.fieldError { font-size: 14px; color: #f87171; }
 .fieldHint  { font-size: 10px; color: rgba(255,255,255,0.35); }
 
 /* ── Chips ── */

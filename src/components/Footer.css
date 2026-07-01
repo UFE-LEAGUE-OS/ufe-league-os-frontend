@@ -1,7 +1,7 @@
 .footer {
   background-color: #00030D;
   padding: 40px 56px 24px;
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-body);
   color: #ffffff;
 }
 
@@ -37,7 +37,7 @@
 }
 
 .footer-col h4 {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-heading);
   font-size: 12px;
   font-weight: 600;
   color: #ffffff;
