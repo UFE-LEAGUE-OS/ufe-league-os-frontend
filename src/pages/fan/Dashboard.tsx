@@ -9,11 +9,17 @@ import {
     Ticket,
     Users,
 } from "lucide-react";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useCurrentUser } from "../../hooks/useCurrentUser";
 import { useAuth } from "../../hooks/useAuth";
 import DashboardEmptyState from "../../components/DashboardEmptyState/DashboardEmptyState";
+import {
+    createMyMembershipCard,
+    getMyMembership,
+    type BackendMembershipCard,
+    type BackendMembershipSubscription,
+} from "../../services/fanMembershipService";
 import styles from "./FanDashboardPage.module.css";
 
 const summaryCards = [
@@ -159,22 +165,90 @@ const latestNews = [
     },
 ];
 
-const memberships = [
-    {
-        id: "kobs-membership",
-        club: "KCB KOBS",
-        sport: "Rugby Club",
-        validUntil: "18 May 2026",
-        logo: "/assets/clubs/kobs.jpg",
-    },
-    {
-        id: "villa-membership",
-        club: "SC Villa",
-        sport: "Football Club",
-        validUntil: "12 Aug 2025",
-        logo: "/assets/clubs/sc-villa.png",
-    },
-];
+interface DashboardMembership {
+    id: string;
+    club: string;
+    sport: string;
+    tier: string;
+    validUntil: string;
+    memberNumber: string;
+    logo: string;
+}
+
+function formatDashboardMembershipDate(value?: string | null) {
+    if (!value) {
+        return "Date pending";
+    }
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+        return "Date pending";
+    }
+
+    return date.toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+    });
+}
+
+function normalizeDashboardMembershipTier(value?: string) {
+    if (!value) {
+        return "Member";
+    }
+
+    const cleanValue = value.replace(/_/g, " ").trim();
+
+    return `${cleanValue.charAt(0).toUpperCase()}${cleanValue.slice(1).toLowerCase()} Member`;
+}
+
+function buildDashboardClubInitials(name: string) {
+    return (
+        name
+            .split(/\s+/)
+            .filter(Boolean)
+            .slice(0, 2)
+            .map((part) => part[0]?.toUpperCase())
+            .join("") || "LO"
+    );
+}
+
+function mapBackendDashboardMembership(
+    subscription: BackendMembershipSubscription,
+    card?: BackendMembershipCard | null,
+): DashboardMembership {
+    const activeCard = card ?? subscription.card ?? null;
+    const clubName = subscription.club_name || activeCard?.club_name || "Club Membership";
+    const tierSource = activeCard?.tier || subscription.plan_name;
+    const validUntil = activeCard?.valid_until || subscription.ends_at;
+
+    return {
+        id: String(subscription.id),
+        club: clubName,
+        sport: `${normalizeDashboardMembershipTier(tierSource)} • Club Membership`,
+        tier: normalizeDashboardMembershipTier(tierSource),
+        validUntil: formatDashboardMembershipDate(validUntil),
+        memberNumber: activeCard?.card_number || `MEMBERSHIP-${subscription.id}`,
+        logo: "",
+    };
+}
+
+function DashboardMembershipLogo({
+    logo,
+    club,
+}: {
+    logo: string;
+    club: string;
+}) {
+    return logo ? (
+        <img src={logo} alt="" aria-hidden="true" />
+    ) : (
+        <span className={styles.membershipClubMark}>
+            {buildDashboardClubInitials(club)}
+        </span>
+    );
+}
 
 const activeTicket = {
     competition: "Nile Special Rugby Premiership",
@@ -195,11 +269,46 @@ function FanDashboardPage() {
     const navigate = useNavigate();
     const [isCustomizeOpen, setIsCustomizeOpen] = useState(false);
     const [isCompactView, setIsCompactView] = useState(false);
+    const [dashboardMemberships, setDashboardMemberships] = useState<DashboardMembership[]>([]);
+    const [isLoadingMemberships, setIsLoadingMemberships] = useState(true);
+    const [membershipError, setMembershipError] = useState("");
+
+    const loadDashboardMemberships = useCallback(async () => {
+        setIsLoadingMemberships(true);
+        setMembershipError("");
+
+        try {
+            const subscription = await getMyMembership();
+
+            if (!subscription) {
+                setDashboardMemberships([]);
+                return;
+            }
+
+            const card = subscription.card ?? (await createMyMembershipCard());
+
+            setDashboardMemberships([
+                mapBackendDashboardMembership(subscription, card),
+            ]);
+        } catch {
+            setDashboardMemberships([]);
+            setMembershipError(
+                "We could not load your membership card. Confirm the backend is running and you are logged in.",
+            );
+        } finally {
+            setIsLoadingMemberships(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        void loadDashboardMemberships();
+    }, [loadDashboardMemberships]);
 
     const matchSlots = Array.from({ length: 4 }, (_, index) => upcomingMatches[index] ?? null);
     const clubSlots = Array.from({ length: 4 }, (_, index) => followedClubs[index] ?? null);
     const newsSlots = Array.from({ length: 4 }, (_, index) => latestNews[index] ?? null);
-    const membershipSlots = Array.from({ length: 2 }, (_, index) => memberships[index] ?? null);
+    const membershipSlots =
+        dashboardMemberships.length > 0 ? dashboardMemberships.slice(0, 2) : [null];
 
     function handleLogout() {
         logout();
@@ -440,39 +549,100 @@ function FanDashboardPage() {
                     </div>
 
                     <div className={styles.membershipList}>
-                        {membershipSlots.map((membership, index) =>
-                            membership ? (
-                                <article className={styles.membershipItem} key={membership.id}>
-                                    <img src={membership.logo} alt="" aria-hidden="true" />
+                        {isLoadingMemberships ? (
+                            <article
+                                className={`${styles.membershipItem} ${styles.membershipPlaceholder}`}
+                            >
+                                <div className={styles.membershipPlaceholderIcon}>♕</div>
 
-                                    <div>
-                                        <h3>{membership.club}</h3>
-                                        <p>{membership.sport}</p>
-                                    </div>
+                                <div>
+                                    <h3>Loading memberships</h3>
+                                    <p>Checking your active club card.</p>
+                                </div>
+                            </article>
+                        ) : null}
 
-                                    <span>
-                                        Valid Until
-                                        <strong>{membership.validUntil}</strong>
-                                    </span>
+                        {!isLoadingMemberships && membershipError ? (
+                            <article
+                                className={`${styles.membershipItem} ${styles.membershipPlaceholder}`}
+                            >
+                                <div className={styles.membershipPlaceholderIcon}>!</div>
 
-                                    <Link to="/dashboard/memberships">View Card</Link>
-                                </article>
-                            ) : (
-                                <article
-                                    className={`${styles.membershipItem} ${styles.membershipPlaceholder}`}
-                                    key={`membership-placeholder-${index}`}
+                                <div>
+                                    <h3>Membership sync issue</h3>
+                                    <p>{membershipError}</p>
+                                </div>
+
+                                <button
+                                    type="button"
+                                    className={styles.membershipRetryButton}
+                                    onClick={loadDashboardMemberships}
                                 >
-                                    <div className={styles.membershipPlaceholderIcon}>♕</div>
+                                    Retry
+                                </button>
+                            </article>
+                        ) : null}
 
-                                    <div>
-                                        <h3>No membership yet</h3>
-                                        <p>Join a club to unlock benefits.</p>
-                                    </div>
+                        {!isLoadingMemberships && !membershipError
+                            ? membershipSlots.map((membership, index) =>
+                                  membership ? (
+                                      <article
+                                          className={`${styles.membershipItem} ${styles.membershipPassCard}`}
+                                          key={membership.id}
+                                      >
+                                          <div className={styles.membershipPassTop}>
+                                              <DashboardMembershipLogo
+                                                  logo={membership.logo}
+                                                  club={membership.club}
+                                              />
 
-                                    <Link to="/memberships">Explore</Link>
-                                </article>
-                            )
-                        )}
+                                              <div>
+                                                  <span>Active Club Card</span>
+                                                  <h3>{membership.club}</h3>
+                                                  <p>{membership.tier}</p>
+                                              </div>
+
+                                              <strong className={styles.membershipStatusPill}>
+                                                  Active
+                                              </strong>
+                                          </div>
+
+                                          <div className={styles.membershipPassMeta}>
+                                              <span>
+                                                  Valid Until
+                                                  <strong>{membership.validUntil}</strong>
+                                              </span>
+
+                                              <span>
+                                                  Member No.
+                                                  <strong>{membership.memberNumber}</strong>
+                                              </span>
+                                          </div>
+
+                                          <div className={styles.membershipPassBottom}>
+                                              <p>{membership.sport}</p>
+                                              <Link to="/dashboard/memberships">View Digital Card</Link>
+                                          </div>
+                                      </article>
+                                  ) : (
+                                      <article
+                                          className={`${styles.membershipItem} ${styles.membershipPlaceholder}`}
+                                          key={`membership-placeholder-${index}`}
+                                      >
+                                          <div className={styles.membershipPlaceholderIcon}>
+                                              ♕
+                                          </div>
+
+                                          <div>
+                                              <h3>No membership yet</h3>
+                                              <p>Join a club to unlock benefits.</p>
+                                          </div>
+
+                                          <Link to="/memberships">Explore</Link>
+                                      </article>
+                                  ),
+                              )
+                            : null}
                     </div>
 
                     <Link to="/dashboard/memberships" className={styles.panelFooterLink}>
