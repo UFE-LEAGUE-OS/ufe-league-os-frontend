@@ -29,6 +29,12 @@ import {
     type BackendPaymentItem,
     type WalletSummary,
 } from "../../services/fanPaymentService";
+import {
+    getPublicClubs,
+    getPublicFixtures,
+    type PublicClubApi,
+    type PublicFixtureApi,
+} from "../../services/publicDashboardService";
 import styles from "./FanDashboardPage.module.css";
 
 const summaryCards = [
@@ -66,80 +72,6 @@ const summaryCards = [
         detail: "Clubs / Teams",
         icon: Users,
         tone: "blue",
-    },
-];
-
-const upcomingMatches = [
-    {
-        id: "kobs-heathens",
-        home: "KCB KOBS",
-        away: "Heathens RFC",
-        sport: "Rugby",
-        date: "Sat, 18 May 2025",
-        time: "4:00 PM",
-        venue: "Kings Park Stadium, Kampala",
-        homeLogo: "/assets/clubs/kobs.jpg",
-        awayLogo: "/assets/clubs/platinum-heathens.jpg",
-    },
-    {
-        id: "villa-vipers",
-        home: "SC Villa",
-        away: "Vipers SC",
-        sport: "Football",
-        date: "Sun, 19 May 2025",
-        time: "4:00 PM",
-        venue: "Mandela National Stadium",
-        homeLogo: "/assets/clubs/sc-villa.png",
-        awayLogo: "/assets/clubs/vipers-sc.png",
-    },
-    {
-        id: "kobs-women-buffaloes",
-        home: "KOBS Women",
-        away: "Toyota Buffaloes",
-        sport: "Rugby",
-        date: "Mon, 20 May 2025",
-        time: "3:00 PM",
-        venue: "Kings Park Stadium, Kampala",
-        homeLogo: "/assets/clubs/kobs.jpg",
-        awayLogo: "/assets/clubs/buffaloes.png",
-    },
-    {
-        id: "pirates-hippos",
-        home: "Black Pirates",
-        away: "Jinja Hippos",
-        sport: "Rugby",
-        date: "Wed, 22 May 2025",
-        time: "4:30 PM",
-        venue: "Kings Park Arena, Bweyogerere",
-        homeLogo: "/assets/clubs/black-pirates.png",
-        awayLogo: "/assets/clubs/jinja-hippos.png",
-    },
-];
-
-const followedClubs = [
-    {
-        id: "kobs",
-        name: "KCB KOBS",
-        sport: "Rugby Club",
-        logo: "/assets/clubs/kobs.jpg",
-    },
-    {
-        id: "sc-villa",
-        name: "SC Villa",
-        sport: "Football Club",
-        logo: "/assets/clubs/sc-villa.png",
-    },
-    {
-        id: "city-oilers",
-        name: "City Oilers",
-        sport: "Basketball Club",
-        logo: "/assets/clubs/city-oilers.png",
-    },
-    {
-        id: "kobs-women",
-        name: "KOBS Women",
-        sport: "Rugby Team",
-        logo: "/assets/clubs/kobs.jpg",
     },
 ];
 
@@ -260,6 +192,87 @@ function buildDashboardClubInitials(name: string) {
             .map((part) => part[0]?.toUpperCase())
             .join("") || "LO"
     );
+}
+
+interface DashboardMatch {
+    id: string;
+    home: string;
+    away: string;
+    sport: string;
+    date: string;
+    time: string;
+    venue: string;
+    homeLogo: string;
+    awayLogo: string;
+}
+
+interface DashboardClub {
+    id: string;
+    name: string;
+    slug: string;
+    sport: string;
+    logo: string;
+}
+
+function formatDashboardFixtureDate(value?: string | null) {
+    if (!value) {
+        return {
+            date: "Date pending",
+            time: "Kickoff TBA",
+        };
+    }
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+        return {
+            date: "Date pending",
+            time: "Kickoff TBA",
+        };
+    }
+
+    return {
+        date: date.toLocaleDateString("en-GB", {
+            weekday: "short",
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+        }),
+        time: date.toLocaleTimeString("en-GB", {
+            hour: "2-digit",
+            minute: "2-digit",
+        }),
+    };
+}
+
+function mapPublicFixtureToDashboardMatch(
+    fixture: PublicFixtureApi,
+): DashboardMatch {
+    const dateParts = formatDashboardFixtureDate(fixture.match_date);
+
+    return {
+        id: String(fixture.id),
+        home: fixture.home_club_name || "Home Team",
+        away: fixture.away_club_name || "Away Team",
+        sport: fixture.competition_name || "League OS Fixture",
+        date: dateParts.date,
+        time: dateParts.time,
+        venue: fixture.venue || "Venue to be confirmed",
+        homeLogo: fixture.home_club_logo_url || "",
+        awayLogo: fixture.away_club_logo_url || "",
+    };
+}
+
+function mapPublicClubToDashboardClub(club: PublicClubApi): DashboardClub {
+    return {
+        id: String(club.id),
+        name: club.name,
+        slug: club.slug,
+        sport: club.sport_display
+            ? `${club.sport_display} Club`
+            : "Club",
+        logo: club.logo_url || club.logo || "",
+    };
 }
 
 function mapBackendDashboardMembership(
@@ -502,6 +515,12 @@ function FanDashboardPage() {
     const [walletSummary, setWalletSummary] = useState<WalletSummary | null>(null);
     const [isLoadingPayments, setIsLoadingPayments] = useState(true);
     const [paymentError, setPaymentError] = useState("");
+    const [dashboardMatches, setDashboardMatches] = useState<DashboardMatch[]>([]);
+    const [isLoadingFixtures, setIsLoadingFixtures] = useState(true);
+    const [fixtureError, setFixtureError] = useState("");
+    const [dashboardClubs, setDashboardClubs] = useState<DashboardClub[]>([]);
+    const [isLoadingClubs, setIsLoadingClubs] = useState(true);
+    const [clubError, setClubError] = useState("");
 
     const loadDashboardMemberships = useCallback(async () => {
         setIsLoadingMemberships(true);
@@ -533,6 +552,54 @@ function FanDashboardPage() {
     useEffect(() => {
         void loadDashboardMemberships();
     }, [loadDashboardMemberships]);
+
+    const loadDashboardFixtures = useCallback(async () => {
+        setIsLoadingFixtures(true);
+        setFixtureError("");
+
+        try {
+            const fixtures = await getPublicFixtures();
+
+            setDashboardMatches(
+                fixtures
+                    .filter((fixture) => fixture.status !== "COMPLETED")
+                    .map(mapPublicFixtureToDashboardMatch)
+                    .slice(0, 4),
+            );
+        } catch {
+            setDashboardMatches([]);
+            setFixtureError(
+                "We could not load backend fixtures from staging. Confirm the public fixtures API is available.",
+            );
+        } finally {
+            setIsLoadingFixtures(false);
+        }
+    }, []);
+
+    const loadDashboardClubs = useCallback(async () => {
+        setIsLoadingClubs(true);
+        setClubError("");
+
+        try {
+            const clubs = await getPublicClubs();
+
+            setDashboardClubs(
+                clubs.map(mapPublicClubToDashboardClub).slice(0, 4),
+            );
+        } catch {
+            setDashboardClubs([]);
+            setClubError(
+                "We could not load backend clubs from staging. Confirm the public clubs API is available.",
+            );
+        } finally {
+            setIsLoadingClubs(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        void loadDashboardFixtures();
+        void loadDashboardClubs();
+    }, [loadDashboardClubs, loadDashboardFixtures]);
 
     const loadDashboardTickets = useCallback(async () => {
         setIsLoadingTickets(true);
@@ -577,10 +644,16 @@ function FanDashboardPage() {
         void loadDashboardPayments();
     }, [loadDashboardPayments, loadDashboardTickets]);
 
-    const matchSlots = Array.from({ length: 4 }, (_, index) => upcomingMatches[index] ?? null);
+    const matchSlots = Array.from(
+        { length: 4 },
+        (_, index) => dashboardMatches[index] ?? null,
+    );
     const activeDashboardMatchId =
         selectedDashboardMatchId ?? matchSlots.find((match) => match)?.id ?? null;
-    const clubSlots = Array.from({ length: 4 }, (_, index) => followedClubs[index] ?? null);
+    const clubSlots = Array.from(
+        { length: 4 },
+        (_, index) => dashboardClubs[index] ?? null,
+    );
     const newsSlots = Array.from({ length: 3 }, (_, index) => latestNews[index] ?? null);
     const membershipSlots =
         dashboardMemberships.length > 0 ? dashboardMemberships.slice(0, 2) : [null];
@@ -604,11 +677,27 @@ function FanDashboardPage() {
             };
         }
 
+        if (card.label === "Upcoming Matches") {
+            return {
+                ...card,
+                value: isLoadingFixtures ? "…" : String(dashboardMatches.length),
+                detail: "From Backend",
+            };
+        }
+
         if (card.label === "Tickets") {
             return {
                 ...card,
                 value: isLoadingTickets ? "…" : String(dashboardTicket ? 1 : 0),
                 detail: dashboardTicket ? "Upcoming" : "Upcoming",
+            };
+        }
+
+        if (card.label === "Following") {
+            return {
+                ...card,
+                value: isLoadingClubs ? "…" : String(dashboardClubs.length),
+                detail: "Backend Clubs",
             };
         }
 
@@ -713,6 +802,30 @@ function FanDashboardPage() {
                         <Link to="/fixtures">View All</Link>
                     </div>
 
+                    {isLoadingFixtures ? (
+                        <DashboardEmptyState
+                            icon="🏟️"
+                            title="Loading fixtures"
+                            message="Checking the backend fixture schedule."
+                            actionLabel="View Fixtures"
+                            actionTo="/fixtures"
+                            compact
+                        />
+                    ) : null}
+
+                    {!isLoadingFixtures && fixtureError ? (
+                        <div className={styles.dashboardSyncCard}>
+                            <div>
+                                <h3>Fixture sync issue</h3>
+                                <p>{fixtureError}</p>
+                            </div>
+
+                            <button type="button" onClick={loadDashboardFixtures}>
+                                Retry
+                            </button>
+                        </div>
+                    ) : null}
+
                     <div className={styles.dashboardMatchList}>
                         {matchSlots.map((match, index) =>
                             match ? (
@@ -732,21 +845,33 @@ function FanDashboardPage() {
                                             {match.home}
                                         </strong>
 
-                                        <img
-                                            className={styles.dashboardMatchLogo}
-                                            src={match.homeLogo}
-                                            alt=""
-                                            aria-hidden="true"
-                                        />
+                                        {match.homeLogo ? (
+                                            <img
+                                                className={styles.dashboardMatchLogo}
+                                                src={match.homeLogo}
+                                                alt=""
+                                                aria-hidden="true"
+                                            />
+                                        ) : (
+                                            <span className={styles.dashboardMatchLogo}>
+                                                {buildDashboardClubInitials(match.home)}
+                                            </span>
+                                        )}
 
                                         <span className={styles.dashboardMatchVs}>VS</span>
 
-                                        <img
-                                            className={styles.dashboardMatchLogo}
-                                            src={match.awayLogo}
-                                            alt=""
-                                            aria-hidden="true"
-                                        />
+                                        {match.awayLogo ? (
+                                            <img
+                                                className={styles.dashboardMatchLogo}
+                                                src={match.awayLogo}
+                                                alt=""
+                                                aria-hidden="true"
+                                            />
+                                        ) : (
+                                            <span className={styles.dashboardMatchLogo}>
+                                                {buildDashboardClubInitials(match.away)}
+                                            </span>
+                                        )}
 
                                         <strong className={styles.dashboardMatchTeamName}>
                                             {match.away}
@@ -807,12 +932,44 @@ function FanDashboardPage() {
                         <Link to="/profile/clubs">View All</Link>
                     </div>
 
+                    {isLoadingClubs ? (
+                        <DashboardEmptyState
+                            icon="⭐"
+                            title="Loading clubs"
+                            message="Checking backend clubs from staging."
+                            actionLabel="Explore Clubs"
+                            actionTo="/clubs"
+                            compact
+                        />
+                    ) : null}
+
+                    {!isLoadingClubs && clubError ? (
+                        <div className={styles.dashboardSyncCard}>
+                            <div>
+                                <h3>Club sync issue</h3>
+                                <p>{clubError}</p>
+                            </div>
+
+                            <button type="button" onClick={loadDashboardClubs}>
+                                Retry
+                            </button>
+                        </div>
+                    ) : null}
+
                     <div className={styles.clubGrid}>
                         {clubSlots.map((club, index) =>
                             club ? (
-                                <Link to="/clubs" className={styles.clubCard} key={club.id}>
+                                <Link
+                                    to={`/clubs/${club.slug}`}
+                                    className={styles.clubCard}
+                                    key={club.id}
+                                >
                                     <span>
-                                        <img src={club.logo} alt="" aria-hidden="true" />
+                                        {club.logo ? (
+                                            <img src={club.logo} alt="" aria-hidden="true" />
+                                        ) : (
+                                            buildDashboardClubInitials(club.name)
+                                        )}
                                     </span>
 
                                     <strong>{club.name}</strong>
