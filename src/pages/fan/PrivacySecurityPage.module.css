@@ -3,7 +3,7 @@
 }
 
 .pageHeader {
-    margin-bottom: 28px;
+    margin-bottom: 24px;
 
     display: flex;
     align-items: flex-start;
@@ -11,9 +11,20 @@
     gap: 24px;
 }
 
+.eyebrow {
+    display: inline-flex;
+    margin-bottom: 10px;
+
+    color: #c084fc;
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
 .pageHeader h1 {
     margin: 0;
-    font-size: clamp(32px, 3vw, 46px);
+    font-size: clamp(38px, 4vw, 56px);
     font-weight: 900;
     letter-spacing: -0.045em;
 }
@@ -21,17 +32,24 @@
 .pageHeader p {
     max-width: 840px;
     margin: 8px 0 0;
+
     color: rgba(255, 255, 255, 0.68);
-    font-size: 17px;
+    font-size: 16px;
+    line-height: 1.55;
 }
 
 .primaryHeaderAction,
 .panelHeader button,
 .passwordForm button,
 .removeSessionButton,
-.warningCard button,
-.supportCard a {
-    border-radius: 6px;
+.currentSessionButton,
+.supportCard a,
+.dataActions a,
+.dataActions button,
+.dangerCard button {
+    min-height: 42px;
+    border-radius: 9px;
+    padding: 0 16px;
 
     display: inline-flex;
     align-items: center;
@@ -39,147 +57,170 @@
     gap: 8px;
 
     font-family: var(--font-subhead);
+    font-size: 13px;
     font-weight: 900;
     text-decoration: none;
+    cursor: pointer;
 
     transition:
-        transform 0.2s ease,
-        background-color 0.2s ease,
-        border-color 0.2s ease,
-        box-shadow 0.2s ease;
+        transform 0.18s ease,
+        border-color 0.18s ease,
+        background-color 0.18s ease,
+        box-shadow 0.18s ease;
 }
 
 .primaryHeaderAction {
-    height: 42px;
-    border: 1px solid var(--color-vivid-violet);
-    padding: 0 18px;
-
     color: #ffffff;
-    background: var(--color-vivid-violet);
+    background: linear-gradient(135deg, var(--color-vivid-violet), #6d28d9);
+    border: 1px solid rgba(168, 85, 247, 0.74);
+}
 
-    font-size: 13px;
-    cursor: pointer;
+.primaryHeaderAction:hover,
+.panelHeader button:hover,
+.passwordForm button:hover,
+.removeSessionButton:hover,
+.supportCard a:hover,
+.dataActions a:hover,
+.dataActions button:hover,
+.dangerCard button:hover {
+    transform: translateY(-2px);
 }
 
 .saveMessage,
 .summaryCard,
 .panel,
-.warningCard,
-.supportCard {
+.securityScoreCard,
+.supportCard,
+.dangerCard,
+.dataControlBanner {
     background: linear-gradient(
         135deg,
         rgba(15, 23, 42, 0.9),
-        rgba(2, 6, 23, 0.62)
+        rgba(2, 6, 23, 0.66)
     );
-    border: 1px solid rgba(255, 255, 255, 0.13);
+    border: 1px solid rgba(255, 255, 255, 0.12);
     box-shadow: 0 18px 44px rgba(0, 0, 0, 0.24);
     backdrop-filter: blur(8px);
 }
 
 .saveMessage {
-    min-height: 50px;
-    border-radius: 8px;
-    padding: 0 18px;
-    margin-bottom: 20px;
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 18px;
 
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 9px;
 
-    color: #22c55e;
-    border-color: rgba(34, 197, 94, 0.4);
-    background: linear-gradient(
-        135deg,
-        rgba(34, 197, 94, 0.13),
-        rgba(15, 23, 42, 0.78)
-    );
+    color: #ffffff;
+    background: rgba(34, 197, 94, 0.12);
+    border-color: rgba(34, 197, 94, 0.28);
 
-    font-size: 14px;
-    font-weight: 900;
+    font-size: 13px;
+    font-weight: 800;
 }
 
 .summaryGrid {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 18px;
-    margin-bottom: 26px;
+    gap: 16px;
+    margin-bottom: 22px;
 }
 
 .summaryCard {
-    min-height: 112px;
-    border-radius: 8px;
-    padding: 22px;
+    min-height: 120px;
+    border-radius: 12px;
+    padding: 20px;
 
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 18px;
+    gap: 16px;
+
+    transition:
+        transform 0.18s ease,
+        border-color 0.18s ease,
+        box-shadow 0.18s ease;
+}
+
+.summaryCard:hover,
+.panel:hover,
+.securityScoreCard:hover,
+.supportCard:hover,
+.dangerCard:hover,
+.dataControlBanner:hover {
+    transform: translateY(-2px);
+    border-color: rgba(168, 85, 247, 0.42);
+    box-shadow: 0 22px 52px rgba(0, 0, 0, 0.3);
 }
 
 .summaryCard p {
     margin: 0;
-    color: rgba(255, 255, 255, 0.76);
-    font-size: 14px;
-    font-weight: 800;
+    color: rgba(255, 255, 255, 0.66);
+    font-size: 13px;
+    font-weight: 900;
 }
 
 .summaryCard strong {
     display: block;
     margin-top: 8px;
-
     color: #ffffff;
-    font-size: 30px;
+    font-size: 28px;
     font-weight: 900;
     line-height: 1;
 }
 
 .summaryCard span {
     display: block;
-    margin-top: 8px;
-
-    color: rgba(255, 255, 255, 0.56);
-    font-size: 13px;
-    font-weight: 700;
+    margin-top: 7px;
+    color: rgba(255, 255, 255, 0.54);
+    font-size: 12px;
+    font-weight: 800;
 }
 
 .purple svg {
     color: var(--color-vivid-violet);
 }
 
-.orange svg {
-    color: #ff5a18;
-}
-
-.blue svg {
-    color: #5b7cff;
-}
-
 .green svg {
     color: #22c55e;
 }
 
+.orange svg {
+    color: #fb923c;
+}
+
+.blue svg {
+    color: #60a5fa;
+}
+
 .layoutGrid {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 390px;
-    align-items: start;
+    grid-template-columns: minmax(0, 1fr) 380px;
     gap: 26px;
+    align-items: start;
 }
 
 .mainColumn,
 .sideColumn {
+    min-width: 0;
+
     display: grid;
+    align-content: start;
     gap: 24px;
 }
 
 .panel,
-.warningCard,
-.supportCard {
-    border-radius: 10px;
+.securityScoreCard,
+.supportCard,
+.dangerCard,
+.dataControlBanner {
+    border-radius: 14px;
     padding: 22px;
 }
 
 .panelHeader {
-    margin-bottom: 20px;
+    margin-bottom: 18px;
 
     display: flex;
     align-items: flex-start;
@@ -189,35 +230,32 @@
 
 .panelHeader h2,
 .sidePanelHeader h2,
-.warningCard h2,
-.supportCard h2 {
+.securityScoreCard h2,
+.supportCard h2,
+.dangerCard h2,
+.dataControlBanner h2 {
     margin: 0;
     color: #ffffff;
-    font-size: 21px;
+    font-size: 19px;
     font-weight: 900;
 }
 
 .panelHeader p,
 .sidePanelHeader p,
-.warningCard p,
-.supportCard p {
-    margin: 8px 0 0;
-    color: rgba(255, 255, 255, 0.64);
-    font-size: 14px;
-    line-height: 1.5;
+.securityScoreCard p,
+.supportCard p,
+.dangerCard p,
+.dataControlBanner p {
+    margin: 6px 0 0;
+    color: rgba(255, 255, 255, 0.62);
+    font-size: 13px;
+    line-height: 1.45;
 }
 
 .panelHeader button {
-    min-height: 38px;
     border: 1px solid rgba(123, 63, 242, 0.52);
-    padding: 0 14px;
-
-    color: var(--color-vivid-violet);
-    background: rgba(123, 63, 242, 0.1);
-
-    font-size: 13px;
-    white-space: nowrap;
-    cursor: pointer;
+    color: #ffffff;
+    background: rgba(123, 63, 242, 0.14);
 }
 
 .checklistGrid {
@@ -227,24 +265,45 @@
 }
 
 .checklistCard {
-    min-height: 116px;
-    border-radius: 10px;
-    padding: 18px;
+    min-height: 82px;
+    border-radius: 12px;
+    padding: 14px;
 
     display: grid;
-    grid-template-columns: 54px minmax(0, 1fr) auto;
+    grid-template-columns: 46px minmax(0, 1fr) auto;
     align-items: center;
-    gap: 14px;
+    gap: 12px;
 
-    background: rgba(15, 23, 42, 0.62);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(2, 6, 23, 0.48);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+
+    transition:
+        min-height 0.18s ease,
+        transform 0.18s ease,
+        border-color 0.18s ease,
+        background-color 0.18s ease;
+}
+
+.checklistCard:hover,
+.checklistCard:focus-within {
+    min-height: 112px;
+    transform: translateY(-2px);
+    border-color: rgba(168, 85, 247, 0.42);
+    background:
+        radial-gradient(circle at 0% 0%, rgba(123, 63, 242, 0.14), transparent 42%),
+        rgba(2, 6, 23, 0.54);
 }
 
 .checklistIcon,
 .sidePanelHeader > span,
-.sessionIcon {
-    width: 50px;
-    height: 50px;
+.sessionIcon,
+.securityControlCard > span,
+.supportCard > span,
+.dangerCard > span,
+.securityScoreCard > span,
+.loginEventItem > span {
+    width: 46px;
+    height: 46px;
     border-radius: 999px;
 
     display: inline-flex;
@@ -253,182 +312,174 @@
 
     color: var(--color-vivid-violet);
     background: rgba(123, 63, 242, 0.14);
-    border: 1px solid rgba(123, 63, 242, 0.32);
+    border: 1px solid rgba(123, 63, 242, 0.34);
 }
 
 .checklistCard h3,
-.sessionItem h3 {
+.sessionItem h3,
+.loginEventItem h3 {
     margin: 0;
     color: #ffffff;
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 900;
 }
 
-.checklistCard p,
-.sessionItem p,
-.sessionItem small {
-    display: block;
-    margin: 6px 0 0;
+.checklistCard p {
+    max-height: 0;
+    margin: 0;
+
+    opacity: 0;
+    overflow: hidden;
+
     color: rgba(255, 255, 255, 0.58);
     font-size: 12px;
-    line-height: 1.4;
+    line-height: 1.35;
+
+    transition:
+        max-height 0.18s ease,
+        margin 0.18s ease,
+        opacity 0.18s ease;
+}
+
+.checklistCard:hover p,
+.checklistCard:focus-within p {
+    max-height: 48px;
+    margin-top: 5px;
+    opacity: 1;
 }
 
 .completeStatus,
 .recommendedStatus,
-.reviewStatus,
-.currentSession {
-    min-height: 26px;
+.reviewStatus {
     border-radius: 999px;
-    padding: 0 10px;
+    padding: 6px 9px;
 
-    display: inline-flex;
-    align-items: center;
-
-    font-size: 14px;
+    font-size: 10px;
     font-weight: 900;
     text-transform: uppercase;
+    white-space: nowrap;
 }
 
-.completeStatus,
-.currentSession {
+.completeStatus {
     color: #22c55e;
-    background: rgba(34, 197, 94, 0.12);
-    border: 1px solid rgba(34, 197, 94, 0.28);
+    background: rgba(34, 197, 94, 0.14);
 }
 
 .recommendedStatus {
     color: #facc15;
-    background: rgba(250, 204, 21, 0.1);
-    border: 1px solid rgba(250, 204, 21, 0.24);
+    background: rgba(234, 179, 8, 0.14);
 }
 
 .reviewStatus {
-    color: #ff6b6b;
-    background: rgba(255, 107, 107, 0.08);
-    border: 1px solid rgba(255, 107, 107, 0.26);
+    color: #fb923c;
+    background: rgba(251, 146, 60, 0.14);
 }
 
 .passwordForm {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
-    gap: 14px;
+    gap: 12px;
     align-items: end;
 }
 
-.passwordForm label {
+.passwordForm label,
+.selectField {
     display: grid;
-    gap: 8px;
+    gap: 7px;
 }
 
-.passwordForm label span {
-    color: rgba(255, 255, 255, 0.72);
-    font-size: 12px;
+.passwordForm span,
+.selectField span {
+    color: rgba(255, 255, 255, 0.48);
+    font-size: 10px;
     font-weight: 900;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
-    letter-spacing: 0.06em;
 }
 
-.passwordForm input {
-    width: 100%;
-    min-height: 46px;
+.passwordForm input,
+.selectField select {
+    min-height: 44px;
+    border-radius: 9px;
     border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 7px;
-    padding: 0 14px;
+    outline: 0;
+    padding: 0 12px;
 
     color: #ffffff;
     background: rgba(15, 23, 42, 0.72);
 
     font: inherit;
+    font-size: 14px;
+    font-weight: 800;
 }
 
-.passwordForm input:focus {
-    outline: 0;
-    border-color: rgba(123, 63, 242, 0.8);
-    box-shadow: 0 0 0 3px rgba(123, 63, 242, 0.18);
+.passwordForm input:disabled {
+    color: rgba(255, 255, 255, 0.32);
+    cursor: not-allowed;
 }
 
 .passwordForm button {
-    min-height: 46px;
-    border: 0;
-    padding: 0 16px;
-
+    border: 1px solid rgba(123, 63, 242, 0.58);
     color: #ffffff;
-    background: var(--color-vivid-violet);
-
-    font-size: 13px;
-    cursor: pointer;
-    white-space: nowrap;
+    background: rgba(123, 63, 242, 0.16);
 }
 
-.sessionList {
+.passwordForm button:disabled {
+    cursor: not-allowed;
+    opacity: 0.48;
+    transform: none;
+}
+
+.passwordFormVisible input {
+    border-color: rgba(168, 85, 247, 0.52);
+}
+
+.securityControlGrid,
+.privacyGrid {
     display: grid;
     gap: 12px;
 }
 
-.sessionItem {
-    border-radius: 10px;
-    padding: 16px;
-
-    display: grid;
-    grid-template-columns: 54px minmax(0, 1fr) auto;
-    align-items: center;
-    gap: 14px;
-
-    background: rgba(15, 23, 42, 0.58);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+.securityControlGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
-.removeSessionButton {
-    min-height: 34px;
-    border: 1px solid rgba(255, 107, 107, 0.42);
-    padding: 0 12px;
-
-    color: #ff6b6b;
-    background: rgba(255, 107, 107, 0.08);
-
-    font-size: 12px;
-    cursor: pointer;
+.privacyGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
-.sidePanelHeader {
-    margin-bottom: 18px;
-
-    display: flex;
-    align-items: center;
-    gap: 14px;
-}
-
+.securityControlCard,
 .toggleRow {
-    min-height: 72px;
-    border-radius: 8px;
+    border-radius: 12px;
     padding: 14px;
 
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
     align-items: center;
     gap: 12px;
 
-    background: rgba(15, 23, 42, 0.58);
+    background: rgba(2, 6, 23, 0.48);
     border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.toggleRow + .toggleRow {
-    margin-top: 12px;
+.securityControlCard {
+    grid-template-columns: 46px minmax(0, 1fr) auto;
+    min-height: 94px;
 }
 
-.toggleRow input {
-    accent-color: var(--color-vivid-violet);
-    cursor: pointer;
+.toggleRow {
+    grid-template-columns: minmax(0, 1fr) auto;
+    min-height: 78px;
 }
 
+.securityControlCard strong,
 .toggleRow strong {
     display: block;
     color: #ffffff;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 900;
 }
 
+.securityControlCard small,
 .toggleRow small {
     display: block;
     margin-top: 5px;
@@ -437,138 +488,270 @@
     line-height: 1.35;
 }
 
-.securityNote {
-    border-radius: 8px;
-    padding: 14px;
-    margin-top: 14px;
-
-    display: grid;
-    grid-template-columns: 22px minmax(0, 1fr);
-    gap: 10px;
-
-    color: #facc15;
-    background: rgba(250, 204, 21, 0.09);
-    border: 1px solid rgba(250, 204, 21, 0.2);
-}
-
-.securityNote p {
-    margin: 0;
-    color: rgba(255, 255, 255, 0.62);
-    font-size: 12px;
-    line-height: 1.45;
-}
-
-.privacyControls {
-    display: grid;
-    gap: 0;
-}
-
-.warningCard {
-    display: grid;
-    gap: 14px;
-
-    border-color: rgba(250, 204, 21, 0.26);
-    background:
-        radial-gradient(
-            circle at 90% 0%,
-            rgba(250, 204, 21, 0.18),
-            transparent 36%
-        ),
-        linear-gradient(135deg, rgba(15, 23, 42, 0.92), rgba(54, 42, 10, 0.62));
-}
-
-.warningCard > svg {
-    width: 62px;
-    height: 62px;
-    border-radius: 999px;
-    padding: 14px;
-
-    color: #facc15;
-    background: rgba(250, 204, 21, 0.12);
-    border: 1px solid rgba(250, 204, 21, 0.28);
-}
-
-.warningCard button {
-    min-height: 42px;
-    border: 1px solid rgba(255, 107, 107, 0.48);
-    padding: 0 14px;
-
-    color: #ff6b6b;
-    background: rgba(255, 107, 107, 0.09);
-
-    font-size: 13px;
+.securityControlCard input,
+.toggleRow input {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--color-vivid-violet);
     cursor: pointer;
 }
 
-.supportCard {
-    display: grid;
-    gap: 14px;
-
-    border-color: rgba(123, 63, 242, 0.42);
-    background:
-        radial-gradient(
-            circle at 80% 10%,
-            rgba(123, 63, 242, 0.3),
-            transparent 38%
-        ),
-        linear-gradient(135deg, rgba(15, 23, 42, 0.92), rgba(2, 6, 23, 0.78));
-}
-
-.supportCard > svg {
-    width: 62px;
-    height: 62px;
-    border-radius: 999px;
+.selectField {
+    border-radius: 12px;
     padding: 14px;
 
-    color: var(--color-vivid-violet);
-    background: rgba(123, 63, 242, 0.14);
-    border: 1px solid rgba(123, 63, 242, 0.34);
+    background: rgba(2, 6, 23, 0.48);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.selectField select {
+    color-scheme: dark;
+}
+
+.sessionList,
+.loginHistoryList {
+    display: grid;
+    gap: 12px;
+}
+
+.sessionItem {
+    border-radius: 12px;
+    padding: 14px;
+
+    display: grid;
+    grid-template-columns: 46px minmax(0, 1fr) auto;
+    gap: 12px;
+    align-items: center;
+
+    background: rgba(2, 6, 23, 0.48);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sessionItem h3 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.sessionItem em {
+    border-radius: 999px;
+    padding: 4px 8px;
+
+    color: #22c55e;
+    background: rgba(34, 197, 94, 0.14);
+
+    font-size: 10px;
+    font-style: normal;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.sessionItem p,
+.sessionItem small {
+    display: block;
+    margin-top: 5px;
+    color: rgba(255, 255, 255, 0.58);
+    font-size: 12px;
+}
+
+.removeSessionButton,
+.currentSessionButton {
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    color: rgba(255, 255, 255, 0.82);
+    background: rgba(255, 255, 255, 0.055);
+}
+
+.removeSessionButton:hover {
+    border-color: rgba(248, 113, 113, 0.44);
+    background: rgba(239, 68, 68, 0.12);
+}
+
+.currentSessionButton {
+    cursor: not-allowed;
+    opacity: 0.58;
+}
+
+.dataControlBanner {
+    min-height: 190px;
+    border-radius: 16px;
+    padding: 26px 28px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 28px;
+
+    background:
+        radial-gradient(circle at 12% 0%, rgba(34, 197, 94, 0.18), transparent 34%),
+        radial-gradient(circle at 90% 100%, rgba(123, 63, 242, 0.28), transparent 42%),
+        linear-gradient(135deg, rgba(15, 23, 42, 0.94), rgba(2, 6, 23, 0.72));
+    border-color: rgba(34, 197, 94, 0.24);
+}
+
+.dataControlBanner span {
+    width: fit-content;
+    border-radius: 999px;
+    padding: 6px 10px;
+
+    display: inline-flex;
+
+    color: #bbf7d0;
+    background: rgba(34, 197, 94, 0.12);
+    border: 1px solid rgba(34, 197, 94, 0.32);
+
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.dataControlBanner h2 {
+    margin-top: 14px;
+    font-size: clamp(22px, 2.2vw, 32px);
+}
+
+.dataControlBanner p {
+    max-width: 620px;
+}
+
+.dataActions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.dataActions button,
+.dataActions a {
+    border: 1px solid rgba(34, 197, 94, 0.36);
+    color: #ffffff;
+    background:
+        linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(123, 63, 242, 0.2));
+}
+
+.securityScoreCard {
+    display: grid;
+    gap: 16px;
+
+    border-color: rgba(34, 197, 94, 0.24);
+}
+
+.securityScoreCard > span {
+    width: 68px;
+    height: 68px;
+    color: #22c55e;
+    background: rgba(34, 197, 94, 0.12);
+    border-color: rgba(34, 197, 94, 0.28);
+}
+
+.scoreBar {
+    height: 10px;
+    border-radius: 999px;
+    overflow: hidden;
+
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.scoreBar span {
+    height: 100%;
+    border-radius: inherit;
+
+    display: block;
+
+    background: linear-gradient(90deg, #22c55e, var(--color-vivid-violet));
+}
+
+.sidePanelHeader {
+    margin-bottom: 16px;
+
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.loginEventItem {
+    border-radius: 12px;
+    padding: 12px;
+
+    display: grid;
+    grid-template-columns: 42px minmax(0, 1fr);
+    gap: 12px;
+    align-items: start;
+
+    background: rgba(2, 6, 23, 0.48);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.loginEventItem > span {
+    width: 42px;
+    height: 42px;
+}
+
+.loginSuccessIcon {
+    color: #22c55e !important;
+    background: rgba(34, 197, 94, 0.12) !important;
+    border-color: rgba(34, 197, 94, 0.24) !important;
+}
+
+.loginReviewIcon {
+    color: #fb923c !important;
+    background: rgba(251, 146, 60, 0.12) !important;
+    border-color: rgba(251, 146, 60, 0.24) !important;
+}
+
+.loginEventItem p {
+    margin: 5px 0 0;
+    color: rgba(255, 255, 255, 0.58);
+    font-size: 12px;
+}
+
+.loginEventItem small {
+    display: block;
+    margin-top: 6px;
+    color: rgba(255, 255, 255, 0.42);
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.supportCard,
+.dangerCard {
+    display: grid;
+    gap: 16px;
 }
 
 .supportCard a {
-    width: max-content;
-    min-height: 42px;
-    padding: 0 16px;
-
+    width: fit-content;
+    border: 1px solid rgba(123, 63, 242, 0.58);
     color: #ffffff;
-    background: var(--color-vivid-violet);
-    border: 1px solid var(--color-vivid-violet);
-
-    font-size: 13px;
+    background: rgba(123, 63, 242, 0.14);
 }
 
-.primaryHeaderAction:hover,
-.panelHeader button:hover,
-.passwordForm button:hover,
-.warningCard button:hover,
-.supportCard a:hover,
-.removeSessionButton:hover {
-    transform: translateY(-2px);
+.dangerCard {
+    border-color: rgba(239, 68, 68, 0.24);
+    background:
+        radial-gradient(circle at 0% 0%, rgba(239, 68, 68, 0.16), transparent 42%),
+        linear-gradient(135deg, rgba(15, 23, 42, 0.92), rgba(2, 6, 23, 0.66));
 }
 
-.primaryHeaderAction:hover,
-.passwordForm button:hover,
-.supportCard a:hover {
-    background: #a855f7;
-    box-shadow: 0 16px 32px rgba(123, 63, 242, 0.28);
+.dangerCard > span {
+    color: #f87171;
+    background: rgba(239, 68, 68, 0.12);
+    border-color: rgba(239, 68, 68, 0.24);
 }
 
-.panelHeader button:hover {
-    background: rgba(123, 63, 242, 0.16);
-    border-color: rgba(123, 63, 242, 0.78);
-}
-
-.primaryHeaderAction:focus-visible,
-.panelHeader button:focus-visible,
-.passwordForm button:focus-visible,
-.warningCard button:focus-visible,
-.supportCard a:focus-visible,
-.removeSessionButton:focus-visible {
-    outline: 3px solid rgba(123, 63, 242, 0.78);
-    outline-offset: 4px;
+.dangerCard button {
+    width: fit-content;
+    border: 1px solid rgba(239, 68, 68, 0.36);
+    color: #fecaca;
+    background: rgba(239, 68, 68, 0.12);
 }
 
 @media (max-width: 1360px) {
+    .summaryGrid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
     .layoutGrid {
         grid-template-columns: 1fr;
     }
@@ -577,36 +760,527 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
-    .warningCard,
-    .supportCard {
-        grid-column: 1 / -1;
+    .dangerCard {
+        grid-column: span 2;
     }
 }
 
-@media (max-width: 1080px) {
-    .summaryGrid,
+@media (max-width: 1040px) {
+    .passwordForm,
+    .securityControlGrid,
+    .privacyGrid,
     .checklistGrid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-columns: 1fr;
     }
 
-    .passwordForm {
-        grid-template-columns: 1fr;
+    .dataControlBanner {
+        align-items: flex-start;
+        flex-direction: column;
     }
 }
 
 @media (max-width: 760px) {
-    .pageHeader {
+    .pageHeader,
+    .panelHeader {
+        align-items: stretch;
         flex-direction: column;
     }
 
-    .summaryGrid,
-    .checklistGrid,
-    .sideColumn {
-        grid-template-columns: 1fr;
+    .primaryHeaderAction,
+    .panelHeader button {
+        width: 100%;
     }
 
-    .checklistCard,
+    .summaryGrid,
+    .sideColumn,
     .sessionItem {
         grid-template-columns: 1fr;
     }
+
+    .dangerCard {
+        grid-column: span 1;
+    }
+
+    .removeSessionButton,
+    .currentSessionButton,
+    .supportCard a,
+    .dangerCard button,
+    .dataActions,
+    .dataActions button,
+    .dataActions a {
+        width: 100%;
+    }
+
+    .checklistCard {
+        min-height: auto;
+        grid-template-columns: 1fr;
+    }
+
+    .checklistCard p {
+        max-height: none;
+        margin-top: 5px;
+        opacity: 1;
+    }
+
+    .securityControlCard,
+    .toggleRow {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+/* Privacy right-column sponsor card */
+
+.privacySponsorCard {
+    min-height: 260px;
+    border-radius: 14px;
+    padding: 22px;
+
+    display: grid;
+    align-content: space-between;
+    gap: 18px;
+
+    background:
+        radial-gradient(circle at 80% 0%, rgba(251, 146, 60, 0.22), transparent 38%),
+        radial-gradient(circle at 0% 100%, rgba(123, 63, 242, 0.24), transparent 42%),
+        linear-gradient(135deg, rgba(15, 23, 42, 0.92), rgba(2, 6, 23, 0.74));
+    border: 1px solid rgba(251, 146, 60, 0.28);
+    box-shadow: 0 22px 50px rgba(0, 0, 0, 0.22);
+    backdrop-filter: blur(10px);
+
+    transition:
+        transform 0.18s ease,
+        border-color 0.18s ease,
+        box-shadow 0.18s ease;
+}
+
+.privacySponsorCard:hover,
+.privacySponsorCard:focus-within {
+    transform: translateY(-2px);
+    border-color: rgba(251, 146, 60, 0.54);
+    box-shadow:
+        0 24px 54px rgba(0, 0, 0, 0.28),
+        0 0 0 1px rgba(251, 146, 60, 0.1);
+}
+
+.privacySponsorCard > span {
+    width: fit-content;
+    border-radius: 999px;
+    padding: 6px 10px;
+
+    color: #fed7aa;
+    background: rgba(251, 146, 60, 0.12);
+    border: 1px solid rgba(251, 146, 60, 0.34);
+
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.privacySponsorCard h2 {
+    margin: 0;
+    color: #ffffff;
+    font-size: 24px;
+    font-weight: 900;
+    line-height: 1.12;
+}
+
+.privacySponsorCard p {
+    max-width: 330px;
+    margin: 9px 0 0;
+    color: rgba(255, 255, 255, 0.66);
+    font-size: 13px;
+    line-height: 1.48;
+}
+
+.privacySponsorCard a {
+    min-height: 42px;
+    border-radius: 9px;
+    padding: 0 14px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: fit-content;
+
+    color: #ffffff;
+    background:
+        linear-gradient(135deg, rgba(251, 146, 60, 0.22), rgba(123, 63, 242, 0.18));
+    border: 1px solid rgba(251, 146, 60, 0.38);
+
+    font-size: 13px;
+    font-weight: 900;
+    text-decoration: none;
+
+    transition:
+        transform 0.18s ease,
+        background-color 0.18s ease,
+        border-color 0.18s ease;
+}
+
+.privacySponsorCard a:hover,
+.privacySponsorCard a:focus-visible {
+    transform: translateY(-2px);
+    background:
+        linear-gradient(135deg, rgba(251, 146, 60, 0.3), rgba(123, 63, 242, 0.26));
+    border-color: rgba(251, 146, 60, 0.62);
+}
+
+@media (max-width: 1360px) {
+    .privacySponsorCard {
+        grid-column: span 2;
+        min-height: 220px;
+    }
+}
+
+@media (max-width: 760px) {
+    .privacySponsorCard {
+        grid-column: span 1;
+        min-height: 230px;
+    }
+
+    .privacySponsorCard a {
+        width: 100%;
+    }
+}
+
+
+/* Move privacy sponsor card higher */
+
+.privacySponsorCard {
+    min-height: 360px;
+    align-content: center;
+}
+
+.privacySponsorCard > span {
+    margin-bottom: 18px;
+}
+
+.privacySponsorCard div {
+    margin-bottom: 22px;
+}
+
+.privacySponsorCard h2 {
+    font-size: 26px;
+}
+
+.privacySponsorCard p {
+    max-width: 340px;
+}
+
+@media (max-width: 1360px) {
+    .privacySponsorCard {
+        min-height: 260px;
+    }
+}
+
+@media (max-width: 760px) {
+    .privacySponsorCard {
+        min-height: 230px;
+        align-content: start;
+    }
+}
+
+
+/* Force right-side privacy sponsor placement */
+
+.privacySponsorCard {
+    min-height: 360px;
+    border-radius: 14px;
+    padding: 22px;
+
+    display: grid;
+    align-content: center;
+    gap: 18px;
+
+    background:
+        radial-gradient(circle at 80% 0%, rgba(251, 146, 60, 0.22), transparent 38%),
+        radial-gradient(circle at 0% 100%, rgba(123, 63, 242, 0.24), transparent 42%),
+        linear-gradient(135deg, rgba(15, 23, 42, 0.92), rgba(2, 6, 23, 0.74));
+    border: 1px solid rgba(251, 146, 60, 0.28);
+    box-shadow: 0 22px 50px rgba(0, 0, 0, 0.22);
+    backdrop-filter: blur(10px);
+
+    transition:
+        transform 0.18s ease,
+        border-color 0.18s ease,
+        box-shadow 0.18s ease;
+}
+
+.privacySponsorCard:hover,
+.privacySponsorCard:focus-within {
+    transform: translateY(-2px);
+    border-color: rgba(251, 146, 60, 0.54);
+    box-shadow:
+        0 24px 54px rgba(0, 0, 0, 0.28),
+        0 0 0 1px rgba(251, 146, 60, 0.1);
+}
+
+.privacySponsorCard > span {
+    width: fit-content;
+    border-radius: 999px;
+    padding: 6px 10px;
+    margin-bottom: 4px;
+
+    color: #fed7aa;
+    background: rgba(251, 146, 60, 0.12);
+    border: 1px solid rgba(251, 146, 60, 0.34);
+
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.privacySponsorCard h2 {
+    margin: 0;
+    color: #ffffff;
+    font-size: 26px;
+    font-weight: 900;
+    line-height: 1.12;
+}
+
+.privacySponsorCard p {
+    max-width: 340px;
+    margin: 9px 0 0;
+    color: rgba(255, 255, 255, 0.66);
+    font-size: 13px;
+    line-height: 1.48;
+}
+
+.privacySponsorCard a {
+    min-height: 42px;
+    border-radius: 9px;
+    padding: 0 14px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: fit-content;
+
+    color: #ffffff;
+    background:
+        linear-gradient(135deg, rgba(251, 146, 60, 0.22), rgba(123, 63, 242, 0.18));
+    border: 1px solid rgba(251, 146, 60, 0.38);
+
+    font-size: 13px;
+    font-weight: 900;
+    text-decoration: none;
+
+    transition:
+        transform 0.18s ease,
+        background-color 0.18s ease,
+        border-color 0.18s ease;
+}
+
+.privacySponsorCard a:hover,
+.privacySponsorCard a:focus-visible {
+    transform: translateY(-2px);
+    background:
+        linear-gradient(135deg, rgba(251, 146, 60, 0.3), rgba(123, 63, 242, 0.26));
+    border-color: rgba(251, 146, 60, 0.62);
+}
+
+/* Keep it inside the right column on normal desktop width. */
+@media (min-width: 1361px) {
+    .privacySponsorCard {
+        grid-column: auto;
+    }
+}
+
+/* When the right column becomes a 2-column row on medium screens, allow it to span neatly. */
+@media (max-width: 1360px) {
+    .privacySponsorCard {
+        grid-column: span 2;
+        min-height: 240px;
+    }
+}
+
+@media (max-width: 980px) {
+    .privacySponsorCard {
+        grid-column: span 1;
+    }
+}
+
+@media (max-width: 760px) {
+    .privacySponsorCard {
+        min-height: 230px;
+        align-content: start;
+    }
+
+    .privacySponsorCard a {
+        width: 100%;
+    }
+}
+
+
+/* Privacy right-column data controls */
+
+.dataControlSideCard {
+    min-height: 260px;
+    border-radius: 14px;
+    padding: 22px;
+
+    display: grid;
+    align-content: space-between;
+    gap: 18px;
+
+    background:
+        radial-gradient(circle at 12% 0%, rgba(34, 197, 94, 0.18), transparent 34%),
+        radial-gradient(circle at 90% 100%, rgba(123, 63, 242, 0.24), transparent 42%),
+        linear-gradient(135deg, rgba(15, 23, 42, 0.92), rgba(2, 6, 23, 0.72));
+    border: 1px solid rgba(34, 197, 94, 0.24);
+    box-shadow: 0 22px 50px rgba(0, 0, 0, 0.22);
+    backdrop-filter: blur(10px);
+
+    transition:
+        transform 0.18s ease,
+        border-color 0.18s ease,
+        box-shadow 0.18s ease;
+}
+
+.dataControlSideCard:hover,
+.dataControlSideCard:focus-within {
+    transform: translateY(-2px);
+    border-color: rgba(34, 197, 94, 0.48);
+    box-shadow:
+        0 24px 54px rgba(0, 0, 0, 0.28),
+        0 0 0 1px rgba(34, 197, 94, 0.1);
+}
+
+.dataControlSideCard > span {
+    width: fit-content;
+    border-radius: 999px;
+    padding: 6px 10px;
+
+    color: #bbf7d0;
+    background: rgba(34, 197, 94, 0.12);
+    border: 1px solid rgba(34, 197, 94, 0.32);
+
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.dataControlSideCard h2 {
+    margin: 0;
+    color: #ffffff;
+    font-size: 24px;
+    font-weight: 900;
+    line-height: 1.12;
+}
+
+.dataControlSideCard p {
+    max-width: 340px;
+    margin: 9px 0 0;
+    color: rgba(255, 255, 255, 0.66);
+    font-size: 13px;
+    line-height: 1.48;
+}
+
+.dataControlSideActions {
+    display: grid;
+    gap: 10px;
+}
+
+.dataControlSideActions button,
+.dataControlSideActions a {
+    min-height: 42px;
+    border-radius: 9px;
+    padding: 0 14px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    color: #ffffff;
+    background:
+        linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(123, 63, 242, 0.2));
+    border: 1px solid rgba(34, 197, 94, 0.36);
+
+    font-size: 13px;
+    font-weight: 900;
+    text-decoration: none;
+    cursor: pointer;
+
+    transition:
+        transform 0.18s ease,
+        background-color 0.18s ease,
+        border-color 0.18s ease;
+}
+
+.dataControlSideActions button:hover,
+.dataControlSideActions a:hover,
+.dataControlSideActions button:focus-visible,
+.dataControlSideActions a:focus-visible {
+    transform: translateY(-2px);
+    background:
+        linear-gradient(135deg, rgba(34, 197, 94, 0.28), rgba(123, 63, 242, 0.28));
+    border-color: rgba(34, 197, 94, 0.58);
+}
+
+/* Account removal is intentionally not shown on the fan privacy page. */
+.dangerCard {
+    display: none;
+}
+
+@media (max-width: 1360px) {
+    .dataControlSideCard {
+        grid-column: span 2;
+        min-height: 230px;
+    }
+}
+
+@media (max-width: 980px) {
+    .dataControlSideCard {
+        grid-column: span 1;
+    }
+}
+
+@media (max-width: 760px) {
+    .dataControlSideCard {
+        min-height: 230px;
+    }
+
+    .dataControlSideActions button,
+    .dataControlSideActions a {
+        width: 100%;
+    }
+}
+
+
+/* Support card icon polish */
+
+.supportCard > span {
+    width: 64px;
+    height: 64px;
+    border-radius: 18px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    color: #ffffff;
+    background:
+        radial-gradient(circle at 30% 20%, rgba(168, 85, 247, 0.42), transparent 42%),
+        linear-gradient(135deg, rgba(123, 63, 242, 0.34), rgba(59, 130, 246, 0.16));
+    border: 1px solid rgba(168, 85, 247, 0.5);
+    box-shadow:
+        0 14px 30px rgba(123, 63, 242, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.supportCard:hover > span {
+    transform: translateY(-2px);
+    border-color: rgba(196, 181, 253, 0.72);
+    box-shadow:
+        0 18px 36px rgba(123, 63, 242, 0.28),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.supportCard > span svg {
+    filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.28));
 }

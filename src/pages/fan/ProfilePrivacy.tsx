@@ -2,7 +2,10 @@ import {
     AlertTriangle,
     CheckCircle2,
     Clock,
+    Download,
     Eye,
+    EyeOff,
+    FileText,
     KeyRound,
     Lock,
     LogOut,
@@ -12,12 +15,11 @@ import {
     ShieldAlert,
     ShieldCheck,
     Smartphone,
-    Trash2,
-    UserCheck,
+    Headphones,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { FormEvent } from "react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import styles from "./PrivacySecurityPage.module.css";
 
@@ -46,36 +48,14 @@ interface SessionItem {
     current: boolean;
 }
 
-const securityStats: SecurityStat[] = [
-    {
-        label: "Security Score",
-        value: "82%",
-        detail: "Strong account protection",
-        icon: ShieldCheck,
-        tone: "green",
-    },
-    {
-        label: "Verified Contact",
-        value: "2",
-        detail: "Email and phone verified",
-        icon: MailCheck,
-        tone: "purple",
-    },
-    {
-        label: "Active Sessions",
-        value: "3",
-        detail: "Across your devices",
-        icon: MonitorSmartphone,
-        tone: "blue",
-    },
-    {
-        label: "Privacy Mode",
-        value: "Fans",
-        detail: "Visible to followers",
-        icon: Eye,
-        tone: "orange",
-    },
-];
+interface LoginEvent {
+    id: string;
+    title: string;
+    device: string;
+    location: string;
+    time: string;
+    status: "Successful" | "Review";
+}
 
 const checklistItems: SecurityChecklistItem[] = [
     {
@@ -135,6 +115,33 @@ const initialSessions: SessionItem[] = [
     },
 ];
 
+const loginEvents: LoginEvent[] = [
+    {
+        id: "login-001",
+        title: "Successful login",
+        device: "Windows Laptop",
+        location: "Kampala, Uganda",
+        time: "Today, 8:12 AM",
+        status: "Successful",
+    },
+    {
+        id: "login-002",
+        title: "Successful login",
+        device: "Android Phone",
+        location: "Kampala, Uganda",
+        time: "Yesterday, 8:42 PM",
+        status: "Successful",
+    },
+    {
+        id: "login-003",
+        title: "Older device login",
+        device: "Unknown Laptop",
+        location: "Entebbe, Uganda",
+        time: "12 days ago",
+        status: "Review",
+    },
+];
+
 function getStatusClass(status: SecurityChecklistItem["status"]) {
     if (status === "Complete") {
         return styles.completeStatus;
@@ -149,12 +156,59 @@ function getStatusClass(status: SecurityChecklistItem["status"]) {
 
 function PrivacySecurityPage() {
     const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
+    const [loginAlertsEnabled, setLoginAlertsEnabled] = useState(true);
+    const [trustedDevicesEnabled, setTrustedDevicesEnabled] = useState(true);
     const [profileVisible, setProfileVisible] = useState(true);
+    const [profileVisibility, setProfileVisibility] = useState("Followers");
     const [showFollowedClubs, setShowFollowedClubs] = useState(true);
     const [showActivity, setShowActivity] = useState(false);
     const [allowSponsorOffers, setAllowSponsorOffers] = useState(false);
+    const [allowPersonalization, setAllowPersonalization] = useState(true);
     const [sessions, setSessions] = useState<SessionItem[]>(initialSessions);
+    const [showPasswordFields, setShowPasswordFields] = useState(false);
     const [saveMessage, setSaveMessage] = useState("");
+
+    const securityScore = useMemo(() => {
+        let score = 70;
+
+        if (twoFactorEnabled) score += 10;
+        if (loginAlertsEnabled) score += 8;
+        if (trustedDevicesEnabled) score += 4;
+        if (sessions.length <= 2) score += 8;
+
+        return Math.min(score, 100);
+    }, [loginAlertsEnabled, sessions.length, trustedDevicesEnabled, twoFactorEnabled]);
+
+    const securityStats: SecurityStat[] = [
+        {
+            label: "Security Score",
+            value: `${securityScore}%`,
+            detail: twoFactorEnabled ? "Strong protection" : "2FA recommended",
+            icon: ShieldCheck,
+            tone: "green",
+        },
+        {
+            label: "Login Protection",
+            value: twoFactorEnabled ? "2FA On" : "Basic",
+            detail: loginAlertsEnabled ? "Login alerts enabled" : "Login alerts off",
+            icon: KeyRound,
+            tone: "purple",
+        },
+        {
+            label: "Active Sessions",
+            value: String(sessions.length),
+            detail: "Across your devices",
+            icon: MonitorSmartphone,
+            tone: "blue",
+        },
+        {
+            label: "Profile Privacy",
+            value: profileVisibility,
+            detail: profileVisible ? "Profile visible" : "Profile hidden",
+            icon: Eye,
+            tone: "orange",
+        },
+    ];
 
     function removeSession(sessionId: string) {
         setSessions((currentSessions) =>
@@ -170,17 +224,22 @@ function PrivacySecurityPage() {
     }
 
     function handleSavePrivacy() {
-        setSaveMessage("Privacy settings saved locally for now.");
+        setSaveMessage("Privacy and security settings saved locally for now.");
+    }
+
+    function handleDataExport() {
+        setSaveMessage("Data export request prepared locally for now.");
     }
 
     return (
         <section className={styles.page}>
             <header className={styles.pageHeader}>
                 <div>
+                    <span className={styles.eyebrow}>Account Protection</span>
                     <h1>Privacy &amp; Security</h1>
                     <p>
-                        Manage your password, login protection, active sessions, profile
-                        visibility and account privacy controls.
+                        Manage password changes, login protection, active sessions,
+                        profile visibility and data controls.
                     </p>
                 </div>
 
@@ -201,9 +260,9 @@ function PrivacySecurityPage() {
                 </div>
             ) : null}
 
-            <section className={styles.summaryGrid} aria-label="Security summary">
+            <section className={styles.summaryGrid} aria-label="Privacy and security summary">
                 {securityStats.map((stat) => {
-                    const Icon = stat.icon;
+                    const StatIcon = stat.icon;
 
                     return (
                         <article
@@ -216,7 +275,7 @@ function PrivacySecurityPage() {
                                 <span>{stat.detail}</span>
                             </div>
 
-                            <Icon size={38} strokeWidth={2.1} aria-hidden="true" />
+                            <StatIcon size={38} strokeWidth={2.1} aria-hidden="true" />
                         </article>
                     );
                 })}
@@ -229,8 +288,8 @@ function PrivacySecurityPage() {
                             <div>
                                 <h2>Security Checklist</h2>
                                 <p>
-                                    Review the main protections needed for a safe League OS fan
-                                    account.
+                                    Quick checks to keep your League OS fan account protected.
+                                    Hover a card to view more detail.
                                 </p>
                             </div>
                         </div>
@@ -242,7 +301,11 @@ function PrivacySecurityPage() {
                                 return (
                                     <article className={styles.checklistCard} key={item.id}>
                                         <span className={styles.checklistIcon}>
-                                            <ItemIcon size={25} strokeWidth={2.3} aria-hidden="true" />
+                                            <ItemIcon
+                                                size={24}
+                                                strokeWidth={2.3}
+                                                aria-hidden="true"
+                                            />
                                         </span>
 
                                         <div>
@@ -262,32 +325,71 @@ function PrivacySecurityPage() {
                     <section className={styles.panel}>
                         <div className={styles.panelHeader}>
                             <div>
-                                <h2>Password &amp; Login Protection</h2>
+                                <h2>Password</h2>
                                 <p>
-                                    Password updates will later be connected to the backend
-                                    account security endpoints.
+                                    Use a strong password and avoid reusing it on other services.
                                 </p>
                             </div>
+
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    setShowPasswordFields((currentValue) => !currentValue)
+                                }
+                            >
+                                {showPasswordFields ? (
+                                    <>
+                                        <EyeOff
+                                            size={16}
+                                            strokeWidth={2.4}
+                                            aria-hidden="true"
+                                        />
+                                        Hide Fields
+                                    </>
+                                ) : (
+                                    <>
+                                        <Eye size={16} strokeWidth={2.4} aria-hidden="true" />
+                                        Change Password
+                                    </>
+                                )}
+                            </button>
                         </div>
 
-                        <form className={styles.passwordForm} onSubmit={handlePasswordSubmit}>
+                        <form
+                            className={`${styles.passwordForm} ${
+                                showPasswordFields ? styles.passwordFormVisible : ""
+                            }`}
+                            onSubmit={handlePasswordSubmit}
+                        >
                             <label>
                                 <span>Current Password</span>
-                                <input type="password" placeholder="Enter current password" />
+                                <input
+                                    type="password"
+                                    placeholder="Enter current password"
+                                    disabled={!showPasswordFields}
+                                />
                             </label>
 
                             <label>
                                 <span>New Password</span>
-                                <input type="password" placeholder="Enter new password" />
+                                <input
+                                    type="password"
+                                    placeholder="Enter new password"
+                                    disabled={!showPasswordFields}
+                                />
                             </label>
 
                             <label>
-                                <span>Confirm New Password</span>
-                                <input type="password" placeholder="Confirm new password" />
+                                <span>Confirm Password</span>
+                                <input
+                                    type="password"
+                                    placeholder="Confirm new password"
+                                    disabled={!showPasswordFields}
+                                />
                             </label>
 
-                            <button type="submit">
-                                <KeyRound size={18} strokeWidth={2.4} aria-hidden="true" />
+                            <button type="submit" disabled={!showPasswordFields}>
+                                <KeyRound size={17} strokeWidth={2.4} aria-hidden="true" />
                                 Update Password
                             </button>
                         </form>
@@ -296,17 +398,197 @@ function PrivacySecurityPage() {
                     <section className={styles.panel}>
                         <div className={styles.panelHeader}>
                             <div>
-                                <h2>Active Sessions</h2>
+                                <h2>Login Protection</h2>
                                 <p>
-                                    These are devices currently or recently signed in to your
-                                    League OS account.
+                                    Control how your account handles login security and device access.
                                 </p>
                             </div>
+                        </div>
 
-                            <button type="button">
-                                <LogOut size={17} strokeWidth={2.4} aria-hidden="true" />
-                                Sign Out Others
-                            </button>
+                        <div className={styles.securityControlGrid}>
+                            <label className={styles.securityControlCard}>
+                                <span>
+                                    <Lock size={22} strokeWidth={2.4} aria-hidden="true" />
+                                </span>
+
+                                <div>
+                                    <strong>Two-factor authentication</strong>
+                                    <small>
+                                        Require an extra verification step for sensitive sign-ins.
+                                    </small>
+                                </div>
+
+                                <input
+                                    type="checkbox"
+                                    checked={twoFactorEnabled}
+                                    onChange={() =>
+                                        setTwoFactorEnabled((currentValue) => !currentValue)
+                                    }
+                                />
+                            </label>
+
+                            <label className={styles.securityControlCard}>
+                                <span>
+                                    <ShieldAlert
+                                        size={22}
+                                        strokeWidth={2.4}
+                                        aria-hidden="true"
+                                    />
+                                </span>
+
+                                <div>
+                                    <strong>Login alerts</strong>
+                                    <small>
+                                        Notify me when my account is used on a new device.
+                                    </small>
+                                </div>
+
+                                <input
+                                    type="checkbox"
+                                    checked={loginAlertsEnabled}
+                                    onChange={() =>
+                                        setLoginAlertsEnabled((currentValue) => !currentValue)
+                                    }
+                                />
+                            </label>
+
+                            <label className={styles.securityControlCard}>
+                                <span>
+                                    <MonitorSmartphone
+                                        size={22}
+                                        strokeWidth={2.4}
+                                        aria-hidden="true"
+                                    />
+                                </span>
+
+                                <div>
+                                    <strong>Remember trusted devices</strong>
+                                    <small>
+                                        Keep trusted devices signed in unless suspicious activity appears.
+                                    </small>
+                                </div>
+
+                                <input
+                                    type="checkbox"
+                                    checked={trustedDevicesEnabled}
+                                    onChange={() =>
+                                        setTrustedDevicesEnabled((currentValue) => !currentValue)
+                                    }
+                                />
+                            </label>
+                        </div>
+                    </section>
+
+                    <section className={styles.panel}>
+                        <div className={styles.panelHeader}>
+                            <div>
+                                <h2>Privacy Controls</h2>
+                                <p>
+                                    Choose what other fans can see and how your fan experience is personalized.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className={styles.privacyGrid}>
+                            <label className={styles.selectField}>
+                                <span>Profile visibility</span>
+                                <select
+                                    value={profileVisibility}
+                                    onChange={(event) =>
+                                        setProfileVisibility(event.target.value)
+                                    }
+                                >
+                                    <option>Public</option>
+                                    <option>Followers</option>
+                                    <option>Private</option>
+                                </select>
+                            </label>
+
+                            <label className={styles.toggleRow}>
+                                <span>
+                                    <strong>Show profile</strong>
+                                    <small>Allow your fan profile to appear in public fan areas.</small>
+                                </span>
+
+                                <input
+                                    type="checkbox"
+                                    checked={profileVisible}
+                                    onChange={() =>
+                                        setProfileVisible((currentValue) => !currentValue)
+                                    }
+                                />
+                            </label>
+
+                            <label className={styles.toggleRow}>
+                                <span>
+                                    <strong>Show followed clubs</strong>
+                                    <small>Display clubs and teams you follow on your fan profile.</small>
+                                </span>
+
+                                <input
+                                    type="checkbox"
+                                    checked={showFollowedClubs}
+                                    onChange={() =>
+                                        setShowFollowedClubs((currentValue) => !currentValue)
+                                    }
+                                />
+                            </label>
+
+                            <label className={styles.toggleRow}>
+                                <span>
+                                    <strong>Show recent activity</strong>
+                                    <small>Allow recent fan activity to appear on your profile.</small>
+                                </span>
+
+                                <input
+                                    type="checkbox"
+                                    checked={showActivity}
+                                    onChange={() =>
+                                        setShowActivity((currentValue) => !currentValue)
+                                    }
+                                />
+                            </label>
+
+                            <label className={styles.toggleRow}>
+                                <span>
+                                    <strong>Personalized recommendations</strong>
+                                    <small>Use fan preferences to improve clubs, tickets and news suggestions.</small>
+                                </span>
+
+                                <input
+                                    type="checkbox"
+                                    checked={allowPersonalization}
+                                    onChange={() =>
+                                        setAllowPersonalization((currentValue) => !currentValue)
+                                    }
+                                />
+                            </label>
+
+                            <label className={styles.toggleRow}>
+                                <span>
+                                    <strong>Sponsor offers</strong>
+                                    <small>Allow relevant sponsor offers and promotions.</small>
+                                </span>
+
+                                <input
+                                    type="checkbox"
+                                    checked={allowSponsorOffers}
+                                    onChange={() =>
+                                        setAllowSponsorOffers((currentValue) => !currentValue)
+                                    }
+                                />
+                            </label>
+                        </div>
+                    </section>
+
+                    <section className={styles.panel}>
+                        <div className={styles.panelHeader}>
+                            <div>
+                                <h2>Active Sessions</h2>
+                                <p>
+                                    Review devices signed into your League OS account.
+                                </p>
+                            </div>
                         </div>
 
                         <div className={styles.sessionList}>
@@ -314,28 +596,46 @@ function PrivacySecurityPage() {
                                 <article className={styles.sessionItem} key={session.id}>
                                     <span className={styles.sessionIcon}>
                                         <MonitorSmartphone
-                                            size={24}
+                                            size={23}
                                             strokeWidth={2.3}
                                             aria-hidden="true"
                                         />
                                     </span>
 
                                     <div>
-                                        <h3>{session.device}</h3>
+                                        <h3>
+                                            {session.device}
+                                            {session.current ? (
+                                                <em>Current</em>
+                                            ) : null}
+                                        </h3>
+
                                         <p>
                                             {session.browser} • {session.location}
                                         </p>
+
                                         <small>{session.lastActive}</small>
                                     </div>
 
                                     {session.current ? (
-                                        <span className={styles.currentSession}>Current</span>
+                                        <button
+                                            type="button"
+                                            className={styles.currentSessionButton}
+                                            disabled
+                                        >
+                                            Current Device
+                                        </button>
                                     ) : (
                                         <button
                                             type="button"
                                             className={styles.removeSessionButton}
                                             onClick={() => removeSession(session.id)}
                                         >
+                                            <LogOut
+                                                size={16}
+                                                strokeWidth={2.4}
+                                                aria-hidden="true"
+                                            />
                                             Remove
                                         </button>
                                     )}
@@ -346,148 +646,121 @@ function PrivacySecurityPage() {
                 </main>
 
                 <aside className={styles.sideColumn}>
-                    <section className={styles.panel}>
-                        <div className={styles.sidePanelHeader}>
-                            <span>
-                                <ShieldAlert size={26} strokeWidth={2.3} aria-hidden="true" />
-                            </span>
-
-                            <div>
-                                <h2>Two-Factor Authentication</h2>
-                                <p>Add another confirmation step when signing in.</p>
-                            </div>
-                        </div>
-
-                        <label className={styles.toggleRow}>
-                            <input
-                                type="checkbox"
-                                checked={twoFactorEnabled}
-                                onChange={() =>
-                                    setTwoFactorEnabled((currentValue) => !currentValue)
-                                }
-                            />
-
-                            <span>
-                                <strong>Enable two-factor authentication</strong>
-                                <small>
-                                    Later this can use email OTP, SMS OTP or authenticator app
-                                    logic.
-                                </small>
-                            </span>
-                        </label>
-
-                        <div className={styles.securityNote}>
-                            <Clock size={20} strokeWidth={2.3} aria-hidden="true" />
-                            <p>
-                                OTP login already exists in the registration flow. This setting
-                                is for additional login protection after account creation.
-                            </p>
-                        </div>
-                    </section>
-
-                    <section className={styles.panel}>
-                        <div className={styles.sidePanelHeader}>
-                            <span>
-                                <UserCheck size={26} strokeWidth={2.3} aria-hidden="true" />
-                            </span>
-
-                            <div>
-                                <h2>Profile Privacy</h2>
-                                <p>Control what other fans and clubs can see.</p>
-                            </div>
-                        </div>
-
-                        <div className={styles.privacyControls}>
-                            <label className={styles.toggleRow}>
-                                <input
-                                    type="checkbox"
-                                    checked={profileVisible}
-                                    onChange={() =>
-                                        setProfileVisible((currentValue) => !currentValue)
-                                    }
-                                />
-
-                                <span>
-                                    <strong>Public fan profile</strong>
-                                    <small>Allow others to see your fan profile.</small>
-                                </span>
-                            </label>
-
-                            <label className={styles.toggleRow}>
-                                <input
-                                    type="checkbox"
-                                    checked={showFollowedClubs}
-                                    onChange={() =>
-                                        setShowFollowedClubs((currentValue) => !currentValue)
-                                    }
-                                />
-
-                                <span>
-                                    <strong>Show followed clubs</strong>
-                                    <small>Display clubs you follow on your profile.</small>
-                                </span>
-                            </label>
-
-                            <label className={styles.toggleRow}>
-                                <input
-                                    type="checkbox"
-                                    checked={showActivity}
-                                    onChange={() =>
-                                        setShowActivity((currentValue) => !currentValue)
-                                    }
-                                />
-
-                                <span>
-                                    <strong>Show activity history</strong>
-                                    <small>Display recent fan activity and achievements.</small>
-                                </span>
-                            </label>
-
-                            <label className={styles.toggleRow}>
-                                <input
-                                    type="checkbox"
-                                    checked={allowSponsorOffers}
-                                    onChange={() =>
-                                        setAllowSponsorOffers((currentValue) => !currentValue)
-                                    }
-                                />
-
-                                <span>
-                                    <strong>Personalized sponsor offers</strong>
-                                    <small>
-                                        Allow relevant offers based on followed clubs and sports.
-                                    </small>
-                                </span>
-                            </label>
-                        </div>
-                    </section>
-
-                    <section className={styles.warningCard}>
-                        <AlertTriangle size={42} strokeWidth={2.3} aria-hidden="true" />
+                    <section className={styles.securityScoreCard}>
+                        <span>
+                            <ShieldCheck size={52} strokeWidth={2.2} aria-hidden="true" />
+                        </span>
 
                         <div>
-                            <h2>Account deletion is permanent</h2>
+                            <h2>{securityScore}% Secure</h2>
                             <p>
-                                Deleting an account should not automatically delete financial
-                                transaction records, ticket audit records or legally required
-                                payment history.
+                                Your account is protected, but enabling two-factor authentication
+                                will improve your security score.
                             </p>
                         </div>
 
-                        <button type="button">
-                            <Trash2 size={17} strokeWidth={2.4} aria-hidden="true" />
-                            Request Account Deletion
-                        </button>
+                        <div className={styles.scoreBar}>
+                            <span style={{ width: `${securityScore}%` }} />
+                        </div>
                     </section>
+
+                    <section className={styles.panel}>
+                        <div className={styles.sidePanelHeader}>
+                            <span>
+                                <Clock size={26} strokeWidth={2.3} aria-hidden="true" />
+                            </span>
+
+                            <div>
+                                <h2>Login History</h2>
+                                <p>Recent account access activity.</p>
+                            </div>
+                        </div>
+
+                        <div className={styles.loginHistoryList}>
+                            {loginEvents.map((event) => (
+                                <article className={styles.loginEventItem} key={event.id}>
+                                    <span
+                                        className={
+                                            event.status === "Successful"
+                                                ? styles.loginSuccessIcon
+                                                : styles.loginReviewIcon
+                                        }
+                                    >
+                                        {event.status === "Successful" ? (
+                                            <CheckCircle2
+                                                size={18}
+                                                strokeWidth={2.4}
+                                                aria-hidden="true"
+                                            />
+                                        ) : (
+                                            <AlertTriangle
+                                                size={18}
+                                                strokeWidth={2.4}
+                                                aria-hidden="true"
+                                            />
+                                        )}
+                                    </span>
+
+                                    <div>
+                                        <h3>{event.title}</h3>
+                                        <p>
+                                            {event.device} • {event.location}
+                                        </p>
+                                        <small>{event.time}</small>
+                                    </div>
+                                </article>
+                            ))}
+                        </div>
+                    </section>
+                    <section className={styles.privacySponsorCard} aria-label="Sponsored privacy placement">
+                        <span>Sponsored</span>
+
+                        <div>
+                            <h2>Trusted Fan Partner Slot</h2>
+                            <p>
+                                Use this space for verified sponsor offers, account protection
+                                campaigns, fan safety messages or premium membership promotions.
+                            </p>
+                        </div>
+
+                        <Link to="/sponsor/apply">Explore Partner Options →</Link>
+                    </section>
+
+                    <section className={styles.dataControlSideCard}>
+                        <span>Data Controls</span>
+
+                        <div>
+                            <h2>Fan account data</h2>
+                            <p>
+                                Request a data export, review payment receipts and prepare
+                                account data requests from one place.
+                            </p>
+                        </div>
+
+                        <div className={styles.dataControlSideActions}>
+                            <button type="button" onClick={handleDataExport}>
+                                <Download size={17} strokeWidth={2.4} aria-hidden="true" />
+                                Request Export
+                            </button>
+
+                            <Link to="/profile/payments">
+                                <FileText size={17} strokeWidth={2.4} aria-hidden="true" />
+                                Receipts
+                            </Link>
+                        </div>
+                    </section>
+
 
                     <section className={styles.supportCard}>
-                        <Lock size={42} strokeWidth={2.3} aria-hidden="true" />
+                        <span>
+                            <Headphones size={38} strokeWidth={2.3} aria-hidden="true" />
+                        </span>
 
                         <div>
-                            <h2>Need security help?</h2>
+                            <h2>Need account help?</h2>
                             <p>
-                                Report suspicious logins, lost access, payment issues or
-                                account problems.
+                                Contact support if you see a device, login or account change
+                                you do not recognize.
                             </p>
                         </div>
 
