@@ -1136,3 +1136,185 @@
         width: 100%;
     }
 }
+
+/* Backend membership sync and fallback club marks */
+
+.membershipSyncMessage {
+    margin-bottom: 20px;
+    border-radius: 18px;
+    padding: 16px 18px;
+
+    display: flex;
+    align-items: center;
+    gap: 14px;
+
+    color: #ffffff;
+    background: rgba(15, 23, 42, 0.84);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.membershipSyncMessage svg {
+    flex: 0 0 auto;
+    color: #8b5cf6;
+}
+
+.membershipSyncMessage h2 {
+    margin: 0 0 4px;
+    font-size: 15px;
+}
+
+.membershipSyncMessage p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.68);
+    font-size: 13px;
+}
+
+.membershipSyncMessage button {
+    margin-left: auto;
+    min-height: 36px;
+    border-radius: 12px;
+    padding: 0 14px;
+
+    color: #ffffff;
+    background: rgba(123, 63, 242, 0.2);
+    border: 1px solid rgba(123, 63, 242, 0.5);
+
+    font-size: 12px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.membershipSyncMessage button:hover,
+.membershipSyncMessage button:focus-visible {
+    background: rgba(123, 63, 242, 0.34);
+}
+
+.clubInitials {
+    width: 46px;
+    height: 46px;
+    border-radius: 999px;
+
+    display: inline-grid;
+    place-items: center;
+    flex: 0 0 auto;
+
+    color: #ffffff;
+    background:
+        radial-gradient(circle at 30% 20%, rgba(255, 122, 24, 0.74), transparent 48%),
+        linear-gradient(135deg, rgba(123, 63, 242, 0.95), rgba(35, 78, 216, 0.72));
+    border: 1px solid rgba(255, 255, 255, 0.18);
+
+    font-size: 13px;
+    font-weight: 950;
+    letter-spacing: 0.05em;
+}
+
+.benefitCard .clubInitials,
+.recommendedItem .clubInitials {
+    width: 40px;
+    height: 40px;
+    font-size: 11px;
+}
+
+@media (max-width: 760px) {
+    .membershipSyncMessage {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .membershipSyncMessage button {
+        margin-left: 0;
+    }
+}
+
+
+/* Backend no-membership empty state */
+
+.membershipEmptyBanner {
+    margin-bottom: 20px;
+    border-radius: 22px;
+    padding: 22px;
+
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 18px;
+
+    color: #ffffff;
+    background:
+        radial-gradient(circle at 12% 18%, rgba(255, 122, 24, 0.18), transparent 32%),
+        linear-gradient(135deg, rgba(30, 41, 59, 0.92), rgba(15, 23, 42, 0.92));
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.membershipEmptyIcon {
+    width: 58px;
+    height: 58px;
+    border-radius: 18px;
+
+    display: grid;
+    place-items: center;
+
+    background: rgba(123, 63, 242, 0.18);
+    border: 1px solid rgba(123, 63, 242, 0.38);
+}
+
+.membershipEmptyBanner span {
+    display: block;
+    margin-bottom: 5px;
+
+    color: rgba(255, 255, 255, 0.58);
+    font-size: 11px;
+    font-weight: 950;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.membershipEmptyBanner h2 {
+    margin: 0 0 6px;
+    font-size: 22px;
+    line-height: 1.12;
+}
+
+.membershipEmptyBanner p {
+    margin: 0;
+    max-width: 680px;
+
+    color: rgba(255, 255, 255, 0.68);
+    font-size: 14px;
+    line-height: 1.55;
+}
+
+.membershipEmptyBanner a {
+    min-height: 42px;
+    border-radius: 14px;
+    padding: 0 16px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    color: #ffffff;
+    background: linear-gradient(135deg, #7c3aed, #9333ea);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+
+    font-size: 13px;
+    font-weight: 950;
+    text-decoration: none;
+}
+
+.membershipEmptyBanner a:hover,
+.membershipEmptyBanner a:focus-visible {
+    transform: translateY(-1px);
+    filter: brightness(1.08);
+}
+
+@media (max-width: 760px) {
+    .membershipEmptyBanner {
+        grid-template-columns: 1fr;
+    }
+
+    .membershipEmptyBanner a {
+        width: 100%;
+    }
+}

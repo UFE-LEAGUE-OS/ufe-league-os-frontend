@@ -14,8 +14,16 @@ import {
     X,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import {
+    createMyMembershipCard,
+    getMembershipPayments,
+    getMyMembership,
+    type BackendMembershipCard,
+    type BackendMembershipPayment,
+    type BackendMembershipSubscription,
+} from "../../services/fanMembershipService";
 import styles from "./MyMembershipsPage.module.css";
 
 type MembershipStatus = "Active" | "Expired";
@@ -45,95 +53,227 @@ interface ClubMembership {
     benefits: string[];
 }
 
-const activeMemberships: ClubMembership[] = [
-    {
-        id: "kobs-gold",
-        clubName: "KCB KOBS",
-        slug: "kobs",
-        tier: "Gold Member",
-        sport: "Rugby Club",
-        status: "Active",
-        validUntil: "18 May 2026",
-        memberSince: "18 May 2025",
-        memberNumber: "KOBS-GOLD-2025-0018",
-        logo: "/assets/clubs/kobs.jpg",
-        tone: "purple",
-        renewalNote: "Valid for 11 more months",
-        benefits: [
+const expiredMemberships: ClubMembership[] = [];
+
+interface MembershipActivity {
+    id: string;
+    title: string;
+    description: string;
+    date: string;
+    icon: LucideIcon;
+}
+
+const emptyPrimaryMembership: ClubMembership = {
+    id: "empty-membership",
+    clubName: "No active membership",
+    slug: "memberships",
+    tier: "Explore Club Memberships",
+    sport: "Club Membership",
+    status: "Expired",
+    validUntil: "Not active",
+    memberSince: "Not active",
+    memberNumber: "Card pending",
+    logo: "",
+    tone: "purple",
+    renewalNote: "Join a club membership to activate your digital card.",
+    benefits: ["Digital membership card", "Club benefits", "Ticket discounts"],
+};
+
+function formatBackendDate(value?: string | null) {
+    if (!value) {
+        return "Date pending";
+    }
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+        return "Date pending";
+    }
+
+    return date.toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+    });
+}
+
+function makeSlug(value: string) {
+    return value
+        .toLowerCase()
+        .replace(/&/g, "and")
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+}
+
+function normalizeTier(value?: string) {
+    if (!value) {
+        return "Member";
+    }
+
+    return `${value.charAt(0).toUpperCase()}${value.slice(1).toLowerCase()} Member`;
+}
+
+function getTierBenefits(tier?: string) {
+    const normalizedTier = tier?.toUpperCase();
+
+    if (normalizedTier === "GOLD" || normalizedTier === "PLATINUM") {
+        return [
             "10% ticket discount",
             "Priority derby tickets",
             "Club shop discount",
             "Member-only events",
-        ],
-    },
-    {
-        id: "villa-silver",
-        clubName: "SC Villa",
-        slug: "sc-villa",
-        tier: "Silver Member",
-        sport: "Football Club",
-        status: "Active",
-        validUntil: "12 Aug 2025",
-        memberSince: "12 Apr 2025",
-        memberNumber: "SCV-SILVER-2025-0142",
-        logo: "/assets/clubs/sc-villa.png",
-        tone: "blue",
-        renewalNote: "Renewal due soon",
-        benefits: [
+        ];
+    }
+
+    if (normalizedTier === "SILVER") {
+        return [
             "Matchday ticket discount",
             "Digital membership card",
             "Club news alerts",
             "Fan events access",
-        ],
-    },
-];
+        ];
+    }
 
-const expiredMemberships: ClubMembership[] = [
-    {
-        id: "pirates-bronze-expired",
-        clubName: "Black Pirates",
-        slug: "black-pirates",
-        tier: "Bronze Member",
-        sport: "Rugby Club",
-        status: "Expired",
-        validUntil: "08 Jan 2025",
-        memberSince: "08 Jan 2024",
-        memberNumber: "BP-BRONZE-2024-0027",
-        logo: "/assets/clubs/black-pirates.png",
-        tone: "orange",
-        renewalNote: "Expired membership",
-        benefits: [
-            "Digital member card",
-            "Fixture alerts",
-            "Club news",
-            "Ticket reminders",
-        ],
-    },
-];
+    return [
+        "Digital membership card",
+        "Fixture alerts",
+        "Club news",
+        "Ticket reminders",
+    ];
+}
 
-const recentMembershipActivity = [
-    {
-        id: "activity-001",
-        title: "KCB KOBS Gold Membership activated",
-        description: "Your club membership payment was confirmed.",
-        date: "18 May 2025",
+function getMembershipTone(tier?: string): ClubMembership["tone"] {
+    const normalizedTier = tier?.toUpperCase();
+
+    if (normalizedTier === "GOLD" || normalizedTier === "PLATINUM") {
+        return "purple";
+    }
+
+    if (normalizedTier === "SILVER") {
+        return "blue";
+    }
+
+    if (normalizedTier === "BASIC") {
+        return "green";
+    }
+
+    return "orange";
+}
+
+function buildRenewalNote(validUntil?: string | null) {
+    if (!validUntil) {
+        return "Renewal date pending";
+    }
+
+    const endDate = new Date(validUntil);
+
+    if (Number.isNaN(endDate.getTime())) {
+        return "Renewal date pending";
+    }
+
+    const differenceMs = endDate.getTime() - Date.now();
+    const daysRemaining = Math.ceil(differenceMs / (1000 * 60 * 60 * 24));
+
+    if (daysRemaining < 0) {
+        return "Expired membership";
+    }
+
+    if (daysRemaining <= 30) {
+        return "Renewal due soon";
+    }
+
+    return `Valid for ${daysRemaining} more days`;
+}
+
+function mapBackendMembershipStatus(status: string): MembershipStatus {
+    return status.toUpperCase() === "ACTIVE" ? "Active" : "Expired";
+}
+
+function mapBackendMembership(
+    subscription: BackendMembershipSubscription,
+    card?: BackendMembershipCard | null,
+): ClubMembership {
+    const activeCard = card ?? subscription.card ?? null;
+    const tierSource = activeCard?.tier || subscription.plan_name;
+    const validUntil = activeCard?.valid_until || subscription.ends_at;
+    const memberSince = activeCard?.valid_from || subscription.starts_at || subscription.created_at;
+
+    return {
+        id: String(subscription.id),
+        clubName: subscription.club_name || activeCard?.club_name || "Club Membership",
+        slug: makeSlug(subscription.club_name || activeCard?.club_name || "club-membership"),
+        tier: normalizeTier(tierSource),
+        sport: "Club Membership",
+        status: mapBackendMembershipStatus(subscription.status),
+        validUntil: formatBackendDate(validUntil),
+        memberSince: formatBackendDate(memberSince),
+        memberNumber: activeCard?.card_number || `MEMBERSHIP-${subscription.id}`,
+        logo: "",
+        tone: getMembershipTone(activeCard?.tier || subscription.plan_name),
+        renewalNote: buildRenewalNote(validUntil),
+        benefits: getTierBenefits(activeCard?.tier || subscription.plan_name),
+    };
+}
+
+function buildClubInitials(name: string) {
+    return (
+        name
+            .split(/\s+/)
+            .filter(Boolean)
+            .slice(0, 2)
+            .map((part) => part[0]?.toUpperCase())
+            .join("") || "LO"
+    );
+}
+
+function buildBenefits(memberships: ClubMembership[]) {
+    return memberships.flatMap((membership) =>
+        membership.benefits.map((benefit) => ({
+            id: `${membership.id}-${benefit}`,
+            benefit,
+            clubName: membership.clubName,
+            logo: membership.logo,
+            tier: membership.tier,
+        })),
+    );
+}
+
+function buildRecentActivity(
+    memberships: ClubMembership[],
+    payments: BackendMembershipPayment[],
+): MembershipActivity[] {
+    const membershipActivity = memberships.map((membership) => ({
+        id: `membership-${membership.id}`,
+        title: `${membership.clubName} ${membership.tier} active`,
+        description: "Your backend membership subscription is active.",
+        date: membership.memberSince,
         icon: CheckCircle2,
-    },
-    {
-        id: "activity-002",
-        title: "SC Villa Silver Membership receipt issued",
-        description: "Your receipt is available under Payments.",
-        date: "12 Apr 2025",
+    }));
+
+    const paymentActivity = payments.slice(0, 3).map((payment) => ({
+        id: `payment-${payment.id}`,
+        title: "Membership payment confirmed",
+        description: payment.transaction_reference || "Membership payment record",
+        date: formatBackendDate(payment.paid_at || payment.created_at),
         icon: ReceiptText,
-    },
-    {
-        id: "activity-003",
-        title: "Black Pirates membership expired",
-        description: "Renew or upgrade from the club membership page.",
-        date: "08 Jan 2025",
-        icon: AlertTriangle,
-    },
-];
+    }));
+
+    return [...membershipActivity, ...paymentActivity];
+}
+
+function ClubLogoMark({
+    logo,
+    name,
+}: {
+    logo: string;
+    name: string;
+}) {
+    return logo ? (
+        <img src={logo} alt="" aria-hidden="true" />
+    ) : (
+        <span className={styles.clubInitials}>{buildClubInitials(name)}</span>
+    );
+}
 
 const recommendedMemberships = [
     {
@@ -155,16 +295,6 @@ const recommendedMemberships = [
         logo: "/assets/clubs/vipers-sc.png",
     },
 ];
-
-const allBenefits = activeMemberships.flatMap((membership) =>
-    membership.benefits.map((benefit) => ({
-        id: `${membership.id}-${benefit}`,
-        benefit,
-        clubName: membership.clubName,
-        logo: membership.logo,
-        tier: membership.tier,
-    })),
-);
 
 function StatusBadge({ status }: { status: MembershipStatus }) {
     return (
@@ -204,7 +334,7 @@ function MembershipCard({ membership }: { membership: ClubMembership }) {
     return (
         <article className={`${styles.membershipCard} ${styles[membership.tone]}`}>
             <div className={styles.cardHeader}>
-                <img src={membership.logo} alt="" aria-hidden="true" />
+                <ClubLogoMark logo={membership.logo} name={membership.clubName} />
 
                 <div>
                     <h3>{membership.clubName}</h3>
@@ -279,6 +409,56 @@ function MembershipCard({ membership }: { membership: ClubMembership }) {
 function MyMembershipsPage() {
     const [activeTab, setActiveTab] = useState<MembershipTab>("active");
     const [searchQuery, setSearchQuery] = useState("");
+    const [activeMemberships, setActiveMemberships] = useState<ClubMembership[]>([]);
+    const [membershipPayments, setMembershipPayments] = useState<BackendMembershipPayment[]>([]);
+    const [isLoadingMemberships, setIsLoadingMemberships] = useState(true);
+    const [membershipError, setMembershipError] = useState("");
+
+    async function loadMemberships() {
+        setIsLoadingMemberships(true);
+        setMembershipError("");
+
+        try {
+            const subscription = await getMyMembership();
+
+            if (!subscription) {
+                setActiveMemberships([]);
+                setMembershipPayments([]);
+                return;
+            }
+
+            const card = subscription.card ?? (await createMyMembershipCard());
+            const payments = await getMembershipPayments(subscription.id);
+
+            setActiveMemberships([mapBackendMembership(subscription, card)]);
+            setMembershipPayments(payments);
+        } catch {
+            setActiveMemberships([]);
+            setMembershipPayments([]);
+            setMembershipError(
+                "We could not load your backend membership. Confirm the backend is running and you are logged in.",
+            );
+        } finally {
+            setIsLoadingMemberships(false);
+        }
+    }
+
+    useEffect(() => {
+        void loadMemberships();
+    }, []);
+
+    const allBenefits = useMemo(
+        () => buildBenefits(activeMemberships),
+        [activeMemberships],
+    );
+
+    const recentMembershipActivity = useMemo(
+        () => buildRecentActivity(activeMemberships, membershipPayments),
+        [activeMemberships, membershipPayments],
+    );
+
+    const primaryMembership = activeMemberships[0] ?? emptyPrimaryMembership;
+    const hasActiveMemberships = activeMemberships.length > 0;
 
     const normalizedSearchQuery = searchQuery.trim().toLowerCase();
     const filteredActiveMemberships = useMemo(
@@ -288,7 +468,7 @@ function MyMembershipsPage() {
                     .toLowerCase()
                     .includes(normalizedSearchQuery),
             ),
-        [normalizedSearchQuery],
+        [activeMemberships, normalizedSearchQuery],
     );
 
     const filteredExpiredMemberships = useMemo(
@@ -308,7 +488,7 @@ function MyMembershipsPage() {
                     .toLowerCase()
                     .includes(normalizedSearchQuery),
             ),
-        [normalizedSearchQuery],
+        [allBenefits, normalizedSearchQuery],
     );
 
     const summaryCards: SummaryCard[] = [
@@ -335,7 +515,11 @@ function MyMembershipsPage() {
         },
         {
             label: "Renewals",
-            value: "1",
+            value: String(
+                activeMemberships.filter((membership) =>
+                    membership.renewalNote.toLowerCase().includes("renewal due"),
+                ).length,
+            ),
             detail: "Needs attention",
             icon: RefreshCw,
             tone: "green",
@@ -390,6 +574,50 @@ function MyMembershipsPage() {
                     ) : null}
                 </div>
             </section>
+
+            {isLoadingMemberships || membershipError ? (
+                <section className={styles.membershipSyncMessage}>
+                    <RefreshCw size={19} strokeWidth={2.4} aria-hidden="true" />
+
+                    <div>
+                        <h2>
+                            {isLoadingMemberships
+                                ? "Loading backend memberships"
+                                : "Membership sync issue"}
+                        </h2>
+                        <p>
+                            {isLoadingMemberships
+                                ? "Checking your active club membership and digital card."
+                                : membershipError}
+                        </p>
+                    </div>
+
+                    {!isLoadingMemberships ? (
+                        <button type="button" onClick={loadMemberships}>
+                            Retry
+                        </button>
+                    ) : null}
+                </section>
+            ) : null}
+
+            {!isLoadingMemberships && !membershipError && !hasActiveMemberships ? (
+                <section className={styles.membershipEmptyBanner}>
+                    <div className={styles.membershipEmptyIcon}>
+                        <Crown size={34} strokeWidth={2.3} aria-hidden="true" />
+                    </div>
+
+                    <div>
+                        <span>No active club membership</span>
+                        <h2>Your membership wallet is ready</h2>
+                        <p>
+                            Join a club membership to activate your digital card, benefits,
+                            ticket discounts and renewal reminders.
+                        </p>
+                    </div>
+
+                    <Link to="/memberships">Explore Memberships</Link>
+                </section>
+            ) : null}
 
             <section className={styles.summaryGrid} aria-label="Membership summary">
                 {summaryCards.map((card) => {
@@ -465,8 +693,16 @@ function MyMembershipsPage() {
                                 </div>
                             ) : (
                                 <EmptyState
-                                    title="No active memberships found"
-                                    message="Try another search or explore club membership tiers."
+                                    title={
+                                        hasActiveMemberships
+                                            ? "No active memberships found"
+                                            : "No active memberships yet"
+                                    }
+                                    message={
+                                        hasActiveMemberships
+                                            ? "Try another search or explore club membership tiers."
+                                            : "Join a club membership to activate your digital card and benefits."
+                                    }
                                     actionLabel="Explore Memberships"
                                     actionTo="/memberships"
                                 />
@@ -522,7 +758,7 @@ function MyMembershipsPage() {
                                 <div className={styles.benefitGrid}>
                                     {filteredBenefits.map((item) => (
                                         <article className={styles.benefitCard} key={item.id}>
-                                            <img src={item.logo} alt="" aria-hidden="true" />
+                                            <ClubLogoMark logo={item.logo} name={item.clubName} />
 
                                             <div>
                                                 <h3>{item.benefit}</h3>
@@ -537,8 +773,16 @@ function MyMembershipsPage() {
                                 </div>
                             ) : (
                                 <EmptyState
-                                    title="No benefits found"
-                                    message="Try another search or activate a club membership."
+                                    title={
+                                        hasActiveMemberships
+                                            ? "No benefits found"
+                                            : "No membership benefits yet"
+                                    }
+                                    message={
+                                        hasActiveMemberships
+                                            ? "Try another search or activate another club membership."
+                                            : "Membership benefits will appear after you activate a club membership."
+                                    }
                                     actionLabel="Explore Memberships"
                                     actionTo="/memberships"
                                 />
@@ -618,18 +862,21 @@ function MyMembershipsPage() {
                     <section className={styles.digitalCardPreview}>
                         <span>Primary Card</span>
 
-                        <img src={activeMemberships[0]?.logo} alt="" aria-hidden="true" />
+                        <ClubLogoMark
+                            logo={primaryMembership.logo}
+                            name={primaryMembership.clubName}
+                        />
 
-                        <h2>{activeMemberships[0]?.clubName}</h2>
-                        <p>{activeMemberships[0]?.tier}</p>
+                        <h2>{primaryMembership.clubName}</h2>
+                        <p>{primaryMembership.tier}</p>
 
                         <div className={styles.previewQr}>
                             <QrCode size={92} strokeWidth={2.2} aria-hidden="true" />
                         </div>
 
-                        <small>{activeMemberships[0]?.memberNumber}</small>
+                        <small>{primaryMembership.memberNumber}</small>
 
-                        <Link to={`/memberships/${activeMemberships[0]?.slug}`}>
+                        <Link to={`/memberships/${primaryMembership.slug}`}>
                             View Card Details
                         </Link>
                     </section>
