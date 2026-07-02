@@ -78,6 +78,9 @@ import TicketPaymentSuccessPage from '../pages/tickets/TicketPaymentSuccessPage'
 import TicketPaymentFailedPage from '../pages/tickets/TicketPaymentFailedPage';
 import MatchCentrePage from '../pages/MatchCentrePage';
 import MVPVotingPage from '../pages/fan/MVPVotingPage';
+import JoinFantasy from '../pages/JoinFantasy';
+
+
 
 
 function protectedPage(page: ReactNode) {
@@ -98,6 +101,8 @@ export default function AppRoutes() {
                 <Route path="/personalize" element={<Personalize />} />
                 <Route path="/verify-email" element={<VerifyEmail />} />
                 <Route path="/fan/mvp-voting" element={<MVPVotingPage />} />
+                <Route path="/join-fantasy" element={<JoinFantasy />} />
+                
 
                 <Route path="/dashboard" element={protectedPage(<Navigate to="/dashboard/fan" replace />)} />
 
@@ -136,9 +141,11 @@ export default function AppRoutes() {
                     <Route path="/fantasy/create-league" element={<FantasyCreateJoin />} />
                     <Route path="/fantasy/team-builder" element={<FantasyTeamBuilder />} />
                     <Route path="/fantasy/player-market" element={<FantasyPlayerMarket />} />
+                    
                 </Route>
+   
+               <Route path="/edit-profile" element={protectedPage(<Navigate to="/profile" replace />)} />
 
-                <Route path="/edit-profile" element={protectedPage(<Navigate to="/profile" replace />)} />
 
                 <Route path="/sports" element={<SportsPage />} />
                 <Route path="/sports/football" element={<FootballPage />} />
@@ -173,6 +180,7 @@ export default function AppRoutes() {
                 <Route path="/sponsor/corporate" element={<SponsorCorporate />} />
                 <Route path="/payments" element={<Payments />} />
             </Routes>
+            
         </Router>
     );
 }

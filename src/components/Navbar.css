@@ -225,6 +225,12 @@
   transform: scale(1.04);
 }
 
+.auth-buttons {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .logout-btn {
   background-color: rgba(255, 255, 255, 0.08);
   color: #ffffff;
@@ -234,6 +240,7 @@
   background-color: rgba(255, 72, 72, 0.22);
   transform: scale(1.04);
 }
+
 
 .navbar-auth-actions {
   display: inline-flex;

@@ -24,6 +24,7 @@ type NavbarLink = {
 
 type NavbarProps = {
   links?: NavbarLink[];
+  showSignup?: boolean;
 };
 
 const defaultNavLinks: NavbarLink[] = [
@@ -34,6 +35,7 @@ const defaultNavLinks: NavbarLink[] = [
   { label: 'News', route: '/news' },
   { label: 'Club Memberships', route: '/memberships' },
   { label: 'Tickets', route: '/tickets' },
+  { label: 'About Us', route: '/about' },
 ];
 
 const leagueItems = [
@@ -44,7 +46,7 @@ const leagueItems = [
   { name: 'SMACK League', route: '/leagues/smack-league' },
 ];
 
-function Navbar({ links = defaultNavLinks }: NavbarProps) {
+function Navbar({ links = defaultNavLinks,  showSignup = false }: NavbarProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const { logout } = useAuth();
@@ -302,15 +304,28 @@ function Navbar({ links = defaultNavLinks }: NavbarProps) {
                 </div>
               </div>
             ) : (
-              <button className="login-btn" onClick={() => navigate('/login')}>
-                Log In
-              </button>
+              <div className="auth-buttons">
+    <button className="login-btn" onClick={() => navigate('/login')}>
+      Log In
+    </button>
+
+    {showSignup && (
+      <button
+        className="signup-btn"
+        onClick={() => navigate('/register')}
+      >
+        Sign Up
+      </button>
+    )}
+  </div>
             )}
+            
           </>
         )}
       </div>
     </nav>
   );
+  
 }
 
 export default Navbar;
