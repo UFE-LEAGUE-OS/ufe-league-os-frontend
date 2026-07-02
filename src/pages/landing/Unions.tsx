@@ -2,6 +2,10 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
+import ctaBanner from '../../assets/cta-banner.png';
+import footballImage from '../../assets/football-card.png';
+import rugbyImage from '../../assets/rugby-card.png';
+import basketballImage from '../../assets/basketball-card.png';
 import '../../styles/pages/landing/unions.css';
 
 type Union = {
@@ -20,6 +24,7 @@ type Union = {
   emoji: string;
   website?: string;
   status: 'active' | 'developing';
+  image: string;
 };
 
 const unions: Union[] = [
@@ -39,6 +44,7 @@ const unions: Union[] = [
     emoji: '⚽',
     website: 'https://fufa.co.ug',
     status: 'active',
+    image: footballImage,
   },
   {
     id: 2,
@@ -56,6 +62,7 @@ const unions: Union[] = [
     emoji: '🏉',
     website: 'https://ugandaragby.com',
     status: 'active',
+    image: rugbyImage,
   },
   {
     id: 3,
@@ -72,65 +79,18 @@ const unions: Union[] = [
     accentColor: '#0284C7',
     emoji: '🏀',
     status: 'active',
-  },
-  {
-    id: 4,
-    name: 'Uganda Netball Federation',
-    acronym: 'UNF',
-    sport: 'Netball',
-    description: "Promotes netball competitions and community-level participation, overseeing the She Cranes who are among Africa's top-ranked netball teams.",
-    members: '120 clubs',
-    founded: '1972',
-    focus: ['School competitions', 'Elite pathway', 'Regional championships', 'Women in sport'],
-    competitions: 4,
-    athletes: '2,000+',
-    color: 'rgba(124, 58, 237, 0.12)',
-    accentColor: '#7C3AED',
-    emoji: '🏐',
-    status: 'active',
-  },
-  {
-    id: 5,
-    name: 'Uganda Cricket Association',
-    acronym: 'UCA',
-    sport: 'Cricket',
-    description: 'Governs cricket in Uganda, developing the sport through structured leagues, youth academies, and the national team competing in ICC tournaments.',
-    members: '24 clubs',
-    founded: '1958',
-    focus: ['Youth academies', 'ICC compliance', 'Domestic leagues', 'Umpire development'],
-    competitions: 4,
-    athletes: '600+',
-    color: 'rgba(16, 185, 129, 0.12)',
-    accentColor: '#10B981',
-    emoji: '🏏',
-    status: 'developing',
-  },
-  {
-    id: 6,
-    name: 'Uganda Volleyball Federation',
-    acronym: 'UVF',
-    sport: 'Volleyball',
-    description: 'Oversees volleyball development across Uganda for both men and women, managing national leagues and regional competitions.',
-    members: '45 clubs',
-    founded: '1970',
-    focus: ['Beach volleyball', 'Indoor leagues', 'National team programs', 'School volleyball'],
-    competitions: 3,
-    athletes: '900+',
-    color: 'rgba(245, 158, 11, 0.12)',
-    accentColor: '#F59E0B',
-    emoji: '🏐',
-    status: 'developing',
+    image: basketballImage,
   },
 ];
 
 const stats = [
-  { label: 'National Federations', value: '6', color: '#7C3AED' },
-  { label: 'Registered Athletes', value: '10,500+', color: '#0284C7' },
-  { label: 'Active Competitions', value: '34', color: '#10B981' },
-  { label: 'Member Clubs', value: '617+', color: '#F59E0B' },
+  { label: 'National Federations', value: '3', color: '#7C3AED' },
+  { label: 'Registered Athletes', value: '8,000+', color: '#0284C7' },
+  { label: 'Active Competitions', value: '22', color: '#10B981' },
+  { label: 'Member Clubs', value: '425+', color: '#F59E0B' },
 ];
 
-const sportFilters = ['All Sports', 'Football', 'Rugby', 'Basketball', 'Netball', 'Cricket', 'Volleyball'];
+const sportFilters = ['All Sports', 'Football', 'Rugby', 'Basketball'];
 
 export default function Unions() {
   const navigate = useNavigate();
@@ -149,7 +109,13 @@ export default function Unions() {
   });
 
   return (
-    <div className="unions-page">
+    <div
+      className="unions-page"
+      style={{
+        background: `linear-gradient(rgba(3,4,11,0.3), rgba(3,4,11,0.7)), url(${ctaBanner}) center/cover no-repeat`,
+        backgroundAttachment: 'fixed',
+      }}
+    >
       <Navbar />
 
       <header className="unions-hero">
@@ -224,30 +190,19 @@ export default function Unions() {
             >
               <div className="union-card__header">
                 <div className="union-card__header-left">
-                  <div
-                    className="union-card__icon"
-                    style={{
-                      background: union.color,
-                      border: `1px solid ${union.accentColor}44`,
-                    }}
-                  >
-                    {union.emoji}
+                  <div className="union-card__image-wrap">
+                    <img
+                      src={union.image}
+                      alt={`${union.name} card`}
+                      className="union-card__image"
+                    />
                   </div>
-                  <div>
-                    <div className="union-card__badges">
-                      <span
-                        className="union-card__acronym"
-                        style={{ background: union.color, color: union.accentColor }}
-                      >
-                        {union.acronym}
-                      </span>
-                      <span className={`union-card__status union-card__status--${union.status}`}>
-                        {union.status === 'active' ? '● Active' : '● Developing'}
-                      </span>
-                    </div>
+                  <div className="union-card__body">
+                    <p className="union-card__sport">{union.sport}</p>
                     <h3 className="union-card__title">{union.name}</h3>
                   </div>
                 </div>
+
                 <div className="union-card__founded">
                   <p className="union-card__founded-label">Est.</p>
                   <p className="union-card__founded-year" style={{ color: union.accentColor }}>
