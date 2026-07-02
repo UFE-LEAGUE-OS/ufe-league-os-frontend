@@ -138,7 +138,7 @@ function formatDateParts(value?: string | null) {
 function mapBackendTicketStatus(status: string): TicketStatus {
     const normalizedStatus = status.toUpperCase();
 
-    if (normalizedStatus === "ISSUED") {
+    if (normalizedStatus === "ACTIVE" || normalizedStatus === "ISSUED") {
         return "Confirmed";
     }
 
