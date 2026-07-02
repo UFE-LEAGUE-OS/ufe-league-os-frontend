@@ -978,3 +978,191 @@
         justify-items: center;
     }
 }
+
+/* Backend payments connection polish */
+
+.primaryHeaderAction:disabled {
+    cursor: not-allowed;
+    opacity: 0.56;
+    transform: none;
+}
+
+.retryButton {
+    text-decoration: none;
+}
+
+/* Receipt action link polish */
+
+a.fullWidthButton {
+    text-decoration: none;
+}
+
+/* Payment history pagination */
+
+.paymentPager {
+    margin-top: 18px;
+    padding: 14px 16px;
+    border-radius: 18px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+
+    background: rgba(255, 255, 255, 0.045);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.paymentPager p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.68);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.paymentPager div {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.paymentPager span {
+    color: rgba(255, 255, 255, 0.82);
+    font-size: 13px;
+    font-weight: 900;
+}
+
+.paymentPager button {
+    min-height: 36px;
+    border-radius: 12px;
+    padding: 0 14px;
+
+    color: #ffffff;
+    background: rgba(123, 63, 242, 0.18);
+    border: 1px solid rgba(123, 63, 242, 0.45);
+
+    font-size: 12px;
+    font-weight: 900;
+
+    cursor: pointer;
+}
+
+.paymentPager button:hover:not(:disabled),
+.paymentPager button:focus-visible:not(:disabled) {
+    background: rgba(123, 63, 242, 0.34);
+}
+
+.paymentPager button:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+}
+
+@media (max-width: 760px) {
+    .paymentPager {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .paymentPager div {
+        justify-content: space-between;
+    }
+}
+
+/* Payment list controls and improved failed-payment support action */
+
+.paymentListControls {
+    margin: 14px 0 18px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+}
+
+.paymentListControls p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.66);
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.paymentListControls label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 12px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.paymentListControls select {
+    min-width: 76px;
+    min-height: 38px;
+    border-radius: 12px;
+    padding: 0 12px;
+
+    color: #ffffff;
+    background: rgba(9, 13, 30, 0.92);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+
+    font-size: 13px;
+    font-weight: 900;
+    outline: none;
+}
+
+.paymentListControls select:focus {
+    border-color: rgba(123, 63, 242, 0.7);
+    box-shadow: 0 0 0 3px rgba(123, 63, 242, 0.18);
+}
+
+.retryButton {
+    min-width: 104px;
+    min-height: 38px;
+    border-radius: 12px;
+    padding: 0 14px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    color: #ffffff;
+    background: rgba(239, 68, 68, 0.14);
+    border: 1px solid rgba(239, 68, 68, 0.48);
+
+    font-size: 12px;
+    font-weight: 900;
+    line-height: 1;
+    white-space: nowrap;
+    text-decoration: none;
+}
+
+.retryButton svg {
+    flex: 0 0 auto;
+    color: #f87171;
+}
+
+.retryButton:hover,
+.retryButton:focus-visible {
+    background: rgba(239, 68, 68, 0.24);
+    border-color: rgba(248, 113, 113, 0.76);
+    transform: translateY(-1px);
+}
+
+@media (max-width: 760px) {
+    .paymentListControls {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .paymentListControls label {
+        justify-content: space-between;
+    }
+
+    .paymentListControls select {
+        flex: 0 0 96px;
+    }
+}
