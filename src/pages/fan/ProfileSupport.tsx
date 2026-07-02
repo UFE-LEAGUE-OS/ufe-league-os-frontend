@@ -1,11 +1,13 @@
 import {
     AlertCircle,
-    BookOpen,
+    ArrowRight,
+    Bell,
     CheckCircle2,
-    Clock,
-    ExternalLink,
+    ChevronDown,
+    CircleHelp,
+    Clock3,
     FileText,
-    HelpCircle,
+    Headphones,
     LifeBuoy,
     Mail,
     MessageSquare,
@@ -14,167 +16,317 @@ import {
     Send,
     ShieldCheck,
     Ticket,
+    Trophy,
+    X,
+    Zap,
 } from "lucide-react";
-import type { FormEvent } from "react";
 import type { LucideIcon } from "lucide-react";
+import type { FormEvent } from "react";
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import styles from "./SupportPage.module.css";
 
-interface SupportCategory {
-    id: string;
-    title: string;
-    description: string;
+type SupportCategory =
+    | "All"
+    | "Tickets"
+    | "Payments"
+    | "Memberships"
+    | "Account"
+    | "Fantasy";
+
+interface SummaryCard {
+    label: string;
+    value: string;
+    detail: string;
     icon: LucideIcon;
-    href: string;
-    tone: "purple" | "orange" | "blue" | "green";
+    tone: "purple" | "green" | "orange" | "blue";
 }
 
 interface FaqItem {
     id: string;
+    category: Exclude<SupportCategory, "All">;
     question: string;
     answer: string;
-    category: string;
+    icon: LucideIcon;
 }
 
-const supportCategories: SupportCategory[] = [
-    {
-        id: "tickets",
-        title: "Tickets & QR Codes",
-        description: "Get help with ticket purchases, QR tickets and match entry.",
-        icon: Ticket,
-        href: "/tickets",
-        tone: "purple",
-    },
-    {
-        id: "memberships",
-        title: "Club Memberships",
-        description: "Resolve club membership purchases, renewals and benefits.",
-        icon: ShieldCheck,
-        href: "/memberships",
-        tone: "orange",
-    },
-    {
-        id: "payments",
-        title: "Payments & Receipts",
-        description: "Check Flutterwave checkout status, receipts and refunds.",
-        icon: FileText,
-        href: "/profile/payments",
-        tone: "blue",
-    },
-    {
-        id: "account",
-        title: "Account & Security",
-        description: "Get help with login, OTP, password and privacy settings.",
-        icon: LifeBuoy,
-        href: "/profile/privacy",
-        tone: "green",
-    },
+interface SupportRequest {
+    id: string;
+    title: string;
+    status: "Open" | "Pending" | "Resolved";
+    date: string;
+    category: string;
+    message?: string;
+}
+
+const categories: SupportCategory[] = [
+    "All",
+    "Tickets",
+    "Payments",
+    "Memberships",
+    "Account",
+    "Fantasy",
 ];
 
 const faqItems: FaqItem[] = [
     {
-        id: "faq-ticket-not-showing",
-        question: "Why is my QR ticket not showing after payment?",
-        answer:
-            "Your ticket may still be waiting for payment confirmation. Check Payments & Receipts first. If the payment is successful but the ticket is missing, contact support with the payment reference.",
+        id: "qr-ticket",
         category: "Tickets",
+        question: "Where do I find my QR ticket?",
+        answer:
+            "Open My Tickets and select Open QR on the active ticket. You can also download the ticket before matchday in case your network is weak.",
+        icon: Ticket,
     },
     {
-        id: "faq-membership-active",
-        question: "When does my club membership become active?",
+        id: "ticket-transfer",
+        category: "Tickets",
+        question: "Can I transfer a ticket to another fan?",
         answer:
-            "A club membership becomes active after the payment is confirmed and the membership record is created for that club.",
+            "Ticket transfer is planned for the fan ticket wallet. The current frontend shows the action while backend transfer rules are finalized.",
+        icon: Send,
+    },
+    {
+        id: "failed-payment",
+        category: "Payments",
+        question: "What should I do if a payment fails?",
+        answer:
+            "Open Payments, find the failed record and use Retry. If money was deducted but the ticket or membership did not activate, contact support with the payment reference.",
+        icon: AlertCircle,
+    },
+    {
+        id: "receipt",
+        category: "Payments",
+        question: "Where can I download receipts?",
+        answer:
+            "Receipts are available from Payments. Select a payment and use Download Receipt from the receipt detail panel.",
+        icon: FileText,
+    },
+    {
+        id: "membership-card",
         category: "Memberships",
+        question: "Where is my digital membership card?",
+        answer:
+            "Open My Memberships and select the active club membership. Your digital card, QR preview and benefits are listed there.",
+        icon: Trophy,
     },
     {
-        id: "faq-flutterwave-pending",
-        question: "What does a pending Flutterwave payment mean?",
-        answer:
-            "Pending means the checkout request has been created but confirmation has not yet been received. You can check the status again from Payments & Receipts.",
-        category: "Payments",
-    },
-    {
-        id: "faq-change-interests",
-        question: "How do I change the clubs and sports I follow?",
-        answer:
-            "Go to Profile & Interests and update your sports, clubs, leagues and alert preferences.",
-        category: "Profile",
-    },
-    {
-        id: "faq-otp",
-        question: "I did not receive my OTP. What should I do?",
-        answer:
-            "Check the email or phone number entered, wait a few minutes, then request a new OTP. If it still fails, contact support.",
+        id: "profile-edit",
         category: "Account",
+        question: "Why does my profile information disappear after refresh?",
+        answer:
+            "Some profile fields are currently frontend-only until the backend profile persistence endpoint is connected. Once connected, saved fields will remain after refresh.",
+        icon: ShieldCheck,
+    },
+    {
+        id: "login-security",
+        category: "Account",
+        question: "How do I secure my account?",
+        answer:
+            "Open Privacy & Security to review active sessions, login alerts, profile privacy and password controls.",
+        icon: ShieldCheck,
+    },
+    {
+        id: "fantasy",
+        category: "Fantasy",
+        question: "When will fantasy league support be fully active?",
+        answer:
+            "Fantasy screens are being prepared in the fan area. Full scoring, squads, transfers and competition rules need backend fantasy endpoints.",
+        icon: Zap,
     },
 ];
 
-const recentTickets = [
+const defaultSupportRequests: SupportRequest[] = [
     {
-        id: "support-001",
-        subject: "QR ticket not visible",
-        category: "Tickets",
-        status: "Open",
-        updated: "Today, 9:14 AM",
-    },
-    {
-        id: "support-002",
-        subject: "Membership receipt request",
-        category: "Payments",
+        id: "LOS-SUP-0018",
+        title: "Receipt download request",
         status: "Resolved",
-        updated: "Yesterday, 3:42 PM",
+        date: "18 May 2025",
+        category: "Payments",
     },
     {
-        id: "support-003",
-        subject: "Change phone number",
+        id: "LOS-SUP-0017",
+        title: "Ticket QR not opening",
+        status: "Pending",
+        date: "16 May 2025",
+        category: "Tickets",
+    },
+    {
+        id: "LOS-SUP-0016",
+        title: "Profile update question",
+        status: "Open",
+        date: "14 May 2025",
         category: "Account",
-        status: "In Review",
-        updated: "2 days ago",
     },
 ];
 
-function getTicketStatusClass(status: string) {
+const SUPPORT_REQUESTS_STORAGE_KEY = "leagueos:fan-support-requests";
+
+function readLocalSupportRequests(): SupportRequest[] {
+    if (typeof window === "undefined") {
+        return [];
+    }
+
+    try {
+        const rawValue = window.localStorage.getItem(SUPPORT_REQUESTS_STORAGE_KEY);
+
+        if (!rawValue) {
+            return [];
+        }
+
+        const parsedValue = JSON.parse(rawValue) as SupportRequest[];
+
+        return Array.isArray(parsedValue) ? parsedValue : [];
+    } catch {
+        return [];
+    }
+}
+
+function writeLocalSupportRequests(requests: SupportRequest[]) {
+    if (typeof window === "undefined") {
+        return;
+    }
+
+    try {
+        window.localStorage.setItem(
+            SUPPORT_REQUESTS_STORAGE_KEY,
+            JSON.stringify(requests),
+        );
+    } catch {
+        // Local storage can fail in private browsing.
+    }
+}
+
+function createLocalSupportRequest(topic: string, message: string): SupportRequest {
+    const date = new Intl.DateTimeFormat("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+    }).format(new Date());
+
+    return {
+        id: `LOS-LOCAL-${Date.now().toString().slice(-6)}`,
+        title: `${topic} support request`,
+        status: "Open",
+        date,
+        category: topic,
+        message,
+    };
+}
+
+function getStatusClass(status: SupportRequest["status"]) {
     if (status === "Resolved") {
         return styles.resolvedStatus;
     }
 
-    if (status === "Open") {
-        return styles.openStatus;
+    if (status === "Pending") {
+        return styles.pendingStatus;
     }
 
-    return styles.reviewStatus;
+    return styles.openStatus;
 }
 
 function SupportPage() {
+    const [activeCategory, setActiveCategory] = useState<SupportCategory>("All");
     const [searchQuery, setSearchQuery] = useState("");
-    const [selectedCategory, setSelectedCategory] = useState("General Support");
+    const [expandedFaqId, setExpandedFaqId] = useState(faqItems[0].id);
+    const [supportTopic, setSupportTopic] = useState("Tickets");
     const [supportMessage, setSupportMessage] = useState("");
     const [saveMessage, setSaveMessage] = useState("");
+    const [supportRequests, setSupportRequests] = useState<SupportRequest[]>(() => {
+        const localRequests = readLocalSupportRequests();
+
+        return [...localRequests, ...defaultSupportRequests].slice(0, 6);
+    });
 
     const normalizedSearchQuery = searchQuery.trim().toLowerCase();
 
-    const filteredFaqItems = useMemo(() => {
-        if (!normalizedSearchQuery) {
-            return faqItems;
-        }
+    const openRequestCount = useMemo(
+        () =>
+            supportRequests.filter(
+                (request) =>
+                    request.status === "Open" || request.status === "Pending",
+            ).length,
+        [supportRequests],
+    );
 
+    const filteredFaqs = useMemo(() => {
         return faqItems.filter((item) => {
-            const searchableText = `${item.question} ${item.answer} ${item.category}`;
+            const matchesCategory =
+                activeCategory === "All" || item.category === activeCategory;
 
-            return searchableText.toLowerCase().includes(normalizedSearchQuery);
+            const matchesSearch =
+                !normalizedSearchQuery ||
+                `${item.question} ${item.answer} ${item.category}`
+                    .toLowerCase()
+                    .includes(normalizedSearchQuery);
+
+            return matchesCategory && matchesSearch;
         });
-    }, [normalizedSearchQuery]);
+    }, [activeCategory, normalizedSearchQuery]);
+
+    const summaryCards: SummaryCard[] = [
+        {
+            label: "Support Status",
+            value: "Online",
+            detail: "Fan support ready",
+            icon: Headphones,
+            tone: "green",
+        },
+        {
+            label: "Open Requests",
+            value: String(openRequestCount),
+            detail: "Local support queue",
+            icon: MessageSquare,
+            tone: "purple",
+        },
+        {
+            label: "Avg Response",
+            value: "24h",
+            detail: "Target response time",
+            icon: Clock3,
+            tone: "blue",
+        },
+        {
+            label: "Help Topics",
+            value: String(faqItems.length),
+            detail: "Across fan modules",
+            icon: CircleHelp,
+            tone: "orange",
+        },
+    ];
+
+    function clearFilters() {
+        setSearchQuery("");
+        setActiveCategory("All");
+    }
 
     function handleSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
 
-        if (!supportMessage.trim()) {
-            setSaveMessage("Please enter a short support message first.");
+        const trimmedMessage = supportMessage.trim();
+
+        if (!trimmedMessage) {
+            setSaveMessage("Please describe the issue before submitting.");
             return;
         }
 
-        setSaveMessage("Support request prepared locally for now.");
+        const newRequest = createLocalSupportRequest(
+            supportTopic,
+            trimmedMessage,
+        );
+
+        const savedLocalRequests = readLocalSupportRequests();
+        const updatedLocalRequests = [newRequest, ...savedLocalRequests].slice(0, 10);
+
+        writeLocalSupportRequests(updatedLocalRequests);
+
+        setSupportRequests(
+            [...updatedLocalRequests, ...defaultSupportRequests].slice(0, 6),
+        );
+
+        setSaveMessage(
+            `Support request ${newRequest.id} saved locally. Backend support ticket creation is not available yet.`,
+        );
         setSupportMessage("");
     }
 
@@ -182,17 +334,18 @@ function SupportPage() {
         <section className={styles.page}>
             <header className={styles.pageHeader}>
                 <div>
-                    <h1>Help &amp; Support</h1>
+                    <span className={styles.eyebrow}>Fan Help Center</span>
+                    <h1>Support</h1>
                     <p>
-                        Get help with tickets, club memberships, payments, account access,
-                        OTP verification and profile settings.
+                        Get help with tickets, memberships, payments, account access,
+                        fantasy leagues and matchday issues.
                     </p>
                 </div>
 
-                <a href="mailto:support@leagueos.test" className={styles.primaryHeaderAction}>
-                    <Mail size={18} strokeWidth={2.4} aria-hidden="true" />
-                    Email Support
-                </a>
+                <Link to="/profile/notifications" className={styles.primaryHeaderAction}>
+                    <Bell size={18} strokeWidth={2.4} aria-hidden="true" />
+                    Notification Settings
+                </Link>
             </header>
 
             {saveMessage ? (
@@ -202,235 +355,317 @@ function SupportPage() {
                 </div>
             ) : null}
 
-            <section className={styles.heroCard}>
-                <span>
-                    <LifeBuoy size={38} strokeWidth={2.3} aria-hidden="true" />
-                </span>
-
-                <div>
-                    <h2>How can we help?</h2>
-                    <p>
-                        Search common issues, open a support request, or review your recent
-                        support tickets.
-                    </p>
-                </div>
-
-                <div className={styles.heroSearch}>
-                    <Search size={20} strokeWidth={2.3} aria-hidden="true" />
-                    <input
-                        type="search"
-                        placeholder="Search help topics, payments, tickets or OTP..."
-                        value={searchQuery}
-                        onChange={(event) => setSearchQuery(event.target.value)}
-                    />
-                </div>
-            </section>
-
-            <section className={styles.categoryGrid} aria-label="Support categories">
-                {supportCategories.map((category) => {
-                    const CategoryIcon = category.icon;
+            <section className={styles.summaryGrid} aria-label="Support summary">
+                {summaryCards.map((card) => {
+                    const CardIcon = card.icon;
 
                     return (
-                        <Link
-                            to={category.href}
-                            className={`${styles.categoryCard} ${styles[category.tone]}`}
-                            key={category.id}
+                        <article
+                            className={`${styles.summaryCard} ${styles[card.tone]}`}
+                            key={card.label}
                         >
-                            <span>
-                                <CategoryIcon size={30} strokeWidth={2.2} aria-hidden="true" />
-                            </span>
-
                             <div>
-                                <h2>{category.title}</h2>
-                                <p>{category.description}</p>
+                                <p>{card.label}</p>
+                                <strong>{card.value}</strong>
+                                <span>{card.detail}</span>
                             </div>
 
-                            <ExternalLink size={18} strokeWidth={2.4} aria-hidden="true" />
-                        </Link>
+                            <CardIcon size={38} strokeWidth={2.1} aria-hidden="true" />
+                        </article>
                     );
                 })}
             </section>
 
             <div className={styles.layoutGrid}>
                 <main className={styles.mainColumn}>
-                    <section className={styles.panel}>
-                        <div className={styles.panelHeader}>
-                            <div>
-                                <h2>Frequently Asked Questions</h2>
-                                <p>
-                                    Quick answers for common fan account, ticket, payment and club
-                                    membership issues.
-                                </p>
-                            </div>
+                    <section className={styles.helpHero}>
+                        <div>
+                            <span>Need help?</span>
+                            <h2>Search support before creating a request</h2>
+                            <p>
+                                Most fan issues can be solved from tickets, payments,
+                                memberships or account settings.
+                            </p>
                         </div>
 
-                        <div className={styles.faqList}>
-                            {filteredFaqItems.map((item) => (
-                                <article className={styles.faqItem} key={item.id}>
-                                    <span>
-                                        <HelpCircle size={22} strokeWidth={2.3} aria-hidden="true" />
-                                    </span>
+                        <div className={styles.supportSearch}>
+                            <Search size={18} strokeWidth={2.3} aria-hidden="true" />
 
-                                    <div>
-                                        <strong>{item.question}</strong>
-                                        <p>{item.answer}</p>
-                                        <small>{item.category}</small>
-                                    </div>
-                                </article>
-                            ))}
+                            <input
+                                type="search"
+                                placeholder="Search QR tickets, receipts, memberships, profile..."
+                                value={searchQuery}
+                                onChange={(event) => setSearchQuery(event.target.value)}
+                            />
+
+                            {searchQuery ? (
+                                <button
+                                    type="button"
+                                    aria-label="Clear support search"
+                                    onClick={() => setSearchQuery("")}
+                                >
+                                    <X size={16} strokeWidth={2.4} />
+                                </button>
+                            ) : null}
                         </div>
                     </section>
 
                     <section className={styles.panel}>
                         <div className={styles.panelHeader}>
                             <div>
-                                <h2>Send a Support Request</h2>
+                                <h2>Help Topics</h2>
                                 <p>
-                                    This form is local for now. Later it can connect to a backend
-                                    support ticket endpoint.
+                                    Choose a category or search for the issue you are facing.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className={styles.categoryPills}>
+                            {categories.map((category) => (
+                                <button
+                                    type="button"
+                                    key={category}
+                                    className={
+                                        activeCategory === category
+                                            ? styles.activeCategoryPill
+                                            : ""
+                                    }
+                                    onClick={() => setActiveCategory(category)}
+                                >
+                                    {category}
+                                </button>
+                            ))}
+                        </div>
+
+                        {filteredFaqs.length > 0 ? (
+                            <div className={styles.faqList}>
+                                {filteredFaqs.map((item) => {
+                                    const ItemIcon = item.icon;
+                                    const expanded = expandedFaqId === item.id;
+
+                                    return (
+                                        <article
+                                            className={`${styles.faqItem} ${
+                                                expanded ? styles.expandedFaqItem : ""
+                                            }`}
+                                            key={item.id}
+                                        >
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    setExpandedFaqId(
+                                                        expanded ? "" : item.id,
+                                                    )
+                                                }
+                                            >
+                                                <span className={styles.faqIcon}>
+                                                    <ItemIcon
+                                                        size={22}
+                                                        strokeWidth={2.4}
+                                                        aria-hidden="true"
+                                                    />
+                                                </span>
+
+                                                <span>
+                                                    <strong>{item.question}</strong>
+                                                    <small>{item.category}</small>
+                                                </span>
+
+                                                <ChevronDown
+                                                    size={18}
+                                                    strokeWidth={2.5}
+                                                    aria-hidden="true"
+                                                />
+                                            </button>
+
+                                            {expanded ? <p>{item.answer}</p> : null}
+                                        </article>
+                                    );
+                                })}
+                            </div>
+                        ) : (
+                            <section className={styles.emptyState}>
+                                <CircleHelp size={38} strokeWidth={2.2} aria-hidden="true" />
+                                <h2>No help topics found</h2>
+                                <p>
+                                    Try a different search term, change the category or clear
+                                    the filters.
+                                </p>
+
+                                <button type="button" onClick={clearFilters}>
+                                    Clear Filters
+                                </button>
+                            </section>
+                        )}
+                    </section>
+
+                    <section className={styles.panel}>
+                        <div className={styles.panelHeader}>
+                            <div>
+                                <h2>Create Support Request</h2>
+                                <p>
+                                    Send a support request when the help topics do not solve the issue.
                                 </p>
                             </div>
                         </div>
 
                         <form className={styles.supportForm} onSubmit={handleSubmit}>
                             <label>
-                                <span>Support Category</span>
+                                <span>Topic</span>
                                 <select
-                                    value={selectedCategory}
-                                    onChange={(event) => setSelectedCategory(event.target.value)}
+                                    value={supportTopic}
+                                    onChange={(event) => setSupportTopic(event.target.value)}
                                 >
-                                    <option>General Support</option>
-                                    <option>Tickets & QR Codes</option>
-                                    <option>Club Memberships</option>
-                                    <option>Payments & Receipts</option>
-                                    <option>Account & Security</option>
-                                    <option>Profile & Interests</option>
+                                    <option>Tickets</option>
+                                    <option>Payments</option>
+                                    <option>Memberships</option>
+                                    <option>Account</option>
+                                    <option>Fantasy</option>
+                                    <option>Other</option>
                                 </select>
                             </label>
 
                             <label>
                                 <span>Message</span>
                                 <textarea
-                                    rows={6}
-                                    placeholder="Describe the issue clearly. Include payment reference or ticket number if relevant."
+                                    placeholder="Describe the issue and include any ticket, receipt or payment reference..."
                                     value={supportMessage}
-                                    onChange={(event) => setSupportMessage(event.target.value)}
+                                    onChange={(event) =>
+                                        setSupportMessage(event.target.value)
+                                    }
+                                    rows={6}
+                                    required
                                 />
                             </label>
 
-                            <button type="submit">
-                                <Send size={18} strokeWidth={2.4} aria-hidden="true" />
+                            <button type="submit" disabled={!supportMessage.trim()}>
+                                <Send size={17} strokeWidth={2.4} aria-hidden="true" />
                                 Submit Request
                             </button>
                         </form>
                     </section>
+
+                    <section className={styles.quickLinksPanel}>
+                        <article>
+                            <Ticket size={28} strokeWidth={2.3} aria-hidden="true" />
+                            <h3>Ticket Help</h3>
+                            <p>Open your ticket wallet, QR codes and ticket history.</p>
+                            <Link to="/dashboard/tickets">
+                                My Tickets <ArrowRight size={15} />
+                            </Link>
+                        </article>
+
+                        <article>
+                            <FileText size={28} strokeWidth={2.3} aria-hidden="true" />
+                            <h3>Payment Receipts</h3>
+                            <p>Review payments, failed checkouts and receipt downloads.</p>
+                            <Link to="/profile/payments">
+                                Payments <ArrowRight size={15} />
+                            </Link>
+                        </article>
+
+                        <article>
+                            <Trophy size={28} strokeWidth={2.3} aria-hidden="true" />
+                            <h3>Membership Help</h3>
+                            <p>View club cards, renewals and membership benefits.</p>
+                            <Link to="/dashboard/memberships">
+                                Memberships <ArrowRight size={15} />
+                            </Link>
+                        </article>
+                    </section>
                 </main>
 
                 <aside className={styles.sideColumn}>
-                    <section className={styles.panel}>
-                        <div className={styles.sidePanelHeader}>
-                            <span>
-                                <MessageSquare size={26} strokeWidth={2.3} aria-hidden="true" />
-                            </span>
+                    <section className={styles.contactCard}>
+                        <span>
+                            <Headphones size={38} strokeWidth={2.3} aria-hidden="true" />
+                        </span>
 
-                            <div>
-                                <h2>Contact Options</h2>
-                                <p>Choose the fastest way to get help.</p>
-                            </div>
+                        <div>
+                            <h2>Contact Fan Support</h2>
+                            <p>
+                                Support can help with account, ticket, payment and membership questions.
+                            </p>
                         </div>
 
-                        <div className={styles.contactList}>
-                            <a href="mailto:support@leagueos.test">
-                                <Mail size={20} strokeWidth={2.3} aria-hidden="true" />
-                                <span>
-                                    <strong>Email Support</strong>
-                                    <small>support@leagueos.test</small>
-                                </span>
+                        <div className={styles.contactMethods}>
+                            <a href="mailto:support@leagueos.local">
+                                <Mail size={16} strokeWidth={2.4} aria-hidden="true" />
+                                Email Support
                             </a>
 
                             <a href="tel:+256700000000">
-                                <Phone size={20} strokeWidth={2.3} aria-hidden="true" />
-                                <span>
-                                    <strong>Call Support</strong>
-                                    <small>+256 700 000 000</small>
-                                </span>
+                                <Phone size={16} strokeWidth={2.4} aria-hidden="true" />
+                                Call Support
                             </a>
-
-                            <Link to="/profile/notifications">
-                                <BellLinkIcon />
-                                <span>
-                                    <strong>Alert Settings</strong>
-                                    <small>Control support and account notifications</small>
-                                </span>
-                            </Link>
                         </div>
+                    </section>
+
+                    <section className={styles.matchdayCard}>
+                        <span>
+                            <LifeBuoy size={38} strokeWidth={2.3} aria-hidden="true" />
+                        </span>
+
+                        <div>
+                            <h2>Matchday issue?</h2>
+                            <p>
+                                For QR tickets, entry gates or payment confirmation issues,
+                                include your order ID and match name.
+                            </p>
+                        </div>
+
+                        <Link to="/dashboard/tickets">Open Ticket Wallet →</Link>
                     </section>
 
                     <section className={styles.panel}>
                         <div className={styles.sidePanelHeader}>
                             <span>
-                                <Clock size={26} strokeWidth={2.3} aria-hidden="true" />
+                                <MessageSquare
+                                    size={25}
+                                    strokeWidth={2.3}
+                                    aria-hidden="true"
+                                />
                             </span>
 
                             <div>
-                                <h2>Recent Support Tickets</h2>
-                                <p>Track your latest support conversations.</p>
+                                <h2>Recent Requests</h2>
+                                <p>Your latest local support requests. Backend ticket submission is not available yet.</p>
                             </div>
                         </div>
 
-                        <div className={styles.ticketList}>
-                            {recentTickets.map((ticket) => (
-                                <article className={styles.ticketItem} key={ticket.id}>
+                        <div className={styles.requestList}>
+                            {supportRequests.map((request) => (
+                                <article className={styles.requestItem} key={request.id}>
                                     <div>
-                                        <strong>{ticket.subject}</strong>
-                                        <p>
-                                            {ticket.category} • {ticket.updated}
-                                        </p>
+                                        <h3>{request.title}</h3>
+                                        <p>{request.id} • {request.category}</p>
+                                        <small>{request.date}</small>
                                     </div>
 
-                                    <span className={getTicketStatusClass(ticket.status)}>
-                                        {ticket.status}
+                                    <span className={getStatusClass(request.status)}>
+                                        {request.status}
                                     </span>
                                 </article>
                             ))}
                         </div>
                     </section>
-
-                    <section className={styles.statusCard}>
-                        <CheckCircle2 size={42} strokeWidth={2.3} aria-hidden="true" />
+                    <section className={styles.supportSponsorCard} aria-label="Sponsored support placement">
+                        <span>Sponsored</span>
 
                         <div>
-                            <h2>Platform status</h2>
+                            <h2>Support Partner Slot</h2>
                             <p>
-                                League OS frontend is running. Backend support ticket submission
-                                will be connected later.
+                                Use this space for verified sponsor support, fan safety
+                                campaigns, ticketing partners, matchday assistance or membership offers.
                             </p>
                         </div>
 
-                        <Link to="/dashboard/fan">Back to Dashboard →</Link>
-                    </section>
-
-                    <section className={styles.warningCard}>
-                        <AlertCircle size={42} strokeWidth={2.3} aria-hidden="true" />
-
-                        <div>
-                            <h2>Payment issue?</h2>
-                            <p>
-                                Include your Flutterwave checkout reference or League OS payment
-                                reference when reporting payment problems.
-                            </p>
-                        </div>
-
-                        <Link to="/profile/payments">View Payments & Receipts</Link>
+                        <Link to="/sponsor/apply">Explore Partner Options →</Link>
                     </section>
                 </aside>
             </div>
         </section>
     );
-}
-
-function BellLinkIcon() {
-    return <BookOpen size={20} strokeWidth={2.3} aria-hidden="true" />;
 }
 
 export default SupportPage;

@@ -9,10 +9,12 @@ import {
     Moon,
     RefreshCw,
     Save,
+    Search,
     ShieldCheck,
     Smartphone,
     Ticket,
     Trophy,
+    X,
     XCircle,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -20,8 +22,10 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
     getNotificationInbox,
+    getNotificationPreferences,
     markAllNotificationsRead,
     markNotificationRead,
+    updateNotificationPreferences,
 } from "../../services/notificationService";
 import type {
     AppNotification,
@@ -144,7 +148,7 @@ const initialAlertGroups: AlertGroup[] = [
             {
                 id: "payment-status",
                 title: "Payment status updates",
-                description: "Notify me when Flutterwave payments succeed or fail.",
+                description: "Notify me when payments succeed or fail.",
                 enabled: true,
                 priority: "High",
             },
@@ -210,15 +214,114 @@ const initialAlertGroups: AlertGroup[] = [
     },
 ];
 
-const categoryFilters: Array<{ label: string; value: CategoryFilter }> = [
-    { label: "All", value: "ALL" },
-    { label: "Tickets", value: "TICKET" },
-    { label: "Payments", value: "PAYMENT" },
-    { label: "Memberships", value: "MEMBERSHIP" },
-    { label: "Fantasy", value: "FANTASY" },
-    { label: "Matches", value: "MATCH" },
-    { label: "Clubs", value: "CLUB" },
-    { label: "System", value: "SYSTEM" },
+const backendNotificationEventTypes = [
+    "MATCH_REMINDER",
+    "SCORE_UPDATE",
+    "FOLLOWED_TEAM_NEWS",
+    "STANDINGS_CHANGE",
+    "TICKET_UPDATES",
+    "TICKET_OFFER",
+    "MEMBERSHIP_UPDATES",
+    "SPONSORSHIP_UPDATES",
+    "FANTASY_UPDATES",
+    "LEAGUE_NEWS",
+    "CLUB_NEWS",
+    "GENERAL_NEWS",
+    "MARKETING_UPDATES",
+];
+
+const NOTIFICATION_CHANNEL_STORAGE_KEY = "leagueos:fan-notification-channels";
+
+interface ChannelSnapshot {
+    email: boolean;
+    push: boolean;
+    inApp: boolean;
+    sms: boolean;
+}
+
+function getChannelSnapshot(channels: ChannelPreference[]): ChannelSnapshot {
+    return {
+        email: channels.find((channel) => channel.id === "email")?.enabled ?? false,
+        push: channels.find((channel) => channel.id === "push")?.enabled ?? false,
+        inApp: channels.find((channel) => channel.id === "in-app")?.enabled ?? false,
+        sms: channels.find((channel) => channel.id === "sms")?.enabled ?? false,
+    };
+}
+
+function applyChannelSnapshot(
+    channels: ChannelPreference[],
+    snapshot: ChannelSnapshot,
+): ChannelPreference[] {
+    return channels.map((channel) => {
+        if (channel.id === "email") {
+            return { ...channel, enabled: snapshot.email };
+        }
+
+        if (channel.id === "push") {
+            return { ...channel, enabled: snapshot.push };
+        }
+
+        if (channel.id === "in-app") {
+            return { ...channel, enabled: snapshot.inApp };
+        }
+
+        if (channel.id === "sms") {
+            return { ...channel, enabled: snapshot.sms };
+        }
+
+        return channel;
+    });
+}
+
+function readLocalChannelSnapshot(): ChannelSnapshot | null {
+    try {
+        const rawValue = window.localStorage.getItem(
+            NOTIFICATION_CHANNEL_STORAGE_KEY,
+        );
+
+        if (!rawValue) {
+            return null;
+        }
+
+        return JSON.parse(rawValue) as ChannelSnapshot;
+    } catch {
+        return null;
+    }
+}
+
+function writeLocalChannelSnapshot(snapshot: ChannelSnapshot) {
+    try {
+        window.localStorage.setItem(
+            NOTIFICATION_CHANNEL_STORAGE_KEY,
+            JSON.stringify(snapshot),
+        );
+    } catch {
+        // Local storage can fail in private mode. Backend save can still work.
+    }
+}
+
+function channelSnapshotToBackendPayload(snapshot: ChannelSnapshot) {
+    return backendNotificationEventTypes.map((eventType) => ({
+        event_type: eventType,
+        email_enabled: snapshot.email,
+        push_enabled: snapshot.push || snapshot.inApp,
+        sms_enabled: snapshot.sms,
+    }));
+}
+
+const categoryFilters: Array<{
+    label: string;
+    value: CategoryFilter;
+    icon: LucideIcon;
+}> = [
+    { label: "All", value: "ALL", icon: MessageSquare },
+    { label: "Tickets", value: "TICKET", icon: Ticket },
+    { label: "Payments", value: "PAYMENT", icon: CheckCircle2 },
+    { label: "Memberships", value: "MEMBERSHIP", icon: Trophy },
+    { label: "Fantasy", value: "FANTASY", icon: Trophy },
+    { label: "Matches", value: "MATCH", icon: CalendarDays },
+    { label: "Clubs", value: "CLUB", icon: Megaphone },
+    { label: "System", value: "SYSTEM", icon: ShieldCheck },
 ];
 
 function getPriorityClass(priority: AlertPreference["priority"]) {
@@ -260,8 +363,17 @@ function NotificationsPage() {
     const [channels, setChannels] = useState<ChannelPreference[]>(initialChannels);
     const [alertGroups, setAlertGroups] =
         useState<AlertGroup[]>(initialAlertGroups);
+    const [activeAlertGroupId, setActiveAlertGroupId] = useState(
+        initialAlertGroups[0].id,
+    );
     const [quietHoursEnabled, setQuietHoursEnabled] = useState(true);
+    const [quietStartTime, setQuietStartTime] = useState("22:00");
+    const [quietEndTime, setQuietEndTime] = useState("07:00");
     const [saveMessage, setSaveMessage] = useState("");
+    const [isLoadingPreferences, setIsLoadingPreferences] = useState(true);
+    const [isSavingPreferences, setIsSavingPreferences] = useState(false);
+    const [hasLoadedPreferences, setHasLoadedPreferences] = useState(false);
+    const [preferenceSyncMessage, setPreferenceSyncMessage] = useState("");
     const [notifications, setNotifications] = useState<AppNotification[]>([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const [totalNotifications, setTotalNotifications] = useState(0);
@@ -270,6 +382,7 @@ function NotificationsPage() {
     const [inboxError, setInboxError] = useState("");
     const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("ALL");
     const [unreadOnly, setUnreadOnly] = useState(false);
+    const [searchQuery, setSearchQuery] = useState("");
 
     const enabledChannels = channels.filter((channel) => channel.enabled).length;
 
@@ -282,10 +395,33 @@ function NotificationsPage() {
         0,
     );
 
+    const channelSnapshot = useMemo(
+        () => getChannelSnapshot(channels),
+        [channels],
+    );
+
     const latestNotifications = useMemo(
-        () => notifications.slice(0, 6),
+        () => notifications.slice(0, 5),
         [notifications],
     );
+
+    const activeAlertGroup =
+        alertGroups.find((group) => group.id === activeAlertGroupId) ??
+        alertGroups[0];
+
+    const normalizedSearchQuery = searchQuery.trim().toLowerCase();
+
+    const visibleNotifications = useMemo(() => {
+        if (!normalizedSearchQuery) {
+            return notifications;
+        }
+
+        return notifications.filter((notification) =>
+            `${notification.title} ${notification.message} ${notification.category_label}`
+                .toLowerCase()
+                .includes(normalizedSearchQuery),
+        );
+    }, [normalizedSearchQuery, notifications]);
 
     const loadNotifications = useCallback(
         async (options?: { silent?: boolean }) => {
@@ -310,7 +446,7 @@ function NotificationsPage() {
                 setTotalNotifications(response.count);
             } catch {
                 setInboxError(
-                    "We could not load your notifications. Please check your connection and try again.",
+                    "We could not reach the backend notification inbox. Start the backend locally, confirm VITE_API_BASE_URL, and log in again.",
                 );
             } finally {
                 setIsLoadingInbox(false);
@@ -319,6 +455,73 @@ function NotificationsPage() {
         },
         [categoryFilter, unreadOnly],
     );
+
+    async function loadNotificationPreferences() {
+        setIsLoadingPreferences(true);
+        setPreferenceSyncMessage("");
+
+        const localSnapshot = readLocalChannelSnapshot();
+
+        /*
+         * Important:
+         * The backend stores notification preferences per event type.
+         * This page shows global channel settings.
+         *
+         * Therefore, browser-saved channel choices should be the first source
+         * of truth for this UI. Backend defaults are only used when the browser
+         * has no saved channel snapshot yet.
+         */
+        if (localSnapshot) {
+            setChannels((currentChannels) =>
+                applyChannelSnapshot(currentChannels, localSnapshot),
+            );
+
+            setPreferenceSyncMessage(
+                "Notification preferences loaded from this browser.",
+            );
+
+            try {
+                await updateNotificationPreferences(
+                    channelSnapshotToBackendPayload(localSnapshot),
+                );
+            } catch {
+                setPreferenceSyncMessage(
+                    "Preferences loaded from this browser. Backend sync is unavailable.",
+                );
+            } finally {
+                setIsLoadingPreferences(false);
+                setHasLoadedPreferences(true);
+            }
+
+            return;
+        }
+
+        try {
+            const preferences = await getNotificationPreferences();
+
+            if (preferences.length > 0) {
+                const backendSnapshot: ChannelSnapshot = {
+                    email: preferences.some((preference) => preference.email_enabled),
+                    push: preferences.some((preference) => preference.push_enabled),
+                    inApp: preferences.some((preference) => preference.push_enabled),
+                    sms: preferences.some((preference) => preference.sms_enabled),
+                };
+
+                setChannels((currentChannels) =>
+                    applyChannelSnapshot(currentChannels, backendSnapshot),
+                );
+
+                writeLocalChannelSnapshot(backendSnapshot);
+            }
+        } catch {
+            setPreferenceSyncMessage(
+                "Backend is offline. Channel changes will be saved in this browser until backend sync is available.",
+            );
+        } finally {
+            setIsLoadingPreferences(false);
+            setHasLoadedPreferences(true);
+        }
+    }
 
     useEffect(() => {
         const timeoutId = window.setTimeout(() => {
@@ -330,18 +533,60 @@ function NotificationsPage() {
         };
     }, [loadNotifications]);
 
+    useEffect(() => {
+        const timeoutId = window.setTimeout(() => {
+            void loadNotificationPreferences();
+        }, 0);
+
+        return () => {
+            window.clearTimeout(timeoutId);
+        };
+    }, []);
+
+    // Autosave notification channel changes after initial preference load.
+    useEffect(() => {
+        if (!hasLoadedPreferences) {
+            return undefined;
+        }
+
+        writeLocalChannelSnapshot(channelSnapshot);
+        setPreferenceSyncMessage("Saving notification preferences...");
+
+        const timeoutId = window.setTimeout(() => {
+            updateNotificationPreferences(
+                channelSnapshotToBackendPayload(channelSnapshot),
+            )
+                .then(() => {
+                    setPreferenceSyncMessage("Notification preferences autosaved.");
+                })
+                .catch(() => {
+                    setPreferenceSyncMessage(
+                        "Saved in this browser. Start the backend locally to sync.",
+                    );
+                });
+        }, 700);
+
+        return () => {
+            window.clearTimeout(timeoutId);
+        };
+    }, [channelSnapshot, hasLoadedPreferences]);
+
     function notifyHeaderBadgeChanged() {
         window.dispatchEvent(new Event("leagueos:notifications-updated"));
     }
 
     function toggleChannel(channelId: string) {
-        setChannels((currentChannels) =>
-            currentChannels.map((channel) =>
+        setChannels((currentChannels) => {
+            const updatedChannels = currentChannels.map((channel) =>
                 channel.id === channelId
                     ? { ...channel, enabled: !channel.enabled }
                     : channel,
-            ),
-        );
+            );
+
+            writeLocalChannelSnapshot(getChannelSnapshot(updatedChannels));
+
+            return updatedChannels;
+        });
 
         setSaveMessage("");
     }
@@ -367,10 +612,32 @@ function NotificationsPage() {
         setSaveMessage("");
     }
 
-    function handleSave() {
-        setSaveMessage(
-            "Notification preference UI saved for this session. The live inbox below is connected to the backend.",
-        );
+    async function handleSave() {
+        setIsSavingPreferences(true);
+        setSaveMessage("");
+        setPreferenceSyncMessage("");
+
+        writeLocalChannelSnapshot(channelSnapshot);
+
+        try {
+            await updateNotificationPreferences(
+                channelSnapshotToBackendPayload(channelSnapshot),
+            );
+
+            setSaveMessage("Notification preferences saved to the backend.");
+        } catch {
+            setSaveMessage(
+                "Saved in this browser. Start the backend locally to sync these preferences.",
+            );
+        } finally {
+            setIsSavingPreferences(false);
+        }
+    }
+
+    function clearInboxFilters() {
+        setSearchQuery("");
+        setCategoryFilter("ALL");
+        setUnreadOnly(false);
     }
 
     async function handleMarkRead(notificationId: number) {
@@ -415,10 +682,10 @@ function NotificationsPage() {
         <section className={styles.page}>
             <header className={styles.pageHeader}>
                 <div>
+                    <span className={styles.eyebrow}>Fan Alerts</span>
                     <h1>Notifications</h1>
                     <p>
-                        Choose how League OS should alert you and review real alerts
-                        delivered to your fan dashboard inbox.
+                        Manage how League OS alerts you and review your live fan inbox.
                     </p>
                 </div>
 
@@ -430,16 +697,17 @@ function NotificationsPage() {
                         disabled={isRefreshingInbox}
                     >
                         <RefreshCw size={18} strokeWidth={2.4} aria-hidden="true" />
-                        {isRefreshingInbox ? "Refreshing..." : "Refresh Inbox"}
+                        {isRefreshingInbox ? "Refreshing..." : "Refresh"}
                     </button>
 
                     <button
                         type="button"
                         className={styles.primaryHeaderAction}
-                        onClick={handleSave}
+                        onClick={() => void handleSave()}
+                        disabled={isSavingPreferences || isLoadingPreferences}
                     >
                         <Save size={18} strokeWidth={2.4} aria-hidden="true" />
-                        Save Preferences
+                        {isSavingPreferences ? "Saving..." : "Save Now"}
                     </button>
                 </div>
             </header>
@@ -455,6 +723,13 @@ function NotificationsPage() {
                 <div className={styles.errorMessage} role="alert">
                     <XCircle size={19} strokeWidth={2.4} aria-hidden="true" />
                     {inboxError}
+                </div>
+            ) : null}
+
+            {preferenceSyncMessage ? (
+                <div className={styles.syncMessage} role="status">
+                    <CheckCircle2 size={19} strokeWidth={2.4} aria-hidden="true" />
+                    {preferenceSyncMessage}
                 </div>
             ) : null}
 
@@ -483,7 +758,11 @@ function NotificationsPage() {
                     <div>
                         <p>Quiet Hours</p>
                         <strong>{quietHoursEnabled ? "On" : "Off"}</strong>
-                        <span>10:00 PM - 7:00 AM</span>
+                        <span>
+                            {quietHoursEnabled
+                                ? `${quietStartTime} - ${quietEndTime}`
+                                : "Currently disabled"}
+                        </span>
                     </div>
 
                     <Moon size={38} strokeWidth={2.1} aria-hidden="true" />
@@ -493,7 +772,9 @@ function NotificationsPage() {
                     <div>
                         <p>Enabled Channels</p>
                         <strong>{enabledChannels}</strong>
-                        <span>{enabledAlerts} of {totalAlerts} alert types on</span>
+                        <span>
+                            {enabledAlerts} of {totalAlerts} alert types on
+                        </span>
                     </div>
 
                     <CheckCircle2 size={38} strokeWidth={2.1} aria-hidden="true" />
@@ -505,8 +786,7 @@ function NotificationsPage() {
                     <div>
                         <h2>Notification Inbox</h2>
                         <p>
-                            These notifications are loaded from the backend and can be
-                            marked as read.
+                            Search, filter and mark backend notifications as read.
                         </p>
                     </div>
 
@@ -520,31 +800,63 @@ function NotificationsPage() {
                     </button>
                 </div>
 
-                <div className={styles.inboxToolbar} aria-label="Notification filters">
-                    {categoryFilters.map((filter) => (
+                <div className={styles.inboxControls}>
+                    <div className={styles.inboxSearch}>
+                        <Search size={18} strokeWidth={2.3} aria-hidden="true" />
+
+                        <input
+                            type="search"
+                            placeholder="Search alerts, tickets, payments or clubs..."
+                            value={searchQuery}
+                            onChange={(event) => setSearchQuery(event.target.value)}
+                        />
+
+                        {searchQuery ? (
+                            <button
+                                type="button"
+                                aria-label="Clear notification search"
+                                onClick={() => setSearchQuery("")}
+                            >
+                                <X size={16} strokeWidth={2.4} />
+                            </button>
+                        ) : null}
+                    </div>
+
+                    <div className={styles.filterPillRow} aria-label="Notification filters">
+                        {categoryFilters.map((filter) => {
+                            const FilterIcon = filter.icon;
+
+                            return (
+                                <button
+                                    type="button"
+                                    key={filter.value}
+                                    className={`${styles.filterButton} ${
+                                        categoryFilter === filter.value
+                                            ? styles.activeFilterButton
+                                            : ""
+                                    }`}
+                                    onClick={() => setCategoryFilter(filter.value)}
+                                >
+                                    <FilterIcon
+                                        size={15}
+                                        strokeWidth={2.4}
+                                        aria-hidden="true"
+                                    />
+                                    {filter.label}
+                                </button>
+                            );
+                        })}
+
                         <button
                             type="button"
-                            key={filter.value}
-                            className={`${styles.filterButton} ${
-                                categoryFilter === filter.value
-                                    ? styles.activeFilterButton
-                                    : ""
+                            className={`${styles.unreadToggle} ${
+                                unreadOnly ? styles.activeUnreadToggle : ""
                             }`}
-                            onClick={() => setCategoryFilter(filter.value)}
+                            onClick={() => setUnreadOnly((currentValue) => !currentValue)}
                         >
-                            {filter.label}
+                            Unread only
                         </button>
-                    ))}
-
-                    <button
-                        type="button"
-                        className={`${styles.filterButton} ${
-                            unreadOnly ? styles.activeFilterButton : ""
-                        }`}
-                        onClick={() => setUnreadOnly((currentValue) => !currentValue)}
-                    >
-                        Unread only
-                    </button>
+                    </div>
                 </div>
 
                 {isLoadingInbox ? (
@@ -553,18 +865,22 @@ function NotificationsPage() {
                         <strong>Loading notifications...</strong>
                         <p>Please wait while we fetch your inbox.</p>
                     </div>
-                ) : notifications.length === 0 ? (
+                ) : visibleNotifications.length === 0 ? (
                     <div className={styles.emptyState}>
                         <Bell size={26} strokeWidth={2.3} aria-hidden="true" />
                         <strong>No notifications found</strong>
                         <p>
-                            You have no notifications for the selected filter. Ticket
-                            confirmations, QR tickets and payment alerts will appear here.
+                            No notifications match the selected search or filter.
+                            Ticket confirmations, QR tickets and payment alerts will appear here.
                         </p>
+
+                        <button type="button" onClick={clearInboxFilters}>
+                            Clear Filters
+                        </button>
                     </div>
                 ) : (
                     <div className={styles.fullInboxList}>
-                        {notifications.map((notification) => {
+                        {visibleNotifications.map((notification) => {
                             const NotificationIcon = getNotificationIcon(
                                 notification.category,
                             );
@@ -641,8 +957,8 @@ function NotificationsPage() {
                             <div>
                                 <h2>Notification Channels</h2>
                                 <p>
-                                    These controls are ready for the backend preference
-                                    endpoint. The inbox above is already live.
+                                    Choose where alerts can be sent. Channel preferences save
+                                    to the backend preference endpoint.
                                 </p>
                             </div>
                         </div>
@@ -664,7 +980,7 @@ function NotificationsPage() {
                                     >
                                         <span className={styles.channelIcon}>
                                             <ChannelIcon
-                                                size={26}
+                                                size={24}
                                                 strokeWidth={2.3}
                                                 aria-hidden="true"
                                             />
@@ -695,57 +1011,90 @@ function NotificationsPage() {
                             <div>
                                 <h2>Alert Preferences</h2>
                                 <p>
-                                    Decide which types of club, ticket, match and membership
-                                    alerts should be sent.
+                                    Pick a category below and edit alert details locally. Backend storage currently saves channel preferences by event type.
                                 </p>
                             </div>
                         </div>
 
-                        <div className={styles.alertGroups}>
+                        <div className={styles.alertOverviewGrid}>
                             {alertGroups.map((group) => {
                                 const GroupIcon = group.icon;
+                                const enabledGroupAlerts = group.alerts.filter(
+                                    (alert) => alert.enabled,
+                                ).length;
 
                                 return (
-                                    <section className={styles.alertGroup} key={group.id}>
-                                        <div className={styles.alertGroupHeader}>
-                                            <span>
-                                                <GroupIcon
-                                                    size={24}
-                                                    strokeWidth={2.4}
-                                                    aria-hidden="true"
-                                                />
-                                            </span>
+                                    <button
+                                        type="button"
+                                        className={`${styles.alertGroupButton} ${
+                                            activeAlertGroupId === group.id
+                                                ? styles.activeAlertGroupButton
+                                                : ""
+                                        }`}
+                                        key={group.id}
+                                        onClick={() => setActiveAlertGroupId(group.id)}
+                                    >
+                                        <span className={styles.alertGroupIcon}>
+                                            <GroupIcon
+                                                size={22}
+                                                strokeWidth={2.4}
+                                                aria-hidden="true"
+                                            />
+                                        </span>
 
-                                            <div>
-                                                <h3>{group.title}</h3>
-                                                <p>{group.description}</p>
-                                            </div>
-                                        </div>
+                                        <span>
+                                            <strong>{group.title}</strong>
+                                            <small>{group.description}</small>
+                                        </span>
 
-                                        <div className={styles.alertList}>
-                                            {group.alerts.map((alert) => (
-                                                <label className={styles.alertRow} key={alert.id}>
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={alert.enabled}
-                                                        onChange={() => toggleAlert(group.id, alert.id)}
-                                                    />
-
-                                                    <span>
-                                                        <strong>{alert.title}</strong>
-                                                        <small>{alert.description}</small>
-                                                    </span>
-
-                                                    <em className={getPriorityClass(alert.priority)}>
-                                                        {alert.priority}
-                                                    </em>
-                                                </label>
-                                            ))}
-                                        </div>
-                                    </section>
+                                        <em className={styles.alertCount}>
+                                            {enabledGroupAlerts}/{group.alerts.length}
+                                        </em>
+                                    </button>
                                 );
                             })}
                         </div>
+
+                        <section className={styles.alertDetailCard}>
+                            <div className={styles.alertDetailHeader}>
+                                <div>
+                                    <h3>{activeAlertGroup.title}</h3>
+                                    <p>{activeAlertGroup.description}</p>
+                                </div>
+
+                                <span>
+                                    {
+                                        activeAlertGroup.alerts.filter(
+                                            (alert) => alert.enabled,
+                                        ).length
+                                    }{" "}
+                                    active
+                                </span>
+                            </div>
+
+                            <div className={styles.alertList}>
+                                {activeAlertGroup.alerts.map((alert) => (
+                                    <label className={styles.alertRow} key={alert.id}>
+                                        <input
+                                            type="checkbox"
+                                            checked={alert.enabled}
+                                            onChange={() =>
+                                                toggleAlert(activeAlertGroup.id, alert.id)
+                                            }
+                                        />
+
+                                        <span>
+                                            <strong>{alert.title}</strong>
+                                            <small>{alert.description}</small>
+                                        </span>
+
+                                        <em className={getPriorityClass(alert.priority)}>
+                                            {alert.priority}
+                                        </em>
+                                    </label>
+                                ))}
+                            </div>
+                        </section>
                     </section>
                 </main>
 
@@ -773,9 +1122,35 @@ function NotificationsPage() {
 
                             <span>
                                 <strong>Enable quiet hours</strong>
-                                <small>10:00 PM to 7:00 AM</small>
+                                <small>
+                                    {quietHoursEnabled
+                                        ? `${quietStartTime} to ${quietEndTime}`
+                                        : "Quiet hours disabled"}
+                                </small>
                             </span>
                         </label>
+
+                        <div className={styles.quietTimeGrid}>
+                            <label>
+                                <span>Start</span>
+                                <input
+                                    type="time"
+                                    value={quietStartTime}
+                                    disabled={!quietHoursEnabled}
+                                    onChange={(event) => setQuietStartTime(event.target.value)}
+                                />
+                            </label>
+
+                            <label>
+                                <span>End</span>
+                                <input
+                                    type="time"
+                                    value={quietEndTime}
+                                    disabled={!quietHoursEnabled}
+                                    onChange={(event) => setQuietEndTime(event.target.value)}
+                                />
+                            </label>
+                        </div>
 
                         <div className={styles.quietNote}>
                             <ShieldCheck size={20} strokeWidth={2.3} aria-hidden="true" />
@@ -856,21 +1231,20 @@ function NotificationsPage() {
                             )}
                         </div>
                     </section>
-
-                    <section className={styles.warningCard}>
-                        <XCircle size={42} strokeWidth={2.3} aria-hidden="true" />
+                    <section className={styles.notificationAdCard} aria-label="Sponsored fan alert placement">
+                        <span>Sponsored</span>
 
                         <div>
-                            <h2>Do not disable critical alerts</h2>
+                            <h2>Fan Alert Partner Slot</h2>
                             <p>
-                                Account security, OTP, payment status and QR ticket confirmation
-                                alerts should remain available because they protect the fan and
-                                help complete transactions.
+                                Reserve this space for sponsor offers, ticket release campaigns,
+                                matchday reminders, club promotions or membership discounts.
                             </p>
                         </div>
 
-                        <Link to="/profile/privacy">Review Security Settings</Link>
+                        <Link to="/sponsor/apply">Explore Partner Options →</Link>
                     </section>
+
                 </aside>
             </div>
         </section>
