@@ -214,7 +214,7 @@
 
 .stats-card strong {
   font-size: 18px;
-  font-family: var(--font-display);
+
 }
 
 /* ................ CONTENT WRAPPER .......... */
@@ -339,7 +339,7 @@
   font-size: 13px;
   font-weight: 700;
   color: var(--gold);
-  font-family: var(--font-display);
+ 
 }
 
 .btn-add,

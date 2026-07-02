@@ -1,4 +1,4 @@
-import "../styles/pages/Fantasy.css"
+import "../styles/pages/JoinFantasy.css"
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
@@ -20,7 +20,7 @@ type RivalManager = {
   points: number;
 };
 
-export default function Fantasy() {
+export default function JoinFantasy() {
   const navigate = useNavigate();
 
   // ---------------- SPORT ----------------
