@@ -79,6 +79,7 @@ import TicketPaymentFailedPage from '../pages/tickets/TicketPaymentFailedPage';
 import MatchCentrePage from '../pages/MatchCentrePage';
 import MVPVotingPage from '../pages/fan/MVPVotingPage';
 import JoinFantasy from '../pages/JoinFantasy';
+import SuperAdminDashboard from '../pages/SuperAdminDashboard';
 
 
 
@@ -102,6 +103,7 @@ export default function AppRoutes() {
                 <Route path="/verify-email" element={<VerifyEmail />} />
                 <Route path="/fan/mvp-voting" element={<MVPVotingPage />} />
                 <Route path="/join-fantasy" element={<JoinFantasy />} />
+                <Route path="/super-admin" element={<SuperAdminDashboard />} />
                 
 
                 <Route path="/dashboard" element={protectedPage(<Navigate to="/dashboard/fan" replace />)} />
@@ -141,7 +143,7 @@ export default function AppRoutes() {
                     <Route path="/fantasy/create-league" element={<FantasyCreateJoin />} />
                     <Route path="/fantasy/team-builder" element={<FantasyTeamBuilder />} />
                     <Route path="/fantasy/player-market" element={<FantasyPlayerMarket />} />
-                    
+                 
                 </Route>
    
                <Route path="/edit-profile" element={protectedPage(<Navigate to="/profile" replace />)} />
