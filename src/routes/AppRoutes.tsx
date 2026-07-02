@@ -25,7 +25,6 @@ import {
 
 import Personalize from '../pages/auth/Personalize';
 import NewsSection from '../pages/NewsPage';
-import ProfileEdit from '../pages/fan/ProfileEdit';
 import ProfileInterests from '../pages/fan/ProfileInterests';
 import ProfileClubs from '../pages/fan/ProfileClubs';
 import ProfilePayments from '../pages/fan/ProfilePayments';
@@ -110,7 +109,7 @@ export default function AppRoutes() {
                 <Route element={protectedPage(<AuthenticatedLayout />)}>
                     <Route path="/dashboard/fan" element={<Dashboard />} />
                     <Route path="/profile" element={<Profile />} />
-                    <Route path="/profile/edit" element={<ProfileEdit />} />
+                    <Route path="/profile/edit" element={<Navigate to="/profile" replace />} />
                     <Route path="/profile/interests" element={<ProfileInterests />} />
                     <Route path="/profile/clubs" element={<ProfileClubs />} />
                     <Route path="/profile/payments" element={<ProfilePayments />} />
@@ -145,7 +144,8 @@ export default function AppRoutes() {
                     
                 </Route>
    
-                <Route path="/edit-profile" element={protectedPage(<Navigate to="/profile/edit" replace />)} />
+               <Route path="/edit-profile" element={protectedPage(<Navigate to="/profile" replace />)} />
+
 
                 <Route path="/sports" element={<SportsPage />} />
                 <Route path="/sports/football" element={<FootballPage />} />

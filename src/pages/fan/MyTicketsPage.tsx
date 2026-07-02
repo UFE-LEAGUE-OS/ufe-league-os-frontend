@@ -16,8 +16,9 @@ import {
     XCircle,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { getMyTickets, type TicketApi } from "../../services/ticketingService";
 import styles from "./MyTicketsPage.module.css";
 
 type TicketStatus = "Confirmed" | "Completed" | "Cancelled";
@@ -65,75 +66,6 @@ interface SummaryCard {
     tone: "purple" | "blue" | "orange" | "green";
 }
 
-const upcomingTickets: FanTicket[] = [
-    {
-        id: "kobs-heathens-vip",
-        competition: "Nile Special Rugby Premiership",
-        dateDay: "24",
-        dateMonth: "May",
-        title: "KCB KOBS vs Heathens RFC",
-        homeLogo: "/assets/clubs/kobs.jpg",
-        awayLogo: "/assets/clubs/platinum-heathens.jpg",
-        homeTeam: "KCB KOBS",
-        awayTeam: "Heathens RFC",
-        dateTime: "Sat, 24 May 2025 • 4:00 PM EAT",
-        venue: "Kings Park Arena, Bweyogerere",
-        ticketType: "VIP Stand",
-        quantity: 2,
-        seat: "A12, A13",
-        gate: "Gate B",
-        price: "UGX 120,000",
-        status: "Confirmed",
-        orderId: "#ORD-845672",
-        bookedOn: "15 May 2025",
-    },
-    {
-        id: "pirates-black-pirates-regular",
-        competition: "Nile Special Rugby Premiership",
-        dateDay: "01",
-        dateMonth: "Jun",
-        title: "Black Pirates vs Impis RFC",
-        homeLogo: "/assets/clubs/black-pirates.png",
-        awayLogo: "/assets/clubs/impis-rfc.jpg",
-        homeTeam: "Black Pirates",
-        awayTeam: "Impis RFC",
-        dateTime: "Sun, 01 Jun 2025 • 2:00 PM EAT",
-        venue: "Legends Rugby Grounds, Namboole",
-        ticketType: "Regular",
-        quantity: 3,
-        seat: "B45, B46, B47",
-        gate: "Gate A",
-        price: "UGX 45,000",
-        status: "Confirmed",
-        orderId: "#ORD-845112",
-        bookedOn: "10 May 2025",
-    },
-];
-
-const pastTickets: FanTicket[] = [
-    {
-        id: "heathens-rams-completed",
-        competition: "Nile Special Rugby Premiership",
-        dateDay: "10",
-        dateMonth: "May",
-        title: "Heathens RFC vs Rams RFC",
-        homeLogo: "/assets/clubs/platinum-heathens.jpg",
-        awayLogo: "/assets/clubs/buffaloes.png",
-        homeTeam: "Heathens RFC",
-        awayTeam: "Rams RFC",
-        dateTime: "Sat, 10 May 2025 • 4:00 PM EAT",
-        venue: "Legends Rugby Grounds, Namboole",
-        ticketType: "Regular",
-        quantity: 2,
-        seat: "C22, C23",
-        gate: "Gate C",
-        price: "UGX 40,000",
-        status: "Completed",
-        orderId: "#ORD-842009",
-        bookedOn: "02 May 2025",
-    },
-];
-
 const recommendedTickets: RecommendedTicket[] = [
     {
         id: "kobs-ura",
@@ -169,6 +101,137 @@ const recommendedTickets: RecommendedTicket[] = [
         image: "/assets/clubs/platinum-heathens.jpg",
     },
 ];
+
+function formatDateParts(value?: string | null) {
+    if (!value) {
+        return {
+            day: "--",
+            month: "TBA",
+            full: "Date pending",
+        };
+    }
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+        return {
+            day: "--",
+            month: "TBA",
+            full: "Date pending",
+        };
+    }
+
+    return {
+        day: new Intl.DateTimeFormat("en-GB", { day: "2-digit" }).format(date),
+        month: new Intl.DateTimeFormat("en-GB", { month: "short" }).format(date),
+        full: new Intl.DateTimeFormat("en-GB", {
+            weekday: "short",
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+            hour: "numeric",
+            minute: "2-digit",
+        }).format(date),
+    };
+}
+
+function buildTeamInitials(name: string) {
+    return name
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join("") || "LO";
+}
+
+function parseBackendMatchLabel(matchLabel: string) {
+    const cleanLabel = matchLabel || "Match Ticket";
+    const [matchTitle, matchDate] = cleanLabel.split(" - ");
+    const teams = matchTitle.split(/\s+vs\s+/i);
+
+    return {
+        title: matchTitle.trim() || cleanLabel,
+        date: matchDate?.trim() || "",
+        homeTeam: teams[0]?.trim() || "Home Team",
+        awayTeam: teams[1]?.trim() || "Away Team",
+    };
+}
+
+function formatMatchDateFromLabel(matchDate: string, fallback?: string | null) {
+    if (matchDate) {
+        const date = new Date(`${matchDate}T15:00:00`);
+
+        if (!Number.isNaN(date.getTime())) {
+            return {
+                day: new Intl.DateTimeFormat("en-GB", { day: "2-digit" }).format(date),
+                month: new Intl.DateTimeFormat("en-GB", { month: "short" }).format(date),
+                full: `${new Intl.DateTimeFormat("en-GB", {
+                    weekday: "short",
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric",
+                }).format(date)} • Kickoff TBA`,
+            };
+        }
+    }
+
+    return formatDateParts(fallback);
+}
+
+function shortenTicketCode(value: string) {
+    if (!value) {
+        return "Pending";
+    }
+
+    if (value.length <= 16) {
+        return value;
+    }
+
+    return `${value.slice(0, 8)}...${value.slice(-6)}`;
+}
+
+function mapBackendTicketStatus(status: string): TicketStatus {
+    const normalizedStatus = status.toUpperCase();
+
+    if (normalizedStatus === "ACTIVE" || normalizedStatus === "ISSUED") {
+        return "Confirmed";
+    }
+
+    if (normalizedStatus === "USED") {
+        return "Completed";
+    }
+
+    return "Cancelled";
+}
+
+function mapBackendTicket(ticket: TicketApi): FanTicket {
+    const match = parseBackendMatchLabel(ticket.match_label);
+    const matchDate = formatMatchDateFromLabel(match.date, ticket.issued_at);
+    const issuedDate = formatDateParts(ticket.issued_at);
+    const status = mapBackendTicketStatus(ticket.status);
+
+    return {
+        id: String(ticket.id),
+        competition: "League OS Ticketing",
+        dateDay: matchDate.day,
+        dateMonth: matchDate.month,
+        title: match.title,
+        homeLogo: "",
+        awayLogo: "",
+        homeTeam: match.homeTeam,
+        awayTeam: match.awayTeam,
+        dateTime: matchDate.full,
+        venue: "Venue to be confirmed",
+        ticketType: ticket.ticket_type_name || "Match Ticket",
+        quantity: 1,
+        seat: "General Admission",
+        gate: "Gate pending",
+        price: "See receipt",
+        status,
+        orderId: `#${shortenTicketCode(ticket.ticket_code)}`,
+        bookedOn: issuedDate.full,
+    };
+}
 
 const statusIconMap = {
     Confirmed: CheckCircle2,
@@ -208,99 +271,118 @@ function EmptyState({
     );
 }
 
+function TeamBadge({
+    name,
+    logo,
+}: {
+    name: string;
+    logo: string;
+}) {
+    return (
+        <span className={styles.teamBadge}>
+            {logo ? (
+                <img src={logo} alt="" aria-hidden="true" />
+            ) : (
+                <span className={styles.teamInitials}>{buildTeamInitials(name)}</span>
+            )}
+            <strong>{name}</strong>
+        </span>
+    );
+}
+
 function TicketCard({ ticket, isPast = false }: { ticket: FanTicket; isPast?: boolean }) {
     return (
-        <article className={styles.ticketCard}>
+        <article
+            className={`${styles.ticketCard} ${styles.backendTicketCard} ${
+                isPast ? styles.pastTicketCard : ""
+            }`}
+        >
             <div className={styles.ticketDate}>
                 <span>{ticket.dateDay}</span>
                 <strong>{ticket.dateMonth}</strong>
             </div>
 
-            <div className={styles.ticketMain}>
-                <span className={styles.competition}>{ticket.competition}</span>
-                <h3>{ticket.title}</h3>
+            <div className={styles.backendTicketContent}>
+                <div className={styles.backendTicketHeader}>
+                    <div>
+                        <span className={styles.competition}>{ticket.competition}</span>
+                        <h3>{ticket.title}</h3>
+                    </div>
 
-                <div className={styles.teamsRow}>
-                    <img src={ticket.homeLogo} alt="" aria-hidden="true" />
-                    <strong>{ticket.homeTeam}</strong>
-                    <span>vs</span>
-                    <img src={ticket.awayLogo} alt="" aria-hidden="true" />
-                    <strong>{ticket.awayTeam}</strong>
+                    <StatusBadge status={ticket.status} />
                 </div>
 
-                <p>
-                    <CalendarDays size={15} strokeWidth={2.2} aria-hidden="true" />
-                    {ticket.dateTime}
-                </p>
+                <div className={styles.backendTeamsRow}>
+                    <TeamBadge name={ticket.homeTeam} logo={ticket.homeLogo} />
+                    <span className={styles.versusBadge}>vs</span>
+                    <TeamBadge name={ticket.awayTeam} logo={ticket.awayLogo} />
+                </div>
 
-                <p>
-                    <MapPin size={15} strokeWidth={2.2} aria-hidden="true" />
-                    {ticket.venue}
-                </p>
+                <div className={styles.backendMatchMeta}>
+                    <span>
+                        <CalendarDays size={15} strokeWidth={2.3} aria-hidden="true" />
+                        {ticket.dateTime}
+                    </span>
+                    <span>
+                        <MapPin size={15} strokeWidth={2.3} aria-hidden="true" />
+                        {ticket.venue}
+                    </span>
+                </div>
+
+                <dl className={styles.backendTicketDetails}>
+                    <div>
+                        <dt>Ticket Type</dt>
+                        <dd>{ticket.ticketType}</dd>
+                    </div>
+
+                    <div>
+                        <dt>Quantity</dt>
+                        <dd>{ticket.quantity}</dd>
+                    </div>
+
+                    <div>
+                        <dt>Access</dt>
+                        <dd>{ticket.gate}</dd>
+                    </div>
+
+                    <div>
+                        <dt>Seat</dt>
+                        <dd>{ticket.seat}</dd>
+                    </div>
+
+                    <div>
+                        <dt>Price</dt>
+                        <dd>{ticket.price}</dd>
+                    </div>
+
+                    <div>
+                        <dt>Ticket Code</dt>
+                        <dd>{ticket.orderId}</dd>
+                    </div>
+
+                    <div>
+                        <dt>Booked On</dt>
+                        <dd>{ticket.bookedOn}</dd>
+                    </div>
+                </dl>
             </div>
 
-            <dl className={styles.ticketMeta}>
-                <div>
-                    <dt>Type</dt>
-                    <dd>{ticket.ticketType}</dd>
-                </div>
-
-                <div>
-                    <dt>Qty</dt>
-                    <dd>{ticket.quantity}</dd>
-                </div>
-
-                <div>
-                    <dt>Gate</dt>
-                    <dd>{ticket.gate}</dd>
-                </div>
-
-                <div>
-                    <dt>Seat</dt>
-                    <dd>{ticket.seat}</dd>
-                </div>
-
-                <div>
-                    <dt>Price</dt>
-                    <dd>{ticket.price}</dd>
-                </div>
-
-                <div>
-                    <dt>Status</dt>
-                    <dd>
-                        <StatusBadge status={ticket.status} />
-                    </dd>
-                </div>
-
-                <div>
-                    <dt>Order ID</dt>
-                    <dd>{ticket.orderId}</dd>
-                </div>
-
-                <div>
-                    <dt>Booked On</dt>
-                    <dd>{ticket.bookedOn}</dd>
-                </div>
-            </dl>
-
-            <div className={styles.ticketActions}>
-                <Link to={`/dashboard/tickets/${ticket.id}`} className={styles.primaryAction}>
-                    <QrCode size={16} strokeWidth={2.2} aria-hidden="true" />
-                    {isPast ? "View Details" : "Open QR"}
+            <div className={styles.backendTicketActions}>
+                <Link to={`/dashboard/tickets/${ticket.id}`} className={styles.openQrButton}>
+                    <QrCode size={16} strokeWidth={2.4} aria-hidden="true" />
+                    Open QR
                 </Link>
 
-                {!isPast ? (
-                    <>
-                        <button type="button">
-                            <Download size={16} strokeWidth={2.2} aria-hidden="true" />
-                            Download
-                        </button>
+                <button type="button" className={styles.downloadButton}>
+                    <Download size={16} strokeWidth={2.4} aria-hidden="true" />
+                    Download
+                </button>
 
-                        <button type="button">
-                            <Share2 size={16} strokeWidth={2.2} aria-hidden="true" />
-                            Transfer
-                        </button>
-                    </>
+                {!isPast ? (
+                    <button type="button" className={styles.transferButton}>
+                        <Share2 size={16} strokeWidth={2.4} aria-hidden="true" />
+                        Transfer
+                    </button>
                 ) : null}
             </div>
         </article>
@@ -345,20 +427,56 @@ function RecommendedCard({ ticket }: { ticket: RecommendedTicket }) {
 function MyTicketsPage() {
     const [activeTab, setActiveTab] = useState<TicketTab>("upcoming");
     const [searchQuery, setSearchQuery] = useState("");
+    const [backendTickets, setBackendTickets] = useState<FanTicket[]>([]);
+    const [isLoadingTickets, setIsLoadingTickets] = useState(true);
+    const [ticketError, setTicketError] = useState("");
 
-    const allTickets = useMemo(() => [...upcomingTickets, ...pastTickets], []);
+    async function loadTickets() {
+        setIsLoadingTickets(true);
+        setTicketError("");
+
+        try {
+            const tickets = await getMyTickets();
+            setBackendTickets(tickets.map(mapBackendTicket));
+        } catch {
+            setTicketError(
+                "We could not load your backend tickets. Confirm the backend is running and you are logged in.",
+            );
+        } finally {
+            setIsLoadingTickets(false);
+        }
+    }
+
+    useEffect(() => {
+        void loadTickets();
+    }, []);
+
+    const upcomingBackendTickets = useMemo(
+        () => backendTickets.filter((ticket) => ticket.status === "Confirmed"),
+        [backendTickets],
+    );
+
+    const pastBackendTickets = useMemo(
+        () => backendTickets.filter((ticket) => ticket.status !== "Confirmed"),
+        [backendTickets],
+    );
+
+    const allTickets = useMemo(
+        () => [...upcomingBackendTickets, ...pastBackendTickets],
+        [pastBackendTickets, upcomingBackendTickets],
+    );
 
     const summaryCards: SummaryCard[] = [
         {
             label: "Upcoming Tickets",
-            value: String(upcomingTickets.length),
+            value: String(upcomingBackendTickets.length),
             detail: "Ready for QR scan",
             icon: Ticket,
             tone: "purple",
         },
         {
             label: "Past Tickets",
-            value: String(pastTickets.length),
+            value: String(pastBackendTickets.length),
             detail: "Available in history",
             icon: Timer,
             tone: "blue",
@@ -383,22 +501,22 @@ function MyTicketsPage() {
 
     const searchedUpcomingTickets = useMemo(
         () =>
-            upcomingTickets.filter((ticket) =>
+            upcomingBackendTickets.filter((ticket) =>
                 `${ticket.title} ${ticket.competition} ${ticket.venue} ${ticket.orderId}`
                     .toLowerCase()
                     .includes(normalizedSearchQuery),
             ),
-        [normalizedSearchQuery],
+        [normalizedSearchQuery, upcomingBackendTickets],
     );
 
     const searchedPastTickets = useMemo(
         () =>
-            pastTickets.filter((ticket) =>
+            pastBackendTickets.filter((ticket) =>
                 `${ticket.title} ${ticket.competition} ${ticket.venue} ${ticket.orderId}`
                     .toLowerCase()
                     .includes(normalizedSearchQuery),
             ),
-        [normalizedSearchQuery],
+        [normalizedSearchQuery, pastBackendTickets],
     );
 
     const searchedOrders = useMemo(
@@ -411,7 +529,7 @@ function MyTicketsPage() {
         [allTickets, normalizedSearchQuery],
     );
 
-    const nextTicket = upcomingTickets[0];
+    const nextTicket = upcomingBackendTickets[0];
 
     return (
         <section className={styles.page}>
@@ -419,8 +537,8 @@ function MyTicketsPage() {
                 <div>
                     <h1>My Tickets</h1>
                     <p>
-                        View, download, transfer and manage your upcoming and past match
-                        tickets from one fan wallet.
+                        View, download and manage backend-issued match tickets from one
+                        fan wallet.
                     </p>
                 </div>
 
@@ -435,8 +553,8 @@ function MyTicketsPage() {
                     <span className={styles.eyebrow}>Fan Ticket Wallet</span>
                     <h2>Matchday access in one place</h2>
                     <p>
-                        Your QR ticket, order details, transfer options and ticket history
-                        are organized here.
+                        Your QR ticket, order details and ticket history are loaded from
+                        the backend ticketing service.
                     </p>
                 </div>
 
@@ -460,6 +578,29 @@ function MyTicketsPage() {
                     ) : null}
                 </div>
             </section>
+
+            {ticketError ? (
+                <section className={styles.ticketSyncMessage} role="alert">
+                    <XCircle size={20} strokeWidth={2.4} aria-hidden="true" />
+                    <div>
+                        <h2>Ticket data unavailable</h2>
+                        <p>{ticketError}</p>
+                    </div>
+                    <button type="button" onClick={() => void loadTickets()}>
+                        Try Again
+                    </button>
+                </section>
+            ) : null}
+
+            {isLoadingTickets ? (
+                <section className={styles.ticketSyncMessage} role="status">
+                    <Timer size={20} strokeWidth={2.4} aria-hidden="true" />
+                    <div>
+                        <h2>Loading ticket wallet</h2>
+                        <p>Fetching your tickets from the backend.</p>
+                    </div>
+                </section>
+            ) : null}
 
             <section className={styles.summaryGrid} aria-label="Ticket wallet summary">
                 {summaryCards.map((card) => {
@@ -488,7 +629,7 @@ function MyTicketsPage() {
                     className={activeTab === "upcoming" ? styles.activeTab : ""}
                     onClick={() => setActiveTab("upcoming")}
                 >
-                    Upcoming <span>{upcomingTickets.length}</span>
+                    Upcoming <span>{upcomingBackendTickets.length}</span>
                 </button>
 
                 <button
@@ -496,7 +637,7 @@ function MyTicketsPage() {
                     className={activeTab === "past" ? styles.activeTab : ""}
                     onClick={() => setActiveTab("past")}
                 >
-                    Past <span>{pastTickets.length}</span>
+                    Past <span>{pastBackendTickets.length}</span>
                 </button>
 
                 <button

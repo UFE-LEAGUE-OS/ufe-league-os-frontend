@@ -20,6 +20,7 @@ import {
     getTicketById,
 } from "../../services/ticketingService";
 import type { TicketApi } from "../../services/ticketingService";
+import { useCurrentUser } from "../../hooks/useCurrentUser";
 import styles from "./TicketDetailPage.module.css";
 
 type TicketViewModel = {
@@ -43,6 +44,7 @@ type TicketViewModel = {
     section: string;
     row: string;
     gate: string;
+    access: string;
     orderId: string;
     bookedOn: string;
     price: string;
@@ -68,29 +70,114 @@ const demoTicket: TicketViewModel = {
     time: "4:00 PM EAT",
     venue: "Kings Park Arena",
     location: "Bweyogerere, Kampala",
-    ticketType: "VIP Stand",
-    quantity: "2",
-    seats: "A12, A13",
-    section: "A",
-    row: "12",
-    gate: "VIP Gate",
-    orderId: "#ORD-845672",
-    bookedOn: "15 May 2025",
-    price: "UGX 120,000",
+    ticketType: "Match Ticket",
+    quantity: "1",
+    seats: "General Admission",
+    section: "General",
+    row: "Not assigned",
+    gate: "Gate pending",
+    access: "Standard matchday access",
+    orderId: "#ORDER-PENDING",
+    bookedOn: "Date pending",
+    price: "See payment receipt",
     status: "CONFIRMED",
-    holderName: "Kato Richard",
-    holderEmail: "kato.richard@mail.com",
-    holderPhone: "+256 700 123 456",
-    fanId: "LGO-875432",
+    holderName: "Current Fan",
+    holderEmail: "Email unavailable",
+    holderPhone: "Phone unavailable",
+    fanId: "LOS-FAN",
 };
 
-function splitMatchLabel(matchLabel: string) {
-    const parts = matchLabel.split(/\s+vs\s+/i);
+type TicketHolderInfo = {
+    holderName: string;
+    holderEmail: string;
+    holderPhone: string;
+    fanId: string;
+};
+
+type TicketHolderSource = {
+    name?: string;
+    displayName?: string;
+    fullName?: string;
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    phone?: string;
+    phoneNumber?: string;
+    fanId?: string;
+    id?: string | number;
+};
+
+function cleanValue(value: unknown, fallback: string) {
+    if (typeof value === "string" && value.trim()) {
+        return value.trim();
+    }
+
+    if (typeof value === "number") {
+        return String(value);
+    }
+
+    return fallback;
+}
+
+function buildTicketHolder(user: TicketHolderSource): TicketHolderInfo {
+    const combinedName = [user.firstName, user.lastName]
+        .filter(Boolean)
+        .join(" ")
+        .trim();
 
     return {
-        homeTeam: parts[0]?.trim() || "KCB Kobs",
-        awayTeam: parts[1]?.trim() || "Heathens RFC",
+        holderName: cleanValue(
+            user.displayName || user.name || user.fullName || combinedName,
+            "Current Fan",
+        ),
+        holderEmail: cleanValue(user.email, "Email unavailable"),
+        holderPhone: cleanValue(user.phone || user.phoneNumber, "Phone unavailable"),
+        fanId: cleanValue(user.fanId || user.id, "LOS-FAN"),
     };
+}
+
+function buildTeamInitials(name: string) {
+    return (
+        name
+            .split(/\s+/)
+            .filter(Boolean)
+            .slice(0, 2)
+            .map((part) => part[0]?.toUpperCase())
+            .join("") || "LO"
+    );
+}
+
+function parseMatchLabel(matchLabel: string) {
+    const cleanLabel = matchLabel || "Match Ticket";
+    const [matchTitle, matchDate] = cleanLabel.split(" - ");
+    const parts = matchTitle.split(/\s+vs\s+/i);
+
+    return {
+        title: matchTitle.trim() || cleanLabel,
+        matchDate: matchDate?.trim() || "",
+        homeTeam: parts[0]?.trim() || "Home Team",
+        awayTeam: parts[1]?.trim() || "Away Team",
+    };
+}
+
+function formatMatchDateFromLabel(matchDate: string, fallback?: string | null) {
+    if (matchDate) {
+        const date = new Date(`${matchDate}T15:00:00`);
+
+        if (!Number.isNaN(date.getTime())) {
+            return {
+                dateDay: date.toLocaleString("en-US", { day: "2-digit" }),
+                dateMonth: date
+                    .toLocaleString("en-US", { month: "short" })
+                    .toUpperCase(),
+                dateYear: String(date.getFullYear()),
+                time: "Kickoff TBA",
+                bookedOn: formatDateParts(fallback).bookedOn,
+            };
+        }
+    }
+
+    return formatDateParts(fallback);
 }
 
 function formatDateParts(value?: string | null) {
@@ -134,7 +221,7 @@ function formatDateParts(value?: string | null) {
 }
 
 function normalizeStatus(status: string) {
-    if (status === "ISSUED") return "CONFIRMED";
+    if (status === "ACTIVE" || status === "ISSUED") return "CONFIRMED";
     if (status === "USED") return "USED";
     if (status === "CANCELLED") return "CANCELLED";
     if (status === "REFUNDED") return "REFUNDED";
@@ -142,26 +229,53 @@ function normalizeStatus(status: string) {
     return status || "CONFIRMED";
 }
 
-function mapTicketToViewModel(ticket: TicketApi | null): TicketViewModel {
+function mapTicketToViewModel(
+    ticket: TicketApi | null,
+    holder: TicketHolderInfo,
+): TicketViewModel {
     if (!ticket) {
-        return demoTicket;
+        return {
+            ...demoTicket,
+            ...holder,
+        };
     }
 
-    const teams = splitMatchLabel(ticket.match_label);
-    const dateParts = formatDateParts(ticket.issued_at);
+    const match = parseMatchLabel(ticket.match_label);
+    const dateParts = formatMatchDateFromLabel(match.matchDate, ticket.issued_at);
 
     return {
         ...demoTicket,
+        ...holder,
         id: String(ticket.id),
         ticketCode: ticket.ticket_code || ticket.qr_payload || `TKT-${ticket.id}`,
-        title: ticket.match_label || demoTicket.title,
-        homeTeam: teams.homeTeam,
-        awayTeam: teams.awayTeam,
-        ticketType: ticket.ticket_type_name || demoTicket.ticketType,
-        orderId: `#ORD-${ticket.order}`,
+        competition: "League OS Ticketing",
+        title: match.title,
+        homeTeam: match.homeTeam,
+        awayTeam: match.awayTeam,
+        homeLogo: "",
+        awayLogo: "",
+        venue: "Venue to be confirmed",
+        location: "Check match details",
+        ticketType: ticket.ticket_type_name || "Match Ticket",
+        quantity: "1",
+        seats: "General Admission",
+        section: "General",
+        row: "Not assigned",
+        gate: "Gate pending",
+        access: "Standard matchday access",
+        price: "See payment receipt",
+        orderId: `#ORDER-${ticket.order}`,
         status: normalizeStatus(ticket.status),
         ...dateParts,
     };
+}
+
+function TeamMark({ name, logo }: { name: string; logo: string }) {
+    return logo ? (
+        <img src={logo} alt="" aria-hidden="true" />
+    ) : (
+        <span className={styles.teamFallbackBadge}>{buildTeamInitials(name)}</span>
+    );
 }
 
 function TicketQrPreview({
@@ -190,12 +304,21 @@ function TicketQrPreview({
 
 function TicketDetailPage() {
     const { ticketId } = useParams();
+    const { currentUser } = useCurrentUser();
     const [ticket, setTicket] = useState<TicketApi | null>(null);
     const [qrObjectUrl, setQrObjectUrl] = useState("");
     const [isLoading, setIsLoading] = useState(true);
     const [pageError, setPageError] = useState("");
 
-    const ticketView = useMemo(() => mapTicketToViewModel(ticket), [ticket]);
+    const ticketHolder = useMemo(
+        () => buildTicketHolder(currentUser as TicketHolderSource),
+        [currentUser],
+    );
+
+    const ticketView = useMemo(
+        () => mapTicketToViewModel(ticket, ticketHolder),
+        [ticket, ticketHolder],
+    );
     const canFetchBackendQr = Boolean(ticket?.id);
 
     useEffect(() => {
@@ -223,7 +346,7 @@ function TicketDetailPage() {
                     if (isMounted) {
                         setTicket(null);
                         setPageError(
-                            "We could not load a live backend ticket, so the preview is showing sample ticket details.",
+                            "We could not load this backend ticket. Check your connection and try again.",
                         );
                     }
                 } finally {
@@ -333,10 +456,10 @@ function TicketDetailPage() {
                     <h2>{ticketView.title}</h2>
 
                     <div className={styles.teamRow}>
-                        <img src={ticketView.homeLogo} alt="" aria-hidden="true" />
+                        <TeamMark name={ticketView.homeTeam} logo={ticketView.homeLogo} />
                         <strong>{ticketView.homeTeam}</strong>
                         <b>VS</b>
-                        <img src={ticketView.awayLogo} alt="" aria-hidden="true" />
+                        <TeamMark name={ticketView.awayTeam} logo={ticketView.awayLogo} />
                         <strong>{ticketView.awayTeam}</strong>
                     </div>
 
@@ -439,7 +562,7 @@ function TicketDetailPage() {
                                 </div>
                                 <div>
                                     <dt>Access</dt>
-                                    <dd>VIP Lounge Access</dd>
+                                    <dd>{ticketView.access}</dd>
                                 </div>
                             </dl>
 

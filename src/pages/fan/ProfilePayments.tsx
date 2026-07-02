@@ -10,15 +10,20 @@ import {
     Ticket,
     Trophy,
     WalletCards,
-    X,
     XCircle,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import {
+    getFanPaymentHistory,
+    getFanWalletSummary,
+    type BackendPaymentItem,
+    type WalletSummary,
+} from "../../services/fanPaymentService";
 import styles from "./PaymentMethodsPage.module.css";
 
-type PaymentStatus = "Successful" | "Pending" | "Failed" | "Refunded";
+type PaymentStatus = "Successful" | "Pending" | "Failed" | "Refunded" | "Cancelled";
 type PaymentCategory = "Ticket" | "Membership" | "Sponsorship" | "Wallet";
 
 interface PaymentRecord {
@@ -34,101 +39,7 @@ interface PaymentRecord {
     receiptNo: string;
     description: string;
     icon: LucideIcon;
-    logo?: string;
 }
-
-const payments: PaymentRecord[] = [
-    {
-        id: "pay-kobs-ticket",
-        title: "KCB KOBS vs Heathens RFC",
-        category: "Ticket",
-        beneficiary: "KCB KOBS",
-        amount: "UGX 40,000",
-        status: "Successful",
-        date: "18 May 2025",
-        method: "Flutterwave • Mobile Money",
-        reference: "FLW-TKT-2025-0018",
-        receiptNo: "LOS-RCPT-0018",
-        description: "Two VIP Stand tickets for Nile Special Rugby Premiership.",
-        icon: Ticket,
-        logo: "/assets/clubs/kobs.jpg",
-    },
-    {
-        id: "pay-kobs-gold",
-        title: "KCB KOBS Gold Membership",
-        category: "Membership",
-        beneficiary: "KCB KOBS",
-        amount: "UGX 120,000",
-        status: "Successful",
-        date: "15 May 2025",
-        method: "Flutterwave • Card",
-        reference: "FLW-MEM-2025-0042",
-        receiptNo: "LOS-RCPT-0042",
-        description: "Annual Gold Membership with ticket discounts and club benefits.",
-        icon: Trophy,
-        logo: "/assets/clubs/kobs.jpg",
-    },
-    {
-        id: "pay-oilers-ticket",
-        title: "City Oilers vs Nam Blazers",
-        category: "Ticket",
-        beneficiary: "National Basketball League",
-        amount: "UGX 15,000",
-        status: "Pending",
-        date: "Today",
-        method: "Flutterwave • Mobile Money",
-        reference: "FLW-TKT-2025-0077",
-        receiptNo: "Pending",
-        description: "Pending checkout confirmation for basketball match ticket.",
-        icon: Ticket,
-        logo: "/assets/clubs/city-oilers.png",
-    },
-    {
-        id: "pay-pirates-bronze",
-        title: "Black Pirates Bronze Membership",
-        category: "Membership",
-        beneficiary: "Black Pirates RFC",
-        amount: "UGX 50,000",
-        status: "Failed",
-        date: "Yesterday",
-        method: "Flutterwave • Mobile Money",
-        reference: "FLW-MEM-2025-0031",
-        receiptNo: "Not issued",
-        description: "Payment failed before membership activation.",
-        icon: Trophy,
-        logo: "/assets/clubs/black-pirates.png",
-    },
-    {
-        id: "pay-sponsor-support",
-        title: "Fan Sponsor Support Pack",
-        category: "Sponsorship",
-        beneficiary: "Nile Special Rugby League",
-        amount: "UGX 75,000",
-        status: "Successful",
-        date: "02 May 2025",
-        method: "Flutterwave • Card",
-        reference: "FLW-SPN-2025-0011",
-        receiptNo: "LOS-RCPT-0011",
-        description: "Fan sponsorship contribution for league campaign support.",
-        icon: Banknote,
-        logo: "/assets/competitions/nile-rugby.jpg",
-    },
-    {
-        id: "pay-refund-kcca",
-        title: "KCCA FC vs Vipers SC Ticket Refund",
-        category: "Ticket",
-        beneficiary: "Uganda Premier League",
-        amount: "UGX 25,000",
-        status: "Refunded",
-        date: "20 Apr 2025",
-        method: "Flutterwave • Refund",
-        reference: "FLW-REF-2025-0008",
-        receiptNo: "LOS-RCPT-0008",
-        description: "Refund processed after fixture postponement.",
-        icon: RefreshCw,
-        logo: "/assets/clubs/kcca-fc.png",
-    },
-];
 
 const categoryOptions: Array<"All" | PaymentCategory> = [
     "All",
@@ -138,16 +49,13 @@ const categoryOptions: Array<"All" | PaymentCategory> = [
     "Wallet",
 ];
 
+const PAYMENT_PAGE_SIZE_OPTIONS = [4, 8, 12];
+
 function getStatusClass(status: PaymentStatus) {
     if (status === "Successful") return styles.successStatus;
     if (status === "Pending") return styles.pendingStatus;
-    if (status === "Failed") return styles.failedStatus;
+    if (status === "Failed" || status === "Cancelled") return styles.failedStatus;
     return styles.refundedStatus;
-}
-
-function parseAmount(value: string) {
-    const numeric = value.replace(/[^\d]/g, "");
-    return Number(numeric || 0);
 }
 
 function PaymentStatusBadge({ status }: { status: PaymentStatus }) {
@@ -159,7 +67,7 @@ function PaymentStatusBadge({ status }: { status: PaymentStatus }) {
             {status === "Pending" ? (
                 <Clock size={14} strokeWidth={2.4} aria-hidden="true" />
             ) : null}
-            {status === "Failed" ? (
+            {status === "Failed" || status === "Cancelled" ? (
                 <XCircle size={14} strokeWidth={2.4} aria-hidden="true" />
             ) : null}
             {status === "Refunded" ? (
@@ -170,11 +78,211 @@ function PaymentStatusBadge({ status }: { status: PaymentStatus }) {
     );
 }
 
+function formatMoney(value: string | number, currency = "UGX") {
+    const amount = Number(value || 0);
+
+    return `${currency} ${new Intl.NumberFormat("en-UG", {
+        maximumFractionDigits: 0,
+    }).format(amount)}`;
+}
+
+function formatCompactMoney(value: string | number, currency = "UGX") {
+    const amount = Number(value || 0);
+
+    if (amount >= 1000000) {
+        return `${currency} ${(amount / 1000000).toFixed(1)}M`;
+    }
+
+    if (amount >= 1000) {
+        return `${currency} ${(amount / 1000).toFixed(0)}K`;
+    }
+
+    return formatMoney(amount, currency);
+}
+
+function formatDate(value?: string) {
+    if (!value) {
+        return "Date pending";
+    }
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+        return "Date pending";
+    }
+
+    return new Intl.DateTimeFormat("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+    }).format(date);
+}
+
+function mapStatus(status: string, statusLabel: string): PaymentStatus {
+    const normalizedStatus = status.toUpperCase();
+
+    if (normalizedStatus === "SUCCESSFUL" || normalizedStatus === "COMPLETED") {
+        return "Successful";
+    }
+
+    if (normalizedStatus === "PENDING" || normalizedStatus === "PROCESSING") {
+        return "Pending";
+    }
+
+    if (normalizedStatus === "FAILED") {
+        return "Failed";
+    }
+
+    if (normalizedStatus === "CANCELLED" || normalizedStatus === "CANCELED") {
+        return "Cancelled";
+    }
+
+    if (normalizedStatus === "REFUNDED") {
+        return "Refunded";
+    }
+
+    if (statusLabel) {
+        return statusLabel as PaymentStatus;
+    }
+
+    return "Pending";
+}
+
+function mapCategory(payment: BackendPaymentItem): PaymentCategory {
+    const paymentType = payment.payment_type.toUpperCase();
+    const source = payment.source.toUpperCase();
+
+    if (paymentType.includes("TICKET") || source.includes("TICKET")) {
+        return "Ticket";
+    }
+
+    if (paymentType.includes("MEMBERSHIP") || source.includes("MEMBER")) {
+        return "Membership";
+    }
+
+    if (paymentType.includes("SPONSOR")) {
+        return "Sponsorship";
+    }
+
+    return "Wallet";
+}
+
+function getIconForPayment(category: PaymentCategory, status: PaymentStatus) {
+    if (status === "Refunded") return RefreshCw;
+    if (category === "Ticket") return Ticket;
+    if (category === "Membership") return Trophy;
+    if (category === "Sponsorship") return Banknote;
+    return WalletCards;
+}
+
+function getMetadataText(
+    metadata: Record<string, unknown>,
+    keys: string[],
+    fallback: string,
+) {
+    for (const key of keys) {
+        const value = metadata[key];
+
+        if (typeof value === "string" && value.trim()) {
+            return value;
+        }
+
+        if (typeof value === "number") {
+            return String(value);
+        }
+    }
+
+    return fallback;
+}
+
+function mapPaymentRecord(payment: BackendPaymentItem): PaymentRecord {
+    const category = mapCategory(payment);
+    const status = mapStatus(payment.status, payment.status_label);
+    const icon = getIconForPayment(category, status);
+
+    const title =
+        payment.description ||
+        payment.payment_type_label ||
+        `${category} payment`;
+
+    const beneficiary = getMetadataText(
+        payment.metadata,
+        [
+            "beneficiary",
+            "club_name",
+            "competition_name",
+            "league_name",
+            "sponsor_name",
+            "provider",
+        ],
+        payment.source.replace(/_/g, " "),
+    );
+
+    const method = getMetadataText(
+        payment.metadata,
+        ["gateway", "method", "payment_method", "provider"],
+        "League OS Payments",
+    );
+
+    return {
+        id: payment.id,
+        title,
+        category,
+        beneficiary,
+        amount: formatMoney(payment.amount, payment.currency),
+        status,
+        date: formatDate(payment.created_at),
+        method,
+        reference: payment.reference || "Reference pending",
+        receiptNo:
+            status === "Successful"
+                ? `LOS-RCPT-${payment.source_id ?? payment.id}`
+                : "Pending",
+        description: payment.description || payment.payment_type_label,
+        icon,
+    };
+}
+
 function WalletPaymentCenter() {
     const [activeCategory, setActiveCategory] =
         useState<"All" | PaymentCategory>("All");
     const [searchQuery, setSearchQuery] = useState("");
-    const [selectedPayment, setSelectedPayment] = useState<PaymentRecord>(payments[0]);
+    const [payments, setPayments] = useState<PaymentRecord[]>([]);
+    const [walletSummary, setWalletSummary] = useState<WalletSummary | null>(null);
+    const [selectedPayment, setSelectedPayment] = useState<PaymentRecord | null>(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [recordsPerPage, setRecordsPerPage] = useState(4);
+    const [isLoading, setIsLoading] = useState(true);
+    const [errorMessage, setErrorMessage] = useState("");
+
+    async function loadPayments() {
+        setIsLoading(true);
+        setErrorMessage("");
+
+        try {
+            const [wallet, history] = await Promise.all([
+                getFanWalletSummary(10),
+                getFanPaymentHistory(50),
+            ]);
+
+            const mappedPayments = history.results.map(mapPaymentRecord);
+
+            setWalletSummary(wallet);
+            setPayments(mappedPayments);
+            setSelectedPayment(mappedPayments[0] ?? null);
+            setCurrentPage(1);
+        } catch {
+            setErrorMessage(
+                "We could not load your payment records. Confirm the local backend is running and you are logged in.",
+            );
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
+    useEffect(() => {
+        void loadPayments();
+    }, []);
 
     const filteredPayments = useMemo(() => {
         const normalizedSearch = searchQuery.trim().toLowerCase();
@@ -193,6 +301,7 @@ function WalletPaymentCenter() {
                     payment.reference,
                     payment.receiptNo,
                     payment.category,
+                    payment.method,
                 ]
                     .join(" ")
                     .toLowerCase()
@@ -200,30 +309,90 @@ function WalletPaymentCenter() {
 
             return matchesCategory && matchesSearch;
         });
-    }, [activeCategory, searchQuery]);
+    }, [activeCategory, payments, searchQuery]);
 
-    const totals = useMemo(() => {
-        const successfulTotal = payments
-            .filter((payment) => payment.status === "Successful")
-            .reduce((total, payment) => total + parseAmount(payment.amount), 0);
+    const totalPaymentPages = Math.max(
+        1,
+        Math.ceil(filteredPayments.length / recordsPerPage),
+    );
 
-        return {
-            totalPaid: `UGX ${(successfulTotal / 1000).toFixed(0)}K`,
-            successful: payments.filter((payment) => payment.status === "Successful").length,
-            pending: payments.filter((payment) => payment.status === "Pending").length,
-            failed: payments.filter((payment) => payment.status === "Failed").length,
-        };
-    }, []);
+    const visiblePayments = useMemo(() => {
+        const safePage = Math.min(currentPage, totalPaymentPages);
+        const startIndex = (safePage - 1) * recordsPerPage;
 
-    const SelectedPaymentIcon = selectedPayment.icon;
+        return filteredPayments.slice(startIndex, startIndex + recordsPerPage);
+    }, [currentPage, filteredPayments, recordsPerPage, totalPaymentPages]);
+
+    const paymentRangeStart =
+        filteredPayments.length === 0 ? 0 : (currentPage - 1) * recordsPerPage + 1;
+
+    const paymentRangeEnd = Math.min(
+        currentPage * recordsPerPage,
+        filteredPayments.length,
+    );
+
+    useEffect(() => {
+        setCurrentPage((page) => Math.min(page, totalPaymentPages));
+    }, [totalPaymentPages]);
+
+    const totals = useMemo(
+        () => ({
+            totalPaid: walletSummary
+                ? formatCompactMoney(walletSummary.total_spent, walletSummary.currency)
+                : "UGX 0",
+            successful: walletSummary?.successful_payments_count ?? 0,
+            pending: walletSummary?.pending_payments_count ?? 0,
+            failed: walletSummary?.failed_payments_count ?? 0,
+            refunded: walletSummary?.refunded_payments_count ?? 0,
+        }),
+        [walletSummary],
+    );
+
+    const SelectedPaymentIcon = selectedPayment?.icon ?? FileText;
+
+    function downloadReceipt(payment: PaymentRecord) {
+        const receiptLines = [
+            "LEAGUE OS PAYMENT RECEIPT",
+            "=========================",
+            `Receipt No: ${payment.receiptNo}`,
+            `Title: ${payment.title}`,
+            `Category: ${payment.category}`,
+            `Beneficiary: ${payment.beneficiary}`,
+            `Amount: ${payment.amount}`,
+            `Status: ${payment.status}`,
+            `Reference: ${payment.reference}`,
+            `Gateway: ${payment.method}`,
+            `Date: ${payment.date}`,
+        ];
+
+        const receiptBlob = new Blob([receiptLines.join("\n")], {
+            type: "text/plain;charset=utf-8",
+        });
+
+        const receiptUrl = URL.createObjectURL(receiptBlob);
+        const downloadLink = document.createElement("a");
+
+        downloadLink.href = receiptUrl;
+        downloadLink.download = `${payment.receiptNo}.txt`;
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        downloadLink.remove();
+
+        URL.revokeObjectURL(receiptUrl);
+    }
 
     function handleDownloadReceipt(payment: PaymentRecord) {
         setSelectedPayment(payment);
+
+        if (payment.status === "Successful") {
+            downloadReceipt(payment);
+        }
     }
 
     function clearPaymentFilters() {
         setSearchQuery("");
         setActiveCategory("All");
+        setCurrentPage(1);
     }
 
     return (
@@ -233,17 +402,31 @@ function WalletPaymentCenter() {
                     <span className={styles.eyebrow}>Fan Wallet</span>
                     <h1>Wallet & Payment Center</h1>
                     <p>
-                        Track ticket payments, memberships, sponsorships, pending checkouts
-                        and receipts. This screen is using dummy data until admin payment
-                        workflows are completed.
+                        Track ticket payments, memberships, sponsorship payments, pending
+                        checkouts and receipts from the backend payment center.
                     </p>
                 </div>
 
-                <Link to="/tickets" className={styles.primaryHeaderAction}>
-                    <Ticket size={18} strokeWidth={2.4} aria-hidden="true" />
-                    Buy Tickets
-                </Link>
+                <button
+                    type="button"
+                    className={styles.primaryHeaderAction}
+                    onClick={() => void loadPayments()}
+                    disabled={isLoading}
+                >
+                    <RefreshCw size={18} strokeWidth={2.4} aria-hidden="true" />
+                    {isLoading ? "Refreshing..." : "Refresh"}
+                </button>
             </header>
+
+            {errorMessage ? (
+                <section className={styles.warningCard} role="alert">
+                    <XCircle size={22} strokeWidth={2.4} aria-hidden="true" />
+                    <div>
+                        <h2>Payment data unavailable</h2>
+                        <p>{errorMessage}</p>
+                    </div>
+                </section>
+            ) : null}
 
             <section className={styles.summaryGrid} aria-label="Payment summary">
                 <article className={`${styles.summaryCard} ${styles.purple}`}>
@@ -277,7 +460,7 @@ function WalletPaymentCenter() {
                     <div>
                         <p>Failed</p>
                         <strong>{totals.failed}</strong>
-                        <span>Retry available</span>
+                        <span>{totals.refunded} refunded</span>
                     </div>
                     <XCircle size={38} strokeWidth={2.1} aria-hidden="true" />
                 </article>
@@ -289,142 +472,207 @@ function WalletPaymentCenter() {
                         <div className={styles.panelHeader}>
                             <div>
                                 <h2>Payment History</h2>
-                                <p>Dummy records covering tickets, memberships and sponsorships.</p>
+                                <p>
+                                    Backend records from tickets, memberships, sponsorships and
+                                    legacy payment history.
+                                </p>
                             </div>
 
                             <div className={styles.searchBox}>
-                                <Search size={16} strokeWidth={2.3} aria-hidden="true" />
+                                <Search size={17} strokeWidth={2.3} aria-hidden="true" />
                                 <input
                                     type="search"
-                                    placeholder="Search payment, receipt, reference..."
                                     value={searchQuery}
-                                    onChange={(event) => setSearchQuery(event.target.value)}
+                                    onChange={(event) => {
+                                        setSearchQuery(event.target.value);
+                                        setCurrentPage(1);
+                                    }}
+                                    placeholder="Search payments"
+                                    aria-label="Search payments"
                                 />
-
-                                {searchQuery ? (
-                                    <button
-                                        type="button"
-                                        className={styles.clearSearchButton}
-                                        aria-label="Clear payment search"
-                                        onClick={() => setSearchQuery("")}
-                                    >
-                                        <X size={15} strokeWidth={2.4} />
-                                    </button>
-                                ) : null}
                             </div>
                         </div>
 
-                        <div className={styles.categoryTabs}>
+                        <div className={styles.categoryTabs} aria-label="Payment filters">
                             {categoryOptions.map((category) => (
                                 <button
-                                    type="button"
                                     key={category}
+                                    type="button"
                                     className={
-                                        activeCategory === category ? styles.activeCategoryTab : ""
+                                        activeCategory === category
+                                            ? styles.activeCategoryTab
+                                            : undefined
                                     }
-                                    onClick={() => setActiveCategory(category)}
+                                    onClick={() => {
+                                        setActiveCategory(category);
+                                        setCurrentPage(1);
+                                    }}
                                 >
                                     {category}
-                                    <span>
-                                        {category === "All"
-                                            ? payments.length
-                                            : payments.filter((payment) => payment.category === category)
-                                                  .length}
-                                    </span>
                                 </button>
                             ))}
                         </div>
 
+                        <div className={styles.paymentListControls}>
+                            <p>
+                                Showing {filteredPayments.length === 0 ? 0 : paymentRangeStart}-
+                                {paymentRangeEnd} of {filteredPayments.length} payment records
+                            </p>
+
+                            <label>
+                                Records per page
+                                <select
+                                    value={recordsPerPage}
+                                    onChange={(event) => {
+                                        setRecordsPerPage(Number(event.target.value));
+                                        setCurrentPage(1);
+                                    }}
+                                >
+                                    {PAYMENT_PAGE_SIZE_OPTIONS.map((option) => (
+                                        <option key={option} value={option}>
+                                            {option}
+                                        </option>
+                                    ))}
+                                </select>
+                            </label>
+                        </div>
+
                         <div className={styles.transactionList}>
-                            {filteredPayments.length > 0 ? (
-                                filteredPayments.map((payment) => {
+                            {isLoading ? (
+                                <section className={styles.paymentEmptyState}>
+                                    <RefreshCw size={38} strokeWidth={2.2} aria-hidden="true" />
+                                    <h2>Loading payments</h2>
+                                    <p>Fetching your wallet and payment history from the backend.</p>
+                                </section>
+                            ) : null}
+
+                            {!isLoading && filteredPayments.length > 0 ? (
+                                visiblePayments.map((payment) => {
                                     const PaymentIcon = payment.icon;
 
                                     return (
-                                    <article
-                                        className={styles.transactionCard}
-                                        key={payment.id}
-                                    >
-                                        <span className={styles.transactionIcon}>
-                                            {payment.logo ? (
-                                                <img src={payment.logo} alt="" aria-hidden="true" />
-                                            ) : (
+                                        <article key={payment.id} className={styles.transactionCard}>
+                                            <span className={styles.transactionIcon}>
                                                 <PaymentIcon
-                                                    size={26}
+                                                    size={25}
                                                     strokeWidth={2.3}
                                                     aria-hidden="true"
                                                 />
-                                            )}
-                                        </span>
+                                            </span>
 
-                                        <div className={styles.transactionInfo}>
-                                            <div className={styles.transactionTitleRow}>
-                                                <h3>{payment.title}</h3>
-                                                <PaymentStatusBadge status={payment.status} />
+                                            <div className={styles.transactionInfo}>
+                                                <div className={styles.transactionTitleRow}>
+                                                    <h3>{payment.title}</h3>
+                                                    <PaymentStatusBadge status={payment.status} />
+                                                </div>
+
+                                                <p>{payment.description}</p>
+
+                                                <div className={styles.transactionMeta}>
+                                                    <span>{payment.category}</span>
+                                                    <span>{payment.beneficiary}</span>
+                                                    <span>{payment.method}</span>
+                                                    <span>{payment.date}</span>
+                                                </div>
                                             </div>
 
-                                            <p>{payment.description}</p>
+                                            <div className={styles.transactionAmount}>
+                                                <strong>{payment.amount}</strong>
 
-                                            <div className={styles.transactionMeta}>
-                                                <span>{payment.category}</span>
-                                                <span>{payment.beneficiary}</span>
-                                                <span>{payment.method}</span>
-                                                <span>{payment.date}</span>
-                                            </div>
-                                        </div>
-
-                                        <div className={styles.transactionAmount}>
-                                            <strong>{payment.amount}</strong>
-
-                                            <div className={styles.transactionActions}>
-                                                <button
-                                                    type="button"
-                                                    className={styles.viewButton}
-                                                    onClick={() => setSelectedPayment(payment)}
-                                                >
-                                                    <FileText
-                                                        size={15}
-                                                        strokeWidth={2.3}
-                                                        aria-hidden="true"
-                                                    />
-                                                    View
-                                                </button>
-
-                                                {payment.status === "Failed" ? (
-                                                    <button type="button" className={styles.retryButton}>
-                                                        <RefreshCw
-                                                            size={15}
-                                                            strokeWidth={2.3}
-                                                            aria-hidden="true"
-                                                        />
-                                                        Retry
-                                                    </button>
-                                                ) : (
+                                                <div className={styles.transactionActions}>
                                                     <button
                                                         type="button"
-                                                        className={styles.receiptButton}
-                                                        onClick={() => handleDownloadReceipt(payment)}
+                                                        className={styles.viewButton}
+                                                        onClick={() => setSelectedPayment(payment)}
                                                     >
-                                                        <Download
+                                                        <FileText
                                                             size={15}
                                                             strokeWidth={2.3}
                                                             aria-hidden="true"
                                                         />
-                                                        Receipt
+                                                        View
                                                     </button>
-                                                )}
+
+                                                    {payment.status === "Failed" ? (
+                                                        <Link
+                                                            to="/profile/support"
+                                                            className={styles.retryButton}
+                                                        >
+                                                            <RefreshCw
+                                                                size={15}
+                                                                strokeWidth={2.3}
+                                                                aria-hidden="true"
+                                                            />
+                                                            Support
+                                                        </Link>
+                                                    ) : (
+                                                        <button
+                                                            type="button"
+                                                            className={styles.receiptButton}
+                                                            onClick={() => handleDownloadReceipt(payment)}
+                                                        >
+                                                            <Download
+                                                                size={15}
+                                                                strokeWidth={2.3}
+                                                                aria-hidden="true"
+                                                            />
+                                                            Receipt
+                                                        </button>
+                                                    )}
+                                                </div>
                                             </div>
-                                        </div>
-                                    </article>
+                                        </article>
                                     );
                                 })
-                            ) : (
+                            ) : null}
+
+                            {!isLoading && filteredPayments.length > recordsPerPage ? (
+                                <nav
+                                    className={styles.paymentPager}
+                                    aria-label="Payment history pagination"
+                                >
+                                    <p>
+                                        Showing {paymentRangeStart}-{paymentRangeEnd} of{" "}
+                                        {filteredPayments.length} records
+                                    </p>
+
+                                    <div>
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                setCurrentPage((page) => Math.max(1, page - 1))
+                                            }
+                                            disabled={currentPage === 1}
+                                        >
+                                            Previous
+                                        </button>
+
+                                        <span>
+                                            Page {currentPage} of {totalPaymentPages}
+                                        </span>
+
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                setCurrentPage((page) =>
+                                                    Math.min(totalPaymentPages, page + 1),
+                                                )
+                                            }
+                                            disabled={currentPage === totalPaymentPages}
+                                        >
+                                            Next
+                                        </button>
+                                    </div>
+                                </nav>
+                            ) : null}
+
+                            {!isLoading && filteredPayments.length === 0 ? (
                                 <section className={styles.paymentEmptyState}>
                                     <Search size={38} strokeWidth={2.2} aria-hidden="true" />
                                     <h2>No payments found</h2>
                                     <p>
-                                        Try another search term, change the category filter, or clear
-                                        the filters to see all payment records.
+                                        No backend payment records matched this view. Try another
+                                        filter, clear the search, or make a local test payment record.
                                     </p>
 
                                     <div>
@@ -434,11 +682,14 @@ function WalletPaymentCenter() {
                                         <Link to="/tickets">Buy Tickets</Link>
                                     </div>
                                 </section>
-                            )}
+                            ) : null}
                         </div>
                     </section>
 
-                    <section className={styles.paymentPartnerBanner} aria-label="Sponsored payment partner placement">
+                    <section
+                        className={styles.paymentPartnerBanner}
+                        aria-label="Sponsored payment partner placement"
+                    >
                         <div>
                             <span>Sponsored</span>
                             <h2>Payment Partner Slot</h2>
@@ -461,62 +712,89 @@ function WalletPaymentCenter() {
 
                             <div>
                                 <h2>Receipt Detail</h2>
-                                <p>Selected dummy payment receipt.</p>
+                                <p>
+                                    {selectedPayment
+                                        ? "Selected backend payment receipt."
+                                        : "Select a payment to view receipt details."}
+                                </p>
                             </div>
                         </div>
 
-                        <div className={styles.receiptSummary}>
-                            <span className={styles.receiptLogo}>
-                                {selectedPayment.logo ? (
-                                    <img src={selectedPayment.logo} alt="" aria-hidden="true" />
+                        {selectedPayment ? (
+                            <>
+                                <div className={styles.receiptSummary}>
+                                    <span className={styles.receiptLogo}>
+                                        <SelectedPaymentIcon
+                                            size={26}
+                                            strokeWidth={2.3}
+                                            aria-hidden="true"
+                                        />
+                                    </span>
+
+                                    <div>
+                                        <strong>{selectedPayment.title}</strong>
+                                        <p>
+                                            {selectedPayment.category} •{" "}
+                                            {selectedPayment.beneficiary}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <dl className={styles.receiptDetail}>
+                                    <div>
+                                        <dt>Title</dt>
+                                        <dd>{selectedPayment.title}</dd>
+                                    </div>
+                                    <div>
+                                        <dt>Amount</dt>
+                                        <dd>{selectedPayment.amount}</dd>
+                                    </div>
+                                    <div>
+                                        <dt>Status</dt>
+                                        <dd>
+                                            <PaymentStatusBadge status={selectedPayment.status} />
+                                        </dd>
+                                    </div>
+                                    <div>
+                                        <dt>Reference</dt>
+                                        <dd>{selectedPayment.reference}</dd>
+                                    </div>
+                                    <div>
+                                        <dt>Receipt No.</dt>
+                                        <dd>{selectedPayment.receiptNo}</dd>
+                                    </div>
+                                    <div>
+                                        <dt>Gateway</dt>
+                                        <dd>{selectedPayment.method}</dd>
+                                    </div>
+                                </dl>
+
+                                {selectedPayment.status === "Successful" ? (
+                                    <button
+                                        type="button"
+                                        className={styles.fullWidthButton}
+                                        onClick={() => downloadReceipt(selectedPayment)}
+                                    >
+                                        <Download size={17} strokeWidth={2.4} aria-hidden="true" />
+                                        Download Receipt
+                                    </button>
                                 ) : (
-                                    <SelectedPaymentIcon
-                                        size={26}
-                                        strokeWidth={2.3}
-                                        aria-hidden="true"
-                                    />
+                                    <Link
+                                        to="/profile/support"
+                                        className={styles.fullWidthButton}
+                                    >
+                                        <XCircle size={17} strokeWidth={2.4} aria-hidden="true" />
+                                        Get Payment Support
+                                    </Link>
                                 )}
-                            </span>
-
-                            <div>
-                                <strong>{selectedPayment.title}</strong>
-                                <p>{selectedPayment.category} • {selectedPayment.beneficiary}</p>
-                            </div>
-                        </div>
-
-                        <dl className={styles.receiptDetail}>
-                            <div>
-                                <dt>Title</dt>
-                                <dd>{selectedPayment.title}</dd>
-                            </div>
-                            <div>
-                                <dt>Amount</dt>
-                                <dd>{selectedPayment.amount}</dd>
-                            </div>
-                            <div>
-                                <dt>Status</dt>
-                                <dd>
-                                    <PaymentStatusBadge status={selectedPayment.status} />
-                                </dd>
-                            </div>
-                            <div>
-                                <dt>Reference</dt>
-                                <dd>{selectedPayment.reference}</dd>
-                            </div>
-                            <div>
-                                <dt>Receipt No.</dt>
-                                <dd>{selectedPayment.receiptNo}</dd>
-                            </div>
-                            <div>
-                                <dt>Gateway</dt>
-                                <dd>{selectedPayment.method}</dd>
-                            </div>
-                        </dl>
-
-                        <button type="button" className={styles.fullWidthButton}>
-                            <Download size={17} strokeWidth={2.4} aria-hidden="true" />
-                            Download Receipt
-                        </button>
+                            </>
+                        ) : (
+                            <section className={styles.paymentEmptyState}>
+                                <FileText size={34} strokeWidth={2.2} aria-hidden="true" />
+                                <h2>No receipt selected</h2>
+                                <p>Select a payment record to preview its receipt information.</p>
+                            </section>
+                        )}
                     </section>
 
                     <section className={styles.panel}>

@@ -26,9 +26,6 @@ vi.mock('../pages/NewsPage', () => ({
     default: () => <h1>News Page</h1>,
 }))
 
-vi.mock('../components/EditProfilePage', () => ({
-    default: () => <h1>Edit Profile Page</h1>,
-}))
 
 vi.mock('../pages/landing/TicketsLandingPage', () => ({
     default: () => <h1>Tickets Page</h1>,
