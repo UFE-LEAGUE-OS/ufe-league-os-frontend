@@ -491,6 +491,7 @@ function FanDashboardPage() {
     const navigate = useNavigate();
     const [isCustomizeOpen, setIsCustomizeOpen] = useState(false);
     const [isCompactView, setIsCompactView] = useState(false);
+    const [selectedDashboardMatchId, setSelectedDashboardMatchId] = useState<string | null>(null);
     const [sponsorPage, setSponsorPage] = useState(0);
     const [dashboardMemberships, setDashboardMemberships] = useState<DashboardMembership[]>([]);
     const [isLoadingMemberships, setIsLoadingMemberships] = useState(true);
@@ -577,6 +578,8 @@ function FanDashboardPage() {
     }, [loadDashboardPayments, loadDashboardTickets]);
 
     const matchSlots = Array.from({ length: 4 }, (_, index) => upcomingMatches[index] ?? null);
+    const activeDashboardMatchId =
+        selectedDashboardMatchId ?? matchSlots.find((match) => match)?.id ?? null;
     const clubSlots = Array.from({ length: 4 }, (_, index) => followedClubs[index] ?? null);
     const newsSlots = Array.from({ length: 3 }, (_, index) => latestNews[index] ?? null);
     const membershipSlots =
@@ -589,6 +592,28 @@ function FanDashboardPage() {
         : formatDashboardCurrency(0, walletCurrency);
     const activeSponsorPlacement =
         dashboardSponsorPlacements[sponsorPage % dashboardSponsorPlacements.length];
+
+    const dashboardMembershipCount = dashboardMemberships.length;
+
+    const dashboardSummaryCards = summaryCards.map((card) => {
+        if (card.label === "My Memberships") {
+            return {
+                ...card,
+                value: isLoadingMemberships ? "…" : String(dashboardMembershipCount),
+                detail: dashboardMembershipCount === 1 ? "Active" : "Active",
+            };
+        }
+
+        if (card.label === "Tickets") {
+            return {
+                ...card,
+                value: isLoadingTickets ? "…" : String(dashboardTicket ? 1 : 0),
+                detail: dashboardTicket ? "Upcoming" : "Upcoming",
+            };
+        }
+
+        return card;
+    });
 
     function handleLogout() {
         logout();
@@ -659,7 +684,7 @@ function FanDashboardPage() {
             )}
 
             <div className={styles.summaryGrid}>
-                {summaryCards.map((card) => {
+                {dashboardSummaryCards.map((card) => {
                     const Icon = card.icon;
 
                     return (
@@ -680,61 +705,92 @@ function FanDashboardPage() {
             </div>
 
             <div className={styles.mainGrid}>
-                <section className={`${styles.panel} ${styles.matchesPanel}`}>
+                <section
+                    className={`${styles.panel} ${styles.matchesPanel} ${styles.dashboardMatchesPanel}`}
+                >
                     <div className={styles.panelHeader}>
                         <h2>Upcoming Matches</h2>
                         <Link to="/fixtures">View All</Link>
                     </div>
 
-                    <div className={styles.matchList}>
+                    <div className={styles.dashboardMatchList}>
                         {matchSlots.map((match, index) =>
                             match ? (
                                 <article
-                                    className={styles.matchItem}
+                                    className={`${styles.dashboardMatchCard} ${
+                                        activeDashboardMatchId === match.id
+                                            ? styles.dashboardMatchCardExpanded
+                                            : ""
+                                    }`}
                                     key={match.id}
-                                    tabIndex={0}
+                                    onMouseEnter={() => setSelectedDashboardMatchId(match.id)}
+                                    onFocus={() => setSelectedDashboardMatchId(match.id)}
+                                    onClick={() => setSelectedDashboardMatchId(match.id)}
                                 >
-                                    <div className={styles.matchTeams}>
-                                        <img src={match.homeLogo} alt="" aria-hidden="true" />
+                                    <div className={styles.dashboardMatchCompact}>
+                                        <strong className={styles.dashboardMatchTeamName}>
+                                            {match.home}
+                                        </strong>
 
-                                        <div>
-                                            <h3>{match.home}</h3>
-                                            <p>{match.sport}</p>
-                                            <span>
-                                                {match.date} • {match.time}
-                                            </span>
-                                            <small>{match.venue}</small>
-                                        </div>
+                                        <img
+                                            className={styles.dashboardMatchLogo}
+                                            src={match.homeLogo}
+                                            alt=""
+                                            aria-hidden="true"
+                                        />
 
-                                        <strong>VS</strong>
+                                        <span className={styles.dashboardMatchVs}>VS</span>
 
-                                        <div className={styles.awayTeamBlock}>
-                                            <img src={match.awayLogo} alt="" aria-hidden="true" />
-                                            <small className={styles.awayTeamName}>{match.away}</small>
-                                        </div>
+                                        <img
+                                            className={styles.dashboardMatchLogo}
+                                            src={match.awayLogo}
+                                            alt=""
+                                            aria-hidden="true"
+                                        />
+
+                                        <strong className={styles.dashboardMatchTeamName}>
+                                            {match.away}
+                                        </strong>
                                     </div>
 
-                                    <div className={styles.matchActions}>
-                                        <Link to="/dashboard/tickets">Tickets</Link>
+                                    <div className={styles.dashboardMatchDetails}>
+                                        <p>{match.sport}</p>
+
+                                        <small>
+                                            {match.date} • {match.time}
+                                        </small>
+
+                                        <small>{match.venue}</small>
+                                    </div>
+
+                                    <div className={styles.dashboardMatchActions}>
+                                        <Link to="/tickets">Buy Ticket</Link>
+
                                         <button
                                             type="button"
-                                            aria-label={`Set alert for ${match.home}`}
+                                            aria-label={`Set reminder for ${match.home} vs ${match.away}`}
                                         >
-                                            <Bell size={18} strokeWidth={2.2} />
+                                            <Bell size={15} strokeWidth={2.3} aria-hidden="true" />
                                         </button>
                                     </div>
                                 </article>
                             ) : (
                                 <article
-                                    className={`${styles.matchItem} ${styles.matchPlaceholder}`}
+                                    className={`${styles.dashboardMatchCard} ${styles.dashboardMatchPlaceholder}`}
                                     key={`match-placeholder-${index}`}
                                 >
-                                    <div>
-                                        <h3>Fixture slot open</h3>
-                                        <p>New match details will appear here once published.</p>
+                                    <div className={styles.dashboardMatchLogos}>
+                                        <span className={styles.dashboardMatchLogoPlaceholder}>+</span>
                                     </div>
 
-                                    <Link to="/fixtures">Browse Fixtures</Link>
+                                    <div className={styles.dashboardMatchCopy}>
+                                        <h3>Fixture pending</h3>
+                                        <p>More fixtures will appear here soon.</p>
+                                    </div>
+
+                                    <div className={styles.dashboardMatchActions}>
+                                        <Link to="/fixtures">View</Link>
+                                    </div>
                                 </article>
                             )
                         )}
