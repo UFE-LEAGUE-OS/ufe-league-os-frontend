@@ -11,7 +11,13 @@ export type BackendProfile = {
   roles?: string[];
   is_sponsor?: boolean;
   sponsor_type?: string | null;
-  club?: string | null;
+  club?:
+    | string
+    | {
+        id?: number;
+        name?: string;
+      }
+    | null;
   avatar?: string | null;
   avatar_url?: string | null;
   is_email_verified?: boolean;
@@ -105,6 +111,16 @@ function getInitials(name: string) {
   );
 }
 
+function getClubName(club: BackendProfile["club"]) {
+  if (!club) return "No club linked yet";
+
+  if (typeof club === "string") {
+    return clean(club, "No club linked yet");
+  }
+
+  return clean(club.name, "No club linked yet");
+}
+
 function formatDate(value?: string) {
   if (!value) return currentUser.memberSince;
 
@@ -124,7 +140,7 @@ export function mapProfileToCurrentUser(profile?: BackendProfile | null): Curren
 
   const name = getName(profile);
   const roleLabel = clean(profile.role_display || profile.role, currentUser.membership);
-  const clubName = clean(profile.club, 'No club linked yet');
+  const clubName = getClubName(profile.club);
 
   return {
     ...currentUser,

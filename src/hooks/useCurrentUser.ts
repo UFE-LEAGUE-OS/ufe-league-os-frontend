@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { fetchProfile } from '../services/authService.js';
 import { useAuthStore } from '../store/authStore.js';
 import { getToken } from '../utils/tokenManager.js';
+const PROFILE_UPDATED_EVENT = 'leagueos:profile-updated';
+
 import {
   currentUser as fallbackCurrentUser,
   mapProfileToCurrentUser,
@@ -54,6 +56,18 @@ export function useCurrentUser() {
 
     return () => {
       active = false;
+    };
+  }, [refreshProfile]);
+
+  useEffect(() => {
+    function handleProfileUpdated() {
+      void refreshProfile();
+    }
+
+    window.addEventListener(PROFILE_UPDATED_EVENT, handleProfileUpdated);
+
+    return () => {
+      window.removeEventListener(PROFILE_UPDATED_EVENT, handleProfileUpdated);
     };
   }, [refreshProfile]);
 
