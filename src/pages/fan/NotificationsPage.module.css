@@ -1330,3 +1330,26 @@
         width: 100%;
     }
 }
+
+/* Notification preference autosave status */
+
+.syncMessage {
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 18px;
+
+    display: flex;
+    align-items: center;
+    gap: 9px;
+
+    color: #ffffff;
+    background: rgba(59, 130, 246, 0.12);
+    border: 1px solid rgba(59, 130, 246, 0.28);
+
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.syncMessage svg {
+    color: #60a5fa;
+}

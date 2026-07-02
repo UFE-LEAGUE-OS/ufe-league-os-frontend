@@ -22,8 +22,10 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
     getNotificationInbox,
+    getNotificationPreferences,
     markAllNotificationsRead,
     markNotificationRead,
+    updateNotificationPreferences,
 } from "../../services/notificationService";
 import type {
     AppNotification,
@@ -212,6 +214,101 @@ const initialAlertGroups: AlertGroup[] = [
     },
 ];
 
+const backendNotificationEventTypes = [
+    "MATCH_REMINDER",
+    "SCORE_UPDATE",
+    "FOLLOWED_TEAM_NEWS",
+    "STANDINGS_CHANGE",
+    "TICKET_UPDATES",
+    "TICKET_OFFER",
+    "MEMBERSHIP_UPDATES",
+    "SPONSORSHIP_UPDATES",
+    "FANTASY_UPDATES",
+    "LEAGUE_NEWS",
+    "CLUB_NEWS",
+    "GENERAL_NEWS",
+    "MARKETING_UPDATES",
+];
+
+const NOTIFICATION_CHANNEL_STORAGE_KEY = "leagueos:fan-notification-channels";
+
+interface ChannelSnapshot {
+    email: boolean;
+    push: boolean;
+    inApp: boolean;
+    sms: boolean;
+}
+
+function getChannelSnapshot(channels: ChannelPreference[]): ChannelSnapshot {
+    return {
+        email: channels.find((channel) => channel.id === "email")?.enabled ?? false,
+        push: channels.find((channel) => channel.id === "push")?.enabled ?? false,
+        inApp: channels.find((channel) => channel.id === "in-app")?.enabled ?? false,
+        sms: channels.find((channel) => channel.id === "sms")?.enabled ?? false,
+    };
+}
+
+function applyChannelSnapshot(
+    channels: ChannelPreference[],
+    snapshot: ChannelSnapshot,
+): ChannelPreference[] {
+    return channels.map((channel) => {
+        if (channel.id === "email") {
+            return { ...channel, enabled: snapshot.email };
+        }
+
+        if (channel.id === "push") {
+            return { ...channel, enabled: snapshot.push };
+        }
+
+        if (channel.id === "in-app") {
+            return { ...channel, enabled: snapshot.inApp };
+        }
+
+        if (channel.id === "sms") {
+            return { ...channel, enabled: snapshot.sms };
+        }
+
+        return channel;
+    });
+}
+
+function readLocalChannelSnapshot(): ChannelSnapshot | null {
+    try {
+        const rawValue = window.localStorage.getItem(
+            NOTIFICATION_CHANNEL_STORAGE_KEY,
+        );
+
+        if (!rawValue) {
+            return null;
+        }
+
+        return JSON.parse(rawValue) as ChannelSnapshot;
+    } catch {
+        return null;
+    }
+}
+
+function writeLocalChannelSnapshot(snapshot: ChannelSnapshot) {
+    try {
+        window.localStorage.setItem(
+            NOTIFICATION_CHANNEL_STORAGE_KEY,
+            JSON.stringify(snapshot),
+        );
+    } catch {
+        // Local storage can fail in private mode. Backend save can still work.
+    }
+}
+
+function channelSnapshotToBackendPayload(snapshot: ChannelSnapshot) {
+    return backendNotificationEventTypes.map((eventType) => ({
+        event_type: eventType,
+        email_enabled: snapshot.email,
+        push_enabled: snapshot.push || snapshot.inApp,
+        sms_enabled: snapshot.sms,
+    }));
+}
+
 const categoryFilters: Array<{
     label: string;
     value: CategoryFilter;
@@ -273,6 +370,10 @@ function NotificationsPage() {
     const [quietStartTime, setQuietStartTime] = useState("22:00");
     const [quietEndTime, setQuietEndTime] = useState("07:00");
     const [saveMessage, setSaveMessage] = useState("");
+    const [isLoadingPreferences, setIsLoadingPreferences] = useState(true);
+    const [isSavingPreferences, setIsSavingPreferences] = useState(false);
+    const [hasLoadedPreferences, setHasLoadedPreferences] = useState(false);
+    const [preferenceSyncMessage, setPreferenceSyncMessage] = useState("");
     const [notifications, setNotifications] = useState<AppNotification[]>([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const [totalNotifications, setTotalNotifications] = useState(0);
@@ -292,6 +393,11 @@ function NotificationsPage() {
     const totalAlerts = alertGroups.reduce(
         (total, group) => total + group.alerts.length,
         0,
+    );
+
+    const channelSnapshot = useMemo(
+        () => getChannelSnapshot(channels),
+        [channels],
     );
 
     const latestNotifications = useMemo(
@@ -340,7 +446,7 @@ function NotificationsPage() {
                 setTotalNotifications(response.count);
             } catch {
                 setInboxError(
-                    "We could not load your notifications. Please check your connection and try again.",
+                    "We could not reach the backend notification inbox. Start the backend locally, confirm VITE_API_BASE_URL, and log in again.",
                 );
             } finally {
                 setIsLoadingInbox(false);
@@ -349,6 +455,73 @@ function NotificationsPage() {
         },
         [categoryFilter, unreadOnly],
     );
+
+    async function loadNotificationPreferences() {
+        setIsLoadingPreferences(true);
+        setPreferenceSyncMessage("");
+
+        const localSnapshot = readLocalChannelSnapshot();
+
+        /*
+         * Important:
+         * The backend stores notification preferences per event type.
+         * This page shows global channel settings.
+         *
+         * Therefore, browser-saved channel choices should be the first source
+         * of truth for this UI. Backend defaults are only used when the browser
+         * has no saved channel snapshot yet.
+         */
+        if (localSnapshot) {
+            setChannels((currentChannels) =>
+                applyChannelSnapshot(currentChannels, localSnapshot),
+            );
+
+            setPreferenceSyncMessage(
+                "Notification preferences loaded from this browser.",
+            );
+
+            try {
+                await updateNotificationPreferences(
+                    channelSnapshotToBackendPayload(localSnapshot),
+                );
+            } catch {
+                setPreferenceSyncMessage(
+                    "Preferences loaded from this browser. Backend sync is unavailable.",
+                );
+            } finally {
+                setIsLoadingPreferences(false);
+                setHasLoadedPreferences(true);
+            }
+
+            return;
+        }
+
+        try {
+            const preferences = await getNotificationPreferences();
+
+            if (preferences.length > 0) {
+                const backendSnapshot: ChannelSnapshot = {
+                    email: preferences.some((preference) => preference.email_enabled),
+                    push: preferences.some((preference) => preference.push_enabled),
+                    inApp: preferences.some((preference) => preference.push_enabled),
+                    sms: preferences.some((preference) => preference.sms_enabled),
+                };
+
+                setChannels((currentChannels) =>
+                    applyChannelSnapshot(currentChannels, backendSnapshot),
+                );
+
+                writeLocalChannelSnapshot(backendSnapshot);
+            }
+        } catch {
+            setPreferenceSyncMessage(
+                "Backend is offline. Channel changes will be saved in this browser until backend sync is available.",
+            );
+        } finally {
+            setIsLoadingPreferences(false);
+            setHasLoadedPreferences(true);
+        }
+    }
 
     useEffect(() => {
         const timeoutId = window.setTimeout(() => {
@@ -360,18 +533,60 @@ function NotificationsPage() {
         };
     }, [loadNotifications]);
 
+    useEffect(() => {
+        const timeoutId = window.setTimeout(() => {
+            void loadNotificationPreferences();
+        }, 0);
+
+        return () => {
+            window.clearTimeout(timeoutId);
+        };
+    }, []);
+
+    // Autosave notification channel changes after initial preference load.
+    useEffect(() => {
+        if (!hasLoadedPreferences) {
+            return undefined;
+        }
+
+        writeLocalChannelSnapshot(channelSnapshot);
+        setPreferenceSyncMessage("Saving notification preferences...");
+
+        const timeoutId = window.setTimeout(() => {
+            updateNotificationPreferences(
+                channelSnapshotToBackendPayload(channelSnapshot),
+            )
+                .then(() => {
+                    setPreferenceSyncMessage("Notification preferences autosaved.");
+                })
+                .catch(() => {
+                    setPreferenceSyncMessage(
+                        "Saved in this browser. Start the backend locally to sync.",
+                    );
+                });
+        }, 700);
+
+        return () => {
+            window.clearTimeout(timeoutId);
+        };
+    }, [channelSnapshot, hasLoadedPreferences]);
+
     function notifyHeaderBadgeChanged() {
         window.dispatchEvent(new Event("leagueos:notifications-updated"));
     }
 
     function toggleChannel(channelId: string) {
-        setChannels((currentChannels) =>
-            currentChannels.map((channel) =>
+        setChannels((currentChannels) => {
+            const updatedChannels = currentChannels.map((channel) =>
                 channel.id === channelId
                     ? { ...channel, enabled: !channel.enabled }
                     : channel,
-            ),
-        );
+            );
+
+            writeLocalChannelSnapshot(getChannelSnapshot(updatedChannels));
+
+            return updatedChannels;
+        });
 
         setSaveMessage("");
     }
@@ -397,10 +612,26 @@ function NotificationsPage() {
         setSaveMessage("");
     }
 
-    function handleSave() {
-        setSaveMessage(
-            "Notification preferences saved locally for this session. The inbox is connected to the backend.",
-        );
+    async function handleSave() {
+        setIsSavingPreferences(true);
+        setSaveMessage("");
+        setPreferenceSyncMessage("");
+
+        writeLocalChannelSnapshot(channelSnapshot);
+
+        try {
+            await updateNotificationPreferences(
+                channelSnapshotToBackendPayload(channelSnapshot),
+            );
+
+            setSaveMessage("Notification preferences saved to the backend.");
+        } catch {
+            setSaveMessage(
+                "Saved in this browser. Start the backend locally to sync these preferences.",
+            );
+        } finally {
+            setIsSavingPreferences(false);
+        }
     }
 
     function clearInboxFilters() {
@@ -472,10 +703,11 @@ function NotificationsPage() {
                     <button
                         type="button"
                         className={styles.primaryHeaderAction}
-                        onClick={handleSave}
+                        onClick={() => void handleSave()}
+                        disabled={isSavingPreferences || isLoadingPreferences}
                     >
                         <Save size={18} strokeWidth={2.4} aria-hidden="true" />
-                        Save
+                        {isSavingPreferences ? "Saving..." : "Save Now"}
                     </button>
                 </div>
             </header>
@@ -491,6 +723,13 @@ function NotificationsPage() {
                 <div className={styles.errorMessage} role="alert">
                     <XCircle size={19} strokeWidth={2.4} aria-hidden="true" />
                     {inboxError}
+                </div>
+            ) : null}
+
+            {preferenceSyncMessage ? (
+                <div className={styles.syncMessage} role="status">
+                    <CheckCircle2 size={19} strokeWidth={2.4} aria-hidden="true" />
+                    {preferenceSyncMessage}
                 </div>
             ) : null}
 
@@ -718,8 +957,8 @@ function NotificationsPage() {
                             <div>
                                 <h2>Notification Channels</h2>
                                 <p>
-                                    Choose where alerts can be sent. These preferences are
-                                    ready for the backend preference endpoint.
+                                    Choose where alerts can be sent. Channel preferences save
+                                    to the backend preference endpoint.
                                 </p>
                             </div>
                         </div>
@@ -772,7 +1011,7 @@ function NotificationsPage() {
                             <div>
                                 <h2>Alert Preferences</h2>
                                 <p>
-                                    Pick a category below and edit only that group to keep the page clean.
+                                    Pick a category below and edit alert details locally. Backend storage currently saves channel preferences by event type.
                                 </p>
                             </div>
                         </div>
