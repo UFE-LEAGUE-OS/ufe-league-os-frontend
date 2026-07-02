@@ -1317,3 +1317,66 @@
         align-content: start;
     }
 }
+
+/* Backend ticket wallet loading and error states */
+
+.ticketSyncMessage {
+    margin-bottom: 20px;
+    border-radius: 18px;
+    padding: 16px 18px;
+
+    display: flex;
+    align-items: center;
+    gap: 14px;
+
+    color: #ffffff;
+    background: rgba(15, 23, 42, 0.84);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.ticketSyncMessage svg {
+    flex: 0 0 auto;
+    color: #8b5cf6;
+}
+
+.ticketSyncMessage h2 {
+    margin: 0 0 4px;
+    font-size: 15px;
+}
+
+.ticketSyncMessage p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.68);
+    font-size: 13px;
+}
+
+.ticketSyncMessage button {
+    margin-left: auto;
+    min-height: 36px;
+    border-radius: 12px;
+    padding: 0 14px;
+
+    color: #ffffff;
+    background: rgba(123, 63, 242, 0.2);
+    border: 1px solid rgba(123, 63, 242, 0.5);
+
+    font-size: 12px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.ticketSyncMessage button:hover,
+.ticketSyncMessage button:focus-visible {
+    background: rgba(123, 63, 242, 0.34);
+}
+
+@media (max-width: 760px) {
+    .ticketSyncMessage {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .ticketSyncMessage button {
+        margin-left: 0;
+    }
+}
