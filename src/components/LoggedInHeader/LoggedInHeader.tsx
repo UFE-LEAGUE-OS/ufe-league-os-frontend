@@ -235,7 +235,13 @@ function LoggedInHeader() {
                         aria-expanded={isUserMenuOpen}
                         onClick={() => setIsUserMenuOpen((currentValue) => !currentValue)}
                     >
-                        <span className={styles.avatar}>{currentUser.avatarInitials}</span>
+                        <span className={styles.avatar}>
+                            {currentUser.avatarUrl ? (
+                                <img src={currentUser.avatarUrl} alt="" aria-hidden="true" />
+                            ) : (
+                                currentUser.avatarInitials
+                            )}
+                        </span>
 
                         <span className={styles.userText}>
                             <strong>{currentUser.name}</strong>

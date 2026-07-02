@@ -257,7 +257,13 @@ function Navbar({ links = defaultNavLinks }: NavbarProps) {
                     aria-expanded={userMenuOpen}
                     onClick={() => setUserMenuOpen((currentValue) => !currentValue)}
                   >
-                    <span className="navbar-user-avatar">{initials}</span>
+                    <span className="navbar-user-avatar">
+                      {currentUser.avatarUrl ? (
+                        <img src={currentUser.avatarUrl} alt="" aria-hidden="true" />
+                      ) : (
+                        initials
+                      )}
+                    </span>
 
                     <span className="navbar-user-copy">
                       <strong>{displayName}</strong>

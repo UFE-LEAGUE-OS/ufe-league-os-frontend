@@ -25,6 +25,12 @@ import { useCurrentUser } from "../../hooks/useCurrentUser";
 import { removeAvatar, updateProfile, uploadAvatar } from "../../services/authService.js";
 import styles from "./ProfileOverviewPage.module.css";
 
+const PROFILE_UPDATED_EVENT = "leagueos:profile-updated";
+
+function notifyProfileShellUpdated() {
+    window.dispatchEvent(new Event(PROFILE_UPDATED_EVENT));
+}
+
 type EditableField =
     | "firstName"
     | "lastName"
@@ -254,6 +260,7 @@ function ProfileOverviewPage() {
             });
 
             await refreshProfile();
+            notifyProfileShellUpdated();
 
             setEditableFields({
                 firstName: false,
@@ -300,6 +307,7 @@ function ProfileOverviewPage() {
         try {
             await uploadAvatar(file);
             await refreshProfile();
+            notifyProfileShellUpdated();
             setStatusMessage("Profile photo updated successfully.");
         } catch {
             setStatusMessage("We could not upload your profile photo. Please try again.");
@@ -316,6 +324,7 @@ function ProfileOverviewPage() {
         try {
             await removeAvatar();
             await refreshProfile();
+            notifyProfileShellUpdated();
             setStatusMessage("Profile photo removed successfully.");
         } catch {
             setStatusMessage("We could not remove your profile photo. Please try again.");

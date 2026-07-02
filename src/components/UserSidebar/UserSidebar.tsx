@@ -17,7 +17,8 @@ import {
     Users,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { NavLink } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
+import leagueLogo from "../../assets/logos/league-os-horizontal.png";
 import { useCurrentUser } from "../../hooks/useCurrentUser";
 import styles from "./UserSidebar.module.css";
 
@@ -83,8 +84,19 @@ function UserSidebar({ isCollapsed = false }: UserSidebarProps) {
 
     return (
         <aside className={`${styles.sidebar} ${isCollapsed ? styles.collapsedSidebar : ""}`}>
+            <Link to="/" className={styles.brandLink} aria-label="Go to League OS landing page">
+                <img src={leagueLogo} alt="League OS" />
+                <span className={styles.brandText}>Fan Portal</span>
+            </Link>
+
             <div className={styles.userCard}>
-                <span className={styles.avatar}>{currentUser.avatarInitials}</span>
+                <span className={styles.avatar}>
+                    {currentUser.avatarUrl ? (
+                        <img src={currentUser.avatarUrl} alt="" aria-hidden="true" />
+                    ) : (
+                        currentUser.avatarInitials
+                    )}
+                </span>
 
                 <div>
                     <h2>{currentUser.name}</h2>
