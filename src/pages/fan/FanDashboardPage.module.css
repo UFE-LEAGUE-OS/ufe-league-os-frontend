@@ -2372,3 +2372,1803 @@
 .membershipStatusPill {
     box-shadow: 0 8px 18px rgba(16, 185, 129, 0.16);
 }
+
+/* Backend dashboard tickets and payments */
+
+.dashboardSyncCard {
+    border-radius: 18px;
+    padding: 16px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+
+    color: #ffffff;
+    background: rgba(15, 23, 42, 0.72);
+    border: 1px solid rgba(248, 113, 113, 0.32);
+}
+
+.dashboardSyncCard h3 {
+    margin: 0 0 5px;
+    font-size: 15px;
+}
+
+.dashboardSyncCard p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.64);
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+.dashboardSyncCard button {
+    min-height: 36px;
+    border-radius: 12px;
+    padding: 0 14px;
+
+    color: #ffffff;
+    background: rgba(123, 63, 242, 0.22);
+    border: 1px solid rgba(168, 85, 247, 0.5);
+
+    font-size: 12px;
+    font-weight: 950;
+    cursor: pointer;
+}
+
+.ticketDashboardCard {
+    position: relative;
+    overflow: hidden;
+
+    min-height: 228px;
+    border-radius: 24px;
+    padding: 20px;
+
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 132px;
+    gap: 18px;
+    align-items: stretch;
+
+    background:
+        radial-gradient(circle at 14% 16%, rgba(255, 122, 24, 0.16), transparent 30%),
+        radial-gradient(circle at 92% 14%, rgba(139, 92, 246, 0.26), transparent 34%),
+        linear-gradient(145deg, rgba(15, 23, 42, 0.94), rgba(2, 6, 23, 0.94));
+    border: 1px solid rgba(168, 85, 247, 0.35);
+    box-shadow:
+        0 22px 44px rgba(0, 0, 0, 0.24),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.ticketDashboardCard::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+
+    pointer-events: none;
+    opacity: 0.72;
+    background:
+        linear-gradient(120deg, rgba(255, 255, 255, 0.075), transparent 34%),
+        repeating-linear-gradient(
+            135deg,
+            rgba(255, 255, 255, 0.03) 0,
+            rgba(255, 255, 255, 0.03) 1px,
+            transparent 1px,
+            transparent 12px
+        );
+}
+
+.ticketDashboardCard > * {
+    position: relative;
+    z-index: 1;
+}
+
+.ticketDashboardInfo {
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.ticketDashboardInfo > span {
+    color: rgba(255, 255, 255, 0.54);
+    font-size: 10px;
+    font-weight: 950;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.ticketDashboardInfo h3 {
+    margin: 0;
+
+    color: #ffffff;
+    font-size: 25px;
+    line-height: 1.04;
+    letter-spacing: -0.04em;
+}
+
+.ticketDashboardInfo h3 small {
+    display: block;
+    margin: 6px 0;
+
+    color: rgba(255, 255, 255, 0.48);
+    font-size: 11px;
+    font-weight: 950;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.ticketDashboardInfo dl {
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.ticketDashboardInfo dl div {
+    min-width: 0;
+    border-radius: 14px;
+    padding: 10px;
+
+    background: rgba(255, 255, 255, 0.055);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.ticketDashboardInfo dt {
+    margin: 0 0 5px;
+
+    color: rgba(255, 255, 255, 0.46);
+    font-size: 9px;
+    font-weight: 950;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.ticketDashboardInfo dd {
+    margin: 0;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 900;
+}
+
+.ticketDashboardPass {
+    position: relative;
+    overflow: hidden;
+
+    border-radius: 20px;
+    padding: 14px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+
+    color: #ffffff;
+    background:
+        radial-gradient(circle at 50% -10%, rgba(255, 255, 255, 0.2), transparent 34%),
+        linear-gradient(180deg, #7c3aed, #4c1d95);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    box-shadow: 0 18px 34px rgba(76, 29, 149, 0.28);
+}
+
+.ticketDashboardPass span {
+    border-radius: 999px;
+    padding: 6px 9px;
+
+    color: #bbf7d0;
+    background: rgba(16, 185, 129, 0.14);
+    border: 1px solid rgba(52, 211, 153, 0.34);
+
+    font-size: 9px;
+    font-weight: 950;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.ticketDashboardPass strong {
+    max-width: 94px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    color: rgba(255, 255, 255, 0.86);
+    font-size: 10px;
+    font-weight: 950;
+}
+
+.ticketDashboardQr {
+    width: 82px;
+    height: 82px;
+    border-radius: 16px;
+
+    display: grid;
+    place-items: center;
+
+    color: #111827;
+    background: #ffffff;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+}
+
+.ticketDashboardPass a {
+    min-height: 34px;
+    border-radius: 12px;
+    padding: 0 12px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+
+    font-size: 11px;
+    font-weight: 950;
+    text-decoration: none;
+}
+
+.dashboardPaymentsPanel {
+    position: relative;
+    overflow: hidden;
+
+    background:
+        radial-gradient(circle at 14% 12%, rgba(16, 185, 129, 0.14), transparent 34%),
+        linear-gradient(145deg, rgba(15, 23, 42, 0.96), rgba(2, 6, 23, 0.92));
+    border: 1px solid rgba(255, 255, 255, 0.11);
+}
+
+.walletSummaryCard {
+    border-radius: 22px;
+    padding: 18px;
+
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+
+    color: #ffffff;
+    background:
+        radial-gradient(circle at 12% 12%, rgba(16, 185, 129, 0.16), transparent 30%),
+        linear-gradient(145deg, rgba(30, 41, 59, 0.72), rgba(15, 23, 42, 0.78));
+    border: 1px solid rgba(16, 185, 129, 0.24);
+}
+
+.walletSummaryCard > div > span {
+    color: rgba(255, 255, 255, 0.52);
+    font-size: 10px;
+    font-weight: 950;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.walletSummaryCard > div > strong {
+    display: block;
+    margin-top: 6px;
+
+    color: #ffffff;
+    font-size: 28px;
+    line-height: 1;
+    letter-spacing: -0.05em;
+}
+
+.walletSummaryCard > div > p {
+    margin: 8px 0 0;
+
+    color: rgba(255, 255, 255, 0.62);
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+.walletSummaryCard dl {
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.walletSummaryCard dl div {
+    border-radius: 14px;
+    padding: 10px;
+
+    background: rgba(255, 255, 255, 0.055);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.walletSummaryCard dt {
+    margin: 0 0 5px;
+
+    color: rgba(255, 255, 255, 0.46);
+    font-size: 9px;
+    font-weight: 950;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.walletSummaryCard dd {
+    margin: 0;
+
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 950;
+}
+
+.dashboardPaymentList {
+    margin-top: 12px;
+
+    display: grid;
+    gap: 9px;
+}
+
+.dashboardPaymentItem {
+    border-radius: 16px;
+    padding: 12px;
+
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 12px;
+    align-items: center;
+
+    background: rgba(255, 255, 255, 0.045);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.dashboardPaymentItem h3 {
+    margin: 0 0 4px;
+
+    color: #ffffff;
+    font-size: 13px;
+    line-height: 1.15;
+}
+
+.dashboardPaymentItem p {
+    margin: 0 0 4px;
+
+    max-width: 220px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    color: rgba(255, 255, 255, 0.58);
+    font-size: 11px;
+    font-weight: 750;
+}
+
+.dashboardPaymentItem small {
+    color: rgba(255, 255, 255, 0.44);
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.dashboardPaymentItem > span {
+    display: grid;
+    justify-items: end;
+    gap: 6px;
+}
+
+.dashboardPaymentItem > span > strong {
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 950;
+}
+
+.dashboardPaymentStatus {
+    border-radius: 999px;
+    padding: 5px 8px;
+
+    font-size: 9px;
+    font-style: normal;
+    font-weight: 950;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.dashboardPaymentStatus[data-status="successful"] {
+    color: #bbf7d0;
+    background: rgba(16, 185, 129, 0.14);
+    border: 1px solid rgba(52, 211, 153, 0.32);
+}
+
+.dashboardPaymentStatus[data-status="pending"] {
+    color: #fed7aa;
+    background: rgba(249, 115, 22, 0.13);
+    border: 1px solid rgba(251, 146, 60, 0.32);
+}
+
+.dashboardPaymentStatus[data-status="failed"] {
+    color: #fecaca;
+    background: rgba(239, 68, 68, 0.14);
+    border: 1px solid rgba(248, 113, 113, 0.32);
+}
+
+.dashboardPaymentStatus[data-status="refunded"] {
+    color: #bfdbfe;
+    background: rgba(59, 130, 246, 0.14);
+    border: 1px solid rgba(96, 165, 250, 0.32);
+}
+
+@media (max-width: 980px) {
+    .ticketDashboardCard {
+        grid-template-columns: 1fr;
+    }
+
+    .ticketDashboardPass {
+        min-height: 178px;
+    }
+
+    .ticketDashboardInfo dl,
+    .walletSummaryCard dl {
+        grid-template-columns: 1fr;
+    }
+
+    .dashboardSyncCard,
+    .dashboardPaymentItem {
+        align-items: stretch;
+        grid-template-columns: 1fr;
+        flex-direction: column;
+    }
+
+    .dashboardPaymentItem > span {
+        justify-items: start;
+    }
+}
+
+/* Stable clean fan dashboard layout */
+
+.page > div:has(> .matchesPanel):has(> .sponsorSpotlightPanel) {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+    align-items: start;
+}
+
+/* Simple predictable order */
+.matchesPanel,
+.clubsPanel,
+.newsPanel,
+.membershipsPanel,
+.ticketPanel,
+.dashboardPaymentsPanel {
+    grid-column: span 1;
+    grid-row: auto;
+}
+
+.sponsorSpotlightPanel {
+    grid-column: 1 / -1;
+}
+
+/* Remove forced awkward heights */
+.matchesPanel,
+.clubsPanel,
+.newsPanel,
+.membershipsPanel,
+.ticketPanel,
+.dashboardPaymentsPanel,
+.sponsorSpotlightPanel {
+    min-height: auto;
+    align-self: start;
+}
+
+/* Keep panels compact and consistent */
+.panel {
+    border-radius: 18px;
+}
+
+.panelHeader {
+    margin-bottom: 14px;
+}
+
+.panelHeader h2 {
+    font-size: 18px;
+}
+
+.panelHeader a,
+.panelFooterLink {
+    font-size: 12px;
+}
+
+/* Upcoming matches should not dominate */
+.matchesPanel > div:nth-of-type(2) {
+    max-height: 300px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+/* Keep news compact */
+.newsList {
+    gap: 10px;
+}
+
+.newsItem {
+    min-height: 74px;
+}
+
+.newsItem img,
+.newsPlaceholderImage {
+    width: 76px;
+    height: 54px;
+}
+
+/* Make membership and ticket cards less cramped */
+.membershipPassCard,
+.ticketDashboardCard {
+    min-height: 190px;
+}
+
+.ticketDashboardCard {
+    grid-template-columns: minmax(0, 1fr) 118px;
+}
+
+.ticketDashboardInfo h3 {
+    font-size: 21px;
+}
+
+.ticketDashboardInfo dl {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+/* Payments should be compact, not oversized */
+.walletSummaryCard {
+    padding: 16px;
+}
+
+.walletSummaryCard > div > strong {
+    font-size: 25px;
+}
+
+.dashboardPaymentList {
+    max-height: 170px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+/* Sponsor becomes a clean full-width banner */
+.sponsorSpotlightPanel {
+    position: relative;
+    overflow: hidden;
+
+    background:
+        radial-gradient(circle at 12% 18%, rgba(255, 122, 24, 0.14), transparent 30%),
+        radial-gradient(circle at 88% 20%, rgba(123, 63, 242, 0.2), transparent 34%),
+        linear-gradient(145deg, rgba(15, 23, 42, 0.96), rgba(2, 6, 23, 0.94));
+    border: 1px solid rgba(255, 255, 255, 0.11);
+}
+
+.sponsorSpotlightCard {
+    min-height: 190px;
+    border-radius: 22px;
+    padding: 22px;
+
+    display: grid;
+    grid-template-columns: 74px minmax(0, 1fr) auto;
+    grid-template-areas:
+        "logo copy actions";
+    align-items: center;
+    gap: 20px;
+
+    background:
+        radial-gradient(circle at 14% 12%, rgba(255, 122, 24, 0.16), transparent 28%),
+        linear-gradient(145deg, rgba(30, 27, 75, 0.82), rgba(15, 23, 42, 0.86));
+    border: 1px solid rgba(168, 85, 247, 0.32);
+}
+
+.sponsorTopLine {
+    display: none;
+}
+
+.sponsorLogoMark {
+    grid-area: logo;
+    width: 74px;
+    height: 74px;
+    border-radius: 22px;
+}
+
+.sponsorSpotlightCard > div:nth-of-type(3) {
+    grid-area: copy;
+}
+
+.sponsorSpotlightCard h3 {
+    margin-bottom: 8px;
+    font-size: 26px;
+}
+
+.sponsorSpotlightCard small {
+    max-width: 560px;
+    font-size: 13px;
+}
+
+.sponsorActions {
+    grid-area: actions;
+    align-items: flex-end;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.sponsorActions > a {
+    min-width: 150px;
+}
+
+/* Responsive */
+@media (max-width: 1100px) {
+    .page > div:has(> .matchesPanel):has(> .sponsorSpotlightPanel) {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .sponsorSpotlightPanel {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 760px) {
+    .page > div:has(> .matchesPanel):has(> .sponsorSpotlightPanel) {
+        grid-template-columns: 1fr;
+    }
+
+    .sponsorSpotlightCard,
+    .ticketDashboardCard {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+            "logo"
+            "copy"
+            "actions";
+    }
+
+    .sponsorActions {
+        align-items: stretch;
+    }
+
+    .ticketDashboardInfo dl,
+    .walletSummaryCard dl {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Equal-height dashboard panel correction */
+
+.page > div:has(> .matchesPanel):has(> .sponsorSpotlightPanel) {
+    align-items: stretch;
+}
+
+/* Make every dashboard panel fill the height of its grid row */
+.matchesPanel,
+.clubsPanel,
+.newsPanel,
+.membershipsPanel,
+.ticketPanel,
+.dashboardPaymentsPanel {
+    height: 100%;
+    align-self: stretch;
+
+    display: flex;
+    flex-direction: column;
+}
+
+/* Top row equal length */
+.matchesPanel,
+.clubsPanel,
+.newsPanel {
+    min-height: 360px;
+}
+
+/* Second row equal length */
+.membershipsPanel,
+.ticketPanel,
+.dashboardPaymentsPanel {
+    min-height: 360px;
+}
+
+/* Let panel content use available space cleanly */
+.matchesPanel .matchList,
+.clubsPanel .clubGrid,
+.newsPanel .newsList,
+.membershipsPanel .membershipList,
+.dashboardPaymentsPanel .dashboardPaymentList {
+    flex: 1;
+}
+
+/* Keep upcoming matches compact inside the equal-height panel */
+.matchesPanel > div:nth-of-type(2) {
+    max-height: 255px;
+    overflow-y: auto;
+}
+
+/* Give clubs panel better vertical balance */
+.clubsPanel .clubGrid {
+    align-content: center;
+}
+
+.clubsPanel .helperText {
+    margin-top: 14px;
+}
+
+/* Make latest news fill the same height more naturally */
+.newsPanel .newsList {
+    justify-content: space-between;
+}
+
+.newsItem {
+    min-height: 82px;
+}
+
+/* Make membership and ticket cards fill their panels better */
+.membershipPassCard,
+.ticketDashboardCard {
+    flex: 1;
+    min-height: 230px;
+}
+
+.membershipPassCard {
+    justify-content: space-between;
+}
+
+.ticketDashboardCard {
+    align-items: stretch;
+}
+
+/* Make payments panel match the card height without looking overcrowded */
+.dashboardPaymentsPanel {
+    overflow: hidden;
+}
+
+.walletSummaryCard {
+    flex: 0 0 auto;
+}
+
+.dashboardPaymentList {
+    flex: 1;
+    max-height: none;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+.dashboardPaymentItem {
+    min-height: 74px;
+}
+
+/* Make footer links sit at the bottom consistently */
+.panelFooterLink {
+    margin-top: auto;
+    padding-top: 14px;
+}
+
+/* Responsive: do not force large equal heights on small screens */
+@media (max-width: 1100px) {
+    .matchesPanel,
+    .clubsPanel,
+    .newsPanel,
+    .membershipsPanel,
+    .ticketPanel,
+    .dashboardPaymentsPanel {
+        min-height: auto;
+    }
+
+    .membershipPassCard,
+    .ticketDashboardCard {
+        min-height: 210px;
+    }
+}
+
+@media (max-width: 760px) {
+    .matchesPanel,
+    .clubsPanel,
+    .newsPanel,
+    .membershipsPanel,
+    .ticketPanel,
+    .dashboardPaymentsPanel {
+        height: auto;
+    }
+
+    .panelFooterLink {
+        margin-top: 12px;
+        padding-top: 0;
+    }
+}
+
+/* Safe final fix for membership and ticket cards */
+
+.membershipsPanel,
+.ticketPanel {
+    min-height: 330px;
+}
+
+.membershipPassCard {
+    min-height: 215px;
+    padding: 18px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 14px;
+}
+
+.membershipPassTop {
+    display: grid;
+    grid-template-columns: 58px minmax(0, 1fr) auto;
+    gap: 13px;
+    align-items: center;
+}
+
+.membershipPassTop .membershipClubMark {
+    width: 58px;
+    height: 58px;
+    border-radius: 18px;
+}
+
+.membershipPassTop > div {
+    min-width: 0;
+}
+
+.membershipPassTop span {
+    display: block;
+    margin-bottom: 5px;
+    white-space: nowrap;
+}
+
+.membershipPassTop h3 {
+    margin: 0 0 4px;
+    white-space: nowrap;
+}
+
+.membershipPassTop p {
+    margin: 0;
+    white-space: nowrap;
+}
+
+.membershipStatusPill {
+    position: static;
+    align-self: center;
+    white-space: nowrap;
+}
+
+.membershipPassMeta {
+    margin: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap: 10px;
+}
+
+.membershipPassMeta span {
+    min-width: 0;
+    padding: 11px 12px;
+    text-align: center;
+}
+
+.membershipPassMeta strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.membershipPassBottom {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.membershipPassBottom p {
+    margin: 0;
+    max-width: 170px;
+    line-height: 1.35;
+}
+
+.membershipPassBottom a {
+    min-width: 145px;
+    min-height: 42px;
+}
+
+/* Ticket card cleanup */
+
+.ticketDashboardCard {
+    min-height: 215px;
+    padding: 18px;
+    grid-template-columns: minmax(0, 1fr) 124px;
+    gap: 16px;
+}
+
+.ticketDashboardInfo h3 {
+    font-size: 23px;
+    line-height: 1.05;
+}
+
+.ticketDashboardInfo dl {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.ticketDashboardInfo dl div {
+    min-width: 0;
+}
+
+.ticketDashboardInfo dd {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ticketDashboardPass {
+    min-width: 0;
+}
+
+.ticketDashboardQr {
+    width: 78px;
+    height: 78px;
+}
+
+.ticketDashboardPass strong {
+    max-width: 92px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Keep upcoming matches at 4 but compact */
+
+.matchesPanel {
+    min-height: 360px;
+}
+
+.matchItem {
+    min-height: 70px;
+}
+
+@media (max-width: 760px) {
+    .membershipPassTop,
+    .membershipPassMeta,
+    .ticketDashboardCard {
+        grid-template-columns: 1fr;
+    }
+
+    .membershipPassBottom {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .membershipPassBottom a {
+        width: 100%;
+    }
+}
+
+/* Final generated-style dashboard membership card */
+
+.membershipPassCard {
+    position: relative;
+    overflow: hidden;
+
+    min-height: 318px;
+    border-radius: 24px;
+    padding: 20px;
+
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+
+    background:
+        radial-gradient(circle at 18% 18%, rgba(255, 122, 24, 0.18), transparent 28%),
+        radial-gradient(circle at 88% 78%, rgba(124, 58, 237, 0.24), transparent 32%),
+        linear-gradient(145deg, rgba(30, 27, 75, 0.96), rgba(15, 23, 42, 0.96));
+    border: 1px solid rgba(168, 85, 247, 0.48);
+    box-shadow:
+        0 22px 44px rgba(0, 0, 0, 0.26),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.membershipPassCard::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+
+    pointer-events: none;
+    opacity: 0.72;
+    background:
+        linear-gradient(120deg, rgba(255, 255, 255, 0.08), transparent 34%),
+        repeating-linear-gradient(
+            135deg,
+            rgba(255, 255, 255, 0.028) 0,
+            rgba(255, 255, 255, 0.028) 1px,
+            transparent 1px,
+            transparent 12px
+        );
+}
+
+.membershipPassCard::after {
+    content: "KOBS";
+    position: absolute;
+    right: 20px;
+    top: 82px;
+
+    color: rgba(255, 255, 255, 0.035);
+    font-size: 58px;
+    font-weight: 950;
+    letter-spacing: -0.06em;
+    transform: skewX(-10deg);
+    pointer-events: none;
+}
+
+.membershipPassCard > * {
+    position: relative;
+    z-index: 1;
+}
+
+.membershipPassHeader {
+    display: grid;
+    grid-template-columns: 58px minmax(0, 1fr) auto;
+    gap: 14px;
+    align-items: center;
+}
+
+.membershipPassHeader .membershipClubMark {
+    width: 58px;
+    height: 58px;
+    border-radius: 18px;
+
+    display: inline-grid;
+    place-items: center;
+
+    font-size: 13px;
+    font-weight: 950;
+    box-shadow: 0 14px 28px rgba(76, 29, 149, 0.32);
+}
+
+.membershipPassHeader > div {
+    min-width: 0;
+}
+
+.membershipPassHeader > div > span {
+    display: block;
+    margin-bottom: 5px;
+
+    color: rgba(255, 255, 255, 0.56);
+    font-size: 10px;
+    font-weight: 950;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.membershipPassHeader h3 {
+    margin: 0 0 4px;
+
+    color: #ffffff;
+    font-size: 20px;
+    line-height: 1;
+    letter-spacing: -0.04em;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.membershipPassHeader p {
+    margin: 0;
+
+    color: #facc15;
+    font-size: 13px;
+    font-weight: 850;
+}
+
+.membershipStatusPill {
+    border-radius: 999px;
+    padding: 7px 10px;
+
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+
+    color: #bbf7d0;
+    background: rgba(16, 185, 129, 0.13);
+    border: 1px solid rgba(52, 211, 153, 0.34);
+    box-shadow: 0 8px 18px rgba(16, 185, 129, 0.16);
+
+    font-size: 10px;
+    font-weight: 950;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.membershipStatusPill span {
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+    background: #4ade80;
+}
+
+.membershipPassDivider {
+    height: 1px;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.16),
+        transparent
+    );
+}
+
+.membershipPassBody {
+    min-height: 138px;
+
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 112px;
+    gap: 16px;
+    align-items: stretch;
+}
+
+.membershipInfoStack {
+    min-width: 0;
+
+    display: grid;
+    gap: 10px;
+}
+
+.membershipInfoRow {
+    min-width: 0;
+    border-radius: 16px;
+    padding: 10px;
+
+    display: grid;
+    grid-template-columns: 38px minmax(0, 1fr);
+    gap: 10px;
+    align-items: center;
+
+    background: rgba(255, 255, 255, 0.055);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.membershipInfoIcon {
+    width: 38px;
+    height: 38px;
+    border-radius: 13px;
+
+    display: grid;
+    place-items: center;
+
+    color: rgba(255, 255, 255, 0.82);
+    background: rgba(124, 58, 237, 0.17);
+    border: 1px solid rgba(168, 85, 247, 0.25);
+}
+
+.membershipInfoRow small,
+.membershipTierRow small {
+    display: block;
+
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 9px;
+    font-weight: 950;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.membershipInfoRow strong {
+    display: block;
+    margin-top: 4px;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    color: #4ade80;
+    font-size: 13px;
+    font-weight: 950;
+}
+
+.membershipTierRow {
+    min-width: 0;
+    border-radius: 16px;
+    padding: 10px;
+
+    display: grid;
+    grid-template-columns: 38px minmax(0, 1fr);
+    gap: 10px;
+    align-items: center;
+
+    background: rgba(250, 204, 21, 0.06);
+    border: 1px solid rgba(250, 204, 21, 0.16);
+}
+
+.membershipTierRow svg {
+    color: #facc15;
+}
+
+.membershipTierRow strong {
+    display: block;
+    color: #facc15;
+    font-size: 13px;
+    font-weight: 950;
+}
+
+.membershipQrPanel {
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.membershipQrBox {
+    width: 108px;
+    height: 108px;
+    border-radius: 18px;
+
+    display: grid;
+    place-items: center;
+
+    color: #111827;
+    background: #ffffff;
+    border: 3px solid rgba(139, 92, 246, 0.95);
+    box-shadow: 0 12px 24px rgba(76, 29, 149, 0.28);
+}
+
+.membershipQrPanel > span {
+    width: 100%;
+    border-radius: 999px;
+    padding: 6px 8px;
+
+    color: rgba(255, 255, 255, 0.68);
+    background: rgba(255, 255, 255, 0.055);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+
+    font-size: 9px;
+    font-weight: 950;
+    letter-spacing: 0.1em;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+.membershipPassButton {
+    min-height: 46px;
+    border-radius: 16px;
+    padding: 0 18px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+
+    color: #ffffff;
+    background:
+        linear-gradient(135deg, #8b5cf6, #9333ea);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    box-shadow: 0 14px 28px rgba(76, 29, 149, 0.3);
+
+    font-size: 13px;
+    font-weight: 950;
+    text-decoration: none;
+}
+
+.membershipPassButton:hover,
+.membershipPassButton:focus-visible {
+    transform: translateY(-1px);
+    filter: brightness(1.08);
+}
+
+/* Fix broken Upcoming Matches card */
+
+.matchesPanel {
+    min-height: 390px;
+}
+
+.matchesPanel > div:nth-of-type(2),
+.matchesPanel .matchList {
+    max-height: none !important;
+    overflow: visible !important;
+}
+
+.matchesPanel .matchList {
+    display: grid;
+    gap: 0;
+    flex: 1;
+}
+
+.matchesPanel .matchItem {
+    min-height: 64px;
+    padding: 9px 0;
+
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 10px;
+    align-items: center;
+
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.matchesPanel .matchItem:last-child {
+    border-bottom: 0;
+}
+
+.matchesPanel .matchTeams {
+    grid-template-columns: 36px minmax(0, 1fr) 22px 36px;
+    gap: 8px;
+}
+
+.matchesPanel .matchTeams img {
+    width: 36px;
+    height: 36px;
+}
+
+.matchesPanel .matchTeams h3 {
+    font-size: 12px;
+    line-height: 1.08;
+}
+
+.matchesPanel .matchTeams p,
+.matchesPanel .matchTeams span,
+.matchesPanel .matchTeams small {
+    font-size: 9.5px;
+    line-height: 1.22;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.matchesPanel .matchTeams strong {
+    font-size: 10px;
+}
+
+.matchesPanel .awayTeamName {
+    display: none;
+}
+
+.matchesPanel .matchActions {
+    gap: 7px;
+}
+
+.matchesPanel .matchActions a {
+    min-width: 62px;
+    height: 30px;
+    padding: 0 11px;
+
+    font-size: 11px;
+}
+
+.matchesPanel .matchActions button {
+    width: 30px;
+    height: 30px;
+}
+
+.matchesPanel .panelFooterLink {
+    margin-top: auto;
+    padding-top: 10px;
+}
+
+@media (max-width: 1100px) {
+    .membershipPassCard {
+        min-height: 300px;
+    }
+
+    .membershipPassBody {
+        grid-template-columns: 1fr;
+    }
+
+    .membershipQrPanel {
+        align-items: stretch;
+    }
+
+    .membershipQrBox {
+        margin-inline: auto;
+    }
+}
+
+@media (max-width: 760px) {
+    .membershipPassHeader,
+    .membershipPassBody {
+        grid-template-columns: 1fr;
+    }
+
+    .membershipStatusPill {
+        width: fit-content;
+    }
+
+    .membershipPassButton {
+        width: 100%;
+    }
+
+    .matchesPanel .matchItem {
+        grid-template-columns: 1fr;
+    }
+
+    .matchesPanel .matchActions {
+        justify-content: flex-start;
+    }
+}
+
+/* Final refinement for compact dashboard membership pass */
+
+.membershipPassCard {
+    min-height: 350px;
+    padding: 18px;
+    gap: 13px;
+}
+
+.membershipPassHeader {
+    grid-template-columns: 56px minmax(0, 1fr) auto;
+    gap: 13px;
+}
+
+.membershipPassHeader .membershipClubMark {
+    width: 56px;
+    height: 56px;
+}
+
+.membershipPassHeader h3 {
+    font-size: 18px;
+}
+
+.membershipPassHeader p {
+    color: #facc15;
+    font-size: 12px;
+    font-weight: 950;
+}
+
+.membershipStatusPill {
+    padding: 7px 10px;
+    font-size: 9px;
+}
+
+.membershipPassDivider {
+    margin-top: 1px;
+}
+
+.membershipPassBody {
+    min-height: 154px;
+    grid-template-columns: minmax(0, 1fr) 104px;
+    gap: 13px;
+    align-items: center;
+}
+
+.membershipInfoStack {
+    gap: 9px;
+}
+
+.membershipInfoRow {
+    min-height: 58px;
+    padding: 10px 12px;
+    grid-template-columns: 1fr;
+}
+
+.membershipInfoIcon {
+    display: none;
+}
+
+.membershipInfoRow small {
+    margin-bottom: 5px;
+    font-size: 9px;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.membershipInfoRow strong {
+    margin-top: 0;
+    max-width: 100%;
+
+    overflow: visible;
+    text-overflow: clip;
+    white-space: nowrap;
+
+    color: #4ade80;
+    font-size: 12px;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+}
+
+.membershipTierRow {
+    min-height: 54px;
+    padding: 10px 12px;
+    grid-template-columns: 30px minmax(0, 1fr);
+}
+
+.membershipTierRow svg {
+    width: 22px;
+    height: 22px;
+}
+
+.membershipTierRow strong {
+    font-size: 12px;
+    line-height: 1.1;
+}
+
+.membershipTierRow small {
+    margin-top: 3px;
+    font-size: 8.5px;
+    line-height: 1;
+}
+
+.membershipQrPanel {
+    gap: 7px;
+}
+
+.membershipQrBox {
+    width: 96px;
+    height: 96px;
+    border-radius: 17px;
+    border-width: 3px;
+}
+
+.membershipQrBox svg {
+    width: 68px;
+    height: 68px;
+}
+
+.membershipQrPanel > span {
+    padding: 5px 6px;
+    font-size: 8px;
+}
+
+.membershipPassButton {
+    width: 100%;
+    min-height: 44px;
+    border-radius: 15px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 12px;
+}
+
+.membershipPassButton svg {
+    margin-left: auto;
+}
+
+.membershipPassCard::after {
+    right: 22px;
+    top: 118px;
+    font-size: 52px;
+}
+
+/* Make the footer sit cleanly below the pass */
+.membershipsPanel .panelFooterLink {
+    margin-top: 14px;
+}
+
+/* Slightly better small-card behavior */
+@media (max-width: 1180px) {
+    .membershipPassBody {
+        grid-template-columns: minmax(0, 1fr) 96px;
+    }
+
+    .membershipQrBox {
+        width: 90px;
+        height: 90px;
+    }
+
+    .membershipQrBox svg {
+        width: 62px;
+        height: 62px;
+    }
+}
+
+@media (max-width: 760px) {
+    .membershipPassBody {
+        grid-template-columns: 1fr;
+    }
+
+    .membershipQrPanel {
+        align-items: stretch;
+    }
+
+    .membershipQrBox {
+        margin-inline: auto;
+    }
+}
+
+/* Compact membership card content refinement */
+
+.membershipsPanel {
+    grid-column: span 1 !important;
+}
+
+.membershipPassCard {
+    min-height: 350px !important;
+    border-radius: 24px !important;
+    padding: 18px !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 13px !important;
+
+    background:
+        radial-gradient(circle at 18% 18%, rgba(255, 122, 24, 0.16), transparent 28%),
+        radial-gradient(circle at 84% 72%, rgba(124, 58, 237, 0.26), transparent 34%),
+        linear-gradient(145deg, rgba(30, 27, 75, 0.96), rgba(15, 23, 42, 0.96)) !important;
+    border: 1px solid rgba(139, 92, 246, 0.6) !important;
+}
+
+.membershipPassCard::after {
+    right: 22px !important;
+    top: 120px !important;
+    font-size: 52px !important;
+    opacity: 1;
+}
+
+.membershipPassHeader {
+    display: grid !important;
+    grid-template-columns: 56px minmax(0, 1fr) auto !important;
+    gap: 12px !important;
+    align-items: center !important;
+}
+
+.membershipPassHeader .membershipClubMark {
+    width: 56px !important;
+    height: 56px !important;
+    border-radius: 18px !important;
+    font-size: 13px !important;
+}
+
+.membershipPassHeader > div {
+    min-width: 0;
+}
+
+.membershipPassHeader > div > span {
+    margin-bottom: 5px !important;
+    font-size: 9px !important;
+    letter-spacing: 0.1em !important;
+}
+
+.membershipPassHeader h3 {
+    margin: 0 0 4px !important;
+    font-size: 18px !important;
+    line-height: 1 !important;
+}
+
+.membershipPassHeader p {
+    margin: 0 !important;
+    color: #facc15 !important;
+    font-size: 12px !important;
+    font-weight: 950 !important;
+}
+
+.membershipStatusPill {
+    min-height: 30px !important;
+    padding: 0 10px !important;
+    font-size: 9px !important;
+}
+
+.membershipStatusPill span {
+    width: 7px !important;
+    height: 7px !important;
+}
+
+.membershipPassDivider {
+    margin: 0 !important;
+}
+
+.membershipPassBody {
+    flex: 1;
+    min-height: 150px !important;
+
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) 104px !important;
+    gap: 13px !important;
+    align-items: center !important;
+}
+
+.membershipInfoStack {
+    display: grid !important;
+    gap: 9px !important;
+}
+
+.membershipInfoRow {
+    min-height: 58px !important;
+    border-radius: 16px !important;
+    padding: 10px 12px !important;
+
+    display: block !important;
+
+    background: rgba(255, 255, 255, 0.055) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.membershipInfoIcon {
+    display: none !important;
+}
+
+.membershipInfoRow small,
+.membershipTierRow small {
+    display: block;
+    margin-bottom: 5px;
+
+    color: rgba(255, 255, 255, 0.52) !important;
+    font-size: 9px !important;
+    font-weight: 950 !important;
+    letter-spacing: 0.08em !important;
+    line-height: 1 !important;
+    text-transform: uppercase !important;
+}
+
+.membershipInfoRow strong {
+    display: block;
+    margin-top: 0 !important;
+
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+
+    color: #4ade80 !important;
+    font-size: 12px !important;
+    font-weight: 950 !important;
+    line-height: 1.15 !important;
+}
+
+.membershipTierRow {
+    min-height: 54px !important;
+    border-radius: 16px !important;
+    padding: 10px 12px !important;
+
+    display: grid !important;
+    grid-template-columns: 28px minmax(0, 1fr) !important;
+    gap: 10px !important;
+    align-items: center !important;
+
+    background: rgba(250, 204, 21, 0.06) !important;
+    border: 1px solid rgba(250, 204, 21, 0.16) !important;
+}
+
+.membershipTierRow svg {
+    width: 22px !important;
+    height: 22px !important;
+    color: #facc15 !important;
+}
+
+.membershipTierRow strong {
+    color: #facc15 !important;
+    font-size: 12px !important;
+    line-height: 1.1 !important;
+}
+
+.membershipQrPanel {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 7px !important;
+}
+
+.membershipQrBox {
+    width: 96px !important;
+    height: 96px !important;
+    border-radius: 17px !important;
+    border-width: 3px !important;
+}
+
+.membershipQrBox svg {
+    width: 68px !important;
+    height: 68px !important;
+}
+
+.membershipQrPanel > span {
+    padding: 5px 6px !important;
+    font-size: 8px !important;
+}
+
+.membershipPassButton {
+    width: 100%;
+    min-height: 44px !important;
+    border-radius: 15px !important;
+    padding: 0 16px !important;
+
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 10px !important;
+
+    font-size: 12px !important;
+}
+
+.membershipPassButton svg {
+    width: 18px !important;
+    height: 18px !important;
+    margin-left: auto;
+}
+
+.membershipsPanel .panelFooterLink {
+    margin-top: 14px !important;
+}

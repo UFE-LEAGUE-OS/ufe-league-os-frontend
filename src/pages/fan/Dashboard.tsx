@@ -20,6 +20,15 @@ import {
     type BackendMembershipCard,
     type BackendMembershipSubscription,
 } from "../../services/fanMembershipService";
+import {
+    getMyTickets,
+    type TicketApi,
+} from "../../services/ticketingService";
+import {
+    getFanWalletSummary,
+    type BackendPaymentItem,
+    type WalletSummary,
+} from "../../services/fanPaymentService";
 import styles from "./FanDashboardPage.module.css";
 
 const summaryCards = [
@@ -165,6 +174,44 @@ const latestNews = [
     },
 ];
 
+const dashboardSponsorPlacements = [
+    {
+        id: "nile-special-matchday",
+        label: "Matchday Sponsor",
+        sponsor: "Nile Special",
+        headline: "Own the matchday moment",
+        description:
+            "Promote ticket bundles, fan offers and club experiences to rugby supporters.",
+        cta: "View Sponsor Hub",
+        to: "/sponsor/apply",
+        tag: "Rugby",
+    },
+    {
+        id: "kcb-club-membership",
+        label: "Club Partner",
+        sponsor: "KCB Bank",
+        headline: "Power club memberships",
+        description:
+            "Feature membership offers, supporter rewards and payment campaigns.",
+        cta: "Explore Memberships",
+        to: "/memberships",
+        tag: "Memberships",
+    },
+    {
+        id: "mtn-fan-engagement",
+        label: "Fan Engagement",
+        sponsor: "MTN Uganda",
+        headline: "Reach fans beyond the stadium",
+        description:
+            "Use digital placements for offers, ticket reminders and matchday activations.",
+        cta: "Open Tickets",
+        to: "/tickets",
+        tag: "Tickets",
+    },
+];
+
+
+
 interface DashboardMembership {
     id: string;
     club: string;
@@ -172,6 +219,7 @@ interface DashboardMembership {
     tier: string;
     validUntil: string;
     memberNumber: string;
+    qrCodeData: string;
     logo: string;
 }
 
@@ -230,6 +278,7 @@ function mapBackendDashboardMembership(
         tier: normalizeDashboardMembershipTier(tierSource),
         validUntil: formatDashboardMembershipDate(validUntil),
         memberNumber: activeCard?.card_number || `MEMBERSHIP-${subscription.id}`,
+        qrCodeData: activeCard?.qr_code_data || `membership:${subscription.id}`,
         logo: "",
     };
 }
@@ -250,18 +299,191 @@ function DashboardMembershipLogo({
     );
 }
 
-const activeTicket = {
-    competition: "Nile Special Rugby Premiership",
-    home: "KCB KOBS",
-    away: "Heathens RFC",
-    date: "Sat, 18 May 2025",
-    time: "4:00 PM",
-    venue: "Kings Park Stadium",
-    stand: "Regular Stand",
-    gate: "Gate B",
-    row: "Row 12",
-    seat: "Seat 23",
-};
+interface DashboardTicket {
+    id: string;
+    competition: string;
+    title: string;
+    home: string;
+    away: string;
+    date: string;
+    time: string;
+    venue: string;
+    ticketType: string;
+    status: string;
+    ticketCode: string;
+    orderId: string;
+}
+
+function parseDashboardTicketMatch(matchLabel: string) {
+    const cleanLabel = matchLabel || "Match Ticket";
+    const [matchTitle, rawDate] = cleanLabel.split(" - ");
+    const teams = matchTitle.split(/\s+vs\s+/i);
+
+    return {
+        title: matchTitle.trim() || cleanLabel,
+        rawDate: rawDate?.trim() || "",
+        home: teams[0]?.trim() || "Home Team",
+        away: teams[1]?.trim() || "Away Team",
+    };
+}
+
+function formatDashboardTicketDate(rawDate: string, fallback?: string | null) {
+    const dateValue = rawDate ? `${rawDate}T15:00:00` : fallback;
+
+    if (!dateValue) {
+        return {
+            date: "Date pending",
+            time: "Kickoff TBA",
+        };
+    }
+
+    const date = new Date(dateValue);
+
+    if (Number.isNaN(date.getTime())) {
+        return {
+            date: "Date pending",
+            time: "Kickoff TBA",
+        };
+    }
+
+    return {
+        date: date.toLocaleDateString("en-GB", {
+            weekday: "short",
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+        }),
+        time: rawDate
+            ? "Kickoff TBA"
+            : date.toLocaleTimeString("en-GB", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+              }),
+    };
+}
+
+function normalizeDashboardTicketStatus(status: string) {
+    const normalizedStatus = status.toUpperCase();
+
+    if (normalizedStatus === "ACTIVE" || normalizedStatus === "ISSUED") {
+        return "Confirmed";
+    }
+
+    if (normalizedStatus === "USED") {
+        return "Used";
+    }
+
+    if (normalizedStatus === "CANCELLED") {
+        return "Cancelled";
+    }
+
+    if (normalizedStatus === "REFUNDED") {
+        return "Refunded";
+    }
+
+    if (normalizedStatus === "EXPIRED") {
+        return "Expired";
+    }
+
+    return status || "Confirmed";
+}
+
+function shortenDashboardCode(value: string, startLength = 8, endLength = 6) {
+    if (!value) {
+        return "Pending";
+    }
+
+    if (value.length <= startLength + endLength + 3) {
+        return value;
+    }
+
+    return `${value.slice(0, startLength)}...${value.slice(-endLength)}`;
+}
+
+function mapBackendDashboardTicket(ticket: TicketApi): DashboardTicket {
+    const match = parseDashboardTicketMatch(ticket.match_label);
+    const dateParts = formatDashboardTicketDate(match.rawDate, ticket.issued_at);
+
+    return {
+        id: String(ticket.id),
+        competition: "League OS Ticketing",
+        title: match.title,
+        home: match.home,
+        away: match.away,
+        date: dateParts.date,
+        time: dateParts.time,
+        venue: "Venue to be confirmed",
+        ticketType: ticket.ticket_type_name || "Match Ticket",
+        status: normalizeDashboardTicketStatus(ticket.status),
+        ticketCode: shortenDashboardCode(ticket.ticket_code),
+        orderId: `#ORDER-${ticket.order}`,
+    };
+}
+
+function selectDashboardTicket(tickets: TicketApi[]) {
+    const upcomingStatuses = ["ACTIVE", "ISSUED"];
+    const upcomingTicket = tickets.find((ticket) =>
+        upcomingStatuses.includes(ticket.status.toUpperCase()),
+    );
+
+    return upcomingTicket ?? tickets[0] ?? null;
+}
+
+function formatDashboardCurrency(amount: string | number, currency = "UGX") {
+    const numericAmount = Number(amount);
+
+    if (Number.isNaN(numericAmount)) {
+        return `${currency} ${amount}`;
+    }
+
+    return new Intl.NumberFormat("en-UG", {
+        style: "currency",
+        currency,
+        maximumFractionDigits: 0,
+    }).format(numericAmount);
+}
+
+function formatDashboardPaymentDate(value?: string | null) {
+    if (!value) {
+        return "Date pending";
+    }
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+        return "Date pending";
+    }
+
+    return date.toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+    });
+}
+
+function normalizeDashboardPaymentStatus(status: string) {
+    const normalizedStatus = status.toUpperCase();
+
+    if (normalizedStatus === "COMPLETED" || normalizedStatus === "SUCCESSFUL") {
+        return "successful";
+    }
+
+    if (normalizedStatus === "PENDING") {
+        return "pending";
+    }
+
+    if (normalizedStatus === "FAILED") {
+        return "failed";
+    }
+
+    if (normalizedStatus === "REFUNDED") {
+        return "refunded";
+    }
+
+    return "pending";
+}
+
+
 
 function FanDashboardPage() {
     const { currentUser } = useCurrentUser();
@@ -269,9 +491,16 @@ function FanDashboardPage() {
     const navigate = useNavigate();
     const [isCustomizeOpen, setIsCustomizeOpen] = useState(false);
     const [isCompactView, setIsCompactView] = useState(false);
+    const [sponsorPage, setSponsorPage] = useState(0);
     const [dashboardMemberships, setDashboardMemberships] = useState<DashboardMembership[]>([]);
     const [isLoadingMemberships, setIsLoadingMemberships] = useState(true);
     const [membershipError, setMembershipError] = useState("");
+    const [dashboardTicket, setDashboardTicket] = useState<DashboardTicket | null>(null);
+    const [isLoadingTickets, setIsLoadingTickets] = useState(true);
+    const [ticketError, setTicketError] = useState("");
+    const [walletSummary, setWalletSummary] = useState<WalletSummary | null>(null);
+    const [isLoadingPayments, setIsLoadingPayments] = useState(true);
+    const [paymentError, setPaymentError] = useState("");
 
     const loadDashboardMemberships = useCallback(async () => {
         setIsLoadingMemberships(true);
@@ -304,11 +533,62 @@ function FanDashboardPage() {
         void loadDashboardMemberships();
     }, [loadDashboardMemberships]);
 
+    const loadDashboardTickets = useCallback(async () => {
+        setIsLoadingTickets(true);
+        setTicketError("");
+
+        try {
+            const tickets = await getMyTickets();
+            const selectedTicket = selectDashboardTicket(tickets);
+
+            setDashboardTicket(
+                selectedTicket ? mapBackendDashboardTicket(selectedTicket) : null,
+            );
+        } catch {
+            setDashboardTicket(null);
+            setTicketError(
+                "We could not load your backend tickets. Confirm the backend is running and you are logged in.",
+            );
+        } finally {
+            setIsLoadingTickets(false);
+        }
+    }, []);
+
+    const loadDashboardPayments = useCallback(async () => {
+        setIsLoadingPayments(true);
+        setPaymentError("");
+
+        try {
+            const summary = await getFanWalletSummary(5);
+            setWalletSummary(summary);
+        } catch {
+            setWalletSummary(null);
+            setPaymentError(
+                "We could not load your payment summary. Confirm the backend is running and you are logged in.",
+            );
+        } finally {
+            setIsLoadingPayments(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        void loadDashboardTickets();
+        void loadDashboardPayments();
+    }, [loadDashboardPayments, loadDashboardTickets]);
+
     const matchSlots = Array.from({ length: 4 }, (_, index) => upcomingMatches[index] ?? null);
     const clubSlots = Array.from({ length: 4 }, (_, index) => followedClubs[index] ?? null);
-    const newsSlots = Array.from({ length: 4 }, (_, index) => latestNews[index] ?? null);
+    const newsSlots = Array.from({ length: 3 }, (_, index) => latestNews[index] ?? null);
     const membershipSlots =
         dashboardMemberships.length > 0 ? dashboardMemberships.slice(0, 2) : [null];
+
+    const recentDashboardPayments = walletSummary?.recent_payments ?? [];
+    const walletCurrency = walletSummary?.currency ?? "UGX";
+    const walletTotalSpent = walletSummary
+        ? formatDashboardCurrency(walletSummary.total_spent, walletCurrency)
+        : formatDashboardCurrency(0, walletCurrency);
+    const activeSponsorPlacement =
+        dashboardSponsorPlacements[sponsorPage % dashboardSponsorPlacements.length];
 
     function handleLogout() {
         logout();
@@ -590,7 +870,7 @@ function FanDashboardPage() {
                                           className={`${styles.membershipItem} ${styles.membershipPassCard}`}
                                           key={membership.id}
                                       >
-                                          <div className={styles.membershipPassTop}>
+                                          <div className={styles.membershipPassHeader}>
                                               <DashboardMembershipLogo
                                                   logo={membership.logo}
                                                   club={membership.club}
@@ -603,26 +883,86 @@ function FanDashboardPage() {
                                               </div>
 
                                               <strong className={styles.membershipStatusPill}>
+                                                  <span aria-hidden="true" />
                                                   Active
                                               </strong>
                                           </div>
 
-                                          <div className={styles.membershipPassMeta}>
-                                              <span>
-                                                  Valid Until
-                                                  <strong>{membership.validUntil}</strong>
-                                              </span>
+                                          <div className={styles.membershipPassDivider} />
 
-                                              <span>
-                                                  Member No.
-                                                  <strong>{membership.memberNumber}</strong>
-                                              </span>
+                                          <div className={styles.membershipPassBody}>
+                                              <div className={styles.membershipInfoStack}>
+                                                  <div className={styles.membershipInfoRow}>
+                                                      <span className={styles.membershipInfoIcon}>
+                                                          <CalendarDays
+                                                              size={18}
+                                                              strokeWidth={2.4}
+                                                              aria-hidden="true"
+                                                          />
+                                                      </span>
+
+                                                      <div>
+                                                          <small>Valid Until</small>
+                                                          <strong>{membership.validUntil}</strong>
+                                                      </div>
+                                                  </div>
+
+                                                  <div className={styles.membershipInfoRow}>
+                                                      <span className={styles.membershipInfoIcon}>
+                                                          <Ticket
+                                                              size={18}
+                                                              strokeWidth={2.4}
+                                                              aria-hidden="true"
+                                                          />
+                                                      </span>
+
+                                                      <div>
+                                                          <small>Member No.</small>
+                                                          <strong>{membership.memberNumber}</strong>
+                                                      </div>
+                                                  </div>
+
+                                                  <div className={styles.membershipTierRow}>
+                                                      <Crown
+                                                          size={22}
+                                                          strokeWidth={2.4}
+                                                          aria-hidden="true"
+                                                      />
+
+                                                      <div>
+                                                          <strong>{membership.tier}</strong>
+                                                          <small>Club Membership</small>
+                                                      </div>
+                                                  </div>
+                                              </div>
+
+                                              <div
+                                                  className={styles.membershipQrPanel}
+                                                  title={membership.qrCodeData}
+                                              >
+                                                  <div className={styles.membershipQrBox}>
+                                                      <QrCode
+                                                          size={74}
+                                                          strokeWidth={2.45}
+                                                          aria-hidden="true"
+                                                      />
+                                                  </div>
+
+                                                  <span>Scan to verify</span>
+                                              </div>
                                           </div>
 
-                                          <div className={styles.membershipPassBottom}>
-                                              <p>{membership.sport}</p>
-                                              <Link to="/dashboard/memberships">View Digital Card</Link>
-                                          </div>
+                                          <Link
+                                              to="/dashboard/memberships"
+                                              className={styles.membershipPassButton}
+                                          >
+                                              View Digital Card
+                                              <Ticket
+                                                  size={18}
+                                                  strokeWidth={2.4}
+                                                  aria-hidden="true"
+                                              />
+                                          </Link>
                                       </article>
                                   ) : (
                                       <article
@@ -656,32 +996,74 @@ function FanDashboardPage() {
                         <Link to="/dashboard/tickets">View All</Link>
                     </div>
 
-                    {activeTicket ? (
-                        <div className={styles.ticketContent}>
+                    {isLoadingTickets ? (
+                        <DashboardEmptyState
+                            icon="🎟"
+                            title="Loading tickets"
+                            message="Checking your backend ticket wallet."
+                            actionLabel="Open Tickets"
+                            actionTo="/dashboard/tickets"
+                            compact
+                        />
+                    ) : null}
+
+                    {!isLoadingTickets && ticketError ? (
+                        <div className={styles.dashboardSyncCard}>
                             <div>
-                                <p>{activeTicket.competition}</p>
-                                <h3>
-                                    {activeTicket.home}
-                                    <span>vs</span>
-                                    {activeTicket.away}
-                                </h3>
-                                <p>
-                                    {activeTicket.date} • {activeTicket.time}
-                                </p>
-                                <p>{activeTicket.venue}</p>
+                                <h3>Ticket sync issue</h3>
+                                <p>{ticketError}</p>
                             </div>
 
-                            <div className={styles.qrTicket}>
-                                <span>{activeTicket.stand}</span>
-                                <strong>{activeTicket.gate}</strong>
-                                <p>{activeTicket.row}</p>
-                                <p>{activeTicket.seat}</p>
-                                <div className={styles.fakeQr}>
-                                    <QrCode size={68} strokeWidth={2.5} aria-hidden="true" />
+                            <button type="button" onClick={loadDashboardTickets}>
+                                Retry
+                            </button>
+                        </div>
+                    ) : null}
+
+                    {!isLoadingTickets && !ticketError && dashboardTicket ? (
+                        <div className={styles.ticketDashboardCard}>
+                            <div className={styles.ticketDashboardInfo}>
+                                <span>{dashboardTicket.competition}</span>
+                                <h3>
+                                    {dashboardTicket.home}
+                                    <small>vs</small>
+                                    {dashboardTicket.away}
+                                </h3>
+
+                                <dl>
+                                    <div>
+                                        <dt>Date</dt>
+                                        <dd>{dashboardTicket.date}</dd>
+                                    </div>
+
+                                    <div>
+                                        <dt>Time</dt>
+                                        <dd>{dashboardTicket.time}</dd>
+                                    </div>
+
+                                    <div>
+                                        <dt>Type</dt>
+                                        <dd>{dashboardTicket.ticketType}</dd>
+                                    </div>
+                                </dl>
+                            </div>
+
+                            <div className={styles.ticketDashboardPass}>
+                                <span>{dashboardTicket.status}</span>
+                                <strong>{dashboardTicket.ticketCode}</strong>
+
+                                <div className={styles.ticketDashboardQr}>
+                                    <QrCode size={70} strokeWidth={2.4} aria-hidden="true" />
                                 </div>
+
+                                <Link to={`/dashboard/tickets/${dashboardTicket.id}`}>
+                                    Open QR
+                                </Link>
                             </div>
                         </div>
-                    ) : (
+                    ) : null}
+
+                    {!isLoadingTickets && !ticketError && !dashboardTicket ? (
                         <DashboardEmptyState
                             icon="🎟"
                             title="No active tickets"
@@ -690,11 +1072,212 @@ function FanDashboardPage() {
                             actionTo="/tickets"
                             compact
                         />
-                    )}
+                    ) : null}
 
                     <Link to="/dashboard/tickets" className={styles.panelFooterLink}>
                         View All Tickets →
                     </Link>
+                </section>
+
+                <section className={`${styles.panel} ${styles.dashboardPaymentsPanel}`}>
+                    <div className={styles.panelHeader}>
+                        <h2>Payments</h2>
+                        <Link to="/profile/payments">View All</Link>
+                    </div>
+
+                    {isLoadingPayments ? (
+                        <DashboardEmptyState
+                            icon="💳"
+                            title="Loading payments"
+                            message="Checking your backend payment history."
+                            actionLabel="Open Payments"
+                            actionTo="/profile/payments"
+                            compact
+                        />
+                    ) : null}
+
+                    {!isLoadingPayments && paymentError ? (
+                        <div className={styles.dashboardSyncCard}>
+                            <div>
+                                <h3>Payment sync issue</h3>
+                                <p>{paymentError}</p>
+                            </div>
+
+                            <button type="button" onClick={loadDashboardPayments}>
+                                Retry
+                            </button>
+                        </div>
+                    ) : null}
+
+                    {!isLoadingPayments && !paymentError && walletSummary ? (
+                        <>
+                            <div className={styles.walletSummaryCard}>
+                                <div>
+                                    <span>Total Paid</span>
+                                    <strong>{walletTotalSpent}</strong>
+                                    <p>{walletSummary.balance_note}</p>
+                                </div>
+
+                                <dl>
+                                    <div>
+                                        <dt>Successful</dt>
+                                        <dd>{walletSummary.successful_payments_count}</dd>
+                                    </div>
+
+                                    <div>
+                                        <dt>Pending</dt>
+                                        <dd>{walletSummary.pending_payments_count}</dd>
+                                    </div>
+
+                                    <div>
+                                        <dt>Failed</dt>
+                                        <dd>{walletSummary.failed_payments_count}</dd>
+                                    </div>
+                                </dl>
+                            </div>
+
+                            {recentDashboardPayments.length > 0 ? (
+                                <div className={styles.dashboardPaymentList}>
+                                    {recentDashboardPayments
+                                        .slice(0, 2)
+                                        .map((payment: BackendPaymentItem) => (
+                                            <article
+                                                className={styles.dashboardPaymentItem}
+                                                key={`${payment.source}-${payment.id}-${payment.reference}`}
+                                            >
+                                                <div>
+                                                    <h3>
+                                                        {payment.payment_type_label ||
+                                                            payment.payment_type}
+                                                    </h3>
+                                                    <p>
+                                                        {payment.description ||
+                                                            payment.reference ||
+                                                            "Payment record"}
+                                                    </p>
+                                                    <small>
+                                                        {formatDashboardPaymentDate(
+                                                            payment.created_at,
+                                                        )}
+                                                    </small>
+                                                </div>
+
+                                                <span>
+                                                    <strong>
+                                                        {formatDashboardCurrency(
+                                                            payment.amount,
+                                                            payment.currency,
+                                                        )}
+                                                    </strong>
+                                                    <em
+                                                        className={
+                                                            styles.dashboardPaymentStatus
+                                                        }
+                                                        data-status={normalizeDashboardPaymentStatus(
+                                                            payment.status,
+                                                        )}
+                                                    >
+                                                        {payment.status_label ||
+                                                            payment.status}
+                                                    </em>
+                                                </span>
+                                            </article>
+                                        ))}
+                                </div>
+                            ) : (
+                                <DashboardEmptyState
+                                    icon="💳"
+                                    title="No payments yet"
+                                    message="Ticket, membership and sponsorship payments will appear here."
+                                    actionLabel="Open Payments"
+                                    actionTo="/profile/payments"
+                                    compact
+                                />
+                            )}
+                        </>
+                    ) : null}
+
+                    {!isLoadingPayments && !paymentError && !walletSummary ? (
+                        <DashboardEmptyState
+                            icon="💳"
+                            title="No payment summary"
+                            message="Your payment summary will appear after your first payment."
+                            actionLabel="Open Payments"
+                            actionTo="/profile/payments"
+                            compact
+                        />
+                    ) : null}
+
+                    <Link to="/profile/payments" className={styles.panelFooterLink}>
+                        Open Payment Center →
+                    </Link>
+                </section>
+
+                <section className={`${styles.panel} ${styles.sponsorSpotlightPanel}`}>
+                    <div className={styles.panelHeader}>
+                        <h2>Sponsor Spotlight</h2>
+                        <Link to="/sponsor/apply">Advertise</Link>
+                    </div>
+
+                    <article className={styles.sponsorSpotlightCard}>
+                        <div className={styles.sponsorTopLine}>
+                            <span>{activeSponsorPlacement.label}</span>
+                            <strong>{activeSponsorPlacement.tag}</strong>
+                        </div>
+
+                        <div className={styles.sponsorLogoMark}>
+                            {activeSponsorPlacement.sponsor
+                                .split(/\s+/)
+                                .slice(0, 2)
+                                .map((part) => part[0])
+                                .join("")}
+                        </div>
+
+                        <div>
+                            <p>{activeSponsorPlacement.sponsor}</p>
+                            <h3>{activeSponsorPlacement.headline}</h3>
+                            <small>{activeSponsorPlacement.description}</small>
+                        </div>
+
+                        <div className={styles.sponsorActions}>
+                            <Link to={activeSponsorPlacement.to}>
+                                {activeSponsorPlacement.cta}
+                            </Link>
+
+                            <div className={styles.sponsorPager}>
+                                <button
+                                    type="button"
+                                    aria-label="Previous sponsor placement"
+                                    onClick={() =>
+                                        setSponsorPage((currentPage) =>
+                                            currentPage === 0
+                                                ? dashboardSponsorPlacements.length - 1
+                                                : currentPage - 1,
+                                        )
+                                    }
+                                >
+                                    ‹
+                                </button>
+
+                                <span>
+                                    {sponsorPage + 1}/{dashboardSponsorPlacements.length}
+                                </span>
+
+                                <button
+                                    type="button"
+                                    aria-label="Next sponsor placement"
+                                    onClick={() =>
+                                        setSponsorPage((currentPage) =>
+                                            (currentPage + 1) %
+                                            dashboardSponsorPlacements.length,
+                                        )
+                                    }
+                                >
+                                    ›
+                                </button>
+                            </div>
+                        </div>
+                    </article>
                 </section>
             </div>
         </section>
