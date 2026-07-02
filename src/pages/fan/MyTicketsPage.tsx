@@ -135,6 +135,61 @@ function formatDateParts(value?: string | null) {
     };
 }
 
+function buildTeamInitials(name: string) {
+    return name
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join("") || "LO";
+}
+
+function parseBackendMatchLabel(matchLabel: string) {
+    const cleanLabel = matchLabel || "Match Ticket";
+    const [matchTitle, matchDate] = cleanLabel.split(" - ");
+    const teams = matchTitle.split(/\s+vs\s+/i);
+
+    return {
+        title: matchTitle.trim() || cleanLabel,
+        date: matchDate?.trim() || "",
+        homeTeam: teams[0]?.trim() || "Home Team",
+        awayTeam: teams[1]?.trim() || "Away Team",
+    };
+}
+
+function formatMatchDateFromLabel(matchDate: string, fallback?: string | null) {
+    if (matchDate) {
+        const date = new Date(`${matchDate}T15:00:00`);
+
+        if (!Number.isNaN(date.getTime())) {
+            return {
+                day: new Intl.DateTimeFormat("en-GB", { day: "2-digit" }).format(date),
+                month: new Intl.DateTimeFormat("en-GB", { month: "short" }).format(date),
+                full: `${new Intl.DateTimeFormat("en-GB", {
+                    weekday: "short",
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric",
+                }).format(date)} • Kickoff TBA`,
+            };
+        }
+    }
+
+    return formatDateParts(fallback);
+}
+
+function shortenTicketCode(value: string) {
+    if (!value) {
+        return "Pending";
+    }
+
+    if (value.length <= 16) {
+        return value;
+    }
+
+    return `${value.slice(0, 8)}...${value.slice(-6)}`;
+}
+
 function mapBackendTicketStatus(status: string): TicketStatus {
     const normalizedStatus = status.toUpperCase();
 
@@ -150,21 +205,22 @@ function mapBackendTicketStatus(status: string): TicketStatus {
 }
 
 function mapBackendTicket(ticket: TicketApi): FanTicket {
+    const match = parseBackendMatchLabel(ticket.match_label);
+    const matchDate = formatMatchDateFromLabel(match.date, ticket.issued_at);
     const issuedDate = formatDateParts(ticket.issued_at);
     const status = mapBackendTicketStatus(ticket.status);
-    const title = ticket.match_label || ticket.ticket_type_name || "Match Ticket";
 
     return {
         id: String(ticket.id),
         competition: "League OS Ticketing",
-        dateDay: issuedDate.day,
-        dateMonth: issuedDate.month,
-        title,
+        dateDay: matchDate.day,
+        dateMonth: matchDate.month,
+        title: match.title,
         homeLogo: "",
         awayLogo: "",
-        homeTeam: title.split(" vs ")[0] || "Home Team",
-        awayTeam: title.split(" vs ")[1] || "Away Team",
-        dateTime: issuedDate.full,
+        homeTeam: match.homeTeam,
+        awayTeam: match.awayTeam,
+        dateTime: matchDate.full,
         venue: "Venue to be confirmed",
         ticketType: ticket.ticket_type_name || "Match Ticket",
         quantity: 1,
@@ -172,7 +228,7 @@ function mapBackendTicket(ticket: TicketApi): FanTicket {
         gate: "Gate pending",
         price: "See receipt",
         status,
-        orderId: `#TICKET-${ticket.ticket_code}`,
+        orderId: `#${shortenTicketCode(ticket.ticket_code)}`,
         bookedOn: issuedDate.full,
     };
 }
@@ -215,99 +271,118 @@ function EmptyState({
     );
 }
 
+function TeamBadge({
+    name,
+    logo,
+}: {
+    name: string;
+    logo: string;
+}) {
+    return (
+        <span className={styles.teamBadge}>
+            {logo ? (
+                <img src={logo} alt="" aria-hidden="true" />
+            ) : (
+                <span className={styles.teamInitials}>{buildTeamInitials(name)}</span>
+            )}
+            <strong>{name}</strong>
+        </span>
+    );
+}
+
 function TicketCard({ ticket, isPast = false }: { ticket: FanTicket; isPast?: boolean }) {
     return (
-        <article className={styles.ticketCard}>
+        <article
+            className={`${styles.ticketCard} ${styles.backendTicketCard} ${
+                isPast ? styles.pastTicketCard : ""
+            }`}
+        >
             <div className={styles.ticketDate}>
                 <span>{ticket.dateDay}</span>
                 <strong>{ticket.dateMonth}</strong>
             </div>
 
-            <div className={styles.ticketMain}>
-                <span className={styles.competition}>{ticket.competition}</span>
-                <h3>{ticket.title}</h3>
+            <div className={styles.backendTicketContent}>
+                <div className={styles.backendTicketHeader}>
+                    <div>
+                        <span className={styles.competition}>{ticket.competition}</span>
+                        <h3>{ticket.title}</h3>
+                    </div>
 
-                <div className={styles.teamsRow}>
-                    <img src={ticket.homeLogo} alt="" aria-hidden="true" />
-                    <strong>{ticket.homeTeam}</strong>
-                    <span>vs</span>
-                    <img src={ticket.awayLogo} alt="" aria-hidden="true" />
-                    <strong>{ticket.awayTeam}</strong>
+                    <StatusBadge status={ticket.status} />
                 </div>
 
-                <p>
-                    <CalendarDays size={15} strokeWidth={2.2} aria-hidden="true" />
-                    {ticket.dateTime}
-                </p>
+                <div className={styles.backendTeamsRow}>
+                    <TeamBadge name={ticket.homeTeam} logo={ticket.homeLogo} />
+                    <span className={styles.versusBadge}>vs</span>
+                    <TeamBadge name={ticket.awayTeam} logo={ticket.awayLogo} />
+                </div>
 
-                <p>
-                    <MapPin size={15} strokeWidth={2.2} aria-hidden="true" />
-                    {ticket.venue}
-                </p>
+                <div className={styles.backendMatchMeta}>
+                    <span>
+                        <CalendarDays size={15} strokeWidth={2.3} aria-hidden="true" />
+                        {ticket.dateTime}
+                    </span>
+                    <span>
+                        <MapPin size={15} strokeWidth={2.3} aria-hidden="true" />
+                        {ticket.venue}
+                    </span>
+                </div>
+
+                <dl className={styles.backendTicketDetails}>
+                    <div>
+                        <dt>Ticket Type</dt>
+                        <dd>{ticket.ticketType}</dd>
+                    </div>
+
+                    <div>
+                        <dt>Quantity</dt>
+                        <dd>{ticket.quantity}</dd>
+                    </div>
+
+                    <div>
+                        <dt>Access</dt>
+                        <dd>{ticket.gate}</dd>
+                    </div>
+
+                    <div>
+                        <dt>Seat</dt>
+                        <dd>{ticket.seat}</dd>
+                    </div>
+
+                    <div>
+                        <dt>Price</dt>
+                        <dd>{ticket.price}</dd>
+                    </div>
+
+                    <div>
+                        <dt>Ticket Code</dt>
+                        <dd>{ticket.orderId}</dd>
+                    </div>
+
+                    <div>
+                        <dt>Booked On</dt>
+                        <dd>{ticket.bookedOn}</dd>
+                    </div>
+                </dl>
             </div>
 
-            <dl className={styles.ticketMeta}>
-                <div>
-                    <dt>Type</dt>
-                    <dd>{ticket.ticketType}</dd>
-                </div>
-
-                <div>
-                    <dt>Qty</dt>
-                    <dd>{ticket.quantity}</dd>
-                </div>
-
-                <div>
-                    <dt>Gate</dt>
-                    <dd>{ticket.gate}</dd>
-                </div>
-
-                <div>
-                    <dt>Seat</dt>
-                    <dd>{ticket.seat}</dd>
-                </div>
-
-                <div>
-                    <dt>Price</dt>
-                    <dd>{ticket.price}</dd>
-                </div>
-
-                <div>
-                    <dt>Status</dt>
-                    <dd>
-                        <StatusBadge status={ticket.status} />
-                    </dd>
-                </div>
-
-                <div>
-                    <dt>Order ID</dt>
-                    <dd>{ticket.orderId}</dd>
-                </div>
-
-                <div>
-                    <dt>Booked On</dt>
-                    <dd>{ticket.bookedOn}</dd>
-                </div>
-            </dl>
-
-            <div className={styles.ticketActions}>
-                <Link to={`/dashboard/tickets/${ticket.id}`} className={styles.primaryAction}>
-                    <QrCode size={16} strokeWidth={2.2} aria-hidden="true" />
-                    {isPast ? "View Details" : "Open QR"}
+            <div className={styles.backendTicketActions}>
+                <Link to={`/dashboard/tickets/${ticket.id}`} className={styles.openQrButton}>
+                    <QrCode size={16} strokeWidth={2.4} aria-hidden="true" />
+                    Open QR
                 </Link>
 
-                {!isPast ? (
-                    <>
-                        <button type="button">
-                            <Download size={16} strokeWidth={2.2} aria-hidden="true" />
-                            Download
-                        </button>
+                <button type="button" className={styles.downloadButton}>
+                    <Download size={16} strokeWidth={2.4} aria-hidden="true" />
+                    Download
+                </button>
 
-                        <button type="button">
-                            <Share2 size={16} strokeWidth={2.2} aria-hidden="true" />
-                            Transfer
-                        </button>
-                    </>
+                {!isPast ? (
+                    <button type="button" className={styles.transferButton}>
+                        <Share2 size={16} strokeWidth={2.4} aria-hidden="true" />
+                        Transfer
+                    </button>
                 ) : null}
             </div>
         </article>
