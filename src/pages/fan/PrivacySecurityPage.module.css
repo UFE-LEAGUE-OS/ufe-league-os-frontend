@@ -1284,3 +1284,15 @@
 .supportCard > span svg {
     filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.28));
 }
+
+/* Privacy autosave and backend sync polish */
+
+.primaryHeaderAction:disabled {
+    cursor: not-allowed;
+    opacity: 0.56;
+    transform: none;
+}
+
+.saveMessage svg {
+    color: #22c55e;
+}

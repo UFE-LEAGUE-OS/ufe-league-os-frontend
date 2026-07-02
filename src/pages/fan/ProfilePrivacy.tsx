@@ -19,8 +19,14 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { FormEvent } from "react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import {
+    getInterestPreferences,
+    updateInterestPreferences,
+    type BackendProfileVisibility,
+    type InterestPreferencePayload,
+} from "../../services/privacyPreferenceService";
 import styles from "./PrivacySecurityPage.module.css";
 
 interface SecurityStat {
@@ -142,6 +148,69 @@ const loginEvents: LoginEvent[] = [
     },
 ];
 
+const PRIVACY_SETTINGS_STORAGE_KEY = "leagueos:fan-privacy-security-settings";
+
+interface PrivacyLocalSettings {
+    twoFactorEnabled: boolean;
+    loginAlertsEnabled: boolean;
+    trustedDevicesEnabled: boolean;
+    profileVisible: boolean;
+    profileVisibility: string;
+    showFollowedClubs: boolean;
+    showActivity: boolean;
+    allowSponsorOffers: boolean;
+    allowPersonalization: boolean;
+}
+
+function readLocalPrivacySettings(): PrivacyLocalSettings | null {
+    try {
+        const rawValue = window.localStorage.getItem(PRIVACY_SETTINGS_STORAGE_KEY);
+
+        if (!rawValue) {
+            return null;
+        }
+
+        return JSON.parse(rawValue) as PrivacyLocalSettings;
+    } catch {
+        return null;
+    }
+}
+
+function writeLocalPrivacySettings(settings: PrivacyLocalSettings) {
+    try {
+        window.localStorage.setItem(
+            PRIVACY_SETTINGS_STORAGE_KEY,
+            JSON.stringify(settings),
+        );
+    } catch {
+        // Local storage may fail in private browsing. Backend save can still work.
+    }
+}
+
+function visibilityLabelToBackend(value: string): BackendProfileVisibility {
+    if (value === "Public") {
+        return "PUBLIC";
+    }
+
+    if (value === "Private") {
+        return "PRIVATE";
+    }
+
+    return "FOLLOWERS_ONLY";
+}
+
+function backendVisibilityToLabel(value: BackendProfileVisibility): string {
+    if (value === "PUBLIC") {
+        return "Public";
+    }
+
+    if (value === "PRIVATE") {
+        return "Private";
+    }
+
+    return "Followers";
+}
+
 function getStatusClass(status: SecurityChecklistItem["status"]) {
     if (status === "Complete") {
         return styles.completeStatus;
@@ -167,6 +236,9 @@ function PrivacySecurityPage() {
     const [sessions, setSessions] = useState<SessionItem[]>(initialSessions);
     const [showPasswordFields, setShowPasswordFields] = useState(false);
     const [saveMessage, setSaveMessage] = useState("");
+    const [isLoadingPrivacy, setIsLoadingPrivacy] = useState(true);
+    const [isSavingPrivacy, setIsSavingPrivacy] = useState(false);
+    const [hasLoadedPrivacy, setHasLoadedPrivacy] = useState(false);
 
     const securityScore = useMemo(() => {
         let score = 70;
@@ -178,6 +250,53 @@ function PrivacySecurityPage() {
 
         return Math.min(score, 100);
     }, [loginAlertsEnabled, sessions.length, trustedDevicesEnabled, twoFactorEnabled]);
+
+    const privacySnapshot = useMemo(
+        () => ({
+            twoFactorEnabled,
+            loginAlertsEnabled,
+            trustedDevicesEnabled,
+            profileVisible,
+            profileVisibility,
+            showFollowedClubs,
+            showActivity,
+            allowSponsorOffers,
+            allowPersonalization,
+        }),
+        [
+            allowPersonalization,
+            allowSponsorOffers,
+            loginAlertsEnabled,
+            profileVisibility,
+            profileVisible,
+            showActivity,
+            showFollowedClubs,
+            trustedDevicesEnabled,
+            twoFactorEnabled,
+        ],
+    );
+
+    const backendPrivacyPayload = useMemo<InterestPreferencePayload>(
+        () => ({
+            profile_visibility: profileVisible
+                ? visibilityLabelToBackend(profileVisibility)
+                : "PRIVATE",
+            show_followed_teams: showFollowedClubs,
+            show_attended_matches: showActivity,
+            activity_visibility: showActivity ? "FOLLOWERS_ONLY" : "PRIVATE",
+            interested_in_highlights: allowPersonalization,
+            interested_in_tickets: allowPersonalization,
+            interested_in_merchandise: allowSponsorOffers,
+        }),
+        [
+            allowPersonalization,
+            allowSponsorOffers,
+            profileVisibility,
+            profileVisible,
+            showActivity,
+            showFollowedClubs,
+        ],
+    );
 
     const securityStats: SecurityStat[] = [
         {
@@ -210,6 +329,122 @@ function PrivacySecurityPage() {
         },
     ];
 
+    function applyPrivacySettings(settings: PrivacyLocalSettings) {
+        setTwoFactorEnabled(settings.twoFactorEnabled);
+        setLoginAlertsEnabled(settings.loginAlertsEnabled);
+        setTrustedDevicesEnabled(settings.trustedDevicesEnabled);
+        setProfileVisible(settings.profileVisible);
+        setProfileVisibility(settings.profileVisibility);
+        setShowFollowedClubs(settings.showFollowedClubs);
+        setShowActivity(settings.showActivity);
+        setAllowSponsorOffers(settings.allowSponsorOffers);
+        setAllowPersonalization(settings.allowPersonalization);
+    }
+
+    async function loadPrivacySettings() {
+        setIsLoadingPrivacy(true);
+
+        const localSettings = readLocalPrivacySettings();
+
+        if (localSettings) {
+            applyPrivacySettings(localSettings);
+
+            try {
+                await updateInterestPreferences({
+                    profile_visibility: localSettings.profileVisible
+                        ? visibilityLabelToBackend(localSettings.profileVisibility)
+                        : "PRIVATE",
+                    show_followed_teams: localSettings.showFollowedClubs,
+                    show_attended_matches: localSettings.showActivity,
+                    activity_visibility: localSettings.showActivity
+                        ? "FOLLOWERS_ONLY"
+                        : "PRIVATE",
+                    interested_in_highlights: localSettings.allowPersonalization,
+                    interested_in_tickets: localSettings.allowPersonalization,
+                    interested_in_merchandise: localSettings.allowSponsorOffers,
+                });
+            } catch {
+                // Browser settings are still available even if backend sync fails.
+            } finally {
+                setIsLoadingPrivacy(false);
+                setHasLoadedPrivacy(true);
+            }
+
+            return;
+        }
+
+        try {
+            const backendPreferences = await getInterestPreferences();
+
+            const backendSettings: PrivacyLocalSettings = {
+                twoFactorEnabled,
+                loginAlertsEnabled,
+                trustedDevicesEnabled,
+                profileVisible: backendPreferences.profile_visibility !== "PRIVATE",
+                profileVisibility: backendVisibilityToLabel(
+                    backendPreferences.profile_visibility,
+                ),
+                showFollowedClubs: backendPreferences.show_followed_teams,
+                showActivity: backendPreferences.show_attended_matches,
+                allowSponsorOffers: backendPreferences.interested_in_merchandise,
+                allowPersonalization:
+                    backendPreferences.interested_in_highlights ||
+                    backendPreferences.interested_in_tickets,
+            };
+
+            applyPrivacySettings(backendSettings);
+            writeLocalPrivacySettings(backendSettings);
+        } catch {
+            setSaveMessage(
+                "Backend privacy preferences could not be loaded. Changes will be saved in this browser until backend sync is available.",
+            );
+        } finally {
+            setIsLoadingPrivacy(false);
+            setHasLoadedPrivacy(true);
+        }
+    }
+
+    useEffect(() => {
+        const timeoutId = window.setTimeout(() => {
+            void loadPrivacySettings();
+        }, 0);
+
+        return () => {
+            window.clearTimeout(timeoutId);
+        };
+        // Load once on mount. Local settings take priority over backend defaults.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    useEffect(() => {
+        if (!hasLoadedPrivacy) {
+            return undefined;
+        }
+
+        writeLocalPrivacySettings(privacySnapshot);
+
+        const timeoutId = window.setTimeout(() => {
+            setIsSavingPrivacy(true);
+
+            updateInterestPreferences(backendPrivacyPayload)
+                .then(() => {
+                    setSaveMessage("Privacy preferences autosaved.");
+                })
+                .catch(() => {
+                    setSaveMessage(
+                        "Privacy preferences saved in this browser. Backend sync is unavailable.",
+                    );
+                })
+                .finally(() => {
+                    setIsSavingPrivacy(false);
+                });
+        }, 700);
+
+        return () => {
+            window.clearTimeout(timeoutId);
+        };
+    }, [backendPrivacyPayload, hasLoadedPrivacy, privacySnapshot]);
+
     function removeSession(sessionId: string) {
         setSessions((currentSessions) =>
             currentSessions.filter((session) => session.id !== sessionId),
@@ -223,8 +458,20 @@ function PrivacySecurityPage() {
         setSaveMessage("Password change request prepared locally for now.");
     }
 
-    function handleSavePrivacy() {
-        setSaveMessage("Privacy and security settings saved locally for now.");
+    async function handleSavePrivacy() {
+        setIsSavingPrivacy(true);
+        writeLocalPrivacySettings(privacySnapshot);
+
+        try {
+            await updateInterestPreferences(backendPrivacyPayload);
+            setSaveMessage("Privacy preferences saved to the backend.");
+        } catch {
+            setSaveMessage(
+                "Privacy preferences saved in this browser. Backend sync is unavailable.",
+            );
+        } finally {
+            setIsSavingPrivacy(false);
+        }
     }
 
     function handleDataExport() {
@@ -246,10 +493,11 @@ function PrivacySecurityPage() {
                 <button
                     type="button"
                     className={styles.primaryHeaderAction}
-                    onClick={handleSavePrivacy}
+                    onClick={() => void handleSavePrivacy()}
+                    disabled={isSavingPrivacy || isLoadingPrivacy}
                 >
                     <Save size={18} strokeWidth={2.4} aria-hidden="true" />
-                    Save Settings
+                    {isSavingPrivacy ? "Saving..." : "Save Now"}
                 </button>
             </header>
 
