@@ -56,6 +56,7 @@ interface SupportRequest {
     status: "Open" | "Pending" | "Resolved";
     date: string;
     category: string;
+    message?: string;
 }
 
 const categories: SupportCategory[] = [
@@ -134,7 +135,7 @@ const faqItems: FaqItem[] = [
     },
 ];
 
-const recentRequests: SupportRequest[] = [
+const defaultSupportRequests: SupportRequest[] = [
     {
         id: "LOS-SUP-0018",
         title: "Receipt download request",
@@ -158,6 +159,60 @@ const recentRequests: SupportRequest[] = [
     },
 ];
 
+const SUPPORT_REQUESTS_STORAGE_KEY = "leagueos:fan-support-requests";
+
+function readLocalSupportRequests(): SupportRequest[] {
+    if (typeof window === "undefined") {
+        return [];
+    }
+
+    try {
+        const rawValue = window.localStorage.getItem(SUPPORT_REQUESTS_STORAGE_KEY);
+
+        if (!rawValue) {
+            return [];
+        }
+
+        const parsedValue = JSON.parse(rawValue) as SupportRequest[];
+
+        return Array.isArray(parsedValue) ? parsedValue : [];
+    } catch {
+        return [];
+    }
+}
+
+function writeLocalSupportRequests(requests: SupportRequest[]) {
+    if (typeof window === "undefined") {
+        return;
+    }
+
+    try {
+        window.localStorage.setItem(
+            SUPPORT_REQUESTS_STORAGE_KEY,
+            JSON.stringify(requests),
+        );
+    } catch {
+        // Local storage can fail in private browsing.
+    }
+}
+
+function createLocalSupportRequest(topic: string, message: string): SupportRequest {
+    const date = new Intl.DateTimeFormat("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+    }).format(new Date());
+
+    return {
+        id: `LOS-LOCAL-${Date.now().toString().slice(-6)}`,
+        title: `${topic} support request`,
+        status: "Open",
+        date,
+        category: topic,
+        message,
+    };
+}
+
 function getStatusClass(status: SupportRequest["status"]) {
     if (status === "Resolved") {
         return styles.resolvedStatus;
@@ -177,8 +232,22 @@ function SupportPage() {
     const [supportTopic, setSupportTopic] = useState("Tickets");
     const [supportMessage, setSupportMessage] = useState("");
     const [saveMessage, setSaveMessage] = useState("");
+    const [supportRequests, setSupportRequests] = useState<SupportRequest[]>(() => {
+        const localRequests = readLocalSupportRequests();
+
+        return [...localRequests, ...defaultSupportRequests].slice(0, 6);
+    });
 
     const normalizedSearchQuery = searchQuery.trim().toLowerCase();
+
+    const openRequestCount = useMemo(
+        () =>
+            supportRequests.filter(
+                (request) =>
+                    request.status === "Open" || request.status === "Pending",
+            ).length,
+        [supportRequests],
+    );
 
     const filteredFaqs = useMemo(() => {
         return faqItems.filter((item) => {
@@ -205,8 +274,8 @@ function SupportPage() {
         },
         {
             label: "Open Requests",
-            value: "1",
-            detail: "Awaiting support",
+            value: String(openRequestCount),
+            detail: "Local support queue",
             icon: MessageSquare,
             tone: "purple",
         },
@@ -234,8 +303,29 @@ function SupportPage() {
     function handleSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
 
+        const trimmedMessage = supportMessage.trim();
+
+        if (!trimmedMessage) {
+            setSaveMessage("Please describe the issue before submitting.");
+            return;
+        }
+
+        const newRequest = createLocalSupportRequest(
+            supportTopic,
+            trimmedMessage,
+        );
+
+        const savedLocalRequests = readLocalSupportRequests();
+        const updatedLocalRequests = [newRequest, ...savedLocalRequests].slice(0, 10);
+
+        writeLocalSupportRequests(updatedLocalRequests);
+
+        setSupportRequests(
+            [...updatedLocalRequests, ...defaultSupportRequests].slice(0, 6),
+        );
+
         setSaveMessage(
-            "Support request prepared locally for now. Backend support ticket creation can be connected later.",
+            `Support request ${newRequest.id} saved locally. Backend support ticket creation is not available yet.`,
         );
         setSupportMessage("");
     }
@@ -444,10 +534,11 @@ function SupportPage() {
                                         setSupportMessage(event.target.value)
                                     }
                                     rows={6}
+                                    required
                                 />
                             </label>
 
-                            <button type="submit">
+                            <button type="submit" disabled={!supportMessage.trim()}>
                                 <Send size={17} strokeWidth={2.4} aria-hidden="true" />
                                 Submit Request
                             </button>
@@ -538,12 +629,12 @@ function SupportPage() {
 
                             <div>
                                 <h2>Recent Requests</h2>
-                                <p>Your latest local support request examples.</p>
+                                <p>Your latest local support requests. Backend ticket submission is not available yet.</p>
                             </div>
                         </div>
 
                         <div className={styles.requestList}>
-                            {recentRequests.map((request) => (
+                            {supportRequests.map((request) => (
                                 <article className={styles.requestItem} key={request.id}>
                                     <div>
                                         <h3>{request.title}</h3>
