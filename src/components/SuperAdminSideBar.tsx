@@ -5,13 +5,14 @@ import {
   ShieldCheck,
   Wallet,
   Settings,
+  
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
 type NavItem = {
   id: string;
   label: string;
-  icon: any;
-  
+  icon: LucideIcon;
 };
 
 const NAV_ITEMS: NavItem[] = [
