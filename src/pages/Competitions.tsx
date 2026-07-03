@@ -1,19 +1,20 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { FiGrid, FiList, FiTrendingUp } from 'react-icons/fi';
+import { FiTrendingUp } from 'react-icons/fi';
 import { BsTicketPerforated } from 'react-icons/bs';
 import { GiSoccerBall, GiRugbyConversion } from 'react-icons/gi';
 import { MdSportsBasketball } from 'react-icons/md';
 import { IoSchoolOutline } from 'react-icons/io5';
 import CompetitionsNavbar from '../components/CompetitionsNavbar';
-import CompetitionsFooter from '../components/CompetitionsFooter';
+import Footer from '../components/Footer';
 import footballImg from '../assets/football-card.png';
 import rugbyImg from '../assets/rugby-card.png';
 import basketballImg from '../assets/basketball-card.png';
 import '../styles/pages/landing/Competitions.css';
+import '../styles/pages/landing.css';
 
 const sportFilters = [
-  'All Sports', 'Football', 'Rugby', 'Basketball', 'Volleyball', 'Cricket'
+  'All Sports', 'Football', 'Rugby', 'Basketball'
 ];
 
 const competitions = [
@@ -85,8 +86,10 @@ const streakData = [
 function Competitions() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [activeFilter, setActiveFilter] = useState('All Sports');
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [activeFilter, setActiveFilter] = [
+    'All Sports',
+    (v: string) => v,
+  ];
 
   useEffect(() => {
     if (location.hash) {
@@ -119,36 +122,15 @@ function Competitions() {
   };
 
   return (
-    <div className="competitions-page">
+    <div className="competitions-page landing-page">
       <CompetitionsNavbar />
 
       <div className="competitions-header">
-        <div className="competitions-header-top">
-          <div>
-            <h1 className="competitions-title">Competitions</h1>
-            <p className="competitions-subtitle">
-              The ultimate hub for East African sports excellence. Track your
-              favorite local clubs and stay ahead with real-time Ugandan match analytics.
-            </p>
-          </div>
-          <div className="view-mode-toggle">
-            <span className="view-mode-label">View mode:</span>
-            <button
-              className={`view-mode-btn ${viewMode === 'grid' ? 'active' : ''}`}
-              onClick={() => setViewMode('grid')}
-              aria-label="Grid view"
-            >
-              <FiGrid size={16} />
-            </button>
-            <button
-              className={`view-mode-btn ${viewMode === 'list' ? 'active' : ''}`}
-              onClick={() => setViewMode('list')}
-              aria-label="List view"
-            >
-              <FiList size={16} />
-            </button>
-          </div>
-        </div>
+        <h1 className="competitions-title">Competitions</h1>
+        <p className="competitions-subtitle">
+          The ultimate hub for East African sports excellence. Track your
+          favorite local clubs and stay ahead with real-time Ugandan match analytics.
+        </p>
       </div>
 
       <div className="sport-filters">
@@ -356,7 +338,7 @@ function Competitions() {
         </div>
       </div>
 
-      <CompetitionsFooter />
+      <Footer />
     </div>
   );
 }
