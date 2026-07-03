@@ -765,3 +765,145 @@
 .team-squad-leader-photo img {
   border-radius: 50%;
 }
+
+.team-squad-logo,
+.team-squad-logo-fallback {
+  width: 5.4rem;
+  height: 5.4rem;
+  object-fit: contain;
+  border-radius: 50%;
+  color: #ffffff;
+  background: rgba(123, 63, 242, 0.38);
+  box-shadow: 0 0 0 0.55rem rgba(15, 23, 42, 0.72);
+  font-weight: 1000;
+}
+
+.team-squad-roster-pending {
+  grid-template-columns: 1fr;
+}
+
+.team-squad-api-pending-card {
+  position: relative;
+  display: grid;
+  gap: 0.75rem;
+  min-height: 22rem;
+  padding: 1.25rem;
+  border-radius: 0.72rem;
+  background:
+    radial-gradient(circle at top right, rgba(123, 63, 242, 0.28), transparent 18rem),
+    rgba(8, 13, 29, 0.88);
+  border: 1px solid rgba(168, 85, 247, 0.55);
+  box-shadow: 0 1.2rem 3rem rgba(0, 0, 0, 0.18);
+}
+
+.team-squad-api-pending-card svg {
+  color: #c084fc;
+}
+
+.team-squad-api-pending-card h2 {
+  margin: 2.5rem 0 0;
+  color: #ffffff;
+  font-size: 1.45rem;
+  font-weight: 1000;
+}
+
+.team-squad-api-pending-card p,
+.team-squad-muted {
+  margin: 0;
+  color: rgba(248, 247, 255, 0.72);
+  line-height: 1.55;
+  font-weight: 780;
+}
+
+.team-squad-api-pending-card dl {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.7rem;
+  margin: 0;
+}
+
+.team-squad-api-pending-card dl div {
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.75rem;
+  border-radius: 0.55rem;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.team-squad-api-pending-card dt {
+  color: rgba(248, 247, 255, 0.55);
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.team-squad-api-pending-card dd {
+  margin: 0;
+  color: #ffffff;
+  font-weight: 1000;
+}
+
+.team-squad-api-pending-card a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  justify-self: start;
+  gap: 0.45rem;
+  min-height: 2.85rem;
+  padding: 0 1rem;
+  border-radius: 0.45rem;
+  color: #ffffff;
+  background: linear-gradient(135deg, #7b3ff2, #9333ea);
+  font-weight: 1000;
+  text-decoration: none;
+}
+
+.team-squad-status-list {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.team-squad-status-list article {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.65rem;
+  align-items: center;
+  padding: 0.75rem;
+  border-radius: 0.55rem;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.team-squad-status-list svg {
+  color: #c084fc;
+}
+
+.team-squad-status-list strong {
+  display: block;
+  color: #ffffff;
+}
+
+.team-squad-status-list small {
+  color: rgba(248, 247, 255, 0.58);
+}
+
+.team-squad-next-match-logo {
+  width: 4.2rem;
+  height: 4.2rem;
+  object-fit: contain;
+  border-radius: 50%;
+  color: #ffffff;
+  background: rgba(123, 63, 242, 0.34);
+  font-weight: 1000;
+}
+
+.team-squad-filters select:disabled,
+.team-squad-filters input:disabled,
+.team-squad-filters button:disabled {
+  cursor: not-allowed;
+  opacity: 0.78;
+}
+
+@media (max-width: 900px) {
+  .team-squad-api-pending-card dl {
+    grid-template-columns: 1fr;
+  }
+}
