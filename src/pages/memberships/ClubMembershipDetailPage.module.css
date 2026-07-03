@@ -73,12 +73,34 @@
 
 .clubIdentity {
     display: grid;
-    grid-template-columns: 98px minmax(0, 1fr);
+    grid-template-columns: 96px minmax(0, 1fr);
     align-items: center;
-    gap: 22px;
+    gap: 24px;
+    min-width: 0;
 }
 
-.clubIdentity img,
+.clubLogo {
+    width: 92px;
+    height: 92px;
+    border-radius: 999px;
+    position: relative;
+    overflow: hidden;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    color: #ffffff;
+    background: linear-gradient(135deg, rgba(123, 63, 242, 0.9), rgba(255, 90, 24, 0.72));
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.28);
+
+    font-family: var(--font-subhead);
+    font-size: 22px;
+    font-weight: 900;
+}
+
+.clubLogo img,
 .checkoutHeader img {
     width: 92px;
     height: 92px;
@@ -87,7 +109,22 @@
     background: #ffffff;
 }
 
-.clubIdentity span {
+.clubLogo img {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+}
+
+.clubLogo span {
+    position: relative;
+    z-index: 1;
+}
+
+.clubCopy {
+    min-width: 0;
+}
+
+.clubBadge {
     min-height: 30px;
     border-radius: 999px;
     padding: 0 12px;
@@ -107,18 +144,43 @@
 .clubIdentity h1 {
     margin: 12px 0 0;
     color: #ffffff;
-    font-size: clamp(34px, 3vw, 52px);
+    font-size: clamp(38px, 4vw, 64px);
     font-weight: 900;
-    letter-spacing: -0.05em;
+    letter-spacing: -0.055em;
+    line-height: 0.98;
 }
 
 .clubIdentity p {
-    max-width: 760px;
-    margin: 12px 0 0;
+    max-width: 720px;
+    margin: 14px 0 0;
 
-    color: rgba(255, 255, 255, 0.66);
+    color: rgba(255, 255, 255, 0.68);
     font-size: 16px;
-    line-height: 1.55;
+    line-height: 1.6;
+}
+
+.heroMeta {
+    margin-top: 18px;
+
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.heroMeta span {
+    min-height: 30px;
+    border-radius: 999px;
+    padding: 0 12px;
+
+    display: inline-flex;
+    align-items: center;
+
+    color: rgba(255, 255, 255, 0.78);
+    background: rgba(15, 23, 42, 0.68);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+
+    font-size: 12px;
+    font-weight: 900;
 }
 
 .heroStats {
@@ -688,7 +750,8 @@
         grid-template-columns: 1fr;
     }
 
-    .clubIdentity img {
+    .clubLogo,
+    .clubLogo img {
         width: 82px;
         height: 82px;
     }
