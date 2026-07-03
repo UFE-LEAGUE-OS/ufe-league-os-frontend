@@ -94,3 +94,31 @@
   color: #9b55fb;
   letter-spacing: 1.5px;
 }
+
+@media (max-width: 1280px) {
+  .featured-competitions {
+    padding: 16px 24px 24px;
+  }
+
+  .competitions-row {
+    gap: 10px;
+  }
+}
+
+@media (max-width: 768px) {
+  .featured-competitions {
+    padding: 16px 16px 24px;
+  }
+
+  .competitions-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .competitions-row {
+    grid-template-columns: 1fr;
+  }
+}

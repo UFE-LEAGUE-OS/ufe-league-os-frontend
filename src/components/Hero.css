@@ -152,3 +152,72 @@
   transform: scale(1.04);
   font-size: 15.8px;
 }
+
+@media (max-width: 1280px) {
+  .hero {
+    height: auto;
+    padding: 32px 24px 24px;
+  }
+
+  .hero-top {
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .hero-heading {
+    font-size: 36px;
+  }
+
+  .hero-stats {
+    align-self: flex-start;
+    padding-bottom: 0;
+    gap: 24px;
+  }
+
+  .hero-features {
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero {
+    padding: 24px 16px 20px;
+  }
+
+  .hero-heading {
+    font-size: 28px;
+  }
+
+  .hero-subtext {
+    font-size: 14px;
+  }
+
+  .hero-buttons {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .btn-outline,
+  .hero .btn-primary {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .hero-stats {
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .stat-number {
+    font-size: 28px;
+  }
+
+  .hero-features {
+    gap: 12px;
+  }
+
+  .feature {
+    font-size: 12px;
+  }
+}
