@@ -131,9 +131,6 @@ export default function AppRoutes() {
                     <Route path="/dashboard/tickets" element={<MyTicketsPage />} />
                     <Route path="/dashboard/tickets/:ticketId" element={<TicketDetailPage />} />
                     <Route path="/tickets/:matchId/checkout" element={<TicketCheckoutPage />} />
-                    <Route path="/tickets/payment/processing" element={<TicketPaymentProcessingPage />} />
-                    <Route path="/tickets/payment/success" element={<TicketPaymentSuccessPage />} />
-                    <Route path="/tickets/payment/failed" element={<TicketPaymentFailedPage />} />
 
                     {/* Fantasy — protected, requires login */}
                     <Route path="/fantasy" element={<FantasyPage />} />
@@ -154,6 +151,9 @@ export default function AppRoutes() {
                 <Route path="/competitions" element={<Competitions />} />
                 <Route path="/news" element={<NewsSection />} />
                 <Route path="/tickets" element={<Tickets />} />
+                <Route path="/tickets/payment/processing" element={<TicketPaymentProcessingPage />} />
+                <Route path="/tickets/payment/success" element={<TicketPaymentSuccessPage />} />
+                <Route path="/tickets/payment/failed" element={<TicketPaymentFailedPage />} />
                 <Route path="/unions" element={<Unions />} />
                 <Route path="/clubs" element={<ExploreClubsPage />} />
                 <Route path="/clubs/:clubSlug" element={<ClubDetailsPage />} />
