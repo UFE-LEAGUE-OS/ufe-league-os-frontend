@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
+import SafeImage from '../../components/SafeImage/SafeImage';
 import {
   getPublicClubs,
   getPublicCompetitions,
@@ -333,7 +334,7 @@ function ClubDetailsPage() {
           <div className="club-detail-hero-grid">
             <div className="club-detail-logo-wrap">
               <div className="club-detail-logo-ring">
-                {club.logo ? <img src={club.logo} alt={club.name} /> : <span>{club.shortName}</span>}
+                <SafeImage src={club.logo} alt={club.name} fallback={<span>{club.shortName}</span>} />
               </div>
               <span className="club-detail-verified">✓</span>
             </div>
@@ -516,7 +517,7 @@ function ClubDetailsPage() {
 
               <div className="club-detail-teams-grid">
                 <article>
-                  {club.logo ? <img src={club.logo} alt={club.name} /> : null}
+                  <SafeImage src={club.logo} alt={club.name} fallback={<span>{club.shortName}</span>} />
                   <div>
                     <h3>{club.name}</h3>
                     <p>{getSportLabel(club.sport)} • {competition?.name ?? club.league}</p>
@@ -538,7 +539,7 @@ function ClubDetailsPage() {
               {primaryFixture ? (
                 <article className="club-detail-next-fixture">
                   <div>
-                    {club.logo ? <img src={club.logo} alt="" /> : null}
+                    <SafeImage src={club.logo} alt="" fallback={<span>{club.shortName}</span>} />
                     <strong>{club.name}</strong>
                   </div>
 
@@ -550,9 +551,11 @@ function ClubDetailsPage() {
 
                   <div>
                     <strong>{getOpponentForFixture(club, primaryFixture).name}</strong>
-                    {getOpponentForFixture(club, primaryFixture).logo ? (
-                      <img src={getOpponentForFixture(club, primaryFixture).logo} alt="" />
-                    ) : null}
+                    <SafeImage
+                      src={getOpponentForFixture(club, primaryFixture).logo}
+                      alt=""
+                      fallback={<span>{getOpponentForFixture(club, primaryFixture).name.slice(0, 2).toUpperCase()}</span>}
+                    />
                   </div>
                 </article>
               ) : (
@@ -622,7 +625,7 @@ function ClubDetailsPage() {
                           <span>{fixtureDate.day}</span>
                         </div>
 
-                        {opponent.logo ? <img src={opponent.logo} alt="" /> : null}
+                        <SafeImage src={opponent.logo} alt="" fallback={<span>{opponent.name.slice(0, 2).toUpperCase()}</span>} />
 
                         <div>
                           <strong>vs {opponent.name}</strong>

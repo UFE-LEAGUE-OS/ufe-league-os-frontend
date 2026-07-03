@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
+import SafeImage from '../../components/SafeImage/SafeImage';
 import {
   getPublicClubs,
   type PublicClubApi,
@@ -368,7 +369,7 @@ function ExploreClubsPage() {
                     {club.featured ? <span className="clubs-public-featured">Featured</span> : null}
 
                     <div className="clubs-public-logo">
-                      {club.logo ? <img src={club.logo} alt={club.name} /> : <span>{club.shortName}</span>}
+                      <SafeImage src={club.logo} alt={club.name} fallback={<span>{club.shortName}</span>} />
                     </div>
 
                     <div className="clubs-public-card-copy">
@@ -453,7 +454,7 @@ function ExploreClubsPage() {
                   {featuredClubs.map((club, index) => (
                     <article key={club.slug} className="clubs-public-featured-item">
                       <span>{index + 1}</span>
-                      {club.logo ? <img src={club.logo} alt="" /> : <strong>{club.shortName}</strong>}
+                      <SafeImage src={club.logo} alt="" fallback={<strong>{club.shortName}</strong>} />
                       <div>
                         <h3>{club.name}</h3>
                         <p>{club.sport} Club</p>

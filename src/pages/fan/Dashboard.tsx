@@ -14,6 +14,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useCurrentUser } from "../../hooks/useCurrentUser";
 import { useAuth } from "../../hooks/useAuth";
 import DashboardEmptyState from "../../components/DashboardEmptyState/DashboardEmptyState";
+import SafeImage from "../../components/SafeImage/SafeImage";
 import {
     createMyMembershipCard,
     getMyMembership,
@@ -303,12 +304,14 @@ function DashboardMembershipLogo({
     logo: string;
     club: string;
 }) {
-    return logo ? (
-        <img src={logo} alt="" aria-hidden="true" />
-    ) : (
-        <span className={styles.membershipClubMark}>
-            {buildDashboardClubInitials(club)}
-        </span>
+    return (
+        <SafeImage
+            src={logo}
+            alt=""
+            aria-hidden="true"
+            fallback={buildDashboardClubInitials(club)}
+            fallbackClassName={styles.membershipClubMark}
+        />
     );
 }
 
@@ -845,33 +848,23 @@ function FanDashboardPage() {
                                             {match.home}
                                         </strong>
 
-                                        {match.homeLogo ? (
-                                            <img
-                                                className={styles.dashboardMatchLogo}
-                                                src={match.homeLogo}
-                                                alt=""
-                                                aria-hidden="true"
-                                            />
-                                        ) : (
-                                            <span className={styles.dashboardMatchLogo}>
-                                                {buildDashboardClubInitials(match.home)}
-                                            </span>
-                                        )}
+                                        <SafeImage
+                                            className={styles.dashboardMatchLogo}
+                                            src={match.homeLogo}
+                                            alt=""
+                                            aria-hidden="true"
+                                            fallback={buildDashboardClubInitials(match.home)}
+                                        />
 
                                         <span className={styles.dashboardMatchVs}>VS</span>
 
-                                        {match.awayLogo ? (
-                                            <img
-                                                className={styles.dashboardMatchLogo}
-                                                src={match.awayLogo}
-                                                alt=""
-                                                aria-hidden="true"
-                                            />
-                                        ) : (
-                                            <span className={styles.dashboardMatchLogo}>
-                                                {buildDashboardClubInitials(match.away)}
-                                            </span>
-                                        )}
+                                        <SafeImage
+                                            className={styles.dashboardMatchLogo}
+                                            src={match.awayLogo}
+                                            alt=""
+                                            aria-hidden="true"
+                                            fallback={buildDashboardClubInitials(match.away)}
+                                        />
 
                                         <strong className={styles.dashboardMatchTeamName}>
                                             {match.away}
@@ -965,11 +958,12 @@ function FanDashboardPage() {
                                     key={club.id}
                                 >
                                     <span>
-                                        {club.logo ? (
-                                            <img src={club.logo} alt="" aria-hidden="true" />
-                                        ) : (
-                                            buildDashboardClubInitials(club.name)
-                                        )}
+                                        <SafeImage
+                                            src={club.logo}
+                                            alt=""
+                                            aria-hidden="true"
+                                            fallback={buildDashboardClubInitials(club.name)}
+                                        />
                                     </span>
 
                                     <strong>{club.name}</strong>

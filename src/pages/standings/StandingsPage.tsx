@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
+import SafeImage from '../../components/SafeImage/SafeImage';
 import {
   getPublicClubs,
   getPublicCompetitions,
@@ -54,6 +55,15 @@ function getFormArray(form?: PublicStandingApi['form']): string[] {
   }
 
   return [];
+}
+
+function getClubInitials(name: string) {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part.charAt(0).toUpperCase())
+    .join('') || 'CL';
 }
 
 function buildClubLookup(clubs: PublicClubApi[]) {
@@ -399,7 +409,7 @@ function StandingsPage() {
                               </td>
                               <td>
                                 <Link to={`/clubs/${row.club_slug}`} className={styles.clubCell}>
-                                  {club?.logo_url ? <img src={club.logo_url} alt="" /> : null}
+                                  <SafeImage src={club?.logo_url} alt="" fallback={<span>{getClubInitials(row.club_name)}</span>} />
                                   <strong>{row.club_name}</strong>
                                 </Link>
                               </td>
