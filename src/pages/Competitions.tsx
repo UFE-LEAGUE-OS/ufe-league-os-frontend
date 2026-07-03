@@ -1,346 +1,384 @@
-import { useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { FiTrendingUp } from 'react-icons/fi';
-import { BsTicketPerforated } from 'react-icons/bs';
-import { GiSoccerBall, GiRugbyConversion } from 'react-icons/gi';
-import { MdSportsBasketball } from 'react-icons/md';
-import { IoSchoolOutline } from 'react-icons/io5';
+import { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import CompetitionsNavbar from '../components/CompetitionsNavbar';
 import Footer from '../components/Footer';
-import footballImg from '../assets/football-card.png';
-import rugbyImg from '../assets/rugby-card.png';
-import basketballImg from '../assets/basketball-card.png';
+import {
+    getPublicClubs,
+    getPublicCompetitions,
+    getPublicFixtures,
+    getPublicResults,
+    getPublicStandings,
+    type PublicClubApi,
+    type PublicCompetitionApi,
+    type PublicFixtureApi,
+    type PublicStandingApi,
+} from '../services/publicDashboardService';
 import '../styles/pages/landing/Competitions.css';
 import '../styles/pages/landing.css';
 
-const sportFilters = [
-  'All Sports', 'Football', 'Rugby', 'Basketball'
+type SportFilter = 'ALL' | 'RUGBY' | 'FOOTBALL' | 'BASKETBALL' | 'OTHER';
+
+type CompetitionSummary = {
+    sport: SportFilter;
+    type: string;
+    clubsCount: number;
+    fixtures: PublicFixtureApi[];
+    results: PublicFixtureApi[];
+    standings: PublicStandingApi[];
+};
+
+const sportTabs: Array<{ label: string; value: SportFilter }> = [
+    { label: 'All', value: 'ALL' },
+    { label: 'Rugby', value: 'RUGBY' },
+    { label: 'Football', value: 'FOOTBALL' },
+    { label: 'Basketball', value: 'BASKETBALL' },
+    { label: 'Other', value: 'OTHER' },
 ];
 
-const competitions = [
-  {
-    id: 1,
-    sport: 'FOOTBALL',
-    sportClass: 'football',
-    league: 'Uganda Premier League',
-    description: "Uganda's elite football division featuring 16 historic clubs battling for regional supremacy.",
-    image: footballImg,
-    isLive: true,
-    type: 'football-card',
-    stats: { label: 'Active Matches', value: '4 Matches' },
-    progress: 60,
-  },
-  {
-    id: 2,
-    sport: 'RUGBY',
-    sportClass: 'rugby',
-    league: 'Nile Special Premiership',
-    description: 'Experience the grit of Ugandan rugby where legends are made across 10 elite clubs.',
-    image: rugbyImg,
-    isLive: false,
-    type: 'rugby-card',
-    round: { current: '12 of 18', leader: 'Heathens', nextGame: 'Today, 17:00' },
-  },
-  {
-    id: 3,
-    sport: 'BASKETBALL',
-    sportClass: 'basketball',
-    league: 'National Basketball League',
-    description: 'High-flying action and electric atmosphere from the top tier of East African hoops.',
-    image: basketballImg,
-    isLive: false,
-    type: 'basketball-card',
-    teams: '12 Clubs',
-    hasTickets: true,
-  },
-  {
-    id: 4,
-    sport: 'DEVELOPMENT',
-    sportClass: 'development',
-    league: 'Budo League',
-    description: 'The premier football competition for old students and secondary school development teams in Uganda.',
-    image: null,
-    isLive: false,
-    type: 'development-card',
-    nextMatchday: 'Sun, 26 May',
-  },
-];
+function inferCompetitionSport(competition: PublicCompetitionApi): SportFilter {
+    const text = `${competition.name} ${competition.league_name ?? ''}`.toUpperCase();
 
-const streakData = [
-  {
-    team: 'KCCA FC',
-    results: [
-      { type: 'win' }, { type: 'win' }, { type: 'draw' },
-      { type: 'loss' }, { type: 'win' },
-    ],
-  },
-  {
-    team: 'Vipers SC',
-    results: [
-      { type: 'win' }, { type: 'win' }, { type: 'win' },
-      { type: 'draw' }, { type: 'win' },
-    ],
-  },
-];
+    if (text.includes('RUGBY')) return 'RUGBY';
+    if (text.includes('FOOTBALL') || text.includes('SOCCER') || text.includes('PREMIER LEAGUE')) return 'FOOTBALL';
+    if (text.includes('BASKETBALL')) return 'BASKETBALL';
+
+    return 'OTHER';
+}
+
+function inferCompetitionType(competition: PublicCompetitionApi): string {
+    const text = `${competition.name} ${competition.league_name ?? ''}`.toUpperCase();
+
+    if (text.includes('CUP')) return 'Cup';
+    if (text.includes('SEVENS') || text.includes('7S')) return 'Circuit';
+    if (text.includes('TOURNAMENT')) return 'Tournament';
+    if (text.includes('SCHOOL') || text.includes('BUDO') || text.includes('SMACK') || text.includes('NTARE')) return 'Community';
+    if (text.includes('PLAYOFF')) return 'Playoffs';
+
+    return 'League';
+}
+
+function formatDate(value?: string) {
+    if (!value) return 'To be confirmed';
+
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return 'To be confirmed';
+
+    return new Intl.DateTimeFormat('en-UG', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+    }).format(date);
+}
+
+function formatMatchDate(value?: string) {
+    if (!value) return 'TBC';
+
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return 'TBC';
+
+    return new Intl.DateTimeFormat('en-UG', {
+        weekday: 'short',
+        day: '2-digit',
+        month: 'short',
+        hour: '2-digit',
+        minute: '2-digit',
+    }).format(date);
+}
+
+function sportLabel(sport: SportFilter) {
+    if (sport === 'ALL') return 'All Sports';
+    if (sport === 'OTHER') return 'Other';
+    return sport.charAt(0) + sport.slice(1).toLowerCase();
+}
+
+function getSportInitials(sport: SportFilter) {
+    if (sport === 'RUGBY') return 'RU';
+    if (sport === 'FOOTBALL') return 'FB';
+    if (sport === 'BASKETBALL') return 'BB';
+    return 'OS';
+}
 
 function Competitions() {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const [activeFilter, setActiveFilter] = [
-    'All Sports',
-    (v: string) => v,
-  ];
+    const navigate = useNavigate();
+    const [competitions, setCompetitions] = useState<PublicCompetitionApi[]>([]);
+    const [clubs, setClubs] = useState<PublicClubApi[]>([]);
+    const [fixtures, setFixtures] = useState<PublicFixtureApi[]>([]);
+    const [results, setResults] = useState<PublicFixtureApi[]>([]);
+    const [standingsByCompetition, setStandingsByCompetition] = useState<Record<number, PublicStandingApi[]>>({});
+    const [activeSport, setActiveSport] = useState<SportFilter>('ALL');
+    const [query, setQuery] = useState('');
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (location.hash) {
-      const element = document.getElementById(location.hash.replace('#', ''));
-      if (element) {
-        setTimeout(() => {
-          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 100);
-      }
-    }
-  }, [location.hash]);
+    useEffect(() => {
+        let isMounted = true;
 
-  const getSportIcon = (sport: string) => {
-    switch (sport) {
-      case 'FOOTBALL': return <GiSoccerBall size={16} />;
-      case 'RUGBY': return <GiRugbyConversion size={16} />;
-      case 'BASKETBALL': return <MdSportsBasketball size={16} />;
-      case 'DEVELOPMENT': return <IoSchoolOutline size={16} />;
-      default: return null;
-    }
-  };
+        async function loadCompetitions() {
+            try {
+                setIsLoading(true);
+                setError(null);
 
-  const getStreakLabel = (type: string) => {
-    switch (type) {
-      case 'win': return 'W';
-      case 'draw': return 'D';
-      case 'loss': return 'L';
-      default: return '';
-    }
-  };
+                const [competitionData, clubData, fixtureData, resultData] = await Promise.all([
+                    getPublicCompetitions(),
+                    getPublicClubs(),
+                    getPublicFixtures(),
+                    getPublicResults({ limit: 30 }),
+                ]);
 
-  return (
-    <div className="competitions-page landing-page">
-      <CompetitionsNavbar />
+                const standingsEntries = await Promise.all(
+                    competitionData.slice(0, 12).map(async (competition) => {
+                        try {
+                            const rows = await getPublicStandings(competition.id);
+                            return [competition.id, rows] as const;
+                        } catch {
+                            return [competition.id, []] as const;
+                        }
+                    }),
+                );
 
-      <div className="competitions-header">
-        <h1 className="competitions-title">Competitions</h1>
-        <p className="competitions-subtitle">
-          The ultimate hub for East African sports excellence. Track your
-          favorite local clubs and stay ahead with real-time Ugandan match analytics.
-        </p>
-      </div>
+                if (!isMounted) return;
 
-      <div className="sport-filters">
-        {sportFilters.map((filter) => (
-          <button
-            key={filter}
-            className={`filter-tab ${activeFilter === filter ? 'active' : ''}`}
-            onClick={() => setActiveFilter(filter)}
-          >
-            {filter}
-          </button>
-        ))}
-      </div>
+                setCompetitions(competitionData);
+                setClubs(clubData);
+                setFixtures(fixtureData);
+                setResults(resultData);
+                setStandingsByCompetition(Object.fromEntries(standingsEntries));
+            } catch {
+                if (isMounted) {
+                    setError('We could not load competitions from the backend. Please try again.');
+                }
+            } finally {
+                if (isMounted) {
+                    setIsLoading(false);
+                }
+            }
+        }
 
-      <div className="competitions-grid">
-        {competitions.map((comp) => (
-          <div
-            key={comp.id}
-            id={comp.type}
-            className={`competition-card ${comp.type}`}
-          >
-            {comp.image ? (
-              <img
-                src={comp.image}
-                alt={comp.league}
-                className="card-image"
-              />
-            ) : (
-              <div className="card-image-placeholder" />
-            )}
+        void loadCompetitions();
 
-            <div className="card-body">
-              {comp.isLive && (
-                <div className="live-badge">
-                  <span className="live-dot" />
-                  LIVE
-                </div>
-              )}
+        return () => {
+            isMounted = false;
+        };
+    }, []);
 
-              <div className="sport-badge">
-                <div className="sport-badge-icon">
-                  {getSportIcon(comp.sport)}
-                </div>
-                <div className="sport-badge-text">
-                  <span className={`sport-name ${comp.sportClass}`}>
-                    {comp.sport}
-                  </span>
-                  <span className="league-name">{comp.league}</span>
-                </div>
-              </div>
+    const summaries = useMemo(() => {
+        return competitions.reduce<Record<number, CompetitionSummary>>((acc, competition) => {
+            const sport = inferCompetitionSport(competition);
+            const competitionFixtures = fixtures.filter((fixture) => fixture.competition === competition.id);
+            const competitionResults = results.filter((result) => result.competition === competition.id);
+            const sportClubs = clubs.filter((club) => (club.sport ?? '').toUpperCase() === sport);
 
-              <p className="card-description">{comp.description}</p>
+            acc[competition.id] = {
+                sport,
+                type: inferCompetitionType(competition),
+                clubsCount: sport === 'OTHER' ? clubs.length : sportClubs.length,
+                fixtures: competitionFixtures,
+                results: competitionResults,
+                standings: standingsByCompetition[competition.id] ?? [],
+            };
 
-              {comp.stats && (
-                <>
-                  <div className="card-stats">
-                    <span className="stat-label">{comp.stats.label}</span>
-                    <span className="stat-value">{comp.stats.value}</span>
-                  </div>
-                  <div className="progress-bar-wrapper">
-                    <div className="progress-bar-track">
-                      <div
-                        className="progress-bar-fill"
-                        style={{ width: `${comp.progress}%` }}
-                      />
+            return acc;
+        }, {});
+    }, [clubs, competitions, fixtures, results, standingsByCompetition]);
+
+    const filteredCompetitions = useMemo(() => {
+        const search = query.trim().toLowerCase();
+
+        return competitions.filter((competition) => {
+            const summary = summaries[competition.id];
+            const sport = summary?.sport ?? inferCompetitionSport(competition);
+            const matchesSport = activeSport === 'ALL' || activeSport === sport;
+            const matchesSearch =
+                !search ||
+                competition.name.toLowerCase().includes(search) ||
+                (competition.league_name ?? '').toLowerCase().includes(search) ||
+                (competition.season ?? '').toLowerCase().includes(search) ||
+                sportLabel(sport).toLowerCase().includes(search);
+
+            return matchesSport && matchesSearch;
+        });
+    }, [activeSport, competitions, query, summaries]);
+
+    const activeCount = competitions.filter((competition) => competition.is_active !== false).length;
+    const totalFixtures = fixtures.length;
+    const totalResults = results.length;
+
+    return (
+        <div className="competitions-page landing-page">
+            <CompetitionsNavbar />
+
+            <main className="competitions-shell">
+                <section className="competitions-hero">
+                    <div className="competitions-breadcrumb">
+                        <button type="button" onClick={() => navigate('/')}>Home</button>
+                        <span>/</span>
+                        <span>Competitions</span>
                     </div>
-                  </div>
-                </>
-              )}
 
-              {comp.round && (
-                <div className="round-info">
-                  <div className="round-col">
-                    <span className="round-col-label">Round</span>
-                    <span className="round-col-value">{comp.round.current}</span>
-                  </div>
-                  <div className="round-col">
-                    <span className="round-col-label">Leader</span>
-                    <span className="round-col-value">{comp.round.leader}</span>
-                  </div>
-                  <div className="round-col">
-                    <span className="round-col-label">Next Game</span>
-                    <span className="round-col-value">{comp.round.nextGame}</span>
-                  </div>
-                </div>
-              )}
+                    <div className="competitions-hero-grid">
+                        <div>
+                            <h1>Competitions</h1>
+                            <p className="competitions-intro">
+                                Browse active league, cup, tournament and community competitions powered by the League OS backend.
+                            </p>
+                        </div>
 
-              {comp.teams && (
-                <div className="teams-row">
-                  <span className="stat-label">Teams</span>
-                  <span className="stat-value">{comp.teams}</span>
-                </div>
-              )}
-
-              {comp.hasTickets && (
-                <div className="tickets-banner">
-                  <BsTicketPerforated size={12} />
-                  Finals tickets now available!
-                </div>
-              )}
-
-              {comp.nextMatchday && (
-                <div className="card-stats">
-                  <span className="stat-label">Next Matchday</span>
-                  <span className="stat-value">{comp.nextMatchday}</span>
-                </div>
-              )}
-
-              <button className="view-details-btn">
-                View Full Details →
-              </button>
-            </div>
-          </div>
-        ))}
-
-        <div className="sponsor-card">
-          <div>
-            <div className="sponsor-icon">🏆</div>
-            <h3 className="sponsor-title">Level up your game</h3>
-            <p className="sponsor-desc">
-              Get exclusive access to detailed player statistics, live
-              analytics, and priority ticketing across all leagues.
-            </p>
-          </div>
-          <button className="sponsor-btn">Become a Sponsor</button>
-        </div>
-
-        <div className="propose-card">
-          <div className="propose-plus">+</div>
-          <p className="propose-title">Propose League</p>
-          <p className="propose-desc">
-            Submit your organization for listing on League OS
-          </p>
-        </div>
-      </div>
-
-      <div className="featured-banner">
-        <div className="banner-left">
-          <span className="official-badge">OFFICIAL</span>
-          <h2 className="banner-title">
-            Uganda Cup 2024:<br />Road to the Finals
-          </h2>
-          <p className="banner-desc">
-            Witness the most inclusive football tournament in the country.
-            From regional qualifiers to the grand stage at Nelson Mandela Stadium.
-          </p>
-          <div className="banner-buttons">
-            <button className="banner-primary-btn">
-              <BsTicketPerforated size={14} />
-              Buy Finals Tickets
-            </button>
-            <button className="banner-secondary-btn">
-              Match Schedule
-            </button>
-          </div>
-        </div>
-
-        <div className="banner-right">
-          <div className="live-streak-panel">
-            <div className="live-streak-header">
-              <span className="live-streak-title">Live Streak</span>
-              <FiTrendingUp size={16} color="#9CA3AF" />
-            </div>
-            {streakData.map((team) => (
-              <div key={team.team} className="streak-row">
-                <div className="streak-team-icon">⚽</div>
-                <span className="streak-team-name">{team.team}</span>
-                <div className="streak-badges">
-                  {team.results.map((result, i) => (
-                    <div
-                      key={i}
-                      className={`streak-badge ${result.type}`}
-                    >
-                      {getStreakLabel(result.type)}
+                        <div className="competitions-hero-panel" aria-label="Competition summary">
+                            <div>
+                                <strong>{activeCount}</strong>
+                                <span>Active</span>
+                            </div>
+                            <div>
+                                <strong>{totalFixtures}</strong>
+                                <span>Fixtures</span>
+                            </div>
+                            <div>
+                                <strong>{totalResults}</strong>
+                                <span>Results</span>
+                            </div>
+                        </div>
                     </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+                </section>
 
-      <div className="competitions-cta">
-        <div className="cta-left">
-          <h2>Join the Elite Experience</h2>
-          <p>
-            Create an account to unlock premium match tracking, exclusive
-            Ugandan sports insights, and compete for epic fantasy rewards.
-          </p>
-        </div>
-        <div className="cta-buttons">
-          <button
-            className="cta-primary-btn"
-            onClick={() => navigate('/register')}
-          >
-            Create Account
-          </button>
-          <button
-            className="cta-secondary-btn"
-            onClick={() => navigate('/login')}
-          >
-            Log In
-          </button>
-        </div>
-      </div>
+                <section className="competitions-content">
+                    <div className="competitions-toolbar">
+                        <div className="competitions-tabs" aria-label="Filter competitions by sport">
+                            {sportTabs.map((tab) => (
+                                <button
+                                    key={tab.value}
+                                    type="button"
+                                    className={activeSport === tab.value ? 'active' : ''}
+                                    onClick={() => setActiveSport(tab.value)}
+                                >
+                                    {tab.label}
+                                </button>
+                            ))}
+                        </div>
 
-      <Footer />
-    </div>
-  );
+                        <label className="competitions-search">
+                            <span>Search</span>
+                            <input
+                                type="search"
+                                value={query}
+                                onChange={(event) => setQuery(event.target.value)}
+                                placeholder="Search by competition, league or season..."
+                            />
+                        </label>
+                    </div>
+
+                    {error && <div className="competitions-state error">{error}</div>}
+                    {isLoading && <div className="competitions-state">Loading backend competitions...</div>}
+
+                    {!isLoading && !error && (
+                        <div className="competitions-list">
+                            <p className="competitions-count">
+                                Showing {filteredCompetitions.length} of {competitions.length} competitions
+                            </p>
+
+                            {filteredCompetitions.length === 0 ? (
+                                <div className="competitions-empty">
+                                    <h2>No competitions found</h2>
+                                    <p>Try another sport filter or search term.</p>
+                                </div>
+                            ) : (
+                                <div className="competitions-card-grid">
+                                    {filteredCompetitions.map((competition) => {
+                                        const summary = summaries[competition.id];
+                                        const sport = summary?.sport ?? inferCompetitionSport(competition);
+                                        const nextMatch = summary?.fixtures[0];
+                                        const latestResult = summary?.results[0];
+                                        const leader = summary?.standings[0];
+
+                                        return (
+                                            <article key={competition.id} className="competition-card">
+                                                <div className="competition-card-hero">
+                                                    <div className="competition-mark" aria-hidden="true">
+                                                        {getSportInitials(sport)}
+                                                    </div>
+
+                                                    <div className="competition-card-topline">
+                                                        <span>{sportLabel(sport)}</span>
+                                                        <span>{summary?.type ?? 'Competition'}</span>
+                                                        {competition.season && <span>{competition.season}</span>}
+                                                    </div>
+                                                </div>
+
+                                                <div className="competition-card-main">
+
+                                                    <h2>{competition.name}</h2>
+                                                    <p className="competition-league">
+                                                        {competition.league_name ?? 'Independent competition'}
+                                                    </p>
+
+                                                    <div className="competition-meta-grid">
+                                                        <div>
+                                                            <span>Clubs</span>
+                                                            <strong>{summary?.clubsCount ?? 0}</strong>
+                                                        </div>
+                                                        <div>
+                                                            <span>Upcoming</span>
+                                                            <strong>{summary?.fixtures.length ?? 0}</strong>
+                                                        </div>
+                                                        <div>
+                                                            <span>Results</span>
+                                                            <strong>{summary?.results.length ?? 0}</strong>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="competition-snapshot">
+                                                        <div>
+                                                            <span>Next match</span>
+                                                            <strong>
+                                                                {nextMatch
+                                                                    ? `${nextMatch.home_club_name} vs ${nextMatch.away_club_name}`
+                                                                    : 'Fixture pending'}
+                                                            </strong>
+                                                            <small>{nextMatch ? formatMatchDate(nextMatch.match_date) : 'Awaiting schedule'}</small>
+                                                        </div>
+                                                        <div>
+                                                            <span>Table leader</span>
+                                                            <strong>{leader?.club_name ?? 'Standings pending'}</strong>
+                                                            <small>{leader ? `${leader.points} pts` : 'No table yet'}</small>
+                                                        </div>
+                                                        <div>
+                                                            <span>Latest result</span>
+                                                            <strong>
+                                                                {latestResult
+                                                                    ? `${latestResult.home_club_name} ${latestResult.home_score ?? '-'} - ${latestResult.away_score ?? '-'} ${latestResult.away_club_name}`
+                                                                    : 'No result yet'}
+                                                            </strong>
+                                                            <small>{latestResult ? formatDate(latestResult.match_date) : 'Awaiting full time'}</small>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="competition-actions">
+                                                        <button type="button" onClick={() => navigate(`/fixtures?competition=${competition.id}`)}>
+                                                            Fixtures
+                                                        </button>
+                                                        <button type="button" onClick={() => navigate(`/results?competition=${competition.id}`)}>
+                                                            Results
+                                                        </button>
+                                                        <button type="button" onClick={() => navigate(`/standings?competition=${competition.id}`)}>
+                                                            Standings
+                                                        </button>
+                                                        <button type="button" onClick={() => navigate('/tickets')}>
+                                                            Tickets
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </article>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </section>
+            </main>
+
+            <Footer />
+        </div>
+    );
 }
 
 export default Competitions;
