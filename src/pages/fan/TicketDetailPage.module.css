@@ -674,3 +674,130 @@
 .teamRow .teamFallbackBadge {
     flex: 0 0 auto;
 }
+
+.teamLogoImage {
+    width: 42px;
+    height: 42px;
+    border-radius: 999px;
+    object-fit: contain;
+    background: rgba(123, 63, 242, 0.16);
+    border: 1px solid rgba(168, 85, 247, 0.3);
+}
+
+/* Ticket detail interaction and backend related-ticket refinements */
+.actionMessage,
+.relatedTicketsPanel,
+.sponsorPanel {
+    border-radius: 14px;
+    background:
+        radial-gradient(circle at 100% 0%, rgba(168, 85, 247, 0.12), transparent 35%),
+        linear-gradient(135deg, rgba(8, 17, 35, 0.9), rgba(2, 6, 23, 0.76));
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 22px 52px rgba(0, 0, 0, 0.22);
+}
+
+.actionMessage {
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 13px;
+    font-weight: 850;
+}
+
+.actionMessage svg {
+    flex: 0 0 auto;
+    color: #d946ef;
+}
+
+.relatedTicketsPanel {
+    padding: 18px;
+}
+
+.relatedTicketList {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+}
+
+.relatedTicketItem {
+    border-radius: 12px;
+    padding: 13px;
+    display: grid;
+    gap: 6px;
+    color: #ffffff;
+    text-decoration: none;
+    background: rgba(255, 255, 255, 0.045);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.relatedTicketItem span {
+    color: rgba(255, 255, 255, 0.62);
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.relatedTicketItem strong {
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 950;
+}
+
+.relatedTicketItem em {
+    color: #22c55e;
+    font-size: 11px;
+    font-style: normal;
+    font-weight: 950;
+    text-transform: uppercase;
+}
+
+.activeRelatedTicket {
+    border-color: rgba(217, 70, 239, 0.7);
+    box-shadow: 0 0 0 1px rgba(217, 70, 239, 0.3);
+}
+
+.sponsorPanel {
+    padding: 22px;
+    min-height: 190px;
+    display: grid;
+    align-content: center;
+    gap: 12px;
+    background:
+        radial-gradient(circle at 20% 0%, rgba(249, 115, 22, 0.22), transparent 38%),
+        linear-gradient(135deg, rgba(44, 24, 18, 0.82), rgba(2, 6, 23, 0.78));
+}
+
+.sponsorPanel span {
+    width: fit-content;
+    border-radius: 999px;
+    padding: 5px 9px;
+    color: #fed7aa;
+    background: rgba(249, 115, 22, 0.14);
+    border: 1px solid rgba(249, 115, 22, 0.38);
+    font-size: 11px;
+    font-weight: 950;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.sponsorPanel h2 {
+    margin: 0;
+    color: #ffffff;
+    font-size: 22px;
+    font-weight: 950;
+}
+
+.sponsorPanel p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.68);
+    font-size: 13px;
+    line-height: 1.55;
+}
+
+.sponsorPanel a {
+    color: #fed7aa;
+    font-size: 13px;
+    font-weight: 950;
+    text-decoration: none;
+}

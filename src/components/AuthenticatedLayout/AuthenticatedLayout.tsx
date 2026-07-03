@@ -48,10 +48,10 @@ function AuthenticatedLayout() {
                     <main className={styles.content}>
                         <Outlet />
                     </main>
-
-                    <AuthenticatedFooter />
                 </div>
             </div>
+
+            <AuthenticatedFooter />
 
             <MobileFanNavigation />
         </div>

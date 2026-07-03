@@ -1,184 +1,93 @@
-﻿import { useState } from 'react';
+﻿import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../styles/pages/landing/TicketsLandingPage.css';
 import BackButton from '../../components/BackButton';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
+import SafeImage from '../../components/SafeImage/SafeImage';
 import { getToken } from '../../utils/tokenManager.js';
 import logo from '../../assets/logo.png';
-import kccaLogo from '../../assets/kcca.png';
-import vipersLogo from '../../assets/Vipers_SC.jpg';
-import scVillaLogo from '../../assets/sc-villa.png';
-import kobsLogo from '../../assets/kobs.jpg';
-import piratesLogo from '../../assets/standic-pirates.png';
-import platinumLogo from '../../assets/platinum-heathens.jpg';
-import blazersLogo from '../../assets/nam-blazers.png';
+import {
+  getPublicFixtures,
+  type PublicFixtureApi,
+} from '../../services/publicDashboardService';
+import {
+  getMatchTicketTypes,
+  type TicketTypeApi,
+} from '../../services/ticketCheckoutService';
 
-type Match = {
-  id: string;
-  league: string;
-  leagueColor: string;
-  date: string;
-  time: string;
-  homeTeam: string;
-  homeLogo: string;
-  awayTeam: string;
-  awayLogo: string;
-  venue: string;
-  vipPrice: number;
-  ordinaryPrice: number;
-  vipAvailable: number;
-  ordinaryAvailable: number;
+type TicketableMatch = {
+  fixture: PublicFixtureApi;
+  ticketTypes: TicketTypeApi[];
 };
 
-const matches: Match[] = [
-  {
-    id: '1',
-    league: 'Uganda Premier League',
-    leagueColor: '#7C3AED',
-    date: 'Sat, 24 May 2025',
-    time: '4:00PM',
-    homeTeam: 'KCCA FC',
-    homeLogo: kccaLogo,
-    awayTeam: 'Vipers SC',
-    awayLogo: vipersLogo,
-    venue: 'MTN Omondi Stadium, Lugogo',
-    vipPrice: 50000,
-    ordinaryPrice: 10000,
-    vipAvailable: 120,
-    ordinaryAvailable: 850,
-  },
-  {
-    id: '2',
-    league: 'Uganda Premier League',
-    leagueColor: '#7C3AED',
-    date: 'Sun, 25 May 2025',
-    time: '4:00PM',
-    homeTeam: 'SC Villa',
-    homeLogo: scVillaLogo,
-    awayTeam: 'Express FC',
-    awayLogo: '',
-    venue: 'Mandela National Stadium, Namboole',
-    vipPrice: 75000,
-    ordinaryPrice: 15000,
-    vipAvailable: 200,
-    ordinaryAvailable: 1200,
-  },
-  {
-    id: '3',
-    league: 'Nile Special Rugby Premiership',
-    leagueColor: '#EA580C',
-    date: 'Sat, 31 May 2025',
-    time: '2:00PM',
-    homeTeam: 'Betway KOBS',
-    homeLogo: kobsLogo,
-    awayTeam: 'Stanbic Pirates',
-    awayLogo: piratesLogo,
-    venue: 'Kyadondo Rugby Club',
-    vipPrice: 30000,
-    ordinaryPrice: 5000,
-    vipAvailable: 80,
-    ordinaryAvailable: 400,
-  },
-  {
-    id: '4',
-    league: 'National Basketball League',
-    leagueColor: '#0284C7',
-    date: 'Fri, 30 May 2025',
-    time: '7:00PM',
-    homeTeam: 'City Oilers',
-    homeLogo: '',
-    awayTeam: 'Namuwongo Blazers',
-    awayLogo: blazersLogo,
-    venue: 'Lugogo Indoor Stadium',
-    vipPrice: 40000,
-    ordinaryPrice: 10000,
-    vipAvailable: 60,
-    ordinaryAvailable: 300,
-  },
-  {
-    id: '5',
-    league: 'Uganda Premier League',
-    leagueColor: '#7C3AED',
-    date: 'Sat, 7 Jun 2025',
-    time: '3:00PM',
-    homeTeam: 'URA FC',
-    homeLogo: '',
-    awayTeam: 'BUL FC',
-    awayLogo: '',
-    venue: "St. Mary's Stadium, Kitende",
-    vipPrice: 45000,
-    ordinaryPrice: 8000,
-    vipAvailable: 90,
-    ordinaryAvailable: 600,
-  },
-  {
-    id: '6',
-    league: 'Nile Special Rugby Premiership',
-    leagueColor: '#EA580C',
-    date: 'Sat, 14 Jun 2025',
-    time: '2:30PM',
-    homeTeam: 'Heathens RFC',
-    homeLogo: platinumLogo,
-    awayTeam: 'Black Pirates',
-    awayLogo: piratesLogo,
-    venue: 'Legends Rugby Grounds',
-    vipPrice: 35000,
-    ordinaryPrice: 6000,
-    vipAvailable: 70,
-    ordinaryAvailable: 350,
-  },
-  {
-    id: '7',
-    league: 'National Basketball League',
-    leagueColor: '#0284C7',
-    date: 'Sun, 8 Jun 2025',
-    time: '5:00PM',
-    homeTeam: 'KIU Titans',
-    homeLogo: '',
-    awayTeam: 'Power Basketball Club',
-    awayLogo: '',
-    venue: 'Lugogo Indoor Stadium',
-    vipPrice: 35000,
-    ordinaryPrice: 8000,
-    vipAvailable: 50,
-    ordinaryAvailable: 250,
-  },
-  {
-    id: '8',
-    league: 'Uganda Premier League',
-    leagueColor: '#7C3AED',
-    date: 'Sun, 15 Jun 2025',
-    time: '4:00PM',
-    homeTeam: 'Police FC',
-    homeLogo: '',
-    awayTeam: 'Onduparaka FC',
-    awayLogo: '',
-    venue: 'Bukasa Tank Hill Grounds',
-    vipPrice: 40000,
-    ordinaryPrice: 8000,
-    vipAvailable: 75,
-    ordinaryAvailable: 500,
-  },
-];
+function formatFixtureDate(value: string) {
+  const date = new Date(value);
 
-// ── Sub-components ────────────────────────────────────────────────────────────
+  if (Number.isNaN(date.getTime())) {
+    return { date: 'Date to be confirmed', time: 'Time to be confirmed' };
+  }
 
-function TeamBadge({ name, logo }: { name: string; logo: string }) {
+  return {
+    date: new Intl.DateTimeFormat('en-UG', {
+      weekday: 'short',
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    }).format(date),
+    time: new Intl.DateTimeFormat('en-UG', {
+      hour: 'numeric',
+      minute: '2-digit',
+    }).format(date),
+  };
+}
+
+function formatCurrency(amount: number, currency = 'UGX') {
+  return `${currency} ${amount.toLocaleString()}`;
+}
+
+function getCompetitionColor(competitionName: string) {
+  const normalized = competitionName.toLowerCase();
+
+  if (normalized.includes('rugby')) return '#EA580C';
+  if (normalized.includes('basketball')) return '#0284C7';
+
+  return '#7C3AED';
+}
+
+function getLowestTicketPrice(ticketTypes: TicketTypeApi[]) {
+  const prices = ticketTypes
+    .map((ticketType) => Number(ticketType.price))
+    .filter((price) => Number.isFinite(price) && price > 0);
+
+  return prices.length ? Math.min(...prices) : null;
+}
+
+function getSeatsLeft(ticketTypes: TicketTypeApi[]) {
+  return ticketTypes.reduce(
+    (total, ticketType) => total + Math.max(0, ticketType.remaining_quantity),
+    0,
+  );
+}
+
+function TeamBadge({ name, logo }: { name: string; logo?: string | null }) {
+  const fallback = name
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join('')
+    .toUpperCase();
+
   return (
     <div className="team-badge">
-      {logo ? (
-        <img
-          src={logo}
-          alt={name}
-          className="team-logo"
-          onError={(e) => {
-            (e.target as HTMLImageElement).style.display = 'none';
-          }}
-        />
-      ) : (
-        <div className="team-logo-placeholder">{name.slice(0, 2).toUpperCase()}</div>
-      )}
+      <SafeImage
+        src={logo}
+        alt={name}
+        className="team-logo"
+        fallbackClassName="team-logo-placeholder"
+        fallback={fallback || 'CL'}
+      />
       <span className="team-name">{name}</span>
     </div>
   );
@@ -219,26 +128,89 @@ function LoginPromptModal({
   );
 }
 
-// ── Page ──────────────────────────────────────────────────────────────────────
-
 export default function TicketsLandingPage() {
   const navigate = useNavigate();
   const [activeLeague, setActiveLeague] = useState('All Leagues');
+  const [searchQuery, setSearchQuery] = useState('');
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  const [ticketableMatches, setTicketableMatches] = useState<TicketableMatch[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [pageMessage, setPageMessage] = useState('');
   const isLoggedIn = Boolean(getToken());
 
-  const leagues = [
-    'All Leagues',
-    'Uganda Premier League',
-    'Nile Special Rugby Premiership',
-    'National Basketball League',
-  ];
+  useEffect(() => {
+    let isMounted = true;
 
-  const filteredMatches = matches.filter(
-    (match) => activeLeague === 'All Leagues' || match.league === activeLeague,
-  );
+    async function loadTicketableMatches() {
+      setIsLoading(true);
+      setPageMessage('');
 
-  const handleBuyTicket = (matchId: string) => {
+      try {
+        const fixtures = await getPublicFixtures();
+        const rows = await Promise.all(
+          fixtures.map(async (fixture) => {
+            try {
+              const response = await getMatchTicketTypes(fixture.id);
+
+              return {
+                fixture,
+                ticketTypes: response.ticket_types.filter(
+                  (ticketType) => ticketType.status === 'ACTIVE',
+                ),
+              };
+            } catch {
+              return { fixture, ticketTypes: [] };
+            }
+          }),
+        );
+
+        if (!isMounted) return;
+
+        setTicketableMatches(rows);
+      } catch {
+        if (!isMounted) return;
+
+        setTicketableMatches([]);
+        setPageMessage(
+          'Ticket matches could not be loaded from the backend. Confirm the public fixtures and ticket types APIs are available.',
+        );
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    void loadTicketableMatches();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const leagues = useMemo(() => {
+    const competitionNames = Array.from(
+      new Set(ticketableMatches.map((match) => match.fixture.competition_name).filter(Boolean)),
+    );
+
+    return ['All Leagues', ...competitionNames];
+  }, [ticketableMatches]);
+
+  const normalizedSearchQuery = searchQuery.trim().toLowerCase();
+
+  const filteredMatches = ticketableMatches.filter((match) => {
+    const matchesLeague =
+      activeLeague === 'All Leagues' || match.fixture.competition_name === activeLeague;
+
+    if (!matchesLeague) return false;
+    if (!normalizedSearchQuery) return true;
+
+    return `${match.fixture.home_club_name} ${match.fixture.away_club_name} ${match.fixture.competition_name} ${match.fixture.venue}`
+      .toLowerCase()
+      .includes(normalizedSearchQuery);
+  });
+
+  const handleBuyTicket = (matchId: number) => {
     if (!getToken()) {
       setShowLoginPrompt(true);
       return;
@@ -246,15 +218,11 @@ export default function TicketsLandingPage() {
     navigate(`/tickets/${matchId}/checkout`);
   };
 
-  const getSeatsLeft = (match: Match) =>
-    `${match.vipAvailable + match.ordinaryAvailable} seats left`;
-
   return (
     <div className="tickets-page">
       <Navbar />
 
       <main className="tickets-main">
-        {/* Page actions */}
         <div className="tickets-page-actions">
           <BackButton />
           {isLoggedIn ? (
@@ -273,16 +241,32 @@ export default function TicketsLandingPage() {
           )}
         </div>
 
-        {/* Header */}
-        <div className="tickets-header">
+        <div className="tickets-header tickets-hero-panel">
           <h1>
             <span className="tickets-header-plain">Match </span>
-            <span className="tickets-header-accent">Ticketing</span>
+            <span className="tickets-header-accent">Tickets</span>
           </h1>
-          <p>Browse and purchase tickets for upcoming matches.</p>
+          <p>
+            Browse backend-seeded fixtures, compare available ticket categories, and
+            checkout securely through Flutterwave.
+          </p>
+
         </div>
 
-        {/* League Filters */}
+        {pageMessage ? <div className="tickets-empty-state">{pageMessage}</div> : null}
+
+        <div className="ticket-search-panel">
+          <label>
+            Search tickets
+            <input
+              type="search"
+              placeholder="Search by club, competition or venue..."
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+            />
+          </label>
+        </div>
+
         <div className="tickets-filters">
           <div className="league-filters">
             {leagues.map((league) => (
@@ -297,46 +281,61 @@ export default function TicketsLandingPage() {
           </div>
         </div>
 
-        {/* Match Cards */}
-        <div className="match-grid">
-          {filteredMatches.map((match) => (
-            <div key={match.id} className="match-card">
-              {/* Card Header */}
-              <div className="match-card-header">
-                <span className="match-date">
-                  {match.date} • {match.time}
-                </span>
-                <span className="match-league" style={{ color: match.leagueColor }}>
-                  {match.league}
-                </span>
-              </div>
+        {isLoading ? (
+          <div className="tickets-empty-state">Loading backend ticket matches...</div>
+        ) : filteredMatches.length ? (
+          <div className="match-grid">
+            {filteredMatches.map(({ fixture, ticketTypes }) => {
+              const { date, time } = formatFixtureDate(fixture.match_date);
+              const seatsLeft = getSeatsLeft(ticketTypes);
+              const lowestPrice = getLowestTicketPrice(ticketTypes);
+              const currency = ticketTypes[0]?.currency ?? 'UGX';
+              const hasTickets = ticketTypes.length > 0 && seatsLeft > 0;
 
-              {/* Teams */}
-              <div className="match-teams">
-                <TeamBadge name={match.homeTeam} logo={match.homeLogo} />
-                <span className="vs-label">VS</span>
-                <TeamBadge name={match.awayTeam} logo={match.awayLogo} />
-              </div>
+              return (
+                <div key={fixture.id} className="match-card">
+                  <div className="match-card-header">
+                    <span
+                      className="match-league"
+                      style={{ color: getCompetitionColor(fixture.competition_name) }}
+                    >
+                      {fixture.competition_name}
+                    </span>
+                  </div>
 
-              {/* Venue */}
-              <div className="match-venue">
-                <span className="venue-icon">📍</span>
-                {match.venue}
-              </div>
+                  <div className="match-teams">
+                    <TeamBadge name={fixture.home_club_name} logo={fixture.home_club_logo_url} />
+                    <span className="vs-label">VS</span>
+                    <TeamBadge name={fixture.away_club_name} logo={fixture.away_club_logo_url} />
+                  </div>
 
-              {/* Seats + Buy Ticket stacked */}
-              <div className="match-buy-row">
-                <span className="match-buy-seats">{getSeatsLeft(match)}</span>
-                <button
-                  className="buy-btn buy-btn-ordinary"
-                  onClick={() => handleBuyTicket(match.id)}
-                >
-                  Buy Ticket
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
+                  <div className="match-card-details">
+                    <span>📅 {date} • {time}</span>
+                    <span>📍 {fixture.venue || 'Venue to be confirmed'}</span>
+                  </div>
+
+                  <div className="match-buy-row">
+                    <span className="match-buy-seats">
+                      {hasTickets ? `${seatsLeft} seats left` : 'Ticket types pending'}
+                      {lowestPrice ? ` • From ${formatCurrency(lowestPrice, currency)}` : ''}
+                    </span>
+                    <button
+                      className="buy-btn buy-btn-ordinary"
+                      onClick={() => handleBuyTicket(fixture.id)}
+                      disabled={!hasTickets}
+                    >
+                      {hasTickets ? 'Buy Ticket' : 'Unavailable'}
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="tickets-empty-state">
+            No ticketable backend fixtures are currently available.
+          </div>
+        )}
       </main>
 
       <Footer />

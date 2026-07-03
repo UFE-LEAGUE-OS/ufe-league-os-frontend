@@ -10,24 +10,18 @@ import {
     Ticket,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import SafeImage from "../../components/SafeImage/SafeImage";
+import {
+    getPublicFixtures,
+    type PublicFixtureApi,
+} from "../../services/publicDashboardService";
 import {
     getMatchTicketTypes,
     initializeTicketCheckout,
 } from "../../services/ticketCheckoutService";
-import type { TicketTypeApi } from "../../services/ticketCheckoutService";
+import type { MatchTicketTypesResponse, TicketTypeApi } from "../../services/ticketCheckoutService";
 import styles from "./TicketCheckoutPage.module.css";
-
-type DemoMatch = {
-    id: string;
-    label: string;
-    competition: string;
-    date: string;
-    time: string;
-    venue: string;
-    homeTeam: string;
-    awayTeam: string;
-};
 
 type ApiError = {
     response?: {
@@ -41,39 +35,6 @@ type ApiError = {
             non_field_errors?: string[];
         };
     };
-};
-
-const demoMatches: Record<string, DemoMatch> = {
-    "1": {
-        id: "1",
-        label: "KCCA FC vs Vipers SC",
-        competition: "Uganda Premier League",
-        date: "Sat, 24 May 2025",
-        time: "4:00 PM",
-        venue: "MTN Omondi Stadium, Lugogo",
-        homeTeam: "KCCA FC",
-        awayTeam: "Vipers SC",
-    },
-    "2": {
-        id: "2",
-        label: "SC Villa vs Express FC",
-        competition: "Uganda Premier League",
-        date: "Sun, 25 May 2025",
-        time: "4:00 PM",
-        venue: "Mandela National Stadium, Namboole",
-        homeTeam: "SC Villa",
-        awayTeam: "Express FC",
-    },
-    "3": {
-        id: "3",
-        label: "Betway KOBS vs Stanbic Pirates",
-        competition: "Nile Special Rugby Premiership",
-        date: "Sat, 31 May 2025",
-        time: "2:00 PM",
-        venue: "Kyadondo Rugby Club",
-        homeTeam: "Betway KOBS",
-        awayTeam: "Stanbic Pirates",
-    },
 };
 
 function formatCurrency(amount: number, currency = "UGX") {
@@ -100,70 +61,83 @@ function getCheckoutErrorMessage(error: unknown) {
     );
 }
 
-function getFallbackTicketTypes(matchId: string): TicketTypeApi[] {
-    const match = demoMatches[matchId] ?? demoMatches["1"];
+function formatMatchDate(rawDate?: string | null) {
+    if (!rawDate) {
+        return { date: "Date to be confirmed", time: "Time to be confirmed" };
+    }
 
-    return [
-        {
-            id: 1,
-            match: Number(matchId) || 1,
-            match_label: match.label,
-            name: "Ordinary",
-            description: "Ordinary match access ticket.",
-            price: "10000.00",
-            currency: "UGX",
-            quantity_available: 100,
-            quantity_sold: 0,
-            active_reserved_quantity: 0,
-            remaining_quantity: 100,
-            status: "ACTIVE",
-        },
-        {
-            id: 2,
-            match: Number(matchId) || 1,
-            match_label: match.label,
-            name: "VIP",
-            description: "VIP match access ticket.",
-            price: "50000.00",
-            currency: "UGX",
-            quantity_available: 25,
-            quantity_sold: 0,
-            active_reserved_quantity: 0,
-            remaining_quantity: 25,
-            status: "ACTIVE",
-        },
-    ];
-}
+    const date = new Date(rawDate);
 
-function getDemoMatch(matchId: string): DemoMatch {
-    return demoMatches[matchId] ?? {
-        id: matchId,
-        label: "League OS Demo Match",
-        competition: "League OS Ticketing",
-        date: "Upcoming match",
-        time: "Match time",
-        venue: "Match venue",
-        homeTeam: "Home Team",
-        awayTeam: "Away Team",
+    if (Number.isNaN(date.getTime())) {
+        return { date: "Date to be confirmed", time: "Time to be confirmed" };
+    }
+
+    return {
+        date: new Intl.DateTimeFormat("en-UG", {
+            weekday: "short",
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+        }).format(date),
+        time: new Intl.DateTimeFormat("en-UG", {
+            hour: "numeric",
+            minute: "2-digit",
+        }).format(date),
     };
 }
 
+function splitMatchLabel(label: string) {
+    const normalized = label.replace(/\s+v\s+/i, " vs ");
+    const [home, away] = normalized.split(/\s+vs\s+/i);
+
+    return {
+        home: home?.trim() || "Home Team",
+        away: away?.trim() || "Away Team",
+    };
+}
+
+function teamInitials(name: string) {
+    return (
+        name
+            .split(/\s+/)
+            .filter(Boolean)
+            .slice(0, 2)
+            .map((part) => part[0]?.toUpperCase())
+            .join("") || "LO"
+    );
+}
+
+function CheckoutTeam({ name, logo }: { name: string; logo?: string | null }) {
+    return (
+        <div className={styles.checkoutTeam}>
+            <SafeImage
+                src={logo}
+                alt={name}
+                className={styles.checkoutTeamLogo}
+                fallbackClassName={styles.checkoutTeamFallback}
+                fallback={teamInitials(name)}
+            />
+            <strong>{name}</strong>
+        </div>
+    );
+}
+
+function findFixture(fixtures: PublicFixtureApi[], matchId: string) {
+    return fixtures.find((fixture) => String(fixture.id) === String(matchId)) ?? null;
+}
+
 function TicketCheckoutPage() {
-    const { matchId = "1" } = useParams();
-    const [searchParams] = useSearchParams();
+    const { matchId = "" } = useParams();
     const navigate = useNavigate();
 
-    const preferredTier = searchParams.get("tier") === "vip" ? "vip" : "ordinary";
-
+    const [matchResponse, setMatchResponse] = useState<MatchTicketTypesResponse | null>(null);
+    const [publicFixture, setPublicFixture] = useState<PublicFixtureApi | null>(null);
     const [ticketTypes, setTicketTypes] = useState<TicketTypeApi[]>([]);
     const [selectedTicketTypeId, setSelectedTicketTypeId] = useState<number | null>(null);
     const [quantity, setQuantity] = useState(1);
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [pageMessage, setPageMessage] = useState("");
-    const [usesLiveBackendTickets, setUsesLiveBackendTickets] = useState(false);
-
-    const demoMatch = useMemo(() => getDemoMatch(matchId), [matchId]);
 
     const selectedTicketType = useMemo(() => {
         return (
@@ -173,79 +147,76 @@ function TicketCheckoutPage() {
         );
     }, [selectedTicketTypeId, ticketTypes]);
 
+    const fallbackMatchLabel =
+        matchResponse?.match.label ?? selectedTicketType?.match_label ?? "Match Ticket";
+    const fallbackTeams = splitMatchLabel(fallbackMatchLabel);
+    const homeTeam = publicFixture?.home_club_name ?? fallbackTeams.home;
+    const awayTeam = publicFixture?.away_club_name ?? fallbackTeams.away;
+    const matchLabel = `${homeTeam} vs ${awayTeam}`;
+    const matchDate = formatMatchDate(publicFixture?.match_date ?? matchResponse?.match.match_date ?? null);
     const ticketPrice = Number(selectedTicketType?.price ?? 0);
     const totalAmount = ticketPrice * quantity;
-    const remainingQuantity = selectedTicketType?.remaining_quantity ?? 1;
-    const maxQuantity = Math.max(1, Math.min(10, remainingQuantity));
+    const remainingQuantity = selectedTicketType?.remaining_quantity ?? 0;
+    const maxQuantity = Math.max(1, Math.min(10, remainingQuantity || 1));
+    const venue = publicFixture?.venue || matchResponse?.match.venue || "Venue to be confirmed";
+    const competitionName = publicFixture?.competition_name || "League OS Match Ticket";
 
     useEffect(() => {
         let isMounted = true;
 
-        const timeoutId = window.setTimeout(() => {
-            async function loadTicketTypes() {
-                setIsLoading(true);
-                setPageMessage("");
+        async function loadTicketTypes() {
+            setIsLoading(true);
+            setPageMessage("");
 
-                try {
-                    const response = await getMatchTicketTypes(matchId);
+            try {
+                const [response, fixtures] = await Promise.all([
+                    getMatchTicketTypes(matchId),
+                    getPublicFixtures().catch(() => [] as PublicFixtureApi[]),
+                ]);
 
-                    if (!isMounted) return;
+                if (!isMounted) return;
 
-                    const activeTypes = response.ticket_types.filter(
-                        (ticketType) => ticketType.status === "ACTIVE",
-                    );
+                const activeTypes = response.ticket_types.filter(
+                    (ticketType) => ticketType.status === "ACTIVE",
+                );
 
-                    setTicketTypes(activeTypes);
-                    setUsesLiveBackendTickets(activeTypes.length > 0);
+                setMatchResponse(response);
+                setPublicFixture(findFixture(fixtures, matchId));
+                setTicketTypes(activeTypes);
+                setSelectedTicketTypeId(activeTypes[0]?.id ?? null);
 
-                    const preferredType =
-                        activeTypes.find((ticketType) =>
-                            ticketType.name.toLowerCase().includes(preferredTier),
-                        ) ?? activeTypes[0];
-
-                    setSelectedTicketTypeId(preferredType?.id ?? null);
-                } catch {
-                    if (!isMounted) return;
-
-                    const fallbackTypes = getFallbackTicketTypes(matchId);
-                    setUsesLiveBackendTickets(false);
-                    setTicketTypes(fallbackTypes);
-
-                    const preferredType =
-                        fallbackTypes.find((ticketType) =>
-                            ticketType.name.toLowerCase().includes(preferredTier),
-                        ) ?? fallbackTypes[0];
-
-                    setSelectedTicketTypeId(preferredType?.id ?? null);
+                if (!activeTypes.length) {
                     setPageMessage(
-                        "Live backend ticket types were not found for this match, so sample ticket types are shown for browsing only. Flutterwave payment is disabled until this match has real backend ticket types.",
+                        "This match exists, but it does not currently have active ticket types.",
                     );
-                } finally {
-                    if (isMounted) {
-                        setIsLoading(false);
-                    }
+                }
+            } catch {
+                if (!isMounted) return;
+
+                setMatchResponse(null);
+                setPublicFixture(null);
+                setTicketTypes([]);
+                setSelectedTicketTypeId(null);
+                setPageMessage(
+                    "Ticket types could not be loaded for this match. Confirm the match and ticket types exist in staging.",
+                );
+            } finally {
+                if (isMounted) {
+                    setIsLoading(false);
                 }
             }
+        }
 
-            void loadTicketTypes();
-        }, 0);
+        void loadTicketTypes();
 
         return () => {
             isMounted = false;
-            window.clearTimeout(timeoutId);
         };
-    }, [matchId, preferredTier]);
+    }, [matchId]);
 
     async function handleCheckout() {
         if (!selectedTicketType) {
             setPageMessage("Please select a ticket type before continuing.");
-            return;
-        }
-
-        if (!usesLiveBackendTickets) {
-            setPageMessage(
-                "This match is currently using public demo ticket data only. Please seed real backend ticket types for this match before using Flutterwave checkout.",
-            );
             return;
         }
 
@@ -296,11 +267,11 @@ function TicketCheckoutPage() {
 
             <header className={styles.pageHeader}>
                 <div>
-                    <span className={styles.eyebrow}>Ticket Checkout</span>
+                    <span className={styles.eyebrow}>Secure Checkout</span>
                     <h1>Complete your match ticket order</h1>
                     <p>
-                        Select your ticket type and quantity. Payment is completed securely
-                        through Flutterwave.
+                        Select your ticket category and quantity. Flutterwave will handle
+                        the secure Mobile Money or card payment.
                     </p>
                 </div>
             </header>
@@ -315,23 +286,33 @@ function TicketCheckoutPage() {
             <div className={styles.layoutGrid}>
                 <main className={styles.mainColumn}>
                     <section className={styles.matchCard}>
-                        <span>{demoMatch.competition}</span>
-                        <h2>{demoMatch.label}</h2>
-
-                        <div className={styles.matchTeams}>
-                            <strong>{demoMatch.homeTeam}</strong>
-                            <b>VS</b>
-                            <strong>{demoMatch.awayTeam}</strong>
+                        <div className={styles.matchCardTopline}>
+                            <span>{competitionName}</span>
+                            <em>{matchResponse?.match.status ?? publicFixture?.status ?? "SCHEDULED"}</em>
                         </div>
+
+                        <div className={styles.checkoutMatchTeams}>
+                            <CheckoutTeam
+                                name={homeTeam}
+                                logo={publicFixture?.home_club_logo_url}
+                            />
+                            <b>VS</b>
+                            <CheckoutTeam
+                                name={awayTeam}
+                                logo={publicFixture?.away_club_logo_url}
+                            />
+                        </div>
+
+                        <h2>{matchLabel}</h2>
 
                         <div className={styles.matchMeta}>
                             <p>
                                 <CalendarDays size={16} strokeWidth={2.3} aria-hidden="true" />
-                                {demoMatch.date} • {demoMatch.time}
+                                {matchDate.date} • {matchDate.time}
                             </p>
                             <p>
                                 <MapPin size={16} strokeWidth={2.3} aria-hidden="true" />
-                                {demoMatch.venue}
+                                {venue}
                             </p>
                         </div>
                     </section>
@@ -340,7 +321,7 @@ function TicketCheckoutPage() {
                         <div className={styles.panelHeader}>
                             <div>
                                 <h2>Select Ticket Type</h2>
-                                <p>Choose the ticket category you want to purchase.</p>
+                                <p>Choose one of the active ticket categories available for this match.</p>
                             </div>
                         </div>
 
@@ -349,7 +330,7 @@ function TicketCheckoutPage() {
                                 <Loader2 size={24} strokeWidth={2.3} aria-hidden="true" />
                                 Loading ticket types...
                             </div>
-                        ) : (
+                        ) : ticketTypes.length ? (
                             <div className={styles.ticketTypeGrid}>
                                 {ticketTypes.map((ticketType) => {
                                     const isSelected = ticketType.id === selectedTicketTypeId;
@@ -374,24 +355,17 @@ function TicketCheckoutPage() {
 
                                             <div>
                                                 <h3>{ticketType.name}</h3>
-                                                <p>{ticketType.description || "Match access ticket"}</p>
+                                                <p>{ticketType.description || "Match access ticket."}</p>
                                             </div>
 
                                             <strong>
                                                 {formatCurrency(Number(ticketType.price), ticketType.currency)}
                                             </strong>
-
-                                            <small>
-                                                {ticketType.remaining_quantity} tickets available
-                                            </small>
+                                            <small>{ticketType.remaining_quantity} tickets available</small>
 
                                             {isSelected ? (
                                                 <em>
-                                                    <CheckCircle2
-                                                        size={16}
-                                                        strokeWidth={2.4}
-                                                        aria-hidden="true"
-                                                    />
+                                                    <CheckCircle2 size={15} strokeWidth={2.4} />
                                                     Selected
                                                 </em>
                                             ) : null}
@@ -399,6 +373,8 @@ function TicketCheckoutPage() {
                                     );
                                 })}
                             </div>
+                        ) : (
+                            <div className={styles.loadingBox}>No active ticket types are available.</div>
                         )}
                     </section>
                 </main>
@@ -406,9 +382,8 @@ function TicketCheckoutPage() {
                 <aside className={styles.checkoutPanel}>
                     <div className={styles.sideHeader}>
                         <span>
-                            <CreditCard size={26} strokeWidth={2.3} aria-hidden="true" />
+                            <CreditCard size={24} strokeWidth={2.3} aria-hidden="true" />
                         </span>
-
                         <div>
                             <h2>Order Summary</h2>
                             <p>Review your ticket order before payment.</p>
@@ -418,19 +393,15 @@ function TicketCheckoutPage() {
                     <dl className={styles.summaryList}>
                         <div>
                             <dt>Match</dt>
-                            <dd>{demoMatch.label}</dd>
+                            <dd>{matchLabel}</dd>
                         </div>
                         <div>
                             <dt>Ticket Type</dt>
-                            <dd>{selectedTicketType?.name ?? "Select ticket"}</dd>
+                            <dd>{selectedTicketType?.name ?? "Select a ticket type"}</dd>
                         </div>
                         <div>
                             <dt>Unit Price</dt>
-                            <dd>
-                                {selectedTicketType
-                                    ? formatCurrency(ticketPrice, selectedTicketType.currency)
-                                    : "UGX 0"}
-                            </dd>
+                            <dd>{formatCurrency(ticketPrice, selectedTicketType?.currency)}</dd>
                         </div>
                     </dl>
 
@@ -439,39 +410,28 @@ function TicketCheckoutPage() {
                         <select
                             value={quantity}
                             onChange={(event) => setQuantity(Number(event.target.value))}
-                            disabled={!selectedTicketType || isSubmitting}
+                            disabled={!selectedTicketType}
                         >
-                            {Array.from({ length: maxQuantity }, (_, index) => index + 1).map(
-                                (value) => (
-                                    <option value={value} key={value}>
-                                        {value}
-                                    </option>
-                                ),
-                            )}
+                            {Array.from({ length: maxQuantity }, (_, index) => index + 1).map((value) => (
+                                <option key={value} value={value}>
+                                    {value}
+                                </option>
+                            ))}
                         </select>
                     </label>
 
                     <div className={styles.totalRow}>
                         <span>Total</span>
-                        <strong>
-                            {selectedTicketType
-                                ? formatCurrency(totalAmount, selectedTicketType.currency)
-                                : "UGX 0"}
-                        </strong>
+                        <strong>{formatCurrency(totalAmount, selectedTicketType?.currency)}</strong>
                     </div>
 
                     <button
                         type="button"
                         className={styles.checkoutButton}
-                        onClick={handleCheckout}
-                        disabled={isLoading || isSubmitting || !selectedTicketType || !usesLiveBackendTickets}
+                        onClick={() => void handleCheckout()}
+                        disabled={isLoading || isSubmitting || !selectedTicketType}
                     >
-                        {!usesLiveBackendTickets ? (
-                            <>
-                                <AlertTriangle size={18} strokeWidth={2.4} aria-hidden="true" />
-                                Backend ticket types required
-                            </>
-                        ) : isSubmitting ? (
+                        {isSubmitting ? (
                             <>
                                 <Loader2 size={18} strokeWidth={2.4} aria-hidden="true" />
                                 Redirecting...
@@ -485,8 +445,8 @@ function TicketCheckoutPage() {
                     </button>
 
                     <p className={styles.secureNote}>
-                        Flutterwave will handle Mobile Money and card payment options on the
-                        secure hosted checkout page.
+                        You will be redirected to Flutterwave checkout, then returned to
+                        League OS for payment verification.
                     </p>
                 </aside>
             </div>

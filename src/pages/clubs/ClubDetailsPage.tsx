@@ -1,3 +1,4 @@
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import {
   CalendarDays,
@@ -13,90 +14,283 @@ import {
 } from 'lucide-react';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
+import SafeImage from '../../components/SafeImage/SafeImage';
 import {
-  competitionStandings,
-  getClubBySlug,
-  publicClubs,
-  publicTeams,
-} from '../../data/publicBrowseCatalog';
-import { useBackendClubs } from '../../hooks/useBackendClubs';
+  getPublicClubs,
+  getPublicCompetitions,
+  getPublicFixtures,
+  getPublicStandings,
+  type PublicClubApi,
+  type PublicCompetitionApi,
+  type PublicFixtureApi,
+  type PublicStandingApi,
+} from '../../services/publicDashboardService';
 import './ClubDetailsPage.css';
 
-function getSportLabel(sport: string) {
+type SportName = 'Rugby' | 'Football' | 'Basketball' | 'Other';
+
+type ClubDetails = {
+  id: number;
+  slug: string;
+  name: string;
+  shortName: string;
+  sport: SportName;
+  league: string;
+  location: string;
+  addedYear: string;
+  logo: string;
+  banner: string;
+  primaryColor: string;
+  secondaryColor: string;
+  description: string;
+};
+
+function normalizeSport(club: PublicClubApi): SportName {
+  const rawSport = `${club.sport_display || club.sport || ''}`.toLowerCase();
+
+  if (rawSport.includes('rugby')) return 'Rugby';
+  if (rawSport.includes('football')) return 'Football';
+  if (rawSport.includes('basketball')) return 'Basketball';
+
+  return 'Other';
+}
+
+function getSportLabel(sport: SportName) {
   if (sport === 'Rugby') return 'Rugby Club';
   if (sport === 'Football') return 'Football Club';
   if (sport === 'Basketball') return 'Basketball Club';
-  return `${sport} Club`;
+  return 'Club';
 }
 
-function getHomeGround(slug: string, sport: string, location: string) {
-  const grounds: Record<string, string> = {
-    kobs: 'Legends Rugby Grounds, Kampala',
-    'kcca-fc': 'MTN Omondi Stadium, Lugogo',
-    'sc-villa': 'Mutesa II Stadium, Wankulukuku',
-    'impis-rfc': 'Makerere Rugby Grounds, Kampala',
-    'black-pirates': 'Kings Park Arena, Bweyogerere',
-    'platinum-heathens': 'Kyadondo Rugby Club, Kampala',
-    'namuwongo-blazers': 'Lugogo Indoor Arena, Kampala',
-    'city-oilers': 'Lugogo Indoor Arena, Kampala',
-    'vipers-sc': 'St Mary’s Stadium, Kitende',
+function leagueNameFromSport(sport: SportName) {
+  if (sport === 'Football') return 'StarTimes Uganda Premier League';
+  if (sport === 'Rugby') return 'Nile Special Rugby Premiership';
+  if (sport === 'Basketball') return 'National Basketball League';
+
+  return 'League OS';
+}
+
+function buildClubInitials(name: string) {
+  return name
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join('');
+}
+
+function yearFromDate(value?: string) {
+  if (!value) return 'N/A';
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) return 'N/A';
+
+  return String(date.getFullYear());
+}
+
+function mapBackendClubToDetails(club: PublicClubApi): ClubDetails {
+  const sport = normalizeSport(club);
+  const shortName = club.short_name || buildClubInitials(club.name) || club.name;
+
+  return {
+    id: club.id,
+    slug: club.slug,
+    name: club.name,
+    shortName,
+    sport,
+    league: leagueNameFromSport(sport),
+    location: 'Uganda',
+    addedYear: yearFromDate(club.created_at),
+    logo: club.logo_url || club.logo || '',
+    banner: club.banner_url || club.banner || '',
+    primaryColor: club.primary_color || '#7b3ff2',
+    secondaryColor: club.secondary_color || '#ff7a18',
+    description: `${club.name} is a ${getSportLabel(sport).toLowerCase()} available from the League OS backend club catalogue.`,
   };
-
-  return grounds[slug] ?? (sport === 'Basketball' ? 'Lugogo Indoor Arena, Kampala' : location);
 }
 
-function getFullName(slug: string, name: string) {
-  const names: Record<string, string> = {
-    kobs: 'Kampala Commercial Bank (KCB) Rugby Club',
-    'kcca-fc': 'Kampala Capital City Authority Football Club',
-    'sc-villa': 'Sports Club Villa Jogoo',
-    'impis-rfc': 'Impis Rugby Football Club',
-    'black-pirates': 'Stanbic Black Pirates Rugby Club',
-    'platinum-heathens': 'Platinum Heathens Rugby Club',
-    'namuwongo-blazers': 'Namuwongo Blazers Basketball Club',
-    'city-oilers': 'City Oilers Basketball Club',
-    'vipers-sc': 'Vipers Sports Club',
+function findCompetitionForClub(
+  club: ClubDetails,
+  competitions: PublicCompetitionApi[],
+) {
+  return competitions.find((competition) => {
+    const name = competition.name.toLowerCase();
+    const leagueName = `${competition.league_name || ''}`.toLowerCase();
+
+    if (club.sport === 'Rugby') {
+      return name.includes('rugby') || leagueName.includes('rugby');
+    }
+
+    if (club.sport === 'Football') {
+      return name.includes('uganda premier league') || leagueName.includes('football');
+    }
+
+    if (club.sport === 'Basketball') {
+      return name.includes('basketball') || leagueName.includes('basketball');
+    }
+
+    return false;
+  });
+}
+
+function getHomeGround(fixtures: PublicFixtureApi[]) {
+  return fixtures.find((fixture) => fixture.venue)?.venue || 'Venue to be confirmed';
+}
+
+function formatFixtureDate(value?: string | null) {
+  if (!value) return { month: 'TBA', day: '--', date: 'Date pending', time: 'Kickoff TBA' };
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return { month: 'TBA', day: '--', date: 'Date pending', time: 'Kickoff TBA' };
+  }
+
+  return {
+    month: date.toLocaleDateString('en-GB', { month: 'short' }).toUpperCase(),
+    day: date.toLocaleDateString('en-GB', { day: '2-digit' }),
+    date: date.toLocaleDateString('en-GB', {
+      weekday: 'short',
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    }),
+    time: date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
   };
-
-  return names[slug] ?? name;
 }
 
-function getNickname(slug: string, name: string) {
-  const names: Record<string, string> = {
-    kobs: 'The Bankers',
-    'kcca-fc': 'The Kasasiro Boys',
-    'sc-villa': 'The Jogoos',
-    'impis-rfc': 'The Makerere Impis',
-    'black-pirates': 'The Sea Robbers',
-    'platinum-heathens': 'The Heathens',
-    'namuwongo-blazers': 'The Blazers',
-    'city-oilers': 'The Oilers',
-    'vipers-sc': 'The Venoms',
+function getOpponentForFixture(club: ClubDetails, fixture: PublicFixtureApi) {
+  const isHome = fixture.home_club === club.id || fixture.home_club_slug === club.slug;
+
+  return {
+    name: isHome ? fixture.away_club_name : fixture.home_club_name,
+    logo: isHome ? fixture.away_club_logo_url : fixture.home_club_logo_url,
   };
-
-  return names[slug] ?? name;
 }
 
-function getCompetitionForClub(slug: string) {
-  return competitionStandings.find((competition) =>
-    competition.rows.some((row) => row.slug === slug),
-  );
-}
+function getRecentForm(standing?: PublicStandingApi): string[] {
+  const form = standing?.form;
 
-function getStandingForClub(slug: string) {
-  return competitionStandings.flatMap((competition) => competition.rows).find((row) => row.slug === slug);
-}
+  if (Array.isArray(form)) {
+    return form.filter(Boolean);
+  }
 
-function getOpponents(slug: string, sport: string) {
-  return publicClubs.filter((club) => club.slug !== slug && club.sport === sport).slice(0, 3);
+  if (typeof form === 'string') {
+    return form
+      .replace(/[,-]/g, '')
+      .split('')
+      .map((item) => item.trim().toUpperCase())
+      .filter(Boolean);
+  }
+
+  return [];
 }
 
 function ClubDetailsPage() {
   const { clubSlug } = useParams();
-  const baseClub = getClubBySlug(clubSlug);
-  const { clubs: backendClubs } = useBackendClubs();
+  const [club, setClub] = useState<ClubDetails | null>(null);
+  const [competition, setCompetition] = useState<PublicCompetitionApi | null>(null);
+  const [standing, setStanding] = useState<PublicStandingApi | null>(null);
+  const [fixtures, setFixtures] = useState<PublicFixtureApi[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState('');
 
-  if (!baseClub) {
+  useEffect(() => {
+    let active = true;
+
+    async function loadClubDetails() {
+      if (!clubSlug) {
+        setClub(null);
+        setErrorMessage('No club slug was provided.');
+        setIsLoading(false);
+        return;
+      }
+
+      setIsLoading(true);
+      setErrorMessage('');
+
+      try {
+        const clubs = await getPublicClubs();
+        const selectedClub = clubs.find((item) => item.slug === clubSlug);
+
+        if (!active) return;
+
+        if (!selectedClub) {
+          setClub(null);
+          setFixtures([]);
+          setCompetition(null);
+          setStanding(null);
+          setErrorMessage('We could not find that club in the backend club catalogue.');
+          return;
+        }
+
+        const mappedClub = mapBackendClubToDetails(selectedClub);
+        setClub(mappedClub);
+
+        const [clubFixtures, competitions] = await Promise.all([
+          getPublicFixtures({ clubId: mappedClub.id }),
+          getPublicCompetitions(),
+        ]);
+
+        if (!active) return;
+
+        const selectedCompetition = findCompetitionForClub(mappedClub, competitions) ?? null;
+        setFixtures(clubFixtures);
+        setCompetition(selectedCompetition);
+
+        if (selectedCompetition) {
+          const standings = await getPublicStandings(selectedCompetition.id);
+
+          if (!active) return;
+
+          setStanding(
+            standings.find((row) => row.club_slug === mappedClub.slug) ?? null,
+          );
+        } else {
+          setStanding(null);
+        }
+      } catch {
+        if (!active) return;
+
+        setClub(null);
+        setFixtures([]);
+        setCompetition(null);
+        setStanding(null);
+        setErrorMessage('Could not load this club from the backend. Please check the public club APIs.');
+      } finally {
+        if (active) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    void loadClubDetails();
+
+    return () => {
+      active = false;
+    };
+  }, [clubSlug]);
+
+  const recentForm = useMemo(() => getRecentForm(standing ?? undefined), [standing]);
+
+  if (isLoading) {
+    return (
+      <>
+        <Navbar />
+        <main className="club-detail-page">
+          <section className="club-detail-not-found">
+            <ShieldCheck size={48} />
+            <h1>Loading club profile</h1>
+            <p>Checking the backend club catalogue.</p>
+          </section>
+        </main>
+        <Footer />
+      </>
+    );
+  }
+
+  if (!club) {
     return (
       <>
         <Navbar />
@@ -104,37 +298,31 @@ function ClubDetailsPage() {
           <section className="club-detail-not-found">
             <ShieldCheck size={48} />
             <h1>Club not found</h1>
-            <p>We could not find that club profile.</p>
+            <p>{errorMessage || 'We could not find that club profile.'}</p>
             <Link to="/clubs">Back to Clubs</Link>
           </section>
-          <Footer />
-      </main>
+        </main>
+        <Footer />
       </>
     );
   }
 
-  const backendClub = backendClubs.find((club) => club.slug === baseClub.slug);
-  const club = backendClub ? { ...baseClub, name: backendClub.name } : baseClub;
-
-  const competition = getCompetitionForClub(club.slug);
-  const standing = getStandingForClub(club.slug);
-  const teams = publicTeams.filter((team) => team.clubSlug === club.slug);
-  const opponents = getOpponents(club.slug, club.sport);
-  const recentForm = standing?.form ?? ['W', 'W', 'L', 'W', 'W'];
-
-  const featuredPlayers = [
-    { name: 'Ian Munyani', position: club.sport === 'Rugby' ? 'Centre' : club.sport === 'Football' ? 'Forward' : 'Guard', number: 10 },
-    { name: 'Patrick Ochan', position: club.sport === 'Rugby' ? 'Scrum-half' : club.sport === 'Football' ? 'Midfielder' : 'Forward', number: 9 },
-    { name: 'Pius Ogena', position: club.sport === 'Rugby' ? '8th Man' : club.sport === 'Football' ? 'Defender' : 'Centre', number: 8 },
-    { name: 'Brian Odongo', position: club.sport === 'Rugby' ? 'Hooker' : club.sport === 'Football' ? 'Goalkeeper' : 'Captain', number: 13 },
-  ];
+  const homeGround = getHomeGround(fixtures);
+  const primaryFixture = fixtures[0] ?? null;
 
   return (
     <>
       <Navbar />
 
       <main className="club-detail-page">
-        <section className="club-detail-hero">
+        <section
+          className="club-detail-hero"
+          style={
+            club.banner
+              ? { backgroundImage: `linear-gradient(135deg, rgba(11, 14, 66, 0.93), rgba(21, 24, 79, 0.85)), url(${club.banner})` }
+              : undefined
+          }
+        >
           <div className="club-detail-breadcrumb">
             <Link to="/">Home</Link>
             <span>›</span>
@@ -146,26 +334,26 @@ function ClubDetailsPage() {
           <div className="club-detail-hero-grid">
             <div className="club-detail-logo-wrap">
               <div className="club-detail-logo-ring">
-                <img src={club.logo} alt={club.name} />
+                <SafeImage src={club.logo} alt={club.name} fallback={<span>{club.shortName}</span>} />
               </div>
-              {club.featured ? <span className="club-detail-verified">✓</span> : null}
+              <span className="club-detail-verified">✓</span>
             </div>
 
             <div className="club-detail-intro">
-              {club.featured ? <span className="club-detail-badge">Featured Club</span> : null}
+              <span className="club-detail-badge">Backend Club Profile</span>
 
               <h1>{club.name}</h1>
 
               <div className="club-detail-meta">
                 <span>{getSportLabel(club.sport)}</span>
-                <span>{club.league}</span>
+                <span>{competition?.name ?? club.league}</span>
                 <span>
                   <MapPin size={15} />
                   {club.location}
                 </span>
               </div>
 
-              <p className="club-detail-founded">Founded {club.founded}</p>
+              <p className="club-detail-founded">Added {club.addedYear}</p>
               <p className="club-detail-description">{club.description}</p>
 
               <a href="#overview" className="club-detail-read-more">
@@ -195,27 +383,27 @@ function ClubDetailsPage() {
 
               <dl>
                 <div>
-                  <dt>Full Name</dt>
-                  <dd>{getFullName(club.slug, club.name)}</dd>
+                  <dt>Backend Name</dt>
+                  <dd>{club.name}</dd>
                 </div>
                 <div>
-                  <dt>Nickname</dt>
-                  <dd>{getNickname(club.slug, club.name)}</dd>
+                  <dt>Short Name</dt>
+                  <dd>{club.shortName}</dd>
                 </div>
                 <div>
                   <dt>Colors</dt>
                   <dd className="club-detail-colors">
-                    <span />
-                    <span />
+                    <span style={{ backgroundColor: club.primaryColor }} />
+                    <span style={{ backgroundColor: club.secondaryColor }} />
                   </dd>
                 </div>
                 <div>
                   <dt>Home Ground</dt>
-                  <dd>{getHomeGround(club.slug, club.sport, club.location)}</dd>
+                  <dd>{homeGround}</dd>
                 </div>
                 <div>
-                  <dt>Capacity</dt>
-                  <dd>{club.sport === 'Basketball' ? '3,500' : club.sport === 'Football' ? '10,000' : '5,000'}</dd>
+                  <dt>Backend ID</dt>
+                  <dd>{club.id}</dd>
                 </div>
                 <div>
                   <dt>Website</dt>
@@ -251,32 +439,32 @@ function ClubDetailsPage() {
               <div className="club-detail-performance-grid">
                 <article>
                   <Trophy size={25} />
-                  <strong>{club.trophies}</strong>
-                  <span>Trophies Won</span>
+                  <strong>{standing?.points ?? 'N/A'}</strong>
+                  <span>Points</span>
                 </article>
                 <article>
                   <CalendarDays size={25} />
-                  <strong>{club.founded}</strong>
-                  <span>Founded</span>
+                  <strong>{fixtures.length}</strong>
+                  <span>Upcoming Fixtures</span>
                 </article>
                 <article>
                   <Users size={25} />
-                  <strong>{club.followers}</strong>
-                  <span>Followers</span>
+                  <strong>{club.shortName}</strong>
+                  <span>Short Name</span>
                 </article>
                 <article>
                   <Star size={25} />
-                  <strong>{standing?.position ?? club.ranking}</strong>
+                  <strong>{standing?.position ?? 'N/A'}</strong>
                   <span>Club Ranking</span>
                 </article>
                 <article>
                   <ShieldCheck size={25} />
-                  <strong>{standing?.played ?? 12}</strong>
+                  <strong>{standing?.played ?? 0}</strong>
                   <span>Matches Played</span>
                 </article>
                 <article>
                   <Crown size={25} />
-                  <strong>{standing ? `${Math.round((standing.won / standing.played) * 100)}%` : '62%'}</strong>
+                  <strong>{standing && standing.played ? `${Math.round((standing.won / standing.played) * 100)}%` : 'N/A'}</strong>
                   <span>Win Rate</span>
                 </article>
               </div>
@@ -285,73 +473,60 @@ function ClubDetailsPage() {
                 <article>
                   <h3>Recent Form</h3>
                   <div className="club-detail-form">
-                    {recentForm.map((item, index) => (
-                      <span
-                        key={`${item}-${index}`}
-                        className={
-                          item === 'W'
-                            ? 'club-detail-win'
-                            : item === 'L'
-                              ? 'club-detail-loss'
-                              : 'club-detail-draw'
-                        }
-                      >
-                        {item}
-                      </span>
-                    ))}
+                    {recentForm.length ? (
+                      recentForm.map((item, index) => (
+                        <span
+                          key={`${club.slug}-${item}-${index}`}
+                          className={
+                            item === 'W'
+                              ? 'club-detail-win'
+                              : item === 'L'
+                                ? 'club-detail-loss'
+                                : 'club-detail-draw'
+                          }
+                        >
+                          {item}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="club-detail-draw">N/A</span>
+                    )}
                   </div>
-                  <p>Last 5 Matches</p>
+                  <p>From backend standings</p>
                 </article>
 
                 <article>
-                  <h3>Honors</h3>
+                  <h3>Standings Summary</h3>
                   <div className="club-detail-honors">
-                    <span>🏆 <strong>{club.trophies}</strong><small>League Titles</small></span>
-                    <span>🥇 <strong>{Math.max(1, Math.round(club.trophies / 3))}</strong><small>Cups</small></span>
-                    <span>🥈 <strong>{Math.max(1, Math.round(club.trophies / 5))}</strong><small>Finals</small></span>
-                    <span>🥉 <strong>{Math.max(1, Math.round(club.trophies / 2))}</strong><small>Other</small></span>
+                    <span>🏆 <strong>{standing?.won ?? 0}</strong><small>Wins</small></span>
+                    <span>🤝 <strong>{standing?.drawn ?? 0}</strong><small>Draws</small></span>
+                    <span>📉 <strong>{standing?.lost ?? 0}</strong><small>Losses</small></span>
+                    <span>⭐ <strong>{standing?.points ?? 0}</strong><small>Points</small></span>
                   </div>
                 </article>
               </div>
             </section>
 
-
             <section className="club-detail-panel" id="teams">
               <div className="club-detail-panel-header">
                 <h2>Teams Under {club.name}</h2>
                 <Link to={`/clubs/${club.slug}/teams`}>
-                  View All Teams <ChevronRight size={15} />
+                  View Team Page <ChevronRight size={15} />
                 </Link>
               </div>
 
               <div className="club-detail-teams-grid">
-                {teams.length ? (
-                  teams.map((team) => (
-                    <article key={team.slug}>
-                      <img src={team.image || club.logo} alt={team.name} />
-                      <div>
-                        <h3>{team.name}</h3>
-                        <p>{team.sport} • {team.league}</p>
-                        <span>{team.squadSize} players in squad</span>
-                      </div>
-                      <Link to={`/teams/${team.slug}/squad`}>
-                        View Squad <ChevronRight size={15} />
-                      </Link>
-                    </article>
-                  ))
-                ) : (
-                  <article>
-                    <img src={club.logo} alt={club.name} />
-                    <div>
-                      <h3>{club.name} Senior Team</h3>
-                      <p>{club.sport} • {club.league}</p>
-                      <span>Squad setup pending</span>
-                    </div>
-                    <Link to="/clubs">
-                      Back to Clubs <ChevronRight size={15} />
-                    </Link>
-                  </article>
-                )}
+                <article>
+                  <SafeImage src={club.logo} alt={club.name} fallback={<span>{club.shortName}</span>} />
+                  <div>
+                    <h3>{club.name}</h3>
+                    <p>{getSportLabel(club.sport)} • {competition?.name ?? club.league}</p>
+                    <span>Team and squad API pending</span>
+                  </div>
+                  <Link to={`/clubs/${club.slug}/teams`}>
+                    Open Team Page <ChevronRight size={15} />
+                  </Link>
+                </article>
               </div>
             </section>
 
@@ -361,25 +536,31 @@ function ClubDetailsPage() {
                 <Link to="/fixtures">View Fixtures <ChevronRight size={15} /></Link>
               </div>
 
-              {opponents[0] ? (
+              {primaryFixture ? (
                 <article className="club-detail-next-fixture">
                   <div>
-                    <img src={club.logo} alt="" />
+                    <SafeImage src={club.logo} alt="" fallback={<span>{club.shortName}</span>} />
                     <strong>{club.name}</strong>
                   </div>
 
                   <div>
-                    <span>Sat, 24 May 2025</span>
-                    <strong>{club.sport === 'Basketball' ? '7:00 PM EAT' : '4:00 PM EAT'}</strong>
-                    <small>{getHomeGround(club.slug, club.sport, club.location)}</small>
+                    <span>{formatFixtureDate(primaryFixture.match_date).date}</span>
+                    <strong>{formatFixtureDate(primaryFixture.match_date).time}</strong>
+                    <small>{primaryFixture.venue || homeGround}</small>
                   </div>
 
                   <div>
-                    <strong>{opponents[0].name}</strong>
-                    <img src={opponents[0].logo} alt="" />
+                    <strong>{getOpponentForFixture(club, primaryFixture).name}</strong>
+                    <SafeImage
+                      src={getOpponentForFixture(club, primaryFixture).logo}
+                      alt=""
+                      fallback={<span>{getOpponentForFixture(club, primaryFixture).name.slice(0, 2).toUpperCase()}</span>}
+                    />
                   </div>
                 </article>
-              ) : null}
+              ) : (
+                <p className="club-detail-muted">No upcoming fixtures are currently available for this club from the backend.</p>
+              )}
             </section>
 
             <section className="club-detail-panel" id="news">
@@ -389,22 +570,16 @@ function ClubDetailsPage() {
               </div>
 
               <div className="club-detail-news-grid">
-                {[
-                  `${club.name} clinch vital win in top-of-the-table clash`,
-                  `Strong second half secures bonus point victory`,
-                  `Youth development programme empowering future stars`,
-                ].map((title, index) => (
-                  <article key={title}>
-                    <div className="club-detail-news-thumb">
-                      <Newspaper size={28} />
-                    </div>
-                    <div>
-                      <span>{index === 1 ? 'Match Report' : 'Club News'}</span>
-                      <h3>{title}</h3>
-                      <p>{index + 1} day ago</p>
-                    </div>
-                  </article>
-                ))}
+                <article>
+                  <div className="club-detail-news-thumb">
+                    <Newspaper size={28} />
+                  </div>
+                  <div>
+                    <span>Backend API Pending</span>
+                    <h3>Club news will load here after the public news API is added.</h3>
+                    <p>No hardcoded news article is shown on this club profile.</p>
+                  </div>
+                </article>
               </div>
             </section>
           </div>
@@ -418,7 +593,7 @@ function ClubDetailsPage() {
               </Link>
             </section>
 
-            <section className="club-detail-panel" id="teams">
+            <section className="club-detail-panel" id="players">
               <div className="club-detail-panel-header">
                 <h2>Featured Players</h2>
                 <Link to={`/clubs/${club.slug}/teams`}>
@@ -426,16 +601,9 @@ function ClubDetailsPage() {
                 </Link>
               </div>
 
-              <div className="club-detail-player-row">
-                {featuredPlayers.map((player) => (
-                  <Link key={player.name} to={`/clubs/${club.slug}/teams`}>
-                    <span>{player.number}</span>
-                    <img src={club.logo} alt={player.name} />
-                    <strong>{player.name}</strong>
-                    <small>{player.position}</small>
-                  </Link>
-                ))}
-              </div>
+              <p className="club-detail-muted">
+                Player data will load here after the public squad/player API is connected.
+              </p>
             </section>
 
             <section className="club-detail-panel">
@@ -445,23 +613,32 @@ function ClubDetailsPage() {
               </div>
 
               <div className="club-detail-fixture-list">
-                {opponents.map((opponent, index) => (
-                  <article key={opponent.slug}>
-                    <div>
-                      <strong>{['MAY', 'MAY', 'JUN'][index] ?? 'JUN'}</strong>
-                      <span>{['24', '31', '07'][index] ?? '14'}</span>
-                    </div>
+                {fixtures.length ? (
+                  fixtures.slice(0, 3).map((fixture) => {
+                    const fixtureDate = formatFixtureDate(fixture.match_date);
+                    const opponent = getOpponentForFixture(club, fixture);
 
-                    <img src={opponent.logo} alt="" />
+                    return (
+                      <article key={fixture.id}>
+                        <div>
+                          <strong>{fixtureDate.month}</strong>
+                          <span>{fixtureDate.day}</span>
+                        </div>
 
-                    <div>
-                      <strong>vs {opponent.name}</strong>
-                      <p>{competition?.name ?? club.league}</p>
-                    </div>
+                        <SafeImage src={opponent.logo} alt="" fallback={<span>{opponent.name.slice(0, 2).toUpperCase()}</span>} />
 
-                    <span>{club.sport === 'Basketball' ? '7:00 PM EAT' : '4:00 PM EAT'}</span>
-                  </article>
-                ))}
+                        <div>
+                          <strong>vs {opponent.name}</strong>
+                          <p>{fixture.competition_name}</p>
+                        </div>
+
+                        <span>{fixtureDate.time}</span>
+                      </article>
+                    );
+                  })
+                ) : (
+                  <p className="club-detail-muted">No upcoming backend fixtures for this club yet.</p>
+                )}
               </div>
 
               <Link to="/fixtures" className="club-detail-outline-link">
@@ -479,6 +656,7 @@ function ClubDetailsPage() {
           </aside>
         </section>
       </main>
+      <Footer />
     </>
   );
 }

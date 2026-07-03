@@ -645,3 +645,183 @@
   opacity: 0.88;
 }
 
+
+.tickets-empty-state {
+  border-radius: 14px;
+  padding: 1.4rem;
+  margin-bottom: 1.25rem;
+  color: rgba(255, 255, 255, 0.78);
+  background: rgba(18, 18, 42, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.buy-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.tickets-hero-panel {
+  border-radius: 24px;
+  padding: clamp(1.5rem, 3vw, 2.4rem);
+  background:
+    radial-gradient(circle at 84% 12%, rgba(249, 115, 22, 0.18), transparent 28%),
+    radial-gradient(circle at 8% 0%, rgba(124, 58, 237, 0.28), transparent 34%),
+    linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(2, 6, 23, 0.74));
+  border: 1px solid rgba(124, 58, 237, 0.28);
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.28);
+}
+
+.tickets-hero-eyebrow {
+  display: inline-flex;
+  min-height: 28px;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0 12px;
+  margin-bottom: 0.8rem;
+  color: #f97316;
+  background: rgba(249, 115, 22, 0.12);
+  border: 1px solid rgba(249, 115, 22, 0.28);
+  font-size: 0.72rem;
+  font-weight: 950;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.ticket-search-panel {
+  border-radius: 18px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  background: rgba(15, 23, 42, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.ticket-search-panel label {
+  display: grid;
+  gap: 0.5rem;
+  color: rgba(255, 255, 255, 0.56);
+  font-size: 0.72rem;
+  font-weight: 950;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.ticket-search-panel input {
+  min-height: 48px;
+  border-radius: 12px;
+  padding: 0 1rem;
+  color: #ffffff;
+  background: rgba(2, 6, 23, 0.66);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  font: inherit;
+  font-size: 0.92rem;
+  font-weight: 800;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.ticket-search-panel input:focus {
+  outline: 0;
+  border-color: rgba(124, 58, 237, 0.76);
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.18);
+}
+
+.ticket-market-summary {
+  margin-top: 1.4rem;
+}
+
+.ticket-market-summary article {
+  min-height: 92px;
+}
+
+.ticket-market-summary strong {
+  font-size: clamp(1.2rem, 2vw, 1.55rem);
+}
+
+.match-grid {
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+}
+
+.match-card {
+  min-height: 330px;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(124, 58, 237, 0.18), transparent 36%),
+    linear-gradient(180deg, rgba(18, 18, 42, 0.94), rgba(8, 12, 28, 0.86));
+  box-shadow: 0 22px 55px rgba(0, 0, 0, 0.22);
+}
+
+.match-card-header {
+  align-items: flex-start;
+}
+
+.match-date,
+.match-buy-seats,
+.match-venue {
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.match-venue {
+  justify-content: center;
+  min-height: 36px;
+}
+
+.team-logo,
+.team-logo-placeholder {
+  width: 66px;
+  height: 66px;
+}
+
+.team-logo-placeholder {
+  font-size: 1rem;
+  color: #ffffff;
+  background: rgba(124, 58, 237, 0.28);
+}
+
+.vs-label {
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.62);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.buy-btn-ordinary {
+  box-shadow: 0 14px 28px rgba(124, 58, 237, 0.28);
+}
+
+/* Ticket card cleanup after backend data connection */
+.tickets-hero-panel {
+  margin-bottom: 1.25rem;
+}
+
+.ticket-market-summary {
+  display: none;
+}
+
+.match-card-header {
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.match-league {
+  border-radius: 999px;
+  padding: 0.45rem 0.85rem;
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: center;
+}
+
+.match-card-details {
+  margin: 0.85rem 0 1.25rem;
+  display: grid;
+  gap: 0.45rem;
+  justify-items: center;
+  color: rgba(255, 255, 255, 0.66);
+  font-size: 0.82rem;
+  font-weight: 800;
+}

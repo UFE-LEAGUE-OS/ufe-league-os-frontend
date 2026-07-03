@@ -1,11 +1,21 @@
 import { CheckCircle2, Ticket } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { useEffect } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import type { VerifyTicketPaymentResponse } from "../../services/ticketCheckoutService";
 import styles from "./TicketCheckoutPage.module.css";
 
 function TicketPaymentSuccessPage() {
     const location = useLocation();
+    const navigate = useNavigate();
     const paymentState = location.state as VerifyTicketPaymentResponse | null;
+
+    useEffect(() => {
+        const timeoutId = window.setTimeout(() => {
+            navigate("/dashboard/tickets", { replace: true });
+        }, 2500);
+
+        return () => window.clearTimeout(timeoutId);
+    }, [navigate]);
 
     return (
         <section className={styles.statePage}>
@@ -17,7 +27,7 @@ function TicketPaymentSuccessPage() {
                 <h1>Ticket Payment Successful</h1>
                 <p>
                     Your payment has been verified and your ticket QR codes are ready in
-                    My Tickets.
+                    My Tickets. We will redirect you to your ticket dashboard.
                 </p>
 
                 {paymentState?.order ? (
@@ -42,7 +52,7 @@ function TicketPaymentSuccessPage() {
                 <div className={styles.stateActions}>
                     <Link to="/dashboard/tickets">
                         <Ticket size={18} strokeWidth={2.4} aria-hidden="true" />
-                        View My Tickets
+                        View My Tickets Now
                     </Link>
                     <Link to="/tickets">Buy More Tickets</Link>
                 </div>

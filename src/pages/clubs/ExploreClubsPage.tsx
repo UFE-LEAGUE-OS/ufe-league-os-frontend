@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import {
   ChevronLeft,
@@ -11,24 +11,66 @@ import {
 } from 'lucide-react';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
-import { publicClubs } from '../../data/publicBrowseCatalog';
-import { useBackendClubs } from '../../hooks/useBackendClubs';
+import SafeImage from '../../components/SafeImage/SafeImage';
+import {
+  getPublicClubs,
+  type PublicClubApi,
+} from '../../services/publicDashboardService';
 import './ExploreClubsPage.css';
 
 const sports = ['All Sports', 'Football', 'Rugby', 'Basketball'];
 const PAGE_SIZE = 6;
 
 const preferredOrder = [
-  'kcca-fc',
   'kobs',
+  'heathens-rfc',
+  'black-pirates',
   'impis-rfc',
   'sc-villa',
-  'platinum-heathens',
-  'namuwongo-blazers',
   'vipers-sc',
-  'black-pirates',
+  'kcca-fc',
   'city-oilers',
+  'namuwongo-blazers',
 ];
+
+type SportName = 'Rugby' | 'Football' | 'Basketball' | 'Other';
+
+type PublicClubCard = {
+  id: number;
+  slug: string;
+  name: string;
+  shortName: string;
+  sport: SportName;
+  league: string;
+  location: string;
+  founded: string;
+  logo: string;
+  featured: boolean;
+  trophies: number;
+  followers: string;
+  ranking: number;
+  matchesPlayed: number;
+  winRate: string;
+  description: string;
+};
+
+function normalizeSport(club: PublicClubApi): SportName {
+  const rawSport = `${club.sport_display || club.sport || ''}`.toLowerCase();
+
+  if (rawSport.includes('rugby')) return 'Rugby';
+  if (rawSport.includes('football')) return 'Football';
+  if (rawSport.includes('basketball')) return 'Basketball';
+
+  return 'Other';
+}
+
+function leagueNameFromSport(sport: SportName) {
+  if (sport === 'Football') return 'StarTimes Uganda Premier League';
+  if (sport === 'Rugby') return 'Nile Special Rugby Premiership';
+  if (sport === 'Basketball') return 'National Basketball League';
+
+  return 'League OS';
+}
 
 function shortLeagueName(league: string) {
   if (league.includes('StarTimes')) return 'StarTimes Uganda Premier League';
@@ -45,7 +87,52 @@ function shortSportLine(sport: string) {
 }
 
 function cityFromLocation(location: string) {
-  return location.split(',')[0]?.trim() || 'Unknown';
+  return location.split(',')[0]?.trim() || 'Uganda';
+}
+
+function yearFromDate(value?: string) {
+  if (!value) return 'N/A';
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) return 'N/A';
+
+  return String(date.getFullYear());
+}
+
+function buildClubInitials(name: string) {
+  return name
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join('');
+}
+
+function mapBackendClubToCard(club: PublicClubApi, index: number): PublicClubCard {
+  const sport = normalizeSport(club);
+  const shortName = club.short_name || buildClubInitials(club.name) || club.name;
+  const rankingIndex = preferredOrder.indexOf(club.slug);
+  const ranking = rankingIndex === -1 ? index + preferredOrder.length + 1 : rankingIndex + 1;
+
+  return {
+    id: club.id,
+    slug: club.slug,
+    name: club.name,
+    shortName,
+    sport,
+    league: leagueNameFromSport(sport),
+    location: 'Uganda',
+    founded: yearFromDate(club.created_at),
+    logo: club.logo_url || club.logo || '',
+    featured: index < 5,
+    trophies: 0,
+    followers: '0',
+    ranking,
+    matchesPlayed: 0,
+    winRate: '0%',
+    description: `${club.name} is a ${shortSportLine(sport).toLowerCase()} registered in the League OS backend catalogue.`,
+  };
 }
 
 function ExploreClubsPage() {
@@ -61,22 +148,46 @@ function ExploreClubsPage() {
   const [sortBy, setSortBy] = useState('Popular');
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [clubs, setClubs] = useState<PublicClubCard[]>([]);
+  const [isLoadingClubs, setIsLoadingClubs] = useState(true);
+  const [clubError, setClubError] = useState('');
 
-  const { clubs: backendClubs } = useBackendClubs();
+  useEffect(() => {
+    let active = true;
 
-  const clubs = useMemo(() => {
-    return publicClubs
-      .map((club) => {
-        const backendClub = backendClubs.find((item) => item.slug === club.slug);
-        return backendClub ? { ...club, name: backendClub.name } : club;
-      })
-      .sort((a, b) => {
-        const aIndex = preferredOrder.indexOf(a.slug);
-        const bIndex = preferredOrder.indexOf(b.slug);
+    async function loadClubs() {
+      setIsLoadingClubs(true);
+      setClubError('');
 
-        return (aIndex === -1 ? 999 : aIndex) - (bIndex === -1 ? 999 : bIndex);
-      });
-  }, [backendClubs]);
+      try {
+        const backendClubs = await getPublicClubs();
+
+        if (!active) return;
+
+        setClubs(
+          backendClubs
+            .map(mapBackendClubToCard)
+            .filter((club) => club.sport !== 'Other')
+            .sort((a, b) => a.ranking - b.ranking),
+        );
+      } catch {
+        if (!active) return;
+
+        setClubs([]);
+        setClubError('Could not load clubs from the backend. Please confirm the public clubs API is available.');
+      } finally {
+        if (active) {
+          setIsLoadingClubs(false);
+        }
+      }
+    }
+
+    void loadClubs();
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const leagues = useMemo(() => {
     return ['All Leagues', ...Array.from(new Set(clubs.map((club) => club.league)))];
@@ -107,7 +218,7 @@ function ExploreClubsPage() {
       if (sortBy === 'Trophies') return b.trophies - a.trophies;
       if (sortBy === 'Followers') return Number.parseFloat(b.followers) - Number.parseFloat(a.followers);
       if (sortBy === 'Newest') return Number(b.founded) - Number(a.founded);
-      return b.ranking - a.ranking;
+      return a.ranking - b.ranking;
     });
   }, [activeSport, clubs, searchQuery, selectedCity, selectedLeague, sortBy]);
 
@@ -116,6 +227,8 @@ function ExploreClubsPage() {
   const startIndex = (safeCurrentPage - 1) * PAGE_SIZE;
   const visibleClubs = filteredClubs.slice(startIndex, startIndex + PAGE_SIZE);
   const featuredClubs = clubs.slice(0, 5);
+  const sportCount = new Set(clubs.map((club) => club.sport).filter((sport) => sport !== 'Other')).size;
+  const leagueCount = new Set(clubs.map((club) => club.league)).size;
 
   function resetToFirstPage() {
     setCurrentPage(1);
@@ -144,19 +257,19 @@ function ExploreClubsPage() {
           <div className="clubs-public-stats">
             <span>
               <Users size={18} />
-              70+ Clubs
+              {isLoadingClubs ? 'Loading Clubs' : `${clubs.length} Clubs`}
             </span>
             <span>
               <Trophy size={18} />
-              3 Sports
+              {sportCount || 3} Sports
             </span>
             <span>
               <Trophy size={18} />
-              10+ Leagues
+              {leagueCount || 3} Leagues
             </span>
             <span>
               <Users size={18} />
-              1 Community
+              Backend Data
             </span>
           </div>
         </section>
@@ -238,13 +351,25 @@ function ExploreClubsPage() {
                 Showing {visibleClubs.length} of {filteredClubs.length} clubs
               </p>
 
+              {isLoadingClubs ? (
+                <p className="clubs-public-count">Loading clubs from the backend...</p>
+              ) : null}
+
+              {!isLoadingClubs && clubError ? (
+                <p className="clubs-public-count">{clubError}</p>
+              ) : null}
+
+              {!isLoadingClubs && !clubError && filteredClubs.length === 0 ? (
+                <p className="clubs-public-count">No clubs matched your filters.</p>
+              ) : null}
+
               <div className="clubs-public-grid">
                 {visibleClubs.map((club) => (
                   <article key={club.slug} className="clubs-public-card">
                     {club.featured ? <span className="clubs-public-featured">Featured</span> : null}
 
                     <div className="clubs-public-logo">
-                      <img src={club.logo} alt={club.name} />
+                      <SafeImage src={club.logo} alt={club.name} fallback={<span>{club.shortName}</span>} />
                     </div>
 
                     <div className="clubs-public-card-copy">
@@ -262,12 +387,12 @@ function ExploreClubsPage() {
 
                     <div className="clubs-public-card-stats">
                       <span>
-                        <small>Est.</small>
+                        <small>Added</small>
                         <strong>{club.founded}</strong>
                       </span>
                       <span>
-                        <small>Trophies</small>
-                        <strong>{club.trophies}</strong>
+                        <small>Matches</small>
+                        <strong>{club.matchesPlayed}</strong>
                       </span>
                       <span>
                         <small>Followers</small>
@@ -277,11 +402,7 @@ function ExploreClubsPage() {
 
                     <div className="clubs-public-card-actions">
                       <Link to={`/clubs/${club.slug}`}>View Club</Link>
-                      <Link to={`/memberships/${club.slug}`}>
-                        {club.slug === 'kobs' || club.slug === 'sc-villa' || club.slug === 'kcca-fc'
-                          ? 'Become Member'
-                          : 'Follow'}
-                      </Link>
+                      <Link to={`/memberships/${club.slug}`}>View Membership</Link>
                     </div>
                   </article>
                 ))}
@@ -333,7 +454,7 @@ function ExploreClubsPage() {
                   {featuredClubs.map((club, index) => (
                     <article key={club.slug} className="clubs-public-featured-item">
                       <span>{index + 1}</span>
-                      <img src={club.logo} alt="" />
+                      <SafeImage src={club.logo} alt="" fallback={<strong>{club.shortName}</strong>} />
                       <div>
                         <h3>{club.name}</h3>
                         <p>{club.sport} Club</p>
