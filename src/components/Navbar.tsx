@@ -1,12 +1,15 @@
-import { useNavigate, useLocation } from 'react-router-dom';
 import { useState, useRef, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   FiBell,
   FiChevronDown,
+  FiCompass,
   FiGrid,
+  FiHome,
   FiLogOut,
   FiMenu,
   FiSearch,
+  FiTag,
   FiUser,
   FiX,
 } from 'react-icons/fi';
@@ -59,6 +62,13 @@ export const publicNavLinks: NavbarLink[] = [
 ];
 
 const defaultNavLinks = publicNavLinks;
+
+const publicMobileItems = [
+  { label: 'Home', route: '/', icon: FiHome },
+  { label: 'Browse', route: '/clubs', icon: FiCompass },
+  { label: 'Tickets', route: '/tickets', icon: FiTag },
+  { label: 'Profile', route: '/profile', icon: FiUser },
+];
 
 function Navbar({ links = defaultNavLinks, showSignup = false }: NavbarProps) {
   const navigate = useNavigate();
@@ -158,6 +168,15 @@ function Navbar({ links = defaultNavLinks, showSignup = false }: NavbarProps) {
   const goToProfileRoute = (route: string) => {
     setUserMenuOpen(false);
     setOpenDropdownLabel(null);
+    navigate(route);
+  };
+
+  const handlePublicMobileNav = (route: string) => {
+    setMobileMenuOpen(false);
+    if (route === '/profile' && !isAuthenticated) {
+      navigate('/login', { state: { from: '/profile' } });
+      return;
+    }
     navigate(route);
   };
 
@@ -378,6 +397,31 @@ function Navbar({ links = defaultNavLinks, showSignup = false }: NavbarProps) {
           )}
         </div>
       )}
+
+      <nav className="public-mobile-bottom-nav" aria-label="Public mobile navigation">
+        {publicMobileItems.map(({ label, route, icon: Icon }) => (
+          <button
+            key={label}
+            type="button"
+            className={`public-mobile-bottom-item ${isActive(route) ? 'active-link' : ''}`}
+            onClick={() => handlePublicMobileNav(route)}
+          >
+            <Icon size={20} />
+            <span>{label}</span>
+          </button>
+        ))}
+        <button
+          type="button"
+          className={`public-mobile-bottom-item ${mobileMenuOpen ? 'active-link' : ''}`}
+          aria-label="More navigation"
+          aria-expanded={mobileMenuOpen}
+          onClick={() => setMobileMenuOpen((v) => !v)}
+        >
+          {mobileMenuOpen ? <FiX size={20} /> : <FiMenu size={20} />}
+          <span>More</span>
+        </button>
+      </nav>
+
     </>
   );
 }

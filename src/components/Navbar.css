@@ -547,3 +547,274 @@
     display: flex;
   }
 }
+.navbar-mobile-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.navbar-mobile-submenu {
+  display: grid;
+  gap: 4px;
+  padding: 4px 0 8px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.navbar-mobile-sublink {
+  width: 100%;
+  border: 0;
+  border-radius: 10px;
+  padding: 9px 12px;
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.74);
+  font-family: var(--font-heading);
+  font-size: 13px;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+}
+
+.navbar-mobile-sublink:hover,
+.navbar-mobile-sublink.active-link {
+  background: rgba(129, 53, 250, 0.16);
+  color: #ffffff;
+}
+
+
+/* ── PUBLIC MOBILE NAV REFINEMENT ─────────────────────────────
+   Keeps the landing/public navbar on one line, progressively hides
+   lower-priority desktop links, and uses a dashboard-style bottom
+   navigation on small screens. Keep this block after older breakpoints. */
+.navbar-links,
+.navbar-links li {
+  min-width: 0;
+  white-space: nowrap;
+}
+
+@media (min-width: 901px) and (max-width: 1280px) {
+  .navbar {
+    height: 72px;
+    min-height: 72px;
+    padding: 0 18px;
+  }
+
+  .navbar-links {
+    display: flex !important;
+    flex: 1 1 auto;
+    justify-content: center;
+    gap: 11px;
+    min-width: 0;
+    overflow: hidden;
+    font-size: 12px;
+  }
+
+  .navbar-links li {
+    flex: 0 1 auto;
+    padding: 0 2px;
+  }
+
+  .navbar-hamburger {
+    display: none !important;
+  }
+
+  .navbar-actions {
+    gap: 8px;
+    margin-left: 8px;
+  }
+
+  .logo-img {
+    width: 132px;
+    height: 30px;
+  }
+}
+
+@media (min-width: 901px) and (max-width: 1130px) {
+  .navbar-links li:nth-child(1),
+  .navbar-links li:nth-child(6) {
+    display: none !important;
+  }
+}
+
+@media (min-width: 901px) and (max-width: 1010px) {
+  .navbar-links li:nth-child(5) {
+    display: none !important;
+  }
+}
+
+.public-mobile-bottom-nav {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .navbar {
+    height: 64px;
+    min-height: 64px;
+    padding: 0 14px;
+    flex-wrap: nowrap !important;
+  }
+
+  .navbar-logo {
+    margin-right: 10px;
+  }
+
+  .logo-img {
+    width: 126px;
+    height: 30px;
+  }
+
+  .navbar-links {
+    display: none !important;
+  }
+
+  .navbar-actions {
+    margin-left: auto;
+    gap: 8px;
+  }
+
+  .navbar-hamburger {
+    display: none !important;
+  }
+
+  .auth-buttons .signup-btn,
+  .navbar-notification-btn,
+  .navbar-user-chip .navbar-user-copy,
+  .navbar-user-chip .navbar-user-chevron {
+    display: none !important;
+  }
+
+  .login-btn {
+    width: auto;
+    min-width: 74px;
+    height: 32px;
+    padding: 0 14px;
+    font-size: 12px;
+  }
+
+  .search-icon {
+    width: 34px;
+    height: 34px;
+  }
+
+  .search-bar {
+    margin: 0 8px;
+    height: 38px;
+    padding: 0 10px;
+  }
+
+  .navbar-mobile-menu {
+    position: fixed;
+    top: auto;
+    right: 12px;
+    bottom: 84px;
+    left: 12px;
+    z-index: 1300;
+    display: flex;
+    max-height: min(70vh, 520px);
+    overflow-y: auto;
+    padding: 10px;
+    border: 1px solid rgba(129, 53, 250, 0.35);
+    border-radius: 22px;
+    background:
+      radial-gradient(circle at 10% 0%, rgba(129, 53, 250, 0.24), transparent 32%),
+      rgba(4, 7, 18, 0.98);
+    box-shadow: 0 -18px 50px rgba(0, 0, 0, 0.45);
+  }
+
+  .navbar-mobile-link {
+    min-height: 44px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 13px;
+    padding: 10px 12px;
+  }
+
+  .navbar-mobile-link:last-child {
+    border-bottom: 0;
+  }
+
+  .public-mobile-bottom-nav {
+    position: fixed;
+    right: 12px;
+    bottom: 12px;
+    left: 12px;
+    z-index: 1250;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 4px;
+    padding: 8px;
+    border: 1px solid rgba(129, 53, 250, 0.42);
+    border-radius: 24px;
+    background:
+      linear-gradient(180deg, rgba(13, 17, 34, 0.96), rgba(5, 8, 19, 0.98));
+    box-shadow: 0 -14px 42px rgba(0, 0, 0, 0.42);
+    backdrop-filter: blur(16px);
+  }
+
+  .public-mobile-bottom-item {
+    min-width: 0;
+    min-height: 58px;
+    border: 0;
+    border-radius: 18px;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.66);
+    font-family: var(--font-heading);
+    font-size: 0.68rem;
+    font-weight: 800;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .public-mobile-bottom-item svg {
+    flex-shrink: 0;
+  }
+
+  .public-mobile-bottom-item.active-link,
+  .public-mobile-bottom-item:hover,
+  .public-mobile-bottom-item:focus-visible {
+    color: #ffffff;
+    background: linear-gradient(135deg, rgba(129, 53, 250, 0.95), rgba(93, 38, 209, 0.92));
+    outline: none;
+  }
+
+  .public-mobile-bottom-item span {
+    overflow: hidden;
+    max-width: 100%;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  body {
+    padding-bottom: 88px;
+  }
+}
+
+@media (max-width: 420px) {
+  .navbar {
+    padding: 0 10px;
+  }
+
+  .logo-img {
+    width: 112px;
+  }
+
+  .login-btn {
+    min-width: 64px;
+    padding: 0 10px;
+  }
+
+  .public-mobile-bottom-nav {
+    right: 8px;
+    bottom: 8px;
+    left: 8px;
+    border-radius: 20px;
+  }
+
+  .public-mobile-bottom-item {
+    min-height: 54px;
+    border-radius: 15px;
+    font-size: 0.62rem;
+  }
+}

@@ -21,14 +21,6 @@ import Navbar from "../components/Navbar.tsx";
 
 import { useState } from "react";
 
-const newsNavLinks = [
-    { label: "Overview", route: "/" },
-    { label: "Clubs", route: "/clubs" },
-    { label: "Competitions", route: "/competitions" },
-    { label: "Unions", route: "/unions" },
-    { label: "News", route: "/news" },
-];
-
 const sportTabs = ["All", "Football", "Basketball", "Rugby"];
 //,......result card
 const newsItems = [
@@ -247,9 +239,7 @@ export default function NewsSection() {
     return (
         <div className="news-page" >
             <div>
-            <Navbar links={newsNavLinks}
-            showSignup={true}
-            />
+            <Navbar showSignup={true} />
 
             </div>
               
