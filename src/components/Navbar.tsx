@@ -17,10 +17,16 @@ import { useCurrentUser } from '../hooks/useCurrentUser.js';
 import { useAuthStore } from '../store/authStore.js';
 import { getToken } from '../utils/tokenManager.js';
 
+type NavbarDropdownItem = {
+  name: string;
+  route: string;
+};
+
 type NavbarLink = {
   label: string;
   route: string;
   showArrow?: boolean;
+  dropdownItems?: NavbarDropdownItem[];
 };
 
 type NavbarProps = {
@@ -28,24 +34,31 @@ type NavbarProps = {
   showSignup?: boolean;
 };
 
-const defaultNavLinks: NavbarLink[] = [
-  { label: 'Sport', route: '/sports', showArrow: true },
-  { label: 'Leagues', route: '/leagues', showArrow: true },
-  { label: 'Clubs', route: '/clubs', showArrow: true },
-  { label: 'Competitions', route: '/competitions', showArrow: true },
-  { label: 'News', route: '/news' },
-  { label: 'Club Memberships', route: '/memberships' },
-  { label: 'Tickets', route: '/tickets' },
-  { label: 'About Us', route: '/about' },
-];
-
-const leagueItems = [
+const leagueItems: NavbarDropdownItem[] = [
   { name: 'Uganda Premier League', route: '/leagues/uganda-premier-league' },
   { name: 'Nile Special Premiership', route: '/leagues/nile-special-premiership' },
   { name: 'National Basketball League', route: '/leagues/national-basketball-league' },
   { name: 'Budo League', route: '/leagues/budo-league' },
   { name: 'SMACK League', route: '/leagues/smack-league' },
 ];
+
+const matchItems: NavbarDropdownItem[] = [
+  { name: 'Fixtures', route: '/fixtures' },
+  { name: 'Results', route: '/results' },
+  { name: 'Standings', route: '/standings' },
+];
+
+export const publicNavLinks: NavbarLink[] = [
+  { label: 'Sport', route: '/sports' },
+  { label: 'Leagues', route: '/leagues/uganda-premier-league', showArrow: true, dropdownItems: leagueItems },
+  { label: 'Clubs', route: '/clubs' },
+  { label: 'Matches', route: '/fixtures', showArrow: true, dropdownItems: matchItems },
+  { label: 'Competitions', route: '/competitions' },
+  { label: 'News', route: '/news' },
+  { label: 'Tickets', route: '/tickets' },
+];
+
+const defaultNavLinks = publicNavLinks;
 
 function Navbar({ links = defaultNavLinks, showSignup = false }: NavbarProps) {
   const navigate = useNavigate();
@@ -54,11 +67,11 @@ function Navbar({ links = defaultNavLinks, showSignup = false }: NavbarProps) {
 
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [leaguesOpen, setLeaguesOpen] = useState(false);
+  const [openDropdownLabel, setOpenDropdownLabel] = useState<string | null>(null);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const leaguesRef = useRef<HTMLLIElement>(null);
+  const navListRef = useRef<HTMLUListElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
   const accessToken = useAuthStore((state) => state.accessToken);
@@ -69,8 +82,8 @@ function Navbar({ links = defaultNavLinks, showSignup = false }: NavbarProps) {
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (leaguesRef.current && !leaguesRef.current.contains(event.target as Node)) {
-        setLeaguesOpen(false);
+      if (navListRef.current && !navListRef.current.contains(event.target as Node)) {
+        setOpenDropdownLabel(null);
       }
       if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
         setUserMenuOpen(false);
@@ -133,6 +146,7 @@ function Navbar({ links = defaultNavLinks, showSignup = false }: NavbarProps) {
 
   const handleLogout = () => {
     setUserMenuOpen(false);
+    setOpenDropdownLabel(null);
     setMobileMenuOpen(false);
     logout();
     navigate('/login', {
@@ -143,6 +157,7 @@ function Navbar({ links = defaultNavLinks, showSignup = false }: NavbarProps) {
 
   const goToProfileRoute = (route: string) => {
     setUserMenuOpen(false);
+    setOpenDropdownLabel(null);
     navigate(route);
   };
 
@@ -174,37 +189,45 @@ function Navbar({ links = defaultNavLinks, showSignup = false }: NavbarProps) {
             </button>
           </div>
         ) : (
-          <ul className="navbar-links">
+          <ul className="navbar-links" ref={navListRef}>
             {links.map((item) => {
-              const hasLeagueDropdown = item.label === 'Leagues';
+              const hasDropdown = Boolean(item.dropdownItems?.length);
+              const dropdownOpen = openDropdownLabel === item.label;
+              const dropdownIsActive = item.dropdownItems?.some((dropdownItem) => isActive(dropdownItem.route));
+
               return (
                 <li
                   key={item.label}
-                  ref={hasLeagueDropdown ? leaguesRef : null}
-                  className={`${isActive(item.route) ? 'active-link' : ''} ${
-                    hasLeagueDropdown ? 'nav-dropdown-trigger' : ''
+                  className={`${isActive(item.route) || dropdownIsActive ? 'active-link' : ''} ${
+                    hasDropdown ? 'nav-dropdown-trigger' : ''
                   }`}
                   onClick={() => {
-                    if (!hasLeagueDropdown) navigate(item.route);
+                    if (hasDropdown) {
+                      setOpenDropdownLabel((currentLabel) =>
+                        currentLabel === item.label ? null : item.label,
+                      );
+                      return;
+                    }
+                    navigate(item.route);
                   }}
-                  onMouseEnter={() => { if (hasLeagueDropdown) setLeaguesOpen(true); }}
-                  onMouseLeave={() => { if (hasLeagueDropdown) setLeaguesOpen(false); }}
+                  onMouseEnter={() => { if (hasDropdown) setOpenDropdownLabel(item.label); }}
+                  onMouseLeave={() => { if (hasDropdown) setOpenDropdownLabel(null); }}
                 >
                   {item.label}
-                  {item.showArrow ? <span className="arrow">▾</span> : null}
-                  {hasLeagueDropdown && leaguesOpen ? (
+                  {item.showArrow || hasDropdown ? <span className="arrow">▾</span> : null}
+                  {hasDropdown && dropdownOpen ? (
                     <ul className="nav-dropdown">
-                      {leagueItems.map((league) => (
+                      {item.dropdownItems?.map((dropdownItem) => (
                         <li
-                          key={league.route}
+                          key={dropdownItem.route}
                           className="nav-dropdown-item"
                           onClick={(event) => {
                             event.stopPropagation();
-                            navigate(league.route);
-                            setLeaguesOpen(false);
+                            navigate(dropdownItem.route);
+                            setOpenDropdownLabel(null);
                           }}
                         >
-                          {league.name}
+                          {dropdownItem.name}
                         </li>
                       ))}
                     </ul>
@@ -300,15 +323,42 @@ function Navbar({ links = defaultNavLinks, showSignup = false }: NavbarProps) {
 
       {mobileMenuOpen && (
         <div className="navbar-mobile-menu">
-          {links.map((item) => (
-            <button
-              key={item.label}
-              className={`navbar-mobile-link ${isActive(item.route) ? 'active-link' : ''}`}
-              onClick={() => { navigate(item.route); setMobileMenuOpen(false); }}
-            >
-              {item.label}
-            </button>
-          ))}
+          {links.map((item) => {
+            const hasDropdown = Boolean(item.dropdownItems?.length);
+            const dropdownIsActive = item.dropdownItems?.some((dropdownItem) => isActive(dropdownItem.route));
+
+            return (
+              <div className="navbar-mobile-group" key={item.label}>
+                <button
+                  className={`navbar-mobile-link ${
+                    isActive(item.route) || dropdownIsActive ? 'active-link' : ''
+                  }`}
+                  onClick={() => {
+                    navigate(item.route);
+                    setMobileMenuOpen(false);
+                  }}
+                >
+                  {item.label}
+                </button>
+                {hasDropdown ? (
+                  <div className="navbar-mobile-submenu">
+                    {item.dropdownItems?.map((dropdownItem) => (
+                      <button
+                        key={dropdownItem.route}
+                        className={`navbar-mobile-sublink ${isActive(dropdownItem.route) ? 'active-link' : ''}`}
+                        onClick={() => {
+                          navigate(dropdownItem.route);
+                          setMobileMenuOpen(false);
+                        }}
+                      >
+                        {dropdownItem.name}
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+            );
+          })}
           {isAuthenticated ? (
             <>
               <button className="navbar-mobile-link" onClick={() => { navigate('/dashboard/fan'); setMobileMenuOpen(false); }}>
