@@ -10,10 +10,19 @@ import CTABanner from '../../components/CTABanner';
 import Footer from '../../components/Footer';
 import '../../styles/pages/landing.css';
 
+const landingNavLinks = [
+  { label: 'Sport', route: '/sports' },
+  { label: 'Leagues', route: '/leagues', showArrow: true },
+  { label: 'Clubs', route: '/clubs' },
+  { label: 'Competitions', route: '/competitions' },
+  { label: 'News', route: '/news' },
+  { label: 'Tickets', route: '/tickets' },
+];
+
 export default function Landing() {
   return (
     <div className="landing-page">
-      <Navbar />
+      <Navbar links={landingNavLinks} />
       <Hero />
       <FeaturedCompetitions />
       <SportCategories />

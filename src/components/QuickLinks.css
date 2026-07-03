@@ -107,3 +107,25 @@
 .quick-link-card:hover {
   transform: translateY(-2px);
 }
+
+@media (max-width: 1280px) {
+  .quick-links {
+    padding: 0 24px 24px;
+    gap: 10px;
+  }
+}
+
+@media (max-width: 768px) {
+  .quick-links {
+    padding: 0 16px 24px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .quick-links {
+    grid-template-columns: 1fr;
+  }
+}

@@ -5,6 +5,7 @@ import {
   FiChevronDown,
   FiGrid,
   FiLogOut,
+  FiMenu,
   FiSearch,
   FiUser,
   FiX,
@@ -46,7 +47,7 @@ const leagueItems = [
   { name: 'SMACK League', route: '/leagues/smack-league' },
 ];
 
-function Navbar({ links = defaultNavLinks,  showSignup = false }: NavbarProps) {
+function Navbar({ links = defaultNavLinks, showSignup = false }: NavbarProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const { logout } = useAuth();
@@ -55,6 +56,7 @@ function Navbar({ links = defaultNavLinks,  showSignup = false }: NavbarProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [leaguesOpen, setLeaguesOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const leaguesRef = useRef<HTMLLIElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
@@ -70,16 +72,17 @@ function Navbar({ links = defaultNavLinks,  showSignup = false }: NavbarProps) {
       if (leaguesRef.current && !leaguesRef.current.contains(event.target as Node)) {
         setLeaguesOpen(false);
       }
-
       if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
         setUserMenuOpen(false);
       }
     };
-
     document.addEventListener('mousedown', handleClickOutside);
-
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
 
   const fullName = typeof user?.full_name === 'string' ? user.full_name.trim() : '';
   const firstName = typeof user?.first_name === 'string' ? user.first_name.trim() : '';
@@ -117,7 +120,6 @@ function Navbar({ links = defaultNavLinks,  showSignup = false }: NavbarProps) {
       setSearchOpen(false);
       setSearchQuery('');
     }
-
     if (event.key === 'Enter' && searchQuery.trim()) {
       navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
       handleSearchToggle();
@@ -125,22 +127,17 @@ function Navbar({ links = defaultNavLinks,  showSignup = false }: NavbarProps) {
   };
 
   const isActive = (path: string) => {
-    if (path === '/') {
-      return location.pathname === '/';
-    }
-
+    if (path === '/') return location.pathname === '/';
     return location.pathname.startsWith(path);
   };
 
   const handleLogout = () => {
     setUserMenuOpen(false);
+    setMobileMenuOpen(false);
     logout();
-
     navigate('/login', {
       replace: true,
-      state: {
-        message: 'You have been logged out.',
-      },
+      state: { message: 'You have been logged out.' },
     });
   };
 
@@ -150,182 +147,189 @@ function Navbar({ links = defaultNavLinks,  showSignup = false }: NavbarProps) {
   };
 
   return (
-    <nav className="navbar">
-      <div
-        className="navbar-logo"
-        onClick={() => navigate('/')}
-        style={{ cursor: 'pointer' }}
-      >
-        <img src={logo} alt="League OS" className="logo-img" />
-      </div>
-
-      {searchOpen ? (
-        <div className="search-bar">
-          <FiSearch size={16} className="search-bar-icon" />
-          <input
-            type="text"
-            className="search-input"
-            placeholder="Search competitions, clubs, players..."
-            value={searchQuery}
-            onChange={(event) => setSearchQuery(event.target.value)}
-            onKeyDown={handleKeyDown}
-            autoFocus
-          />
-          <button className="search-close" onClick={handleSearchToggle} aria-label="Close search">
-            <FiX size={16} />
-          </button>
+    <>
+      <nav className="navbar">
+        <div
+          className="navbar-logo"
+          onClick={() => navigate('/')}
+          style={{ cursor: 'pointer' }}
+        >
+          <img src={logo} alt="League OS" className="logo-img" />
         </div>
-      ) : (
-        <ul className="navbar-links">
-          {links.map((item) => {
-            const hasLeagueDropdown = item.label === 'Leagues';
 
-            return (
-              <li
-                key={item.label}
-                ref={hasLeagueDropdown ? leaguesRef : null}
-                className={`${isActive(item.route) ? 'active-link' : ''} ${
-                  hasLeagueDropdown ? 'nav-dropdown-trigger' : ''
-                }`}
-                onClick={() => {
-                  if (!hasLeagueDropdown) {
-                    navigate(item.route);
-                  }
-                }}
-                onMouseEnter={() => {
-                  if (hasLeagueDropdown) {
-                    setLeaguesOpen(true);
-                  }
-                }}
-                onMouseLeave={() => {
-                  if (hasLeagueDropdown) {
-                    setLeaguesOpen(false);
-                  }
-                }}
-              >
-                {item.label}
-                {item.showArrow ? <span className="arrow">▾</span> : null}
-
-                {hasLeagueDropdown && leaguesOpen ? (
-                  <ul className="nav-dropdown">
-                    {leagueItems.map((league) => (
-                      <li
-                        key={league.route}
-                        className="nav-dropdown-item"
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          navigate(league.route);
-                          setLeaguesOpen(false);
-                        }}
-                      >
-                        {league.name}
-                      </li>
-                    ))}
-                  </ul>
-                ) : null}
-              </li>
-            );
-          })}
-        </ul>
-      )}
-
-      <div className="navbar-actions">
-        {!searchOpen && (
-          <>
-            <button
-              className="search-icon"
-              aria-label="Search"
-              onClick={handleSearchToggle}
-            >
-              <FiSearch size={18} />
+        {searchOpen ? (
+          <div className="search-bar">
+            <FiSearch size={16} className="search-bar-icon" />
+            <input
+              type="text"
+              className="search-input"
+              placeholder="Search competitions, clubs, players..."
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              onKeyDown={handleKeyDown}
+              autoFocus
+            />
+            <button className="search-close" onClick={handleSearchToggle} aria-label="Close search">
+              <FiX size={16} />
             </button>
-
-            {isAuthenticated ? (
-              <div className="navbar-auth-actions">
-                <button
-                  className="navbar-notification-btn"
-                  aria-label="Notifications"
-                  title="Notifications"
-                  onClick={() => navigate('/profile/notifications')}
+          </div>
+        ) : (
+          <ul className="navbar-links">
+            {links.map((item) => {
+              const hasLeagueDropdown = item.label === 'Leagues';
+              return (
+                <li
+                  key={item.label}
+                  ref={hasLeagueDropdown ? leaguesRef : null}
+                  className={`${isActive(item.route) ? 'active-link' : ''} ${
+                    hasLeagueDropdown ? 'nav-dropdown-trigger' : ''
+                  }`}
+                  onClick={() => {
+                    if (!hasLeagueDropdown) navigate(item.route);
+                  }}
+                  onMouseEnter={() => { if (hasLeagueDropdown) setLeaguesOpen(true); }}
+                  onMouseLeave={() => { if (hasLeagueDropdown) setLeaguesOpen(false); }}
                 >
-                  <FiBell size={20} />
-                </button>
+                  {item.label}
+                  {item.showArrow ? <span className="arrow">▾</span> : null}
+                  {hasLeagueDropdown && leaguesOpen ? (
+                    <ul className="nav-dropdown">
+                      {leagueItems.map((league) => (
+                        <li
+                          key={league.route}
+                          className="nav-dropdown-item"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            navigate(league.route);
+                            setLeaguesOpen(false);
+                          }}
+                        >
+                          {league.name}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </li>
+              );
+            })}
+          </ul>
+        )}
 
-                <div className="navbar-user-menu" ref={userMenuRef}>
+        <div className="navbar-actions">
+          {!searchOpen && (
+            <>
+              <button className="search-icon" aria-label="Search" onClick={handleSearchToggle}>
+                <FiSearch size={18} />
+              </button>
+
+              {isAuthenticated ? (
+                <div className="navbar-auth-actions">
                   <button
-                    type="button"
-                    className="navbar-user-chip"
-                    aria-haspopup="menu"
-                    aria-expanded={userMenuOpen}
-                    onClick={() => setUserMenuOpen((currentValue) => !currentValue)}
+                    className="navbar-notification-btn"
+                    aria-label="Notifications"
+                    title="Notifications"
+                    onClick={() => navigate('/profile/notifications')}
                   >
-                    <span className="navbar-user-avatar">
-                      {currentUser.avatarUrl ? (
-                        <img src={currentUser.avatarUrl} alt="" aria-hidden="true" />
-                      ) : (
-                        initials
-                      )}
-                    </span>
-
-                    <span className="navbar-user-copy">
-                      <strong>{displayName}</strong>
-                      <small>View Profile</small>
-                    </span>
-
-                    <FiChevronDown className="navbar-user-chevron" size={16} />
+                    <FiBell size={20} />
                   </button>
 
-                  {userMenuOpen ? (
-                    <div className="navbar-user-dropdown" role="menu">
-                      <button
-                        type="button"
-                        role="menuitem"
-                        onClick={() => goToProfileRoute('/dashboard/fan')}
-                      >
-                        <FiGrid size={16} />
-                        Dashboard
-                      </button>
+                  <div className="navbar-user-menu" ref={userMenuRef}>
+                    <button
+                      type="button"
+                      className="navbar-user-chip"
+                      aria-haspopup="menu"
+                      aria-expanded={userMenuOpen}
+                      onClick={() => setUserMenuOpen((v) => !v)}
+                    >
+                      <span className="navbar-user-avatar">
+                        {currentUser.avatarUrl ? (
+                          <img src={currentUser.avatarUrl} alt="" aria-hidden="true" />
+                        ) : (
+                          initials
+                        )}
+                      </span>
+                      <span className="navbar-user-copy">
+                        <strong>{displayName}</strong>
+                        <small>View Profile</small>
+                      </span>
+                      <FiChevronDown className="navbar-user-chevron" size={16} />
+                    </button>
 
-                      <button
-                        type="button"
-                        role="menuitem"
-                        onClick={() => goToProfileRoute('/profile')}
-                      >
-                        <FiUser size={16} />
-                        View Profile
-                      </button>
-
-                      <button type="button" role="menuitem" onClick={handleLogout}>
-                        <FiLogOut size={16} />
-                        Log Out
-                      </button>
-                    </div>
-                  ) : null}
+                    {userMenuOpen ? (
+                      <div className="navbar-user-dropdown" role="menu">
+                        <button type="button" role="menuitem" onClick={() => goToProfileRoute('/dashboard/fan')}>
+                          <FiGrid size={16} />
+                          Dashboard
+                        </button>
+                        <button type="button" role="menuitem" onClick={() => goToProfileRoute('/profile')}>
+                          <FiUser size={16} />
+                          View Profile
+                        </button>
+                        <button type="button" role="menuitem" onClick={handleLogout}>
+                          <FiLogOut size={16} />
+                          Log Out
+                        </button>
+                      </div>
+                    ) : null}
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <div className="auth-buttons">
-    <button className="login-btn" onClick={() => navigate('/login')}>
-      Log In
-    </button>
+              ) : (
+                <div className="auth-buttons">
+                  <button className="login-btn" onClick={() => navigate('/login')}>
+                    Log In
+                  </button>
+                  {showSignup && (
+                    <button className="signup-btn" onClick={() => navigate('/register')}>
+                      Sign Up
+                    </button>
+                  )}
+                </div>
+              )}
 
-    {showSignup && (
-      <button
-        className="signup-btn"
-        onClick={() => navigate('/register')}
-      >
-        Sign Up
-      </button>
-    )}
-  </div>
-            )}
-            
-          </>
-        )}
-      </div>
-    </nav>
+              <button
+                className="navbar-hamburger"
+                aria-label="Toggle menu"
+                onClick={() => setMobileMenuOpen((v) => !v)}
+              >
+                {mobileMenuOpen ? <FiX size={22} /> : <FiMenu size={22} />}
+              </button>
+            </>
+          )}
+        </div>
+      </nav>
+
+      {mobileMenuOpen && (
+        <div className="navbar-mobile-menu">
+          {links.map((item) => (
+            <button
+              key={item.label}
+              className={`navbar-mobile-link ${isActive(item.route) ? 'active-link' : ''}`}
+              onClick={() => { navigate(item.route); setMobileMenuOpen(false); }}
+            >
+              {item.label}
+            </button>
+          ))}
+          {isAuthenticated ? (
+            <>
+              <button className="navbar-mobile-link" onClick={() => { navigate('/dashboard/fan'); setMobileMenuOpen(false); }}>
+                <FiGrid size={16} /> Dashboard
+              </button>
+              <button className="navbar-mobile-link" onClick={() => { navigate('/profile'); setMobileMenuOpen(false); }}>
+                <FiUser size={16} /> Profile
+              </button>
+              <button className="navbar-mobile-link navbar-mobile-logout" onClick={handleLogout}>
+                <FiLogOut size={16} /> Log Out
+              </button>
+            </>
+          ) : (
+            <button className="navbar-mobile-link navbar-mobile-login" onClick={() => { navigate('/login'); setMobileMenuOpen(false); }}>
+              Log In
+            </button>
+          )}
+        </div>
+      )}
+    </>
   );
-  
 }
 
 export default Navbar;

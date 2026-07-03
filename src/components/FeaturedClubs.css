@@ -129,3 +129,29 @@
   letter-spacing: 1.5px;
 }
 
+@media (max-width: 1280px) {
+  .featured-clubs {
+    padding: 16px 24px 24px;
+  }
+
+  .clubs-row {
+    gap: 10px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .featured-clubs .club-card {
+    min-width: 160px;
+  }
+}
+
+@media (max-width: 768px) {
+  .featured-clubs {
+    padding: 16px 16px 24px;
+  }
+
+  .featured-clubs .club-card {
+    min-width: 140px;
+  }
+}
