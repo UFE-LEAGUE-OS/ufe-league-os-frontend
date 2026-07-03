@@ -193,7 +193,7 @@ function StandingsPage() {
   }, [filteredCompetitions, selectedCompetitionId]);
 
   const selectedCompetition = selectedTable?.competition ?? null;
-  const rows = selectedTable?.rows ?? [];
+  const rows = useMemo(() => selectedTable?.rows ?? [], [selectedTable]);
 
   const tableLeaders = useMemo(() => {
     return [...rows]

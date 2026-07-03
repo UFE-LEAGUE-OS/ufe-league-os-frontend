@@ -80,7 +80,11 @@ export interface PublicFixtureFilters {
     competitionId?: number;
 }
 
-function buildFixtureQuery(filters?: PublicFixtureFilters) {
+export interface PublicResultFilters extends PublicFixtureFilters {
+    limit?: number;
+}
+
+function buildMatchQuery(filters?: PublicResultFilters) {
     const params = new URLSearchParams();
 
     if (filters?.clubId) {
@@ -89,6 +93,10 @@ function buildFixtureQuery(filters?: PublicFixtureFilters) {
 
     if (filters?.competitionId) {
         params.set("competition", String(filters.competitionId));
+    }
+
+    if (filters?.limit) {
+        params.set("limit", String(filters.limit));
     }
 
     const query = params.toString();
@@ -100,7 +108,18 @@ export async function getPublicFixtures(
     filters?: PublicFixtureFilters,
 ): Promise<PublicFixtureApi[]> {
     const response = await apiClient.get<PublicFixtureApi[]>(
-        `/dashboards/public/fixtures/${buildFixtureQuery(filters)}`,
+        `/dashboards/public/fixtures/${buildMatchQuery(filters)}`,
+    );
+
+    return response.data;
+}
+
+
+export async function getPublicResults(
+    filters?: PublicResultFilters,
+): Promise<PublicFixtureApi[]> {
+    const response = await apiClient.get<PublicFixtureApi[]>(
+        `/dashboards/public/results/${buildMatchQuery(filters)}`,
     );
 
     return response.data;
