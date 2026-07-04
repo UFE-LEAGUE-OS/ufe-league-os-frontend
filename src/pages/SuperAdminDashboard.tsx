@@ -1,6 +1,7 @@
 import { useState } from "react";
 import "../styles/pages/SuperAdminDashboard.css";
 import "../components/SuperAdminSideBar.css";
+import { useNavigate } from "react-router-dom";
 import {
     Users,
     ShieldCheck,
@@ -36,24 +37,24 @@ import Sidebar from "../components/SuperAdminSideBar";
 
 
 const STATS = [
-     {
-    label: "Leagues",
-    value: "24",
-    delta: "+3",
-    trend: "up",
-    icon: Flag,
-    accent: "green",
-},
-{
-    label: "Clubs",
-    value: "168",
-    delta: "+12",
-    trend: "up",
-    icon: Building2,
-    accent: "amber",
-},
     {
-    
+        label: "Leagues",
+        value: "24",
+        delta: "+3",
+        trend: "up",
+        icon: Flag,
+        accent: "green",
+    },
+    {
+        label: "Clubs",
+        value: "168",
+        delta: "+12",
+        trend: "up",
+        icon: Building2,
+        accent: "amber",
+    },
+    {
+
         label: "Total Users",
         value: "1,240",
         delta: "+4.2%",
@@ -117,6 +118,7 @@ const GOVERNANCE_PIPELINE = [
         detail: "24 active",
         sub: "Football, Basketball, Rugby",
         icon: Layers,
+        path: "/sports-variants",
     },
     {
         key: "formats",
@@ -124,6 +126,7 @@ const GOVERNANCE_PIPELINE = [
         detail: "12 templates",
         sub: "League, knockout, groups",
         icon: GitBranch,
+        path: "/competitions",
     },
     {
         key: "rules",
@@ -131,6 +134,7 @@ const GOVERNANCE_PIPELINE = [
         detail: "15 published",
         sub: "Eligibility, conduct, discipline",
         icon: BookOpen,
+        path: "/rules",
     },
     {
         key: "publish",
@@ -139,12 +143,14 @@ const GOVERNANCE_PIPELINE = [
         sub: "Awaiting your approval",
         icon: ClipboardCheck,
         alert: true,
+        path: "/publish",
     },
 ];
 
 export default function SuperAdminDashboard() {
+    const navigate = useNavigate();
     const [sidebarOpen, setSidebarOpen] = useState(false);
-    const [activeNav, setActiveNav] = useState("dashboard");
+   
 
     return (
         <div
@@ -199,8 +205,7 @@ export default function SuperAdminDashboard() {
                 {/* SIDEBAR */}
                 <Sidebar
                     collapsed={!sidebarOpen}
-                    activeNav={activeNav}
-                    onChange={setActiveNav}
+                    
                 />
 
                 {/* MAIN CONTENT */}
@@ -266,10 +271,12 @@ export default function SuperAdminDashboard() {
                                         <button
                                             className={`governance-stage${stage.alert ? " alert" : ""}`}
                                             type="button"
+                                            onClick={() => navigate(stage.path)}
                                         >
                                             <span className="governance-stage-icon">
                                                 <Icon size={18} />
                                             </span>
+
                                             <span className="governance-stage-body">
                                                 <strong>{stage.label}</strong>
                                                 <span className="governance-stage-detail">{stage.detail}</span>

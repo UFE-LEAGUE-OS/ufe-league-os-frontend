@@ -80,6 +80,7 @@ import MatchCentrePage from '../pages/MatchCentrePage';
 import MVPVotingPage from '../pages/fan/MVPVotingPage';
 import JoinFantasy from '../pages/JoinFantasy';
 import SuperAdminDashboard from '../pages/SuperAdminDashboard';
+import SuperVariants from '../pages/SuperVariantsPage';
 
 
 
@@ -104,6 +105,7 @@ export default function AppRoutes() {
                 <Route path="/fan/mvp-voting" element={<MVPVotingPage />} />
                 <Route path="/join-fantasy" element={<JoinFantasy />} />
                 <Route path="/super-admin" element={<SuperAdminDashboard />} />
+                <Route path="/sports-variants" element={<SuperVariants />} />
                 
 
                 <Route path="/dashboard" element={protectedPage(<Navigate to="/dashboard/fan" replace />)} />
