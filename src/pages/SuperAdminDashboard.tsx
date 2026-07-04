@@ -19,17 +19,41 @@ import {
     Server,
     Database,
     Radio,
+    Flag,
+    Building2,
+    Layers,
+    GitBranch,
+    BookOpen,
+    ClipboardCheck,
+    ArrowRight,
 } from "lucide-react";
 
 import Footer from "../components/Footer";
 import logo from "../assets/logo.png";
 import profile from "../assets/kcca.png";
-import heroImage from "../assets/hero.png";
+import superImage from "../assets/cta-banner.png";
 import Sidebar from "../components/SuperAdminSideBar";
 
 
 const STATS = [
+     {
+    label: "Leagues",
+    value: "24",
+    delta: "+3",
+    trend: "up",
+    icon: Flag,
+    accent: "green",
+},
+{
+    label: "Clubs",
+    value: "168",
+    delta: "+12",
+    trend: "up",
+    icon: Building2,
+    accent: "amber",
+},
     {
+    
         label: "Total Users",
         value: "1,240",
         delta: "+4.2%",
@@ -61,6 +85,14 @@ const STATS = [
         icon: FileWarning,
         accent: "red",
     },
+    {
+        label: "Pending Standards",
+        value: "03",
+        delta: "Needs review",
+        trend: "down",
+        icon: ClipboardCheck,
+        accent: "red",
+    },
 ];
 
 const ACTIVITY = [
@@ -77,6 +109,39 @@ const SYSTEM_HEALTH = [
     { label: "Database", value: 87, icon: Database },
 ];
 
+// Governance pipeline: how a rule set moves from definition to being live for league admins.
+const GOVERNANCE_PIPELINE = [
+    {
+        key: "variants",
+        label: "Sport Variants",
+        detail: "24 active",
+        sub: "Football, Basketball, Rugby",
+        icon: Layers,
+    },
+    {
+        key: "formats",
+        label: "Competition Formats",
+        detail: "12 templates",
+        sub: "League, knockout, groups",
+        icon: GitBranch,
+    },
+    {
+        key: "rules",
+        label: "Rules & Standards",
+        detail: "15 published",
+        sub: "Eligibility, conduct, discipline",
+        icon: BookOpen,
+    },
+    {
+        key: "publish",
+        label: "Publish Queue",
+        detail: "3 pending",
+        sub: "Awaiting your approval",
+        icon: ClipboardCheck,
+        alert: true,
+    },
+];
+
 export default function SuperAdminDashboard() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [activeNav, setActiveNav] = useState("dashboard");
@@ -85,7 +150,7 @@ export default function SuperAdminDashboard() {
         <div
             className="super-admin"
             style={{
-                backgroundImage: `linear-gradient(rgba(15,18,24,.92), rgba(15,18,24,.96)), url(${heroImage})`,
+                backgroundImage: `linear-gradient(rgba(15, 18, 24, 0.38), rgba(15, 18, 24, 0.34)), url(${superImage})`,
             }}
         >
             {/* HEADER */}
@@ -143,8 +208,7 @@ export default function SuperAdminDashboard() {
                     {/* HEADER WELCOME */}
                     <div className="dashboard-header">
                         <div>
-                            <span className="eyebrow">System Overview</span>
-                            <h1>Welcome back, Merab 👋</h1>
+                            <h1>Welcome back, Merab </h1>
                             <p>Here's what's happening across League OS today.</p>
                         </div>
                     </div>
@@ -181,6 +245,48 @@ export default function SuperAdminDashboard() {
                         })}
                     </section>
 
+                    {/* GOVERNANCE PIPELINE */}
+                    <section className="panel governance-panel">
+                        <div className="panel-header">
+                            <div>
+                                <h3>Governance &amp; Standards</h3>
+                                <p className="governance-subtitle">
+                                    How a rule moves from definition to live on the platform
+                                </p>
+                            </div>
+                            <button className="link-btn">Open Publish Queue</button>
+                        </div>
+
+                        <div className="governance-pipeline">
+                            {GOVERNANCE_PIPELINE.map((stage, i) => {
+                                const Icon = stage.icon;
+                                const isLast = i === GOVERNANCE_PIPELINE.length - 1;
+                                return (
+                                    <div className="governance-stage-wrap" key={stage.key}>
+                                        <button
+                                            className={`governance-stage${stage.alert ? " alert" : ""}`}
+                                            type="button"
+                                        >
+                                            <span className="governance-stage-icon">
+                                                <Icon size={18} />
+                                            </span>
+                                            <span className="governance-stage-body">
+                                                <strong>{stage.label}</strong>
+                                                <span className="governance-stage-detail">{stage.detail}</span>
+                                                <span className="governance-stage-sub">{stage.sub}</span>
+                                            </span>
+                                        </button>
+                                        {!isLast && (
+                                            <span className="governance-connector" aria-hidden="true">
+                                                <ArrowRight size={16} />
+                                            </span>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </section>
+
                     {/* DASHBOARD GRID */}
                     <div className="dashboard-grid">
                         {/* QUICK ACTIONS */}
@@ -194,6 +300,10 @@ export default function SuperAdminDashboard() {
                             <button className="action-btn">
                                 <Trophy size={17} />
                                 Manage Sports
+                            </button>
+                            <button className="action-btn">
+                                <BookOpen size={17} />
+                                Manage Standards
                             </button>
                             <button className="action-btn">
                                 <Wallet size={17} />
