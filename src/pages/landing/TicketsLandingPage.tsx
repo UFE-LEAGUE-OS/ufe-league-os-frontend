@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../styles/pages/landing/TicketsLandingPage.css';
 import BackButton from '../../components/BackButton';
@@ -49,10 +49,11 @@ function formatCurrency(amount: number, currency = 'UGX') {
 function getCompetitionColor(competitionName: string) {
   const normalized = competitionName.toLowerCase();
 
-  if (normalized.includes('rugby')) return '#EA580C';
-  if (normalized.includes('basketball')) return '#0284C7';
+  if (normalized.includes('rugby')) return '#f97316';
+  if (normalized.includes('basketball')) return '#38bdf8';
+  if (normalized.includes('football') || normalized.includes('premier')) return '#a855f7';
 
-  return '#7C3AED';
+  return '#8b35ff';
 }
 
 function getLowestTicketPrice(ticketTypes: TicketTypeApi[]) {
@@ -104,16 +105,20 @@ function LoginPromptModal({
 }) {
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-card" onClick={(event) => event.stopPropagation()}>
         <button className="modal-close" onClick={onClose} aria-label="Close">
           ✕
         </button>
+
         <img src={logo} alt="League OS" className="modal-logo" />
+
         <h2 className="modal-title">Sign in to buy tickets</h2>
+
         <p className="modal-body">
           Create an account or log in to purchase tickets, manage your bookings, and get
           match-day updates.
         </p>
+
         <div className="modal-actions">
           <button className="btn-primary" onClick={onLogin}>
             Log In
@@ -122,6 +127,7 @@ function LoginPromptModal({
             Create Account
           </button>
         </div>
+
         <p className="modal-footnote">Get a free account now and enjoy League OS.</p>
       </div>
     </div>
@@ -147,6 +153,7 @@ export default function TicketsLandingPage() {
 
       try {
         const fixtures = await getPublicFixtures();
+
         const rows = await Promise.all(
           fixtures.map(async (fixture) => {
             try {
@@ -215,6 +222,7 @@ export default function TicketsLandingPage() {
       setShowLoginPrompt(true);
       return;
     }
+
     navigate(`/tickets/${matchId}/checkout`);
   };
 
@@ -225,6 +233,7 @@ export default function TicketsLandingPage() {
       <main className="tickets-main">
         <div className="tickets-page-actions">
           <BackButton />
+
           {isLoggedIn ? (
             <div className="tickets-auth-actions">
               <button type="button" onClick={() => navigate('/dashboard/tickets')}>
@@ -241,45 +250,61 @@ export default function TicketsLandingPage() {
           )}
         </div>
 
-        <div className="tickets-header tickets-hero-panel">
+        <section className="tickets-header tickets-hero-panel">
+          <div className="tickets-breadcrumb">
+            <button type="button" onClick={() => navigate('/')}>
+              Home
+            </button>
+            <span>›</span>
+            <span>Tickets</span>
+          </div>
+
           <h1>
             <span className="tickets-header-plain">Match </span>
             <span className="tickets-header-accent">Tickets</span>
           </h1>
-          <p>
-            Browse backend-seeded fixtures, compare available ticket categories, and
-            checkout securely through Flutterwave.
-          </p>
 
-        </div>
+          <p>
+            Browse available match tickets across rugby, football, basketball and community
+            competitions. Compare categories, check availability and reserve your seat.
+          </p>
+        </section>
 
         {pageMessage ? <div className="tickets-empty-state">{pageMessage}</div> : null}
 
-        <div className="ticket-search-panel">
-          <label>
-            Search tickets
-            <input
-              type="search"
-              placeholder="Search by club, competition or venue..."
-              value={searchQuery}
-              onChange={(event) => setSearchQuery(event.target.value)}
-            />
-          </label>
-        </div>
-
-        <div className="tickets-filters">
-          <div className="league-filters">
-            {leagues.map((league) => (
-              <button
-                key={league}
-                className={`league-btn ${activeLeague === league ? 'league-btn-active' : ''}`}
-                onClick={() => setActiveLeague(league)}
-              >
-                {league}
-              </button>
-            ))}
+        <section className="tickets-browse-bar" aria-label="Ticket filters">
+          <div className="tickets-filters">
+            <div className="league-filters">
+              {leagues.map((league) => (
+                <button
+                  key={league}
+                  className={`league-btn ${activeLeague === league ? 'league-btn-active' : ''}`}
+                  onClick={() => setActiveLeague(league)}
+                >
+                  {league}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+
+          <div className="ticket-search-panel">
+            <label>
+              <span>Search</span>
+              <input
+                type="search"
+                placeholder="Search by club, competition or venue..."
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+              />
+            </label>
+          </div>
+        </section>
+
+        {!isLoading ? (
+          <p className="tickets-results-count">
+            Showing {filteredMatches.length} of {ticketableMatches.length} ticketed matches
+          </p>
+        ) : null}
 
         {isLoading ? (
           <div className="tickets-empty-state">Loading backend ticket matches...</div>
@@ -291,9 +316,10 @@ export default function TicketsLandingPage() {
               const lowestPrice = getLowestTicketPrice(ticketTypes);
               const currency = ticketTypes[0]?.currency ?? 'UGX';
               const hasTickets = ticketTypes.length > 0 && seatsLeft > 0;
+              const previewTicketTypes = ticketTypes.slice(0, 2);
 
               return (
-                <div key={fixture.id} className="match-card">
+                <article key={fixture.id} className="match-card">
                   <div className="match-card-header">
                     <span
                       className="match-league"
@@ -301,6 +327,8 @@ export default function TicketsLandingPage() {
                     >
                       {fixture.competition_name}
                     </span>
+
+                    <span className="match-date-pill">{date}</span>
                   </div>
 
                   <div className="match-teams">
@@ -314,11 +342,27 @@ export default function TicketsLandingPage() {
                     <span>📍 {fixture.venue || 'Venue to be confirmed'}</span>
                   </div>
 
+                  {previewTicketTypes.length ? (
+                    <div className="ticket-preview-list">
+                      {previewTicketTypes.map((ticketType) => (
+                        <div key={ticketType.id} className="ticket-preview-item">
+                          <span>{ticketType.name}</span>
+                          <strong>
+                            {formatCurrency(Number(ticketType.price), ticketType.currency)}
+                          </strong>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="ticket-preview-empty">Ticket categories are being prepared.</div>
+                  )}
+
                   <div className="match-buy-row">
                     <span className="match-buy-seats">
                       {hasTickets ? `${seatsLeft} seats left` : 'Ticket types pending'}
                       {lowestPrice ? ` • From ${formatCurrency(lowestPrice, currency)}` : ''}
                     </span>
+
                     <button
                       className="buy-btn buy-btn-ordinary"
                       onClick={() => handleBuyTicket(fixture.id)}
@@ -327,7 +371,7 @@ export default function TicketsLandingPage() {
                       {hasTickets ? 'Buy Ticket' : 'Unavailable'}
                     </button>
                   </div>
-                </div>
+                </article>
               );
             })}
           </div>

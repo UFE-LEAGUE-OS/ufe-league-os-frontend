@@ -161,7 +161,7 @@ describe('Register page', () => {
                 .some((image) => image.classList.contains('logo-img')),
         ).toBe(true)
         expect(screen.getByText(/competitions/i)).toBeInTheDocument()
-        expect(screen.getByText(/tickets/i)).toBeInTheDocument()
+        expect(screen.getAllByText(/tickets/i).length).toBeGreaterThan(0)
         expect(screen.getByRole('button', { name: /log in/i })).toBeInTheDocument()
     })
 

@@ -19,19 +19,33 @@ function FeaturedCompetitions() {
 
   return (
     <section className="featured-competitions">
-      <div className="section-header">
-        <h2 className="section-title">FEATURED COMPETITONS</h2>
-        <a href="#" className="view-all-link" onClick={(e) => { e.preventDefault(); navigate('/competitions'); }}>View All Competitions</a>
+      <div className="featured-competitions-header">
+        <h2 className="featured-competitions-title">FEATURED COMPETITONS</h2>
+        <a
+          href="#"
+          className="featured-competitions-view-all"
+          onClick={(e) => {
+            e.preventDefault();
+            navigate('/competitions');
+          }}
+        >
+          View All Competitions
+        </a>
       </div>
 
-      <div className="competitions-row">
+      <div className="featured-competitions-row">
         {competitions.map((comp) => (
-          <div className="competition-card" key={comp.name} onClick={() => navigate(comp.route)}>
-            <div className="competition-logo">
-              <img src={comp.logo} alt={comp.name} />
-            </div>
-            <span className="competition-name">{comp.name}</span>
-          </div>
+          <button
+            type="button"
+            className="featured-competition-card"
+            key={comp.name}
+            onClick={() => navigate(comp.route)}
+          >
+            <span className="featured-competition-logo">
+              <img src={comp.logo} alt="" aria-hidden="true" />
+            </span>
+            <span className="featured-competition-name">{comp.name}</span>
+          </button>
         ))}
       </div>
     </section>

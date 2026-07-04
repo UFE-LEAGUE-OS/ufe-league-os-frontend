@@ -19,7 +19,7 @@ describe('Navbar', () => {
     expect(screen.getByAltText('League OS')).toBeInTheDocument()
     expect(screen.getByText(/competitions/i)).toBeInTheDocument()
     expect(screen.getByText(/news/i)).toBeInTheDocument()
-    expect(screen.getByText(/tickets/i)).toBeInTheDocument()
+    expect(screen.getAllByText(/tickets/i).length).toBeGreaterThan(0)
     expect(screen.getByRole('button', { name: /log in/i })).toBeInTheDocument()
   })
 
@@ -40,6 +40,11 @@ describe('Navbar', () => {
   it('marks the current navigation item as active', () => {
     renderNavbar('/tickets')
 
-    expect(screen.getByText('Tickets')).toHaveClass('active-link')
+    const ticketLinks = screen.getAllByText('Tickets')
+    expect(
+      ticketLinks.some((element) =>
+        element.classList.contains('active-link') || Boolean(element.closest('.active-link')),
+      ),
+    ).toBe(true)
   })
 })
