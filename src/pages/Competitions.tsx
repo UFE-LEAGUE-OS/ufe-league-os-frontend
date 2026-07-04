@@ -109,6 +109,7 @@ function Competitions() {
     const [query, setQuery] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [expandedCompetitionId, setExpandedCompetitionId] = useState<number | null>(null);
 
     useEffect(() => {
         let isMounted = true;
@@ -203,6 +204,10 @@ function Competitions() {
     const totalFixtures = fixtures.length;
     const totalResults = results.length;
 
+    function toggleCompetitionCard(competitionId: number) {
+        setExpandedCompetitionId((currentId) => (currentId === competitionId ? null : competitionId));
+    }
+
     return (
         <div className="competitions-page landing-page">
             <CompetitionsNavbar />
@@ -290,7 +295,20 @@ function Competitions() {
                                         const leader = summary?.standings[0];
 
                                         return (
-                                            <article key={competition.id} className="competition-card">
+                                            <article
+                                                key={competition.id}
+                                                className={`competition-card ${expandedCompetitionId === competition.id ? 'is-expanded' : ''}`}
+                                                role="button"
+                                                tabIndex={0}
+                                                aria-expanded={expandedCompetitionId === competition.id}
+                                                onClick={() => toggleCompetitionCard(competition.id)}
+                                                onKeyDown={(event) => {
+                                                    if (event.key === 'Enter' || event.key === ' ') {
+                                                        event.preventDefault();
+                                                        toggleCompetitionCard(competition.id);
+                                                    }
+                                                }}
+                                            >
                                                 <div className="competition-card-hero">
                                                     <div className="competition-mark" aria-hidden="true">
                                                         {getSportInitials(sport)}
@@ -310,22 +328,23 @@ function Competitions() {
                                                         {competition.league_name ?? 'Independent competition'}
                                                     </p>
 
-                                                    <div className="competition-meta-grid">
-                                                        <div>
-                                                            <span>Clubs</span>
-                                                            <strong>{summary?.clubsCount ?? 0}</strong>
+                                                    <div className="competition-reveal">
+                                                        <div className="competition-meta-grid">
+                                                            <div>
+                                                                <span>Clubs</span>
+                                                                <strong>{summary?.clubsCount ?? 0}</strong>
+                                                            </div>
+                                                            <div>
+                                                                <span>Upcoming</span>
+                                                                <strong>{summary?.fixtures.length ?? 0}</strong>
+                                                            </div>
+                                                            <div>
+                                                                <span>Results</span>
+                                                                <strong>{summary?.results.length ?? 0}</strong>
+                                                            </div>
                                                         </div>
-                                                        <div>
-                                                            <span>Upcoming</span>
-                                                            <strong>{summary?.fixtures.length ?? 0}</strong>
-                                                        </div>
-                                                        <div>
-                                                            <span>Results</span>
-                                                            <strong>{summary?.results.length ?? 0}</strong>
-                                                        </div>
-                                                    </div>
 
-                                                    <div className="competition-snapshot">
+                                                        <div className="competition-snapshot">
                                                         <div>
                                                             <span>Next match</span>
                                                             <strong>
@@ -351,19 +370,44 @@ function Competitions() {
                                                         </div>
                                                     </div>
 
-                                                    <div className="competition-actions">
-                                                        <button type="button" onClick={() => navigate(`/fixtures?competition=${competition.id}`)}>
-                                                            Fixtures
-                                                        </button>
-                                                        <button type="button" onClick={() => navigate(`/results?competition=${competition.id}`)}>
-                                                            Results
-                                                        </button>
-                                                        <button type="button" onClick={() => navigate(`/standings?competition=${competition.id}`)}>
-                                                            Standings
-                                                        </button>
-                                                        <button type="button" onClick={() => navigate('/tickets')}>
-                                                            Tickets
-                                                        </button>
+                                                        <div className="competition-actions">
+                                                            <button
+                                                                type="button"
+                                                                onClick={(event) => {
+                                                                    event.stopPropagation();
+                                                                    navigate(`/fixtures?competition=${competition.id}`);
+                                                                }}
+                                                            >
+                                                                Fixtures
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                onClick={(event) => {
+                                                                    event.stopPropagation();
+                                                                    navigate(`/results?competition=${competition.id}`);
+                                                                }}
+                                                            >
+                                                                Results
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                onClick={(event) => {
+                                                                    event.stopPropagation();
+                                                                    navigate(`/standings?competition=${competition.id}`);
+                                                                }}
+                                                            >
+                                                                Standings
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                onClick={(event) => {
+                                                                    event.stopPropagation();
+                                                                    navigate('/tickets');
+                                                                }}
+                                                            >
+                                                                Tickets
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </article>
