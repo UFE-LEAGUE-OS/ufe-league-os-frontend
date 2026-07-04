@@ -83,6 +83,7 @@ function Navbar({ links = defaultNavLinks, showSignup = false }: NavbarProps) {
 
   const navListRef = useRef<HTMLUListElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
+  const closeDropdownTimeoutRef = useRef<number | null>(null);
 
   const accessToken = useAuthStore((state) => state.accessToken);
   const user = useAuthStore((state) => state.user);
@@ -100,7 +101,12 @@ function Navbar({ links = defaultNavLinks, showSignup = false }: NavbarProps) {
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      if (closeDropdownTimeoutRef.current) {
+        window.clearTimeout(closeDropdownTimeoutRef.current);
+      }
+    };
   }, []);
 
   useEffect(() => {
@@ -132,6 +138,26 @@ function Navbar({ links = defaultNavLinks, showSignup = false }: NavbarProps) {
           .slice(0, 2)
           .map((part) => part[0]?.toUpperCase() ?? '')
           .join('') || 'F';
+
+  const clearDropdownCloseTimeout = () => {
+    if (closeDropdownTimeoutRef.current) {
+      window.clearTimeout(closeDropdownTimeoutRef.current);
+      closeDropdownTimeoutRef.current = null;
+    }
+  };
+
+  const openDropdown = (label: string) => {
+    clearDropdownCloseTimeout();
+    setOpenDropdownLabel(label);
+  };
+
+  const closeDropdownWithDelay = (label: string) => {
+    clearDropdownCloseTimeout();
+    closeDropdownTimeoutRef.current = window.setTimeout(() => {
+      setOpenDropdownLabel((currentLabel) => (currentLabel === label ? null : currentLabel));
+      closeDropdownTimeoutRef.current = null;
+    }, 180);
+  };
 
   const handleSearchToggle = () => {
     setSearchOpen((currentValue) => !currentValue);
@@ -220,8 +246,12 @@ function Navbar({ links = defaultNavLinks, showSignup = false }: NavbarProps) {
                   className={`${isActive(item.route) || dropdownIsActive ? 'active-link' : ''} ${
                     hasDropdown ? 'nav-dropdown-trigger' : ''
                   }`}
+                  tabIndex={hasDropdown ? 0 : undefined}
+                  aria-haspopup={hasDropdown ? 'menu' : undefined}
+                  aria-expanded={hasDropdown ? dropdownOpen : undefined}
                   onClick={() => {
                     if (hasDropdown) {
+                      clearDropdownCloseTimeout();
                       setOpenDropdownLabel((currentLabel) =>
                         currentLabel === item.label ? null : item.label,
                       );
@@ -229,17 +259,39 @@ function Navbar({ links = defaultNavLinks, showSignup = false }: NavbarProps) {
                     }
                     navigate(item.route);
                   }}
-                  onMouseEnter={() => { if (hasDropdown) setOpenDropdownLabel(item.label); }}
-                  onMouseLeave={() => { if (hasDropdown) setOpenDropdownLabel(null); }}
+                  onMouseEnter={() => { if (hasDropdown) openDropdown(item.label); }}
+                  onMouseLeave={() => { if (hasDropdown) closeDropdownWithDelay(item.label); }}
+                  onFocus={() => { if (hasDropdown) openDropdown(item.label); }}
+                  onBlur={(event) => {
+                    if (hasDropdown && !event.currentTarget.contains(event.relatedTarget as Node | null)) {
+                      closeDropdownWithDelay(item.label);
+                    }
+                  }}
+                  onKeyDown={(event) => {
+                    if (!hasDropdown) return;
+
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault();
+                      clearDropdownCloseTimeout();
+                      setOpenDropdownLabel((currentLabel) =>
+                        currentLabel === item.label ? null : item.label,
+                      );
+                    }
+
+                    if (event.key === 'Escape') {
+                      setOpenDropdownLabel(null);
+                    }
+                  }}
                 >
                   {item.label}
                   {item.showArrow || hasDropdown ? <span className="arrow">▾</span> : null}
                   {hasDropdown && dropdownOpen ? (
-                    <ul className="nav-dropdown">
+                    <ul className="nav-dropdown" role="menu">
                       {item.dropdownItems?.map((dropdownItem) => (
                         <li
                           key={dropdownItem.route}
                           className="nav-dropdown-item"
+                          role="menuitem"
                           onClick={(event) => {
                             event.stopPropagation();
                             navigate(dropdownItem.route);
