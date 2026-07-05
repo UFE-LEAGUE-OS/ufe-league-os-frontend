@@ -92,3 +92,36 @@
 .fixtures-col:hover {
   transform: scale(1.01);
 }
+
+@media (max-width: 1280px) {
+  .fixtures-results {
+    padding: 16px 24px 24px;
+  }
+}
+
+@media (max-width: 768px) {
+  .fixtures-results {
+    flex-direction: column;
+    padding: 16px 16px 24px;
+  }
+
+  .match-row {
+    grid-template-columns: 40px 1fr 60px 1fr 30px;
+    font-size: 11px;
+  }
+
+  .match-time {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 480px) {
+  .match-row {
+    grid-template-columns: 35px 1fr 55px 1fr;
+    font-size: 10px;
+  }
+
+  .match-time {
+    display: none;
+  }
+}

@@ -56,10 +56,6 @@ import FantasySportSelect from '../pages/fantasy/FantasySportSelect';
 import FantasyCreateJoin from '../pages/fantasy/FantasyCreateJoin';
 import FantasyTeamBuilder from '../pages/fantasy/FantasyTeamBuilder';
 import FantasyPlayerMarket from '../pages/fantasy/FantasyPlayerMarket';
-import SponsorApply from '../pages/sponsor/SponsorApply';
-import SponsorIndividual from '../pages/sponsor/SponsorIndividual';
-import SponsorCorporate from '../pages/sponsor/SponsorCorporate';
-import SponsorQuickForm from '../pages/sponsor/SponsorQuickForm';
 import ClubMembershipDetailPage from '../pages/memberships/ClubMembershipDetailPage';
 import MembershipCheckoutPage from '../pages/memberships/MembershipCheckoutPage';
 import MembershipSuccessPage from '../pages/memberships/MembershipSuccessPage';
@@ -87,6 +83,17 @@ import PublishStandards from "../pages/PublishStandards";
 
 
 
+import SponsorshipHub from '../pages/sponsor/SponsorshipHub';
+import IndividualSponsorSetup from '../pages/sponsor/IndividualSponsorSetup';
+import CorporateSponsorSetup from '../pages/sponsor/CorporateSponsorSetup';
+import CorporateVerificationUpload from '../pages/sponsor/CorporateVerificationUpload';
+import CorporateSponsorDashboard from '../pages/sponsor/CorporateSponsorDashboard';
+import CorporateTeamManagement from '../pages/sponsor/CorporateTeamManagement';
+import SponsorPermissions from '../pages/sponsor/SponsorPermissions';
+import SponsorPackages from '../pages/sponsor/SponsorPackages';
+import CampaignCreation from '../pages/sponsor/CampaignCreation';
+import CampaignAnalytics from '../pages/sponsor/CampaignAnalytics';
+import CampaignPlacementPreview from '../pages/sponsor/CampaignPlacementPreview';
 
 function protectedPage(page: ReactNode) {
     return <ProtectedRoute>{page}</ProtectedRoute>;
@@ -113,6 +120,7 @@ export default function AppRoutes() {
                 <Route path="/super-admin/publish-standards" element={<PublishStandards />} />
 
                 
+                <Route path="/super-admin" element={<SuperAdminDashboard />} />
 
                 <Route path="/dashboard" element={protectedPage(<Navigate to="/dashboard/fan" replace />)} />
 
@@ -141,9 +149,6 @@ export default function AppRoutes() {
                     <Route path="/dashboard/tickets" element={<MyTicketsPage />} />
                     <Route path="/dashboard/tickets/:ticketId" element={<TicketDetailPage />} />
                     <Route path="/tickets/:matchId/checkout" element={<TicketCheckoutPage />} />
-                    <Route path="/tickets/payment/processing" element={<TicketPaymentProcessingPage />} />
-                    <Route path="/tickets/payment/success" element={<TicketPaymentSuccessPage />} />
-                    <Route path="/tickets/payment/failed" element={<TicketPaymentFailedPage />} />
 
                     {/* Fantasy — protected, requires login */}
                     <Route path="/fantasy" element={<FantasyPage />} />
@@ -151,11 +156,9 @@ export default function AppRoutes() {
                     <Route path="/fantasy/create-league" element={<FantasyCreateJoin />} />
                     <Route path="/fantasy/team-builder" element={<FantasyTeamBuilder />} />
                     <Route path="/fantasy/player-market" element={<FantasyPlayerMarket />} />
-                 
                 </Route>
-   
-               <Route path="/edit-profile" element={protectedPage(<Navigate to="/profile" replace />)} />
 
+                <Route path="/edit-profile" element={protectedPage(<Navigate to="/profile" replace />)} />
 
                 <Route path="/sports" element={<SportsPage />} />
                 <Route path="/sports/football" element={<FootballPage />} />
@@ -164,6 +167,9 @@ export default function AppRoutes() {
                 <Route path="/competitions" element={<Competitions />} />
                 <Route path="/news" element={<NewsSection />} />
                 <Route path="/tickets" element={<Tickets />} />
+                <Route path="/tickets/payment/processing" element={<TicketPaymentProcessingPage />} />
+                <Route path="/tickets/payment/success" element={<TicketPaymentSuccessPage />} />
+                <Route path="/tickets/payment/failed" element={<TicketPaymentFailedPage />} />
                 <Route path="/unions" element={<Unions />} />
                 <Route path="/clubs" element={<ExploreClubsPage />} />
                 <Route path="/clubs/:clubSlug" element={<ClubDetailsPage />} />
@@ -183,14 +189,22 @@ export default function AppRoutes() {
                 <Route path="/support" element={<Support />} />
                 <Route path="/about" element={<AboutUs />} />
 
-                {/* Sponsor routes — public entry, forms inside authenticated layout */}
-                <Route path="/sponsor/apply" element={<SponsorApply />} />
-                <Route path="/sponsor/individual-quick" element={<SponsorQuickForm />} />
-                <Route path="/sponsor/individual" element={<SponsorIndividual />} />
-                <Route path="/sponsor/corporate" element={<SponsorCorporate />} />
+                {/* Sponsor routes */}
+                <Route path="/sponsorhub" element={<SponsorshipHub />} />
+                <Route path="/sponsor/individualsetup" element={<IndividualSponsorSetup />} />
+                <Route path="/sponsor/corporatesetup" element={<CorporateSponsorSetup />} />
+                <Route path="/sponsor/corporatesetup/verification" element={<CorporateVerificationUpload />} />
+                <Route path="/sponsor/dashboard" element={<CorporateSponsorDashboard />} />
+                <Route path="/sponsor/team" element={<CorporateTeamManagement />} />
+                <Route path="/sponsor/permissions" element={<SponsorPermissions />} />
+                <Route path="/sponsor/packages" element={<SponsorPackages />} />
+                <Route path="/sponsor/campaigns/new" element={<CampaignCreation />} />
+                <Route path="/sponsor/analytics" element={<CampaignAnalytics />} />
+                <Route path="/sponsor/campaigns/preview" element={<CampaignPlacementPreview />} />
+
+
                 <Route path="/payments" element={<Payments />} />
             </Routes>
-            
         </Router>
     );
 }

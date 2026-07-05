@@ -9,7 +9,7 @@
 }
 
 .clubs-public-hero {
-  padding: 6.7rem 3.1rem 1.35rem;
+  padding: 3.35rem 3.1rem 1rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
@@ -493,6 +493,7 @@
 @media (max-width: 760px) {
   .clubs-public-hero,
   .clubs-public-content {
+    padding-top: 3.1rem;
     padding-left: 1rem;
     padding-right: 1rem;
   }

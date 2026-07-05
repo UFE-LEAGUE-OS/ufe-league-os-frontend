@@ -18,6 +18,11 @@ import {
 import type { LucideIcon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import SafeImage from "../../components/SafeImage/SafeImage";
+import {
+    getPublicFixtures,
+    type PublicFixtureApi,
+} from "../../services/publicDashboardService";
 import { getMyTickets, type TicketApi } from "../../services/ticketingService";
 import styles from "./MyTicketsPage.module.css";
 
@@ -55,7 +60,9 @@ interface RecommendedTicket {
     dateTime: string;
     venue: string;
     price: string;
-    image: string;
+    homeLogo?: string;
+    awayLogo?: string;
+    checkoutTo: string;
 }
 
 interface SummaryCard {
@@ -66,41 +73,7 @@ interface SummaryCard {
     tone: "purple" | "blue" | "orange" | "green";
 }
 
-const recommendedTickets: RecommendedTicket[] = [
-    {
-        id: "kobs-ura",
-        dateDay: "07",
-        dateMonth: "Jun",
-        competition: "Nile Special Rugby Premiership",
-        title: "KOBS vs URA RFC",
-        dateTime: "Sat, 07 Jun 2025 • 4:00 PM EAT",
-        venue: "Kings Park Arena, Bweyogerere",
-        price: "UGX 50,000",
-        image: "/assets/sports/rugby-promo.png",
-    },
-    {
-        id: "kobs-pirates",
-        dateDay: "08",
-        dateMonth: "Jun",
-        competition: "Nile Special Rugby Premiership",
-        title: "KCB KOBS vs Pirates RFC",
-        dateTime: "Sun, 08 Jun 2025 • 2:00 PM EAT",
-        venue: "Kings Park Arena, Bweyogerere",
-        price: "UGX 40,000",
-        image: "/assets/clubs/kobs.jpg",
-    },
-    {
-        id: "heathens-rams",
-        dateDay: "14",
-        dateMonth: "Jun",
-        competition: "Nile Special Rugby Premiership",
-        title: "Heathens RFC vs Rams RFC",
-        dateTime: "Sat, 14 Jun 2025 • 4:00 PM EAT",
-        venue: "Legends Rugby Grounds, Namboole",
-        price: "UGX 35,000",
-        image: "/assets/clubs/platinum-heathens.jpg",
-    },
-];
+
 
 function formatDateParts(value?: string | null) {
     if (!value) {
@@ -204,32 +177,112 @@ function mapBackendTicketStatus(status: string): TicketStatus {
     return "Cancelled";
 }
 
-function mapBackendTicket(ticket: TicketApi): FanTicket {
+function normalizeMatchName(value: string) {
+    return value
+        .toLowerCase()
+        .replace(/\s+-\s+\d{4}-\d{2}-\d{2}.*/, "")
+        .replace(/\s+/g, " ")
+        .trim();
+}
+
+function findFixtureForTicket(ticket: TicketApi, fixtures: PublicFixtureApi[]) {
+    const byId = fixtures.find((fixture) => fixture.id === ticket.match_id);
+
+    if (byId) {
+        return byId;
+    }
+
+    const ticketMatchName = normalizeMatchName(ticket.match_label);
+
+    return (
+        fixtures.find((fixture) =>
+            normalizeMatchName(`${fixture.home_club_name} vs ${fixture.away_club_name}`) === ticketMatchName,
+        ) ?? null
+    );
+}
+
+function mapBackendTicket(ticket: TicketApi, fixtures: PublicFixtureApi[] = []): FanTicket {
+    const fixture = findFixtureForTicket(ticket, fixtures);
     const match = parseBackendMatchLabel(ticket.match_label);
-    const matchDate = formatMatchDateFromLabel(match.date, ticket.issued_at);
+    const backendMatchDate = ticket.match_date ?? fixture?.match_date ?? null;
+    const matchDate = backendMatchDate
+        ? formatDateParts(backendMatchDate)
+        : formatMatchDateFromLabel(match.date, ticket.issued_at);
     const issuedDate = formatDateParts(ticket.issued_at);
     const status = mapBackendTicketStatus(ticket.status);
+    const homeTeam = ticket.home_club_name ?? fixture?.home_club_name ?? match.homeTeam;
+    const awayTeam = ticket.away_club_name ?? fixture?.away_club_name ?? match.awayTeam;
 
     return {
         id: String(ticket.id),
-        competition: "League OS Ticketing",
+        competition: ticket.competition_name ?? fixture?.competition_name ?? "Match Ticket",
         dateDay: matchDate.day,
         dateMonth: matchDate.month,
-        title: match.title,
-        homeLogo: "",
-        awayLogo: "",
-        homeTeam: match.homeTeam,
-        awayTeam: match.awayTeam,
+        title: `${homeTeam} vs ${awayTeam}`,
+        homeLogo: ticket.home_club_logo_url ?? fixture?.home_club_logo_url ?? "",
+        awayLogo: ticket.away_club_logo_url ?? fixture?.away_club_logo_url ?? "",
+        homeTeam,
+        awayTeam,
         dateTime: matchDate.full,
-        venue: "Venue to be confirmed",
+        venue: ticket.venue || fixture?.venue || "Venue to be confirmed",
         ticketType: ticket.ticket_type_name || "Match Ticket",
         quantity: 1,
         seat: "General Admission",
-        gate: "Gate pending",
+        gate: "QR ready",
         price: "See receipt",
         status,
         orderId: `#${shortenTicketCode(ticket.ticket_code)}`,
         bookedOn: issuedDate.full,
+    };
+}
+
+function groupUpcomingTickets(tickets: FanTicket[]) {
+    const grouped = new Map<string, FanTicket>();
+
+    tickets.forEach((ticket) => {
+        const key = `${ticket.title}-${ticket.dateTime}`;
+        const existing = grouped.get(key);
+
+        if (!existing) {
+            grouped.set(key, { ...ticket });
+            return;
+        }
+
+        const ticketTypes = Array.from(
+            new Set(
+                `${existing.ticketType}, ${ticket.ticketType}`
+                    .split(",")
+                    .map((value) => value.trim())
+                    .filter(Boolean),
+            ),
+        );
+
+        grouped.set(key, {
+            ...existing,
+            quantity: existing.quantity + ticket.quantity,
+            ticketType: ticketTypes.join(", "),
+            orderId: `${existing.orderId} +${existing.quantity}`,
+        });
+    });
+
+    return Array.from(grouped.values());
+}
+
+function mapFixtureToRecommendedTicket(fixture: PublicFixtureApi): RecommendedTicket {
+    const date = formatDateParts(fixture.match_date);
+
+    return {
+        id: String(fixture.id),
+        dateDay: date.day,
+        dateMonth: date.month,
+        competition: fixture.competition_name,
+        title: `${fixture.home_club_name} vs ${fixture.away_club_name}`,
+        dateTime: date.full,
+        venue: fixture.venue || "Venue to be confirmed",
+        price: "View tickets",
+        homeLogo: fixture.home_club_logo_url,
+        awayLogo: fixture.away_club_logo_url,
+        checkoutTo: `/tickets/${fixture.id}/checkout`,
     };
 }
 
@@ -280,11 +333,13 @@ function TeamBadge({
 }) {
     return (
         <span className={styles.teamBadge}>
-            {logo ? (
-                <img src={logo} alt="" aria-hidden="true" />
-            ) : (
-                <span className={styles.teamInitials}>{buildTeamInitials(name)}</span>
-            )}
+            <SafeImage
+                src={logo}
+                alt={name}
+                className={styles.teamLogoImage}
+                fallbackClassName={styles.teamInitials}
+                fallback={buildTeamInitials(name)}
+            />
             <strong>{name}</strong>
         </span>
     );
@@ -393,9 +448,25 @@ function RecommendedCard({ ticket }: { ticket: RecommendedTicket }) {
     return (
         <article className={styles.recommendedCard}>
             <div className={styles.recommendedImageWrap}>
-                <img src={ticket.image} alt="" aria-hidden="true" />
+                <div className={styles.recommendedLogos}>
+                    <SafeImage
+                        src={ticket.homeLogo}
+                        alt="Home club"
+                        className={styles.recommendedLogo}
+                        fallbackClassName={styles.recommendedLogoFallback}
+                        fallback={buildTeamInitials(ticket.title.split(" vs ")[0] ?? "Home")}
+                    />
+                    <span>vs</span>
+                    <SafeImage
+                        src={ticket.awayLogo}
+                        alt="Away club"
+                        className={styles.recommendedLogo}
+                        fallbackClassName={styles.recommendedLogoFallback}
+                        fallback={buildTeamInitials(ticket.title.split(" vs ")[1] ?? "Away")}
+                    />
+                </div>
 
-                <span>
+                <span className={styles.recommendedDateBadge}>
                     <strong>{ticket.dateDay}</strong>
                     {ticket.dateMonth}
                 </span>
@@ -418,7 +489,7 @@ function RecommendedCard({ ticket }: { ticket: RecommendedTicket }) {
 
             <div className={styles.recommendedFooter}>
                 <strong>{ticket.price}</strong>
-                <Link to="/tickets">Buy Tickets</Link>
+                <Link to={ticket.checkoutTo}>Buy Tickets</Link>
             </div>
         </article>
     );
@@ -428,6 +499,7 @@ function MyTicketsPage() {
     const [activeTab, setActiveTab] = useState<TicketTab>("upcoming");
     const [searchQuery, setSearchQuery] = useState("");
     const [backendTickets, setBackendTickets] = useState<FanTicket[]>([]);
+    const [recommendedTickets, setRecommendedTickets] = useState<RecommendedTicket[]>([]);
     const [isLoadingTickets, setIsLoadingTickets] = useState(true);
     const [ticketError, setTicketError] = useState("");
 
@@ -436,8 +508,12 @@ function MyTicketsPage() {
         setTicketError("");
 
         try {
-            const tickets = await getMyTickets();
-            setBackendTickets(tickets.map(mapBackendTicket));
+            const [tickets, fixtures] = await Promise.all([
+                getMyTickets(),
+                getPublicFixtures().catch(() => [] as PublicFixtureApi[]),
+            ]);
+            setBackendTickets(tickets.map((ticket) => mapBackendTicket(ticket, fixtures)));
+            setRecommendedTickets(fixtures.slice(0, 3).map(mapFixtureToRecommendedTicket));
         } catch {
             setTicketError(
                 "We could not load your backend tickets. Confirm the backend is running and you are logged in.",
@@ -451,19 +527,19 @@ function MyTicketsPage() {
         void loadTickets();
     }, []);
 
-    const upcomingBackendTickets = useMemo(
+    const rawUpcomingBackendTickets = useMemo(
         () => backendTickets.filter((ticket) => ticket.status === "Confirmed"),
         [backendTickets],
+    );
+
+    const upcomingBackendTickets = useMemo(
+        () => groupUpcomingTickets(rawUpcomingBackendTickets),
+        [rawUpcomingBackendTickets],
     );
 
     const pastBackendTickets = useMemo(
         () => backendTickets.filter((ticket) => ticket.status !== "Confirmed"),
         [backendTickets],
-    );
-
-    const allTickets = useMemo(
-        () => [...upcomingBackendTickets, ...pastBackendTickets],
-        [pastBackendTickets, upcomingBackendTickets],
     );
 
     const summaryCards: SummaryCard[] = [
@@ -483,8 +559,8 @@ function MyTicketsPage() {
         },
         {
             label: "Total Orders",
-            value: String(allTickets.length),
-            detail: "Ticket purchases",
+            value: String(backendTickets.length),
+            detail: "Issued tickets",
             icon: ReceiptText,
             tone: "orange",
         },
@@ -521,12 +597,12 @@ function MyTicketsPage() {
 
     const searchedOrders = useMemo(
         () =>
-            allTickets.filter((ticket) =>
+            backendTickets.filter((ticket) =>
                 `${ticket.title} ${ticket.competition} ${ticket.venue} ${ticket.orderId}`
                     .toLowerCase()
                     .includes(normalizedSearchQuery),
             ),
-        [allTickets, normalizedSearchQuery],
+        [backendTickets, normalizedSearchQuery],
     );
 
     const nextTicket = upcomingBackendTickets[0];
@@ -645,7 +721,7 @@ function MyTicketsPage() {
                     className={activeTab === "orders" ? styles.activeTab : ""}
                     onClick={() => setActiveTab("orders")}
                 >
-                    Orders <span>{allTickets.length}</span>
+                    Orders <span>{backendTickets.length}</span>
                 </button>
             </div>
 

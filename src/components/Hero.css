@@ -152,3 +152,88 @@
   transform: scale(1.04);
   font-size: 15.8px;
 }
+
+@media (max-width: 1280px) {
+  .hero {
+    height: auto;
+    padding: 32px 24px 24px;
+  }
+
+  .hero-top {
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .hero-heading {
+    font-size: 36px;
+  }
+
+  .hero-stats {
+    align-self: flex-start;
+    padding-bottom: 0;
+    gap: 24px;
+  }
+
+  .hero-features {
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero {
+    padding: 24px 16px 20px;
+  }
+
+  .hero-heading {
+    font-size: 28px;
+  }
+
+  .hero-subtext {
+    font-size: 14px;
+  }
+
+  .hero-buttons {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .btn-outline,
+  .hero .btn-primary {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .hero-stats {
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .stat-number {
+    font-size: 28px;
+  }
+
+  .hero-features {
+    gap: 12px;
+  }
+
+  .feature {
+    font-size: 12px;
+  }
+}
+/* Landing CTA button color lock: purple, orange on hover. */
+.hero .hero-buttons .btn-primary {
+  background: #8135fa !important;
+  border-color: #8135fa !important;
+  color: #ffffff !important;
+  box-shadow: 0 12px 28px rgba(129, 53, 250, 0.24) !important;
+}
+
+.hero .hero-buttons .btn-primary:hover,
+.hero .hero-buttons .btn-primary:focus-visible {
+  background: #f97316 !important;
+  border-color: #f97316 !important;
+  color: #ffffff !important;
+  outline: none !important;
+  box-shadow: 0 14px 32px rgba(249, 115, 22, 0.24) !important;
+}

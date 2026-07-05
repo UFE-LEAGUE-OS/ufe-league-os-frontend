@@ -213,3 +213,47 @@
   border: 1px solid white;
   margin-left: 90%;
 }
+
+@media (max-width: 1280px) {
+  .fantasy-leagues {
+    padding: 16px 24px 24px;
+  }
+
+  .fantasy-row {
+    gap: 10px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .fantasy-card {
+    min-width: 200px;
+  }
+}
+
+@media (max-width: 768px) {
+  .fantasy-leagues {
+    padding: 16px 16px 24px;
+  }
+
+  .fantasy-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    overflow-x: unset;
+    padding-bottom: 0;
+  }
+
+  .fantasy-card {
+    min-width: unset;
+  }
+
+  .fantasy-arrow {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .fantasy-row {
+    grid-template-columns: 1fr;
+  }
+}
