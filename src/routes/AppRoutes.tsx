@@ -107,7 +107,6 @@ export default function AppRoutes() {
                 <Route path="/verify-email" element={<VerifyEmail />} />
                 <Route path="/fan/mvp-voting" element={<MVPVotingPage />} />
                 <Route path="/join-fantasy" element={<JoinFantasy />} />
-                <Route path="/super-admin" element={<SuperAdminDashboard />} />
                 <Route path="/sports-variants" element={<SuperVariants />} />
                 <Route path="/super-admin/rules" element={<RulesAndStandards />} />
                 <Route path="/super-admin/competition-formats" element={<CompetitionConfigurator />} />
@@ -128,7 +127,7 @@ export default function AppRoutes() {
                     <Route path="/profile/notifications" element={<ProfileNotifications />} />
                     <Route path="/profile/privacy" element={<ProfilePrivacy />} />
                     <Route path="/profile/support" element={<ProfileSupport />} />
-
+                    <Route path="/super-admin" element={<SuperAdminDashboard />} />
                     <Route path="/memberships" element={<ExploreMembershipsPage />} />
                     <Route path="/memberships/:clubSlug" element={<ClubMembershipDetailPage />} />
                     <Route path="/memberships/:clubSlug/checkout" element={<MembershipCheckoutPage />} />
