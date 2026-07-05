@@ -118,9 +118,7 @@ export default function AppRoutes() {
                 <Route path="/super-admin/rules" element={<RulesAndStandards />} />
                 <Route path="/super-admin/competition-formats" element={<CompetitionConfigurator />} />
                 <Route path="/super-admin/publish-standards" element={<PublishStandards />} />
-
                 
-                <Route path="/super-admin" element={<SuperAdminDashboard />} />
 
                 <Route path="/dashboard" element={protectedPage(<Navigate to="/dashboard/fan" replace />)} />
 
@@ -156,6 +154,9 @@ export default function AppRoutes() {
                     <Route path="/fantasy/create-league" element={<FantasyCreateJoin />} />
                     <Route path="/fantasy/team-builder" element={<FantasyTeamBuilder />} />
                     <Route path="/fantasy/player-market" element={<FantasyPlayerMarket />} />
+
+                    {/* super admin */}
+                    <Route path="/super-admin" element={<SuperAdminDashboard />} />
                 </Route>
 
                 <Route path="/edit-profile" element={protectedPage(<Navigate to="/profile" replace />)} />
