@@ -1,5 +1,4 @@
 
-
 /* ---------------- PAGE HEADER ---------------- */
 .variants-page-header{
     display:flex;
@@ -31,7 +30,7 @@
     align-items:center;
     gap:6px;
     border:1px solid var(--line);
-    background:#F9FAFF;
+    background:rgb(30, 30, 48);
     color:var(--muted);
     font-size:12.5px;
     font-weight:600;
@@ -42,7 +41,7 @@
 }
 
 .sport-tab .tab-count{
-    background:rgba(0,0,0,0.06);
+    background:rgba(255,255,255,0.08);
     color:inherit;
     font-size:11px;
     padding:1px 7px;
@@ -74,12 +73,16 @@
     background:var(--purple);
     cursor:pointer;
 }
-
+.status-select option,
+.variant-form select option{
+    background:rgb(30, 30, 48);
+    color:var(--text);
+}
 .toolbar-search{
     display:flex;
     align-items:center;
     gap:8px;
-    border:1px solid gr;
+    border:1px solid grey;
     border-radius:8px;
     padding:9px 12px;
     color:var(--muted);
@@ -92,6 +95,7 @@
     font-size:12.5px;
     width:170px;
     color:var(--text);
+    background:transparent;
 }
 
 /* ---------------- VARIANT GRID ---------------- */
@@ -99,6 +103,26 @@
     display:grid;
     grid-template-columns:repeat(auto-fill, minmax(260px, 1fr));
     gap:16px;
+    max-height:72vh;
+    overflow-y:auto;
+    padding-right:6px;
+    scrollbar-width:thin;
+    scrollbar-color:var(--purple) rgb(24, 24, 38);
+}
+
+.variant-grid::-webkit-scrollbar{
+    width:8px;
+}
+.variant-grid::-webkit-scrollbar-track{
+    background:rgb(24, 24, 38);
+    border-radius:8px;
+}
+.variant-grid::-webkit-scrollbar-thumb{
+    background:var(--purple);
+    border-radius:8px;
+}
+.variant-grid::-webkit-scrollbar-thumb:hover{
+    background:var(--purple-dark);
 }
 
 .variant-card{
@@ -146,7 +170,7 @@
 }
 .status-badge.tone-green{ background:var(--green-tint); color:rgb(141, 35, 240); }
 .status-badge.tone-amber{ background:var(--amber-tint); color:rgb(141, 35, 240); }
-.status-badge.tone-muted{ background:#EEF0F5; color:var(--muted); }
+.status-badge.tone-muted{ background:rgb(45, 45, 65); color:var(--muted); }
 
 .variant-name{
     font-size:17px;
@@ -257,7 +281,7 @@
 }
 
 .modal-panel{
-    background:#fff;
+    background:rgb(28, 28, 44);
     border-radius:18px;
     width:100%;
     max-width:520px;
@@ -277,7 +301,7 @@
 
 .modal-close{
     border:none;
-    background:#F3F4F8;
+    background:rgb(45, 45, 65);
     color:var(--muted);
     border-radius:8px;
     padding:6px;
@@ -311,6 +335,7 @@
     font-weight:500;
     color:var(--text);
     font-family:inherit;
+    background:rgb(38, 38, 58);
 }
 
 .variant-form input:focus,
@@ -348,6 +373,7 @@
     .variants-toolbar{ flex-direction:column; align-items:stretch; }
     .toolbar-right{ flex-direction:column; align-items:stretch; }
     .toolbar-search input{ width:100%; }
+    .variant-grid{ max-height:60vh; }
 }
 
 @media(max-width:520px){

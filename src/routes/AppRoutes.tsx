@@ -82,6 +82,8 @@ import JoinFantasy from '../pages/JoinFantasy';
 import SuperAdminDashboard from '../pages/SuperAdminDashboard';
 import SuperVariants from '../pages/SuperVariantsPage';
 import RulesAndStandards from '../pages/SuperAdminRules';
+import CompetitionConfigurator from '../pages/CompetitionConfigurator';
+import PublishStandards from "../pages/PublishStandards";
 
 
 
@@ -108,6 +110,8 @@ export default function AppRoutes() {
                 <Route path="/super-admin" element={<SuperAdminDashboard />} />
                 <Route path="/sports-variants" element={<SuperVariants />} />
                 <Route path="/super-admin/rules" element={<RulesAndStandards />} />
+                <Route path="/super-admin/competition-formats" element={<CompetitionConfigurator />} />
+                <Route path="/super-admin/publish-standards" element={<PublishStandards />} />
 
                 
 

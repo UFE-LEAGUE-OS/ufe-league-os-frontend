@@ -126,7 +126,7 @@ const GOVERNANCE_PIPELINE = [
         detail: "12 templates",
         sub: "League, knockout, groups",
         icon: GitBranch,
-        path: "/competitions",
+        path: "/super-admin/competition-formats",
     },
     {
         key: "rules",
@@ -134,16 +134,16 @@ const GOVERNANCE_PIPELINE = [
         detail: "15 published",
         sub: "Eligibility, conduct, discipline",
         icon: BookOpen,
-        path: "/rules",
+        path: "/super-admin/rules",
     },
     {
         key: "publish",
-        label: "Publish Queue",
+        label: "Publish Standards",
         detail: "3 pending",
         sub: "Awaiting your approval",
         icon: ClipboardCheck,
         alert: true,
-        path: "/publish",
+        path: "/super-admin/publish-standards",
     },
 ];
 
@@ -259,7 +259,7 @@ export default function SuperAdminDashboard() {
                                     How a rule moves from definition to live on the platform
                                 </p>
                             </div>
-                            <button className="link-btn">Open Publish Queue</button>
+                           
                         </div>
 
                         <div className="governance-pipeline">

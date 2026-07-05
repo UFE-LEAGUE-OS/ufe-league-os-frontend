@@ -50,9 +50,9 @@ const NAV_ITEMS: NavItem[] = [
     path: "/super-admin/governance",
     children: [
       { id: "sports", label: "Sports Variants", path: "/sports-variants" },
-      { id: "competitions", label: "Competitions", path: "/super-admin/governance/competitions" },
+      { id: "competitions", label: "Competitions", path: "/super-admin/competition-formats" },
       { id: "rules", label: "Rules & Standards", path: "/super-admin/rules" },
-      { id: "publish", label: "Publish Queue", path: "/super-admin/governance/publish-queue" },
+      { id: "publish", label: "Publish Queue", path: "/super-admin/publish-standards" },
     ],
   },
   {
