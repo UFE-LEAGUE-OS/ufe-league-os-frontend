@@ -1,0 +1,85 @@
+/* ============================================================
+   ChargebacksRefunds.css — styles unique to ChargebacksRefundsPage
+   ============================================================ */
+
+.chargeback-cases-section{
+    padding: 0;
+    overflow: hidden;
+}
+
+.chargeback-cases-header{
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.chargeback-cases-header h2{
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin: 0;
+}
+
+.chargeback-cases-table{
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.chargeback-cases-table thead th{
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 12px 20px;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+    white-space: nowrap;
+}
+
+.chargeback-cases-table thead th.actions-col{
+    text-align: center;
+}
+
+.chargeback-cases-table tbody td{
+    padding: 14px 20px;
+    font-size: 13.5px;
+    color: var(--text);
+    border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+    white-space: nowrap;
+}
+
+.chargeback-cases-table tbody tr:last-child td{
+    border-bottom: none;
+}
+
+.chargeback-cases-table tbody tr:hover{
+    background: rgba(139, 92, 246, 0.04);
+}
+
+.case-status-pill{
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: 11.5px;
+    font-weight: 600;
+    border: 1px solid transparent;
+}
+
+.case-status-open{
+    color: #F87171;
+    background: rgba(248, 113, 113, 0.08);
+    border-color: rgba(248, 113, 113, 0.4);
+}
+
+.case-status-approved{
+    color: #4ADE80;
+    background: rgba(74, 222, 128, 0.08);
+    border-color: rgba(74, 222, 128, 0.4);
+}
+
+.case-status-review{
+    color: #F59E0B;
+    background: rgba(245, 158, 11, 0.08);
+    border-color: rgba(245, 158, 11, 0.4);
+}

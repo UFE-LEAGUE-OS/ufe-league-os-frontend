@@ -1,0 +1,339 @@
+/* ============================================================
+   TransactionTrail.css — styles unique to TransactionTrailPage
+   ============================================================ */
+
+/* Trail insights panel (inside .page-grid) */
+.trail-insights-panel{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 18px;
+}
+
+.insight-row{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 14px;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.insight-row:last-child{
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.insight-label{
+    font-size: 13px;
+    color: var(--muted);
+}
+
+.insight-value{
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.insight-success{ color: #4ADE80; }
+.insight-warning{ color: #F59E0B; }
+
+/* Trail explorer: list + timeline + details, 3 equal columns */
+.trail-explorer{
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+    margin-top: 20px;
+    align-items: stretch;
+}
+
+.trail-panel{
+    background: var(--surface, #0b1224);
+    border: 1px solid rgba(124, 77, 255, 0.10);
+    border-radius: 14px;
+    box-shadow: 0 10px 30px rgba(11, 18, 37, 0.08);
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.trail-panel h2{
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin: 0 0 14px 0;
+}
+
+/* Transactions list panel */
+.trail-panel-header{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+}
+
+.trail-panel-header h2{
+    margin: 0;
+}
+
+.trail-view-all-btn{
+    background: none;
+    border: none;
+    color: #A78BFA;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+    white-space: nowrap;
+}
+
+.trail-view-all-btn:hover{
+    text-decoration: underline;
+}
+
+.trail-filters{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 24px;
+}
+
+.trail-search-input{
+    width: 100%;
+    background: rgba(148, 163, 184, 0.06);
+    border: 1px solid rgba(148, 163, 184, 0.14);
+    border-radius: 10px;
+    color: var(--text);
+    font-size: 12.5px;
+    padding: 9px 12px;
+    outline: none;
+}
+
+.trail-search-input::placeholder{
+    color: var(--muted);
+}
+
+.trail-search-input:focus{
+    border-color: rgba(139, 92, 246, 0.4);
+}
+
+.trail-status-tabs{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.trail-status-tab{
+    background: rgba(148, 163, 184, 0.06);
+    border: 1px solid rgba(148, 163, 184, 0.14);
+    border-radius: 999px;
+    color: var(--muted);
+    font-size: 11.5px;
+    font-weight: 600;
+    padding: 5px 12px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.trail-status-tab:hover{
+    color: var(--text);
+    border-color: rgba(139, 92, 246, 0.3);
+}
+
+.trail-status-tab.active{
+    background: linear-gradient(135deg, #7C4DFF, #8B5CF6);
+    border-color: transparent;
+    color: #fff;
+}
+
+.trail-list-empty{
+    text-align: center;
+    padding: 24px 12px;
+    font-size: 12.5px;
+    color: var(--muted);
+}
+
+.trail-list{
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 8px;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.trail-list-item{
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    text-align: left;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(148, 163, 184, 0.12);
+    background: rgba(148, 163, 184, 0.04);
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.trail-list-item:hover{
+    background: rgba(139, 92, 246, 0.08);
+    border-color: rgba(139, 92, 246, 0.25);
+}
+
+.trail-list-item.active{
+    background: linear-gradient(135deg, #7C4DFF, #8B5CF6);
+    border-color: transparent;
+}
+
+.trail-list-row{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.trail-list-id{
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.trail-list-item.active .trail-list-id,
+.trail-list-item.active .trail-list-amount,
+.trail-list-item.active .trail-list-user,
+.trail-list-item.active .trail-list-date{
+    color: #fff;
+}
+
+.trail-list-amount{
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.trail-list-user{
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.trail-list-date{
+    font-size: 11px;
+    color: var(--muted);
+}
+
+/* Timeline panel */
+.trail-timeline-id{
+    font-size: 13px;
+    font-weight: 600;
+    color: #A78BFA;
+    margin-bottom: 16px;
+}
+
+.trail-timeline-steps{
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 4px;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.trail-step{
+    position: relative;
+    display: flex;
+    gap: 16px;
+    padding-bottom: 22px;
+}
+
+.trail-step:last-child{
+    padding-bottom: 0;
+}
+
+.trail-step-marker{
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+}
+
+.trail-step-marker.done{
+    background: #22C55E;
+}
+
+.trail-step-marker.pending{
+    background: transparent;
+    border: 2px solid rgba(148, 163, 184, 0.3);
+}
+
+.trail-step-line{
+    position: absolute;
+    left: 10px;
+    top: 22px;
+    bottom: 0;
+    width: 2px;
+    background: rgba(148, 163, 184, 0.16);
+}
+
+.trail-step-line.done{
+    background: #22C55E;
+}
+
+.trail-step-content p{
+    margin: 0 0 2px 0;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.trail-step-content span{
+    font-size: 12px;
+    color: var(--muted);
+}
+
+/* Details panel */
+.trail-details-list{
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 14px;
+    margin-bottom: 18px;
+    flex: 1;
+}
+
+.trail-detail-row{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.trail-detail-label{
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.trail-detail-value{
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--text);
+    text-align: right;
+    word-break: break-word;
+}
+
+.trail-raw-logs-btn{
+    width: 100%;
+    text-align: center;
+}
+
+@media (max-width: 1080px){
+    .trail-explorer{
+        grid-template-columns: 1fr;
+    }
+    .trail-list{
+        max-height: 260px;
+    }
+}
