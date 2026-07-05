@@ -31,6 +31,7 @@ type Sport = "Football" | "Basketball" | "Rugby";
 type FormatType = "League" | "Knockout" | "Group + Knockout" | "Hybrid";
 type Legs = "Single" | "Double";
 type Status = "Active" | "Draft" | "Archived";
+type FormatFilter = FormatType | "All";
 
 type SportVariantRef = {
     id: string;
@@ -226,7 +227,7 @@ export default function CompetitionFormatConfigurator() {
     const [formats, setFormats] = useState<CompetitionFormat[]>(INITIAL_FORMATS);
 
     const [activeSport, setActiveSport] = useState<"All" | Sport>("All");
-    const [typeFilter, setTypeFilter] = useState<"All" | FormatType>("All");
+    const [typeFilter, setTypeFilter] = useState<FormatFilter>("All");
     const [statusFilter, setStatusFilter] = useState<"All" | Status>("All");
     const [query, setQuery] = useState("");
 
@@ -446,7 +447,9 @@ export default function CompetitionFormatConfigurator() {
                             <select
                                 className="status-select"
                                 value={typeFilter}
-                                onChange={(e) => setTypeFilter(e.target.value as any)}
+                                onChange={(e) =>
+                                    setTypeFilter(e.target.value as FormatFilter)
+                                }
                             >
                                 <option value="All">All formats</option>
                                 {FORMAT_TYPES.map((t) => (

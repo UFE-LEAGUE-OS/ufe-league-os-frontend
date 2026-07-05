@@ -40,6 +40,7 @@ type Variant = {
     leagues: number;
     updated: string;
 };
+type StatusFilter = "All" | Variant["status"];
 
 type FormState = {
     sport: "Football" | "Basketball" | "Rugby";
@@ -154,9 +155,9 @@ const EMPTY_FORM: FormState = {
 export default function SportVariants() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [variants, setVariants] = useState<Variant[]>(INITIAL_VARIANTS);
-/*const [activeNav, setActiveNav] = useState("dashboard");*/
+    /*const [activeNav, setActiveNav] = useState("dashboard");*/
     const [activeSport, setActiveSport] = useState<"All" | Variant["sport"]>("All");
-    const [statusFilter, setStatusFilter] = useState<"All" | Variant["status"]>("All");
+    const [statusFilter, setStatusFilter] = useState<StatusFilter>("All");
     const [query, setQuery] = useState("");
 
     const [modalOpen, setModalOpen] = useState(false);
@@ -256,72 +257,72 @@ export default function SportVariants() {
         closeModal();
     }
 
-   function setStatus(variant: Variant, status: Variant["status"]) {
-    if (status === variant.status) return;
-    setVariants((prev) =>
-        prev.map((v) =>
-            v.id === variant.id
-                ? { ...v, status, updated: "Just now" }
-                : v
-        )
-    );
-}
+    function setStatus(variant: Variant, status: Variant["status"]) {
+        if (status === variant.status) return;
+        setVariants((prev) =>
+            prev.map((v) =>
+                v.id === variant.id
+                    ? { ...v, status, updated: "Just now" }
+                    : v
+            )
+        );
+    }
 
     /* ---------------- UI ---------------- */
 
     return (
         <div className="super-adminv"
-        style={{
-                        backgroundImage: `linear-gradient(rgba(15, 18, 24, 0.38), rgba(15, 18, 24, 0.34)), url(${superImage})`,
-                    }}
+            style={{
+                backgroundImage: `linear-gradient(rgba(15, 18, 24, 0.38), rgba(15, 18, 24, 0.34)), url(${superImage})`,
+            }}
         >
             {/* HEADER */}
-                        <header className="admin-header">
-                            <div className="header-left">
-                                <div className="menu-container">
-                                    <button
-                                        className="menu-btn"
-                                        onClick={() => setSidebarOpen(!sidebarOpen)}
-                                        aria-label="Toggle navigation"
-                                    >
-                                        {sidebarOpen ? <X size={24} /> : <Menu size={24} />}
-                                    </button>
-                                </div>
-            
-                                <div className="header-logo">
-                                    <img src={logo} alt="League OS" />
-                                </div>
-                            </div>
-            
-                            <div className="header-search">
-                                <Search size={16} />
-                                <input type="text" placeholder="Search users, matches, transactions…" />
-                            </div>
-            
-                            <div className="header-right">
-            
-                                <button className="icon-btn" aria-label="Notifications">
-                                    <Bell size={19} />
-                                    <span className="notif-badge">3</span>
-                                </button>
-            
-                                <div className="header-profile">
-                                    <img src={profile} alt="Merab Apio" />
-                                    <div className="profile-meta">
-                                        <h4>Merab Apio</h4>
-                                        <span className="role-badge">Super Admin</span>
-                                    </div>
-                                    <ChevronDown size={16} className="profile-caret" />
-                                </div>
-                            </div>
-                        </header>
+            <header className="admin-header">
+                <div className="header-left">
+                    <div className="menu-container">
+                        <button
+                            className="menu-btn"
+                            onClick={() => setSidebarOpen(!sidebarOpen)}
+                            aria-label="Toggle navigation"
+                        >
+                            {sidebarOpen ? <X size={24} /> : <Menu size={24} />}
+                        </button>
+                    </div>
+
+                    <div className="header-logo">
+                        <img src={logo} alt="League OS" />
+                    </div>
+                </div>
+
+                <div className="header-search">
+                    <Search size={16} />
+                    <input type="text" placeholder="Search users, matches, transactions…" />
+                </div>
+
+                <div className="header-right">
+
+                    <button className="icon-btn" aria-label="Notifications">
+                        <Bell size={19} />
+                        <span className="notif-badge">3</span>
+                    </button>
+
+                    <div className="header-profile">
+                        <img src={profile} alt="Merab Apio" />
+                        <div className="profile-meta">
+                            <h4>Merab Apio</h4>
+                            <span className="role-badge">Super Admin</span>
+                        </div>
+                        <ChevronDown size={16} className="profile-caret" />
+                    </div>
+                </div>
+            </header>
 
             <div className="dashboard-layout">
                 {/* SIDEBAR */}
-                                <Sidebar
-                                    collapsed={!sidebarOpen}
-                                   
-                                />
+                <Sidebar
+                    collapsed={!sidebarOpen}
+
+                />
 
                 <main className="main-content">
                     <div className="variants-page-header">
@@ -358,7 +359,9 @@ export default function SportVariants() {
                             <select
                                 className="status-select"
                                 value={statusFilter}
-                                onChange={(e) => setStatusFilter(e.target.value as any)}
+                                onChange={(e) =>
+                                    setStatusFilter(e.target.value as StatusFilter)
+                                }
                             >
                                 <option value="All">All statuses</option>
                                 <option value="Active">Active</option>
@@ -424,19 +427,19 @@ export default function SportVariants() {
                                     </div>
 
                                     <div className="variant-actions">
-    <button className="icon-action-btn subtle" onClick={() => openEdit(v)}>
-        <Pencil size={14} /> Edit
-    </button>
-    <select
-        className={`status-select tone-${STATUS_TONE[v.status]}`}
-        value={v.status}
-        onChange={(e) => setStatus(v, e.target.value as Variant["status"])}
-    >
-        <option value="Active">Active</option>
-        <option value="Draft">Draft</option>
-        <option value="Archived">Archived</option>
-    </select>
-</div>
+                                        <button className="icon-action-btn subtle" onClick={() => openEdit(v)}>
+                                            <Pencil size={14} /> Edit
+                                        </button>
+                                        <select
+                                            className={`status-select tone-${STATUS_TONE[v.status]}`}
+                                            value={v.status}
+                                            onChange={(e) => setStatus(v, e.target.value as Variant["status"])}
+                                        >
+                                            <option value="Active">Active</option>
+                                            <option value="Draft">Draft</option>
+                                            <option value="Archived">Archived</option>
+                                        </select>
+                                    </div>
                                 </div>
                             ))}
                         </section>

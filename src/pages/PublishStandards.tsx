@@ -33,6 +33,7 @@ type Sport = "Football" | "Basketball" | "Rugby";
 type Stage = "Draft" | "Standards Review" | "Committee Approval" | "Published" | "Rejected";
 type Role = "Competitions" | "Compliance" | "Technical";
 type ItemStatus = "Pending" | "Passed" | "Failed";
+type StageFilter = Stage | "All";
 
 type ChecklistItem = {
     id: string;
@@ -220,7 +221,7 @@ export default function PublishStandards() {
     const [submissions, setSubmissions] = useState<Submission[]>(INITIAL_SUBMISSIONS);
 
     const [activeSport, setActiveSport] = useState<"All" | Sport>("All");
-    const [stageFilter, setStageFilter] = useState<"All" | Stage>("All");
+    const [stageFilter, setStageFilter] = useState<StageFilter>("All");
     const [query, setQuery] = useState("");
 
     const [modalOpen, setModalOpen] = useState(false);
@@ -280,10 +281,10 @@ export default function PublishStandards() {
             prev.map((s) =>
                 s.id === sub.id
                     ? {
-                          ...s,
-                          checklist: s.checklist.map((i) => (i.id === item.id ? { ...i, status: nextStatus } : i)),
-                          updated: "Just now",
-                      }
+                        ...s,
+                        checklist: s.checklist.map((i) => (i.id === item.id ? { ...i, status: nextStatus } : i)),
+                        updated: "Just now",
+                    }
                     : s
             )
         );
@@ -390,9 +391,10 @@ export default function PublishStandards() {
 
                         <div className="toolbar-right">
                             <select
-                                className="status-select"
                                 value={stageFilter}
-                                onChange={(e) => setStageFilter(e.target.value as any)}
+                                onChange={(e) =>
+                                    setStageFilter(e.target.value as StageFilter)
+                                }
                             >
                                 <option value="All">All stages</option>
                                 {STAGE_ORDER.map((s) => (

@@ -11,6 +11,7 @@ import Sidebar from "../components/SuperAdminSideBar";
 
 type Scope = "Global" | "Football" | "Basketball" | "Rugby";
 type Category = "Eligibility" | "Conduct" | "Certification" | "Facility";
+type CategoryFilter = "All" | Category;
 
 type Rule = {
     id: string;
@@ -238,7 +239,9 @@ export default function RulesAndStandards() {
                             <select
                                 className="status-select"
                                 value={categoryFilter}
-                                onChange={(e) => setCategoryFilter(e.target.value as any)}
+                                onChange={(e) =>
+                                    setCategoryFilter(e.target.value as CategoryFilter)
+                                }
                             >
                                 <option value="All">All categories</option>
                                 {CATEGORIES.map((c) => (
