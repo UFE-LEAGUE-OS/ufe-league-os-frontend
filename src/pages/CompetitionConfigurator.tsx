@@ -28,10 +28,20 @@ import superImage from "../assets/cta-banner.png";
 /* ---------------- TYPES ---------------- */
 
 type Sport = "Football" | "Basketball" | "Rugby";
-type FormatType = "League" | "Knockout" | "Group + Knockout" | "Hybrid";
-type Legs = "Single" | "Double";
+
+type FormatType =
+  | "League"
+  | "Knockout"
+  | "Group + Knockout"
+  | "Hybrid";
+
 type Status = "Active" | "Draft" | "Archived";
+
+type Legs = "Single" | "Double";
+
 type FormatFilter = FormatType | "All";
+type StatusFilter = Status | "All";
+
 
 type SportVariantRef = {
     id: string;
@@ -228,7 +238,7 @@ export default function CompetitionFormatConfigurator() {
 
     const [activeSport, setActiveSport] = useState<"All" | Sport>("All");
     const [typeFilter, setTypeFilter] = useState<FormatFilter>("All");
-    const [statusFilter, setStatusFilter] = useState<"All" | Status>("All");
+    const [statusFilter, setStatusFilter] = useState<StatusFilter>("All");
     const [query, setQuery] = useState("");
 
     const [modalOpen, setModalOpen] = useState(false);
@@ -460,7 +470,8 @@ export default function CompetitionFormatConfigurator() {
                             <select
                                 className="status-select"
                                 value={statusFilter}
-                                onChange={(e) => setStatusFilter(e.target.value as any)}
+                                onChange={(e) =>setStatusFilter(e.target.value as StatusFilter)
+                                }
                             >
                                 <option value="All">All statuses</option>
                                 <option value="Active">Active</option>
