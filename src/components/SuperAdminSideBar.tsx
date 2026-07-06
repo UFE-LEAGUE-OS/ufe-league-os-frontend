@@ -38,7 +38,17 @@ const NAV_ITEMS: NavItem[] = [
     id: "users",
     label: "User Management",
     icon: Users,
-    path: "/super-admin/users-management"
+    path: "/super-admin/users-management",
+    children: [
+      { id: "um-users",       label: "Manage Users",       path: "/super-admin/users-management" },
+      { id: "um-roles",       label: "Role Templates",     path: "/super-admin/role-templates" },
+      { id: "um-permissions", label: "Permission Bundles", path: "/super-admin/permissions" },
+      { id: "um-crossrole",   label: "Cross-Role Access",  path: "/super-admin/cross-role" },
+      { id: "um-assignment",  label: "Role Assignment",    path: "/super-admin/role-assignment" },
+      { id: "um-audit",       label: "Audit Log",          path: "/super-admin/audit-log" },
+      { id: "um-sessions",    label: "Session Management", path: "/super-admin/sessions" },
+      { id: "um-impersonate", label: "Impersonate User",   path: "/super-admin/impersonate" },
+    ],
   },
   {
     id: "platform",
@@ -52,10 +62,10 @@ const NAV_ITEMS: NavItem[] = [
     icon: ShieldCheck,
     path: "/super-admin/governance",
     children: [
-      { id: "sports", label: "Sports Variants", path: "/sports-variants" },
-      { id: "competitions", label: "Competitions", path: "/super-admin/competition-formats" },
-      { id: "rules", label: "Rules & Standards", path: "/super-admin/rules" },
-      { id: "publish", label: "Publish Queue", path: "/super-admin/publish-standards" },
+      { id: "sports",       label: "Sports Variants",    path: "/sports-variants" },
+      { id: "competitions", label: "Competitions",       path: "/super-admin/competition-formats" },
+      { id: "rules",        label: "Rules & Standards",  path: "/super-admin/rules" },
+      { id: "publish",      label: "Publish Queue",      path: "/super-admin/publish-standards" },
     ],
   },
   {
