@@ -45,10 +45,6 @@
     color:#fff;
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 714bab33b0083a7ae72105b5927c0bd312831bd6
 .sidebar a.active {
     background: var(--purple);
     color: #fff;
@@ -63,18 +59,12 @@
 .sub-link.active {
     background: var(--purple);
     color: #fff;
-<<<<<<< HEAD
-=======
-=======
->>>>>>> 714bab33b0083a7ae72105b5927c0bd312831bd6
+}
 .sidebar-button.active,
 .sidebar a.active{
     background:var(--purple);
     color:#fff;
-<<<<<<< HEAD
->>>>>>> 1b396ddc6a66557158bd7496bcd2cf29c8fcb5de
-=======
->>>>>>> 714bab33b0083a7ae72105b5927c0bd312831bd6
+
 }
 
 .expand-indicator{
@@ -180,8 +170,8 @@
   background: var(--navy-alt);
   color: #fff;
 }
-
 .sub-link.active {
   background: var(--purple);
   color: #fff;
+
 }
