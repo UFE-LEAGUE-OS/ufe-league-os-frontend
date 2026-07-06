@@ -3,6 +3,9 @@ import {
   Goal,
   ArrowLeftRight,
   Users,
+  GitBranch,
+  Calendar,
+  DollarSign,
   ArrowRight,
 } from "lucide-react";
 import "../../../styles/pages/SuperAdminDashboard.css";
@@ -31,6 +34,30 @@ const FANTASY_CARDS = [
     icon: Users,
     path: "/super-admin/fantasy-config/squad-limits",
     accent: "purple",
+  },
+  {
+    key: "competition-mappings",
+    label: "Competition Mappings",
+    description: "Map fantasy leagues to real-world competitions and configure gameweek alignment",
+    icon: GitBranch,
+    path: "/super-admin/fantasy-config/competition-mappings",
+    accent: "blue",
+  },
+  {
+    key: "season-gw",
+    label: "Season & Gameweek Settings",
+    description: "Manage fantasy seasons, gameweek deadlines, statuses, and scheduling",
+    icon: Calendar,
+    path: "/super-admin/fantasy-config/season-gameweek",
+    accent: "pink",
+  },
+  {
+    key: "price-structure",
+    label: "Price Structure Governance",
+    description: "Configure pricing models, price change formulas, floors, ceilings, and dynamic rules",
+    icon: DollarSign,
+    path: "/super-admin/fantasy-config/price-structure",
+    accent: "cyan",
   },
 ];
 
