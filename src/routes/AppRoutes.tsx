@@ -80,6 +80,7 @@ import SuperVariants from '../pages/SuperVariantsPage';
 import RulesAndStandards from '../pages/SuperAdminRules';
 import CompetitionConfigurator from '../pages/CompetitionConfigurator';
 import PublishStandards from "../pages/PublishStandards";
+<<<<<<< HEAD
 import SuperAdminHome from '../pages/super-admin/SuperAdminHome';
 import PaymentsAuditPage from '../pages/super-admin/payments-audit';
 import TransactionTrailPage from '../pages/super-admin/transaction-trail';
@@ -89,6 +90,20 @@ import DataAccessLogPage from '../pages/super-admin/data-access-log';
 import SecurityEventsPage from '../pages/super-admin/security-events';
 import SuperAdminProfilePage from '../pages/super-admin/SuperAdminProfilePage';
 import SponsorshipHub from '../pages/sponsor/SponsorshipHub';
+=======
+
+
+
+import SponsorshipHub from '../pages/sponsor/SponsorshipHub';
+import SuperAdminHome from '../pages/super-admin/SuperAdminHome';
+import PaymentsAuditPage from '../pages/super-admin/payments-audit';
+import TransactionTrailPage from '../pages/super-admin/transaction-trail';
+import ApprovalsQueuePage from '../pages/super-admin/approvals-queue';
+import ChargebacksRefundsPage from '../pages/super-admin/chargebacks-refunds';
+import DataAccessLogPage from '../pages/super-admin/data-access-log';
+import SecurityEventsPage from '../pages/super-admin/security-events';
+import SuperAdminProfilePage from '../pages/super-admin/SuperAdminProfilePage';import SponsorshipHub from '../pages/sponsor/SponsorshipHub';
+>>>>>>> 714bab33b0083a7ae72105b5927c0bd312831bd6
 import IndividualSponsorSetup from '../pages/sponsor/IndividualSponsorSetup';
 import CorporateSponsorSetup from '../pages/sponsor/CorporateSponsorSetup';
 import CorporateVerificationUpload from '../pages/sponsor/CorporateVerificationUpload';
