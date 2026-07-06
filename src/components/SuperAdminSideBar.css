@@ -21,7 +21,8 @@
     gap:6px;
 }
 
-.sidebar a{
+.sidebar-button,
+.sidebar a {
     display:flex;
     align-items:center;
     gap:14px;
@@ -32,13 +33,19 @@
     cursor:pointer;
     transition:.2s;
     white-space:nowrap;
+    background:transparent;
+    border:none;
+    width:100%;
+    text-align:left;
 }
 
+.sidebar-button:hover,
 .sidebar a:hover{
     background:var(--navy-alt);
     color:#fff;
 }
 
+<<<<<<< HEAD
 .sidebar a.active {
     background: var(--purple);
     color: #fff;
@@ -53,6 +60,48 @@
 .sub-link.active {
     background: var(--purple);
     color: #fff;
+=======
+.sidebar-button.active,
+.sidebar a.active{
+    background:var(--purple);
+    color:#fff;
+>>>>>>> 1b396ddc6a66557158bd7496bcd2cf29c8fcb5de
+}
+
+.expand-indicator{
+    margin-left:auto;
+    font-size:14px;
+    font-weight:700;
+}
+
+.sidebar-sublinks{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    padding-left:40px;
+    margin-top:8px;
+}
+
+.sidebar-sublink{
+    display:inline-flex;
+    align-items:center;
+    padding:10px 14px;
+    border-radius:12px;
+    color:#C7CCDB;
+    text-decoration:none;
+    background:rgba(255,255,255,0.04);
+    transition:.2s;
+}
+
+.sidebar-sublink:hover{
+    background:rgba(255,255,255,0.08);
+    color:#fff;
+}
+
+.sidebar-sublink.active{
+    background:rgba(124,77,255,0.14);
+    color:#fff;
+    box-shadow: inset 4px 0 0 var(--purple);
 }
 
 .nav-number{

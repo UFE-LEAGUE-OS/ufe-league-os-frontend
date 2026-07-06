@@ -1,4 +1,5 @@
 import { useState } from "react";
+
 import "../styles/pages/SuperAdminDashboard.css";
 import "../components/SuperAdminSideBar.css";
 import { useNavigate } from "react-router-dom";
@@ -6,11 +7,6 @@ import {
     Users,
     ShieldCheck,
     Wallet,
-    Menu,
-    X,
-    Search,
-    Bell,
-    ChevronDown,
     TrendingUp,
     TrendingDown,
     UserPlus,
@@ -30,10 +26,11 @@ import {
 } from "lucide-react";
 
 import Footer from "../components/Footer";
-import logo from "../assets/logo.png";
-import profile from "../assets/kcca.png";
+
 import superImage from "../assets/cta-banner.png";
 import Sidebar from "../components/SuperAdminSideBar";
+import SuperAdminTopBar from "../components/SuperAdminTopBar";
+
 
 
 const STATS = [
@@ -147,10 +144,11 @@ const GOVERNANCE_PIPELINE = [
     },
 ];
 
+
 export default function SuperAdminDashboard() {
     const navigate = useNavigate();
     const [sidebarOpen, setSidebarOpen] = useState(false);
-   
+    
 
     return (
         <div
@@ -159,56 +157,17 @@ export default function SuperAdminDashboard() {
                 backgroundImage: `linear-gradient(rgba(15, 18, 24, 0.38), rgba(15, 18, 24, 0.34)), url(${superImage})`,
             }}
         >
-            {/* HEADER */}
-            <header className="admin-header">
-                <div className="header-left">
-                    <div className="menu-container">
-                        <button
-                            className="menu-btn"
-                            onClick={() => setSidebarOpen(!sidebarOpen)}
-                            aria-label="Toggle navigation"
-                        >
-                            {sidebarOpen ? <X size={24} /> : <Menu size={24} />}
-                        </button>
-                    </div>
+            <SuperAdminTopBar
+                sidebarOpen={sidebarOpen}
+                onToggleSidebar={() => setSidebarOpen((current) => !current)}
+            />
 
-                    <div className="header-logo">
-                        <img src={logo} alt="League OS" />
-                    </div>
-                </div>
-
-                <div className="header-search">
-                    <Search size={16} />
-                    <input type="text" placeholder="Search users, matches, transactions…" />
-                </div>
-
-                <div className="header-right">
-
-                    <button className="icon-btn" aria-label="Notifications">
-                        <Bell size={19} />
-                        <span className="notif-badge">3</span>
-                    </button>
-
-                    <div className="header-profile">
-                        <img src={profile} alt="Merab Apio" />
-                        <div className="profile-meta">
-                            <h4>Merab Apio</h4>
-                            <span className="role-badge">Super Admin</span>
-                        </div>
-                        <ChevronDown size={16} className="profile-caret" />
-                    </div>
-                </div>
-            </header>
-
-            {/* BODY WRAPPER */}
             <div className="dashboard-layout">
-                {/* SIDEBAR */}
                 <Sidebar
                     collapsed={!sidebarOpen}
                     
                 />
 
-                {/* MAIN CONTENT */}
                 <main className="main-content">
                     {/* HEADER WELCOME */}
                     <div className="dashboard-header">
@@ -370,7 +329,6 @@ export default function SuperAdminDashboard() {
                 </main>
             </div>
 
-            {/* FOOTER */}
             <Footer />
         </div>
     );

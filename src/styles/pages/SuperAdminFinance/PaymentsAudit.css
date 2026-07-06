@@ -1,0 +1,180 @@
+/* ============================================================
+   PaymentsAudit.css — styles unique to PaymentsAuditPage
+   ============================================================ */
+
+/* 6-card variant for the top stats row */
+.top-stats-grid.grid-6{
+    grid-template-columns: repeat(6, 1fr);
+}
+
+.top-stats-grid.grid-6 .metric-card{
+    min-height:auto;
+    padding:16px;
+}
+
+.top-stats-grid.grid-6 .metric-value{
+    font-size:20px;
+    margin-top:8px;
+}
+
+.top-stats-grid.grid-6 .metric-label{
+    font-size:11px;
+}
+
+.top-stats-grid.grid-6 .metric-delta{
+    margin-top:6px;
+    font-size:11px;
+}
+
+@media (max-width: 1024px){
+    .top-stats-grid.grid-6{
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 640px){
+    .top-stats-grid.grid-6{
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Recent Payments table card */
+.payments-table-card{
+    background: var(--surface, #0b1224);
+    border: 1px solid rgba(124, 77, 255, 0.10);
+    border-radius: 14px;
+    box-shadow: 0 10px 30px rgba(11, 18, 37, 0.08);
+    overflow: hidden;
+    margin-top: 20px;
+}
+
+.payments-table-header{
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.payments-table-header h2{
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    margin: 0;
+}
+
+.payments-table{
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.payments-table thead th{
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 12px 20px;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+    white-space: nowrap;
+}
+
+.payments-table thead th.actions-col{
+    text-align: center;
+}
+
+.payments-table tbody td{
+    padding: 14px 20px;
+    font-size: 13.5px;
+    color: var(--text);
+    border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+    white-space: nowrap;
+}
+
+.payments-table tbody tr:last-child td{
+    border-bottom: none;
+}
+
+.payments-table tbody tr:hover{
+    background: rgba(139, 92, 246, 0.04);
+}
+
+.txn-link{
+    color: #A78BFA;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.txn-link:hover{
+    text-decoration: underline;
+}
+
+.metric-card{
+    position:relative;
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:18px;
+    padding:20px;
+    min-height:120px;
+    display:flex;
+    flex-direction:column;
+    color:#F8FAFC;
+    overflow:hidden;
+}
+
+.metric-card::before{
+    content:"";
+    position:absolute;
+    top:0; left:0; right:0;
+    height:3px;
+    background:var(--purple);
+    border-radius:18px 18px 0 0;
+}
+
+.metric-card.accent-green::before{ background:var(--green); }
+.metric-card.accent-amber::before{ background:var(--amber); }
+.metric-card.accent-orange::before{ background:var(--orange); }
+.metric-card.accent-red::before{ background:var(--red); }
+.metric-card.accent-purple::before{ background:var(--purple); }
+
+.metric-card .metric-label{
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:.12em;
+    color:var(--muted);
+}
+
+.metric-card .metric-value{
+    margin-top:8px;
+    font-size:28px;
+    font-weight:700;
+}
+
+.metric-card .metric-delta{
+    margin-top:auto;
+    padding-top:10px;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    font-size:12px;
+    color:var(--muted);
+}
+
+/* delete — superseded by .metric-card .metric-delta above */
+.metric-delta{
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-top: 6px;
+}
+
+.metric-delta.positive{ color: #4ADE80; }
+.metric-delta.negative{ color: #F87171; }
+
+.metric-delta::before{
+    content: '↑';
+    font-size: 12px;
+}
+.metric-delta.negative::before{
+    content: '↓';
+}
