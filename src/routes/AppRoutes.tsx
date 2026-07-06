@@ -76,6 +76,10 @@ import MatchCentrePage from '../pages/MatchCentrePage';
 import MVPVotingPage from '../pages/fan/MVPVotingPage';
 import JoinFantasy from '../pages/JoinFantasy';
 import SuperAdminDashboard from '../pages/SuperAdminDashboard';
+import SuperVariants from '../pages/SuperVariantsPage';
+import RulesAndStandards from '../pages/SuperAdminRules';
+import CompetitionConfigurator from '../pages/CompetitionConfigurator';
+import PublishStandards from "../pages/PublishStandards";
 import SuperAdminHome from '../pages/super-admin/SuperAdminHome';
 import PaymentsAuditPage from '../pages/super-admin/payments-audit';
 import TransactionTrailPage from '../pages/super-admin/transaction-trail';
@@ -83,7 +87,8 @@ import ApprovalsQueuePage from '../pages/super-admin/approvals-queue';
 import ChargebacksRefundsPage from '../pages/super-admin/chargebacks-refunds';
 import DataAccessLogPage from '../pages/super-admin/data-access-log';
 import SecurityEventsPage from '../pages/super-admin/security-events';
-import SuperAdminProfilePage from '../pages/super-admin/SuperAdminProfilePage';import SponsorshipHub from '../pages/sponsor/SponsorshipHub';
+import SuperAdminProfilePage from '../pages/super-admin/SuperAdminProfilePage';
+import SponsorshipHub from '../pages/sponsor/SponsorshipHub';
 import IndividualSponsorSetup from '../pages/sponsor/IndividualSponsorSetup';
 import CorporateSponsorSetup from '../pages/sponsor/CorporateSponsorSetup';
 import CorporateVerificationUpload from '../pages/sponsor/CorporateVerificationUpload';
@@ -114,7 +119,11 @@ export default function AppRoutes() {
                 <Route path="/verify-email" element={<VerifyEmail />} />
                 <Route path="/fan/mvp-voting" element={<MVPVotingPage />} />
                 <Route path="/join-fantasy" element={<JoinFantasy />} />
-                <Route path="/super-admin" element={<SuperAdminDashboard />} />
+                <Route path="/sports-variants" element={<SuperVariants />} />
+                <Route path="/super-admin/rules" element={<RulesAndStandards />} />
+                <Route path="/super-admin/competition-formats" element={<CompetitionConfigurator />} />
+                <Route path="/super-admin/publish-standards" element={<PublishStandards />} />
+                
 
                 <Route path="/dashboard" element={protectedPage(<Navigate to="/dashboard/fan" replace />)} />
 
@@ -129,7 +138,7 @@ export default function AppRoutes() {
                     <Route path="/profile/notifications" element={<ProfileNotifications />} />
                     <Route path="/profile/privacy" element={<ProfilePrivacy />} />
                     <Route path="/profile/support" element={<ProfileSupport />} />
-
+                    <Route path="/super-admin" element={<SuperAdminDashboard />} />
                     <Route path="/memberships" element={<ExploreMembershipsPage />} />
                     <Route path="/memberships/:clubSlug" element={<ClubMembershipDetailPage />} />
                     <Route path="/memberships/:clubSlug/checkout" element={<MembershipCheckoutPage />} />
@@ -151,6 +160,8 @@ export default function AppRoutes() {
                     <Route path="/fantasy/team-builder" element={<FantasyTeamBuilder />} />
                     <Route path="/fantasy/player-market" element={<FantasyPlayerMarket />} />
 
+                    {/* super admin */}
+                    <Route path="/super-admin" element={<SuperAdminDashboard />} />
                 </Route>
 
                <Route path="/edit-profile" element={protectedPage(<Navigate to="/profile" replace />)} />

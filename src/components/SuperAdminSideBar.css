@@ -45,10 +45,26 @@
     color:#fff;
 }
 
+.sidebar a.active {
+    background: var(--purple);
+    color: #fff;
+}
+
+/* make sure icon/text also inherit purple state */
+.sidebar a.active svg {
+    color: #fff;
+}
+
+/* sub-links active */
+.sub-link.active {
+    background: var(--purple);
+    color: #fff;
+}
 .sidebar-button.active,
 .sidebar a.active{
     background:var(--purple);
     color:#fff;
+
 }
 
 .expand-indicator{
@@ -110,6 +126,7 @@
     padding:14px 0;
 }
 
+
 /* FOOTER */
 .sidebar-footer-card{
     display:flex;
@@ -125,4 +142,36 @@
     height:8px;
     border-radius:50%;
     background:var(--green);
+}
+.nav-group {
+  display: flex;
+  flex-direction: column;
+}
+
+/* indent children */
+.nav-children {
+  display: flex;
+  flex-direction: column;
+  margin-left: 18px;
+  margin-top: 4px;
+  gap: 4px;
+}
+
+/* sub-links still behave like sidebar links but smaller */
+.sub-link {
+  padding: 10px 16px;
+  border-radius: 12px;
+  color: #9CA3AF;
+  text-decoration: none;
+  font-size: 13px;
+}
+
+.sub-link:hover {
+  background: var(--navy-alt);
+  color: #fff;
+}
+.sub-link.active {
+  background: var(--purple);
+  color: #fff;
+
 }

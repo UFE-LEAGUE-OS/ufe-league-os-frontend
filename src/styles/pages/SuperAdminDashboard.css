@@ -42,6 +42,7 @@
 .dashboard-layout{
     display:flex;
     min-height:calc(100vh - 76px);
+    
 }
 
 /*
@@ -58,7 +59,12 @@
     width:16px;
     flex-shrink:0;
 }
-
+.sidebar {
+    width: 260px;
+    min-width: 50px;
+    flex-shrink: 0;
+    
+}
 .sidebar a.active .nav-number{
     color:rgba(255,255,255,.7);
 }
@@ -109,6 +115,7 @@
     flex:1;
     padding:28px 36px 48px;
     transition:all .3s ease;
+    min-width: 0;
 }
 
 .super-admin-page{
@@ -122,23 +129,16 @@
     margin-bottom:24px;
 }
 
-.eyebrow{
-    font-size:12px;
-    font-weight:700;
-    letter-spacing:.06em;
-    text-transform:uppercase;
-    color:var(--purple);
-}
 
 .dashboard-header h1{
     font-size:32px;
-    color:var(--purple);
+    color:White;
     margin:6px 0 4px;
     font-weight:700;
 }
 
 .dashboard-header p{
-    color:var(--muted);
+    color:white;
     margin-top:5px;
     font-size:14.5px;
 }
@@ -146,20 +146,21 @@
 /* ---------------- STAT TILES (SuperAdminHome only) ---------------- */
 .stat-grid{
     display:grid;
-    grid-template-columns:repeat(4,1fr);
-    gap:18px;
     margin-bottom:22px;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 12px;
+   
 }
 
 .stat-tile{
-    background:#FFFFFF;
-    border-radius:16px;
-    padding:20px;
-    box-shadow:0 4px 20px rgba(20,14,50,.06);
-    display:flex;
-    flex-direction:column;
-    gap:12px;
-    border-top:3px solid var(--purple);
+     display: flex;
+    flex-direction: column;
+
+    background: rgba(10, 18, 40, 0.65);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 16px;
+    padding: 14px;
+    height: 120px;
 }
 
 .stat-tile.accent-green{ border-top-color:var(--green); }
@@ -167,9 +168,10 @@
 .stat-tile.accent-red{ border-top-color:var(--red); }
 
 .stat-tile-top{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: auto;
 }
 
 .stat-icon{
@@ -210,16 +212,142 @@
 }
 
 .stat-value{
-    font-size:26px;
-    font-weight:700;
-    font-variant-numeric:tabular-nums;
-    color:#0F172A;
-    line-height:1;
+    font-size: 28px;
+    font-weight: 700;
+    color: #fff;
+    text-align: center;
+    margin-top: 10px;
 }
 
 .stat-label{
-    font-size:12.5px;
-    color:var(--muted);
+    font-size: 14px;
+    color: #b6bdd2;
+    text-align: center;
+    margin-top: 4px;
+}
+
+/* ---------------- GOVERNANCE PIPELINE ---------------- */
+.governance-panel{
+    background: rgba(10, 18, 40, 0.65);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+    margin-bottom:20px;
+}
+
+.governance-panel h3{
+    color:#fff;
+    margin-bottom:2px;
+}
+
+.governance-subtitle{
+    font-size:13px;
+    color:white;
+    margin:0;
+}
+
+.governance-panel .panel-header{
+    align-items:flex-start;
+    margin-bottom:20px;
+}
+
+.governance-pipeline{
+    display:flex;
+    align-items:stretch;
+    gap:0;
+    overflow-x:auto;
+}
+
+.governance-stage-wrap{
+    display:flex;
+    align-items:center;
+    flex:1;
+    min-width:0;
+}
+
+.governance-stage{
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    flex:1;
+    min-width:170px;
+    text-align:left;
+    background:rgba(255,255,255,0.04);
+    border:1px solid rgba(255,255,255,0.08);
+    border-radius:12px;
+    padding:14px;
+    cursor:pointer;
+    transition:.15s;
+}
+
+.governance-stage:hover{
+    background:rgba(129,53,250,0.16);
+    border-color:var(--purple);
+}
+
+.governance-stage:focus-visible{
+    outline:2px solid var(--purple);
+    outline-offset:2px;
+}
+
+.governance-stage.alert{
+    border-color:rgba(229,72,77,0.5);
+    background:rgba(229,72,77,0.08);
+}
+
+.governance-stage-icon{
+    width:32px;
+    height:32px;
+    border-radius:8px;
+    background:var(--purple-tint);
+    color:var(--purple);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-shrink:0;
+}
+
+.governance-stage.alert .governance-stage-icon{
+    background:var(--red-tint);
+    color:var(--red);
+}
+
+.governance-stage-body{
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+    min-width:0;
+}
+
+.governance-stage-body strong{
+    font-size:13px;
+    color:#fff;
+    font-weight:600;
+}
+
+.governance-stage-detail{
+    font-size:12px;
+    font-weight:600;
+    color:var(--green);
+}
+
+.governance-stage.alert .governance-stage-detail{
+    color:var(--red);
+}
+
+.governance-stage-sub{
+    font-size:11px;
+    color:#9AA3B5;
+}
+
+.governance-connector{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#5C6478;
+    padding:0 8px;
+    flex-shrink:0;
 }
 
 /* ---------------- DASHBOARD GRID (SuperAdminHome only) ---------------- */
@@ -232,16 +360,17 @@
 
 /* PANELS */
 .panel{
-    background:#FFFFFF;
-    border-radius:16px;
+   background: rgba(10, 18, 40, 0.911);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     padding:20px;
     box-shadow:0 4px 20px rgba(20,14,50,.06);
+    border-radius: 10px;
 }
 
 .panel h3{
-    font-size:15px;
+    font-size:18px;
     font-weight:700;
-    color:#0F172A;
+    color:white;
     margin:0 0 16px;
 }
 
@@ -259,10 +388,11 @@
 .link-btn{
     background:none;
     border:none;
-    color:var(--purple);
+    color:orangered;
     font-size:12.5px;
-    font-weight:600;
+    font-weight:700;
     cursor:pointer;
+    white-space:nowrap;
 }
 
 /* QUICK ACTIONS */
@@ -280,7 +410,7 @@
     padding:13px 14px;
     border:none;
     border-radius:10px;
-    background:var(--purple);
+    background: linear-gradient(135deg, #7c3aed7c 0%, #4338CA 55%, #0A1228 100%);
     color:white;
     font-size:13.5px;
     font-weight:600;
@@ -301,14 +431,7 @@
     outline-offset:2px;
 }
 
-.action-btn.subtle{
-    background:var(--purple-tint);
-    color:var(--purple);
-}
 
-.action-btn.subtle:hover{
-    background:#E6D6FF;
-}
 
 /* ACTIVITY */
 .activity-list{
@@ -326,7 +449,8 @@
     gap:10px;
     padding:12px;
     border-left:4px solid var(--purple);
-    background:#F9FAFF;
+    background:rgba(3, 3, 41, 0.363);
+    border:1px solid rgba(255,255,255,.08);
     border-radius:8px;
 }
 
@@ -352,7 +476,7 @@
 .activity-body p{
     margin:0;
     font-size:13.5px;
-    color:#333;
+    color: white;
     font-weight:500;
 }
 
@@ -387,10 +511,11 @@
 
 .health-label span{
     flex:1;
+    color:white;
 }
 
 .health-label strong{
-    color:#0F172A;
+    color:var(--purple);
     font-size:12.5px;
 }
 
@@ -434,6 +559,9 @@
     .activity{
         grid-column:span 2;
     }
+    .governance-stage{
+        min-width:150px;
+    }
 }
 
 @media(max-width:900px){
@@ -460,6 +588,17 @@
     }
     .activity{
         grid-column:span 1;
+    }
+    .governance-pipeline{
+        flex-direction:column;
+        align-items:stretch;
+    }
+    .governance-stage-wrap{
+        flex-direction:column;
+    }
+    .governance-connector{
+        transform:rotate(90deg);
+        padding:6px 0;
     }
 }
 
