@@ -132,11 +132,7 @@
 
 .dashboard-header h1{
     font-size:32px;
-<<<<<<< HEAD
     color:White;
-=======
-    color:var(--purple);
->>>>>>> 1b396ddc6a66557158bd7496bcd2cf29c8fcb5de
     margin:6px 0 4px;
     font-weight:700;
 }
@@ -157,7 +153,6 @@
 }
 
 .stat-tile{
-<<<<<<< HEAD
      display: flex;
     flex-direction: column;
 
@@ -166,16 +161,6 @@
     border-radius: 16px;
     padding: 14px;
     height: 120px;
-=======
-    background:#FFFFFF;
-    border-radius:16px;
-    padding:20px;
-    box-shadow:0 4px 20px rgba(20,14,50,.06);
-    display:flex;
-    flex-direction:column;
-    gap:12px;
-    border-top:3px solid var(--purple);
->>>>>>> 1b396ddc6a66557158bd7496bcd2cf29c8fcb5de
 }
 
 .stat-tile.accent-green{ border-top-color:var(--green); }
@@ -227,19 +212,11 @@
 }
 
 .stat-value{
-<<<<<<< HEAD
     font-size: 28px;
     font-weight: 700;
     color: #fff;
     text-align: center;
     margin-top: 10px;
-=======
-    font-size:26px;
-    font-weight:700;
-    font-variant-numeric:tabular-nums;
-    color:#0F172A;
-    line-height:1;
->>>>>>> 1b396ddc6a66557158bd7496bcd2cf29c8fcb5de
 }
 
 .stat-label{
@@ -383,13 +360,8 @@
 
 /* PANELS */
 .panel{
-<<<<<<< HEAD
    background: rgba(10, 18, 40, 0.911);
     border: 1px solid rgba(255, 255, 255, 0.08);
-=======
-    background:#FFFFFF;
-    border-radius:16px;
->>>>>>> 1b396ddc6a66557158bd7496bcd2cf29c8fcb5de
     padding:20px;
     box-shadow:0 4px 20px rgba(20,14,50,.06);
     border-radius: 10px;
@@ -398,11 +370,7 @@
 .panel h3{
     font-size:18px;
     font-weight:700;
-<<<<<<< HEAD
     color:white;
-=======
-    color:#0F172A;
->>>>>>> 1b396ddc6a66557158bd7496bcd2cf29c8fcb5de
     margin:0 0 16px;
 }
 
@@ -547,11 +515,7 @@
 }
 
 .health-label strong{
-<<<<<<< HEAD
     color:var(--purple);
-=======
-    color:#0F172A;
->>>>>>> 1b396ddc6a66557158bd7496bcd2cf29c8fcb5de
     font-size:12.5px;
 }
 
