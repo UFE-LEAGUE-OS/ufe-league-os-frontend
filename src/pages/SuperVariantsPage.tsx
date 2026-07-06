@@ -4,7 +4,7 @@ import "../styles/pages/SuperAdminDashboard.css";
 import "../styles/pages/SuperVariantsPage.css";
 
 import {
-    Menu,
+  
     X,
     Plus,
     Pencil,
@@ -14,15 +14,15 @@ import {
     Repeat,
     Trophy,
     Inbox,
-    Bell,
-    ChevronDown,
+    
 } from "lucide-react";
 
 import Footer from "../components/Footer";
 import Sidebar from "../components/SuperAdminSideBar";
-import logo from "../assets/logo.png";
-import profile from "../assets/kcca.png";
+
 import superImage from "../assets/cta-banner.png";
+import SuperAdminTopBar from "../components/SuperAdminTopBar";
+
 
 
 /* ---------------- TYPES ---------------- */
@@ -277,47 +277,16 @@ export default function SportVariants() {
             }}
         >
             {/* HEADER */}
-            <header className="admin-header">
-                <div className="header-left">
-                    <div className="menu-container">
-                        <button
-                            className="menu-btn"
-                            onClick={() => setSidebarOpen(!sidebarOpen)}
-                            aria-label="Toggle navigation"
-                        >
-                            {sidebarOpen ? <X size={24} /> : <Menu size={24} />}
-                        </button>
-                    </div>
+           <SuperAdminTopBar
+                                       sidebarOpen={sidebarOpen}
+                                       onToggleSidebar={() => setSidebarOpen((current) => !current)}
+                                   />
 
-                    <div className="header-logo">
-                        <img src={logo} alt="League OS" />
-                    </div>
-                </div>
-
-                <div className="header-search">
-                    <Search size={16} />
-                    <input type="text" placeholder="Search users, matches, transactions…" />
-                </div>
-
-                <div className="header-right">
-
-                    <button className="icon-btn" aria-label="Notifications">
-                        <Bell size={19} />
-                        <span className="notif-badge">3</span>
-                    </button>
-
-                    <div className="header-profile">
-                        <img src={profile} alt="Merab Apio" />
-                        <div className="profile-meta">
-                            <h4>Merab Apio</h4>
-                            <span className="role-badge">Super Admin</span>
-                        </div>
-                        <ChevronDown size={16} className="profile-caret" />
-                    </div>
-                </div>
-            </header>
-
-            <div className="dashboard-layout">
+            <div className="dashboard-layout"
+            style={{
+                            backgroundImage: `linear-gradient(rgba(15, 18, 24, 0.38), rgba(15, 18, 24, 0.34)), url(${superImage})`,
+                        }}
+            >
                 {/* SIDEBAR */}
                 <Sidebar
                     collapsed={!sidebarOpen}

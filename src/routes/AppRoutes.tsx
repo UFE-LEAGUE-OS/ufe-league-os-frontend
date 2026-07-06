@@ -76,16 +76,10 @@ import MatchCentrePage from '../pages/MatchCentrePage';
 import MVPVotingPage from '../pages/fan/MVPVotingPage';
 import JoinFantasy from '../pages/JoinFantasy';
 import SuperAdminDashboard from '../pages/SuperAdminDashboard';
-<<<<<<< HEAD
 import SuperVariants from '../pages/SuperVariantsPage';
 import RulesAndStandards from '../pages/SuperAdminRules';
 import CompetitionConfigurator from '../pages/CompetitionConfigurator';
 import PublishStandards from "../pages/PublishStandards";
-
-
-
-import SponsorshipHub from '../pages/sponsor/SponsorshipHub';
-=======
 import SuperAdminHome from '../pages/super-admin/SuperAdminHome';
 import PaymentsAuditPage from '../pages/super-admin/payments-audit';
 import TransactionTrailPage from '../pages/super-admin/transaction-trail';
@@ -93,8 +87,8 @@ import ApprovalsQueuePage from '../pages/super-admin/approvals-queue';
 import ChargebacksRefundsPage from '../pages/super-admin/chargebacks-refunds';
 import DataAccessLogPage from '../pages/super-admin/data-access-log';
 import SecurityEventsPage from '../pages/super-admin/security-events';
-import SuperAdminProfilePage from '../pages/super-admin/SuperAdminProfilePage';import SponsorshipHub from '../pages/sponsor/SponsorshipHub';
->>>>>>> 1b396ddc6a66557158bd7496bcd2cf29c8fcb5de
+import SuperAdminProfilePage from '../pages/super-admin/SuperAdminProfilePage';
+import SponsorshipHub from '../pages/sponsor/SponsorshipHub';
 import IndividualSponsorSetup from '../pages/sponsor/IndividualSponsorSetup';
 import CorporateSponsorSetup from '../pages/sponsor/CorporateSponsorSetup';
 import CorporateVerificationUpload from '../pages/sponsor/CorporateVerificationUpload';
@@ -166,11 +160,8 @@ export default function AppRoutes() {
                     <Route path="/fantasy/team-builder" element={<FantasyTeamBuilder />} />
                     <Route path="/fantasy/player-market" element={<FantasyPlayerMarket />} />
 
-<<<<<<< HEAD
                     {/* super admin */}
                     <Route path="/super-admin" element={<SuperAdminDashboard />} />
-=======
->>>>>>> 1b396ddc6a66557158bd7496bcd2cf29c8fcb5de
                 </Route>
 
                <Route path="/edit-profile" element={protectedPage(<Navigate to="/profile" replace />)} />

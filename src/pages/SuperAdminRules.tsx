@@ -2,10 +2,12 @@ import { useState, useMemo } from "react";
 import "../styles/pages/SuperAdminDashboard.css";
 import "../styles/pages/SuperVariantsPage.css";
 import "../components/SuperAdminSideBar.css";
-import { Menu, X, Plus, Pencil, Search, Inbox } from "lucide-react";
+import { X, Plus, Pencil, Search, Inbox } from "lucide-react";
 
 import Footer from "../components/Footer";
 import Sidebar from "../components/SuperAdminSideBar";
+import SuperAdminTopBar from "../components/SuperAdminTopBar";
+import superImage from "../assets/cta-banner.png";
 
 /* ---------------- TYPES ---------------- */
 
@@ -196,12 +198,16 @@ export default function RulesAndStandards() {
     /* ---------------- UI ---------------- */
 
     return (
-        <div className="super-adminv">
-            <header className="admin-header">
-                <button onClick={() => setSidebarOpen(!sidebarOpen)}>
-                    {sidebarOpen ? <X /> : <Menu />}
-                </button>
-            </header>
+        <div className="super-adminv"
+        style={{
+                backgroundImage: `linear-gradient(rgba(15, 18, 24, 0.38), rgba(15, 18, 24, 0.34)), url(${superImage})`,
+            }}
+        >
+
+            <SuperAdminTopBar
+                sidebarOpen={sidebarOpen}
+                onToggleSidebar={() => setSidebarOpen((current) => !current)}
+            />
 
             <div className="dashboard-layout">
                 <Sidebar collapsed={!sidebarOpen} />

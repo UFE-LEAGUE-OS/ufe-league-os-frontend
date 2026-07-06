@@ -8,6 +8,7 @@ import {
   Settings,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import "./SuperAdminSideBar.css";
 
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";

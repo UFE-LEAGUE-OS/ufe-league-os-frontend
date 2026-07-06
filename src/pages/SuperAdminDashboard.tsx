@@ -26,7 +26,6 @@ import {
 } from "lucide-react";
 
 import Footer from "../components/Footer";
-
 import superImage from "../assets/cta-banner.png";
 import Sidebar from "../components/SuperAdminSideBar";
 import SuperAdminTopBar from "../components/SuperAdminTopBar";
