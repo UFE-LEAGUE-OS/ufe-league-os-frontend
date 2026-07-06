@@ -17,9 +17,8 @@ import type { LucideIcon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
-    createMyMembershipCard,
     getMembershipPayments,
-    getMyMembership,
+    getMyMemberships,
     type BackendMembershipCard,
     type BackendMembershipPayment,
     type BackendMembershipSubscription,
@@ -41,6 +40,7 @@ interface ClubMembership {
     id: string;
     clubName: string;
     slug: string;
+    subscriptionId: number;
     tier: string;
     sport: string;
     status: MembershipStatus;
@@ -55,6 +55,8 @@ interface ClubMembership {
 
 const expiredMemberships: ClubMembership[] = [];
 
+const ACTIVE_MEMBERSHIPS_PER_PAGE = 2;
+
 interface MembershipActivity {
     id: string;
     title: string;
@@ -65,6 +67,7 @@ interface MembershipActivity {
 
 const emptyPrimaryMembership: ClubMembership = {
     id: "empty-membership",
+    subscriptionId: 0,
     clubName: "No active membership",
     slug: "memberships",
     tier: "Explore Club Memberships",
@@ -200,15 +203,16 @@ function mapBackendMembership(
 
     return {
         id: String(subscription.id),
+        subscriptionId: subscription.id,
         clubName: subscription.club_name || activeCard?.club_name || "Club Membership",
-        slug: makeSlug(subscription.club_name || activeCard?.club_name || "club-membership"),
+        slug: subscription.club_slug || makeSlug(subscription.club_name || activeCard?.club_name || "club-membership"),
         tier: normalizeTier(tierSource),
         sport: "Club Membership",
         status: mapBackendMembershipStatus(subscription.status),
         validUntil: formatBackendDate(validUntil),
         memberSince: formatBackendDate(memberSince),
         memberNumber: activeCard?.card_number || `MEMBERSHIP-${subscription.id}`,
-        logo: "",
+        logo: subscription.club_logo_url || "",
         tone: getMembershipTone(activeCard?.tier || subscription.plan_name),
         renewalNote: buildRenewalNote(validUntil),
         benefits: getTierBenefits(activeCard?.tier || subscription.plan_name),
@@ -410,6 +414,7 @@ function MyMembershipsPage() {
     const [activeTab, setActiveTab] = useState<MembershipTab>("active");
     const [searchQuery, setSearchQuery] = useState("");
     const [activeMemberships, setActiveMemberships] = useState<ClubMembership[]>([]);
+    const [activeMembershipPage, setActiveMembershipPage] = useState(1);
     const [membershipPayments, setMembershipPayments] = useState<BackendMembershipPayment[]>([]);
     const [isLoadingMemberships, setIsLoadingMemberships] = useState(true);
     const [membershipError, setMembershipError] = useState("");
@@ -419,18 +424,17 @@ function MyMembershipsPage() {
         setMembershipError("");
 
         try {
-            const subscription = await getMyMembership();
+            const subscriptions = await getMyMemberships();
+            const activeSubscriptions = subscriptions.filter(
+                (subscription) => subscription.status.toUpperCase() === "ACTIVE",
+            );
+            const payments = await getMembershipPayments();
 
-            if (!subscription) {
-                setActiveMemberships([]);
-                setMembershipPayments([]);
-                return;
-            }
-
-            const card = subscription.card ?? (await createMyMembershipCard());
-            const payments = await getMembershipPayments(subscription.id);
-
-            setActiveMemberships([mapBackendMembership(subscription, card)]);
+            setActiveMemberships(
+                activeSubscriptions.map((subscription) =>
+                    mapBackendMembership(subscription, subscription.card ?? null),
+                ),
+            );
             setMembershipPayments(payments);
         } catch {
             setActiveMemberships([]);
@@ -470,6 +474,30 @@ function MyMembershipsPage() {
             ),
         [activeMemberships, normalizedSearchQuery],
     );
+
+    const activeMembershipPageCount = Math.max(
+        1,
+        Math.ceil(filteredActiveMemberships.length / ACTIVE_MEMBERSHIPS_PER_PAGE),
+    );
+
+    const paginatedActiveMemberships = useMemo(() => {
+        const startIndex = (activeMembershipPage - 1) * ACTIVE_MEMBERSHIPS_PER_PAGE;
+
+        return filteredActiveMemberships.slice(
+            startIndex,
+            startIndex + ACTIVE_MEMBERSHIPS_PER_PAGE,
+        );
+    }, [activeMembershipPage, filteredActiveMemberships]);
+
+    useEffect(() => {
+        setActiveMembershipPage(1);
+    }, [normalizedSearchQuery]);
+
+    useEffect(() => {
+        if (activeMembershipPage > activeMembershipPageCount) {
+            setActiveMembershipPage(activeMembershipPageCount);
+        }
+    }, [activeMembershipPage, activeMembershipPageCount]);
 
     const filteredExpiredMemberships = useMemo(
         () =>
@@ -683,14 +711,72 @@ function MyMembershipsPage() {
                             </div>
 
                             {filteredActiveMemberships.length > 0 ? (
-                                <div className={styles.cardGrid}>
-                                    {filteredActiveMemberships.map((membership) => (
-                                        <MembershipCard
-                                            membership={membership}
-                                            key={membership.id}
-                                        />
-                                    ))}
-                                </div>
+                                <>
+                                    <div className={styles.cardGrid}>
+                                        {paginatedActiveMemberships.map((membership) => (
+                                            <MembershipCard
+                                                membership={membership}
+                                                key={membership.id}
+                                            />
+                                        ))}
+                                    </div>
+
+                                    {activeMembershipPageCount > 1 ? (
+                                        <div className={styles.membershipPagination}>
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    setActiveMembershipPage((pageNumber) =>
+                                                        Math.max(1, pageNumber - 1),
+                                                    )
+                                                }
+                                                disabled={activeMembershipPage === 1}
+                                            >
+                                                Previous
+                                            </button>
+
+                                            <div>
+                                                {Array.from(
+                                                    { length: activeMembershipPageCount },
+                                                    (_, index) => index + 1,
+                                                ).map((pageNumber) => (
+                                                    <button
+                                                        type="button"
+                                                        key={pageNumber}
+                                                        className={
+                                                            pageNumber === activeMembershipPage
+                                                                ? styles.activeMembershipPage
+                                                                : ""
+                                                        }
+                                                        onClick={() =>
+                                                            setActiveMembershipPage(pageNumber)
+                                                        }
+                                                    >
+                                                        {pageNumber}
+                                                    </button>
+                                                ))}
+                                            </div>
+
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    setActiveMembershipPage((pageNumber) =>
+                                                        Math.min(
+                                                            activeMembershipPageCount,
+                                                            pageNumber + 1,
+                                                        ),
+                                                    )
+                                                }
+                                                disabled={
+                                                    activeMembershipPage ===
+                                                    activeMembershipPageCount
+                                                }
+                                            >
+                                                Next
+                                            </button>
+                                        </div>
+                                    ) : null}
+                                </>
                             ) : (
                                 <EmptyState
                                     title={
@@ -876,9 +962,9 @@ function MyMembershipsPage() {
 
                         <small>{primaryMembership.memberNumber}</small>
 
-                        <Link to={`/memberships/${primaryMembership.slug}`}>
+                        <button type="button" onClick={() => setActiveTab("active")}>
                             View Card Details
-                        </Link>
+                        </button>
                     </section>
 
                     <section className={styles.sidePanel}>
