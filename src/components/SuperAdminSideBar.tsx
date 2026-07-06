@@ -8,6 +8,24 @@ import {
   Settings,
   Plus,
   Minus,
+  Trophy,
+  ListChecks,
+  BookOpen,
+  Send,
+  ClipboardList,
+  Route,
+  CheckSquare,
+  RotateCcw,
+  FileSearch,
+  AlertTriangle,
+  Users2,
+  ArrowLeftRight,
+  UserCheck,
+  History,
+  MonitorSmartphone,
+  UserSearch,
+  UserCog,
+  Shield,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import "./SuperAdminSideBar.css";
@@ -24,6 +42,7 @@ type NavItem = {
     id: string;
     label: string;
     path: string;
+    icon: LucideIcon;
   }[];
 };
 
@@ -40,15 +59,15 @@ const NAV_ITEMS: NavItem[] = [
     icon: Users,
     path: "/super-admin/users-management",
     children: [
-      { id: "um-users",       label: "Manage Users",       path: "/super-admin/users-management" },
-      { id: "um-roles",       label: "Role Templates",     path: "/super-admin/role-templates" },
-      { id: "um-permissions", label: "Permission Bundles", path: "/super-admin/permissions" },
-      { id: "um-crossrole",   label: "Cross-Role Access",  path: "/super-admin/cross-role" },
-      { id: "um-assignment",  label: "Role Assignment",    path: "/super-admin/role-assignment" },
-      { id: "um-audit",       label: "Audit Log",          path: "/super-admin/audit-log" },
-      { id: "um-sessions",    label: "Session Management", path: "/super-admin/sessions" },
-      { id: "um-impersonate", label: "Impersonate User",   path: "/super-admin/impersonate" },
-    ],
+    { id: "um-users",       label: "Manage Users",       path: "/super-admin/users-management", icon: UserCog },
+    { id: "um-roles",       label: "Role Templates",     path: "/super-admin/role-templates",    icon: Shield },
+    { id: "um-permissions", label: "Permission Bundles", path: "/super-admin/permissions",        icon: Users2 },
+    { id: "um-crossrole",   label: "Cross-Role Access",  path: "/super-admin/cross-role",          icon: ArrowLeftRight },
+    { id: "um-assignment",  label: "Role Assignment",    path: "/super-admin/role-assignment",     icon: UserCheck },
+    { id: "um-audit",       label: "Audit Log",          path: "/super-admin/audit-log",           icon: History },
+    { id: "um-sessions",    label: "Session Management", path: "/super-admin/sessions",            icon: MonitorSmartphone },
+    { id: "um-impersonate", label: "Impersonate User",   path: "/super-admin/impersonate",         icon: UserSearch },
+  ],
   },
   {
     id: "platform",
@@ -62,10 +81,10 @@ const NAV_ITEMS: NavItem[] = [
     icon: ShieldCheck,
     path: "/super-admin/governance",
     children: [
-      { id: "sports",       label: "Sports Variants",    path: "/sports-variants" },
-      { id: "competitions", label: "Competitions",       path: "/super-admin/competition-formats" },
-      { id: "rules",        label: "Rules & Standards",  path: "/super-admin/rules" },
-      { id: "publish",      label: "Publish Queue",      path: "/super-admin/publish-standards" },
+      { id: "sports", label: "Sports Variants", path: "/sports-variants", icon: Trophy },
+      { id: "competitions", label: "Competitions", path: "/super-admin/competition-formats", icon: ListChecks },
+      { id: "rules", label: "Rules & Standards", path: "/super-admin/rules", icon: BookOpen },
+      { id: "publish", label: "Publish Queue", path: "/super-admin/publish-standards", icon: Send },
     ],
   },
   {
@@ -74,12 +93,12 @@ const NAV_ITEMS: NavItem[] = [
     icon: Wallet,
     path: "/super-admin/finance",
     children: [
-      { id: "payments-audit", label: "Payments Audit", path: "/super-admin/payments-audit" },
-      { id: "transaction-trail", label: "Transaction Trail", path: "/super-admin/transaction-trail" },
-      { id: "approvals-queue", label: "Approvals Queue", path: "/super-admin/approvals-queue" },
-      { id: "chargebacks-refunds", label: "Chargebacks & Refunds", path: "/super-admin/chargebacks-refunds" },
-      { id: "data-access-log", label: "Data Access Log", path: "/super-admin/data-access-log" },
-      { id: "security-events", label: "Security Events", path: "/super-admin/security-events" },
+      { id: "payments-audit", label: "Payments Audit", path: "/super-admin/payments-audit", icon: ClipboardList },
+      { id: "transaction-trail", label: "Transaction Trail", path: "/super-admin/transaction-trail", icon: Route },
+      { id: "approvals-queue", label: "Approvals Queue", path: "/super-admin/approvals-queue", icon: CheckSquare },
+      { id: "chargebacks-refunds", label: "Chargebacks & Refunds", path: "/super-admin/chargebacks-refunds", icon: RotateCcw },
+      { id: "data-access-log", label: "Data Access Log", path: "/super-admin/data-access-log", icon: FileSearch },
+      { id: "security-events", label: "Security Events", path: "/super-admin/security-events", icon: AlertTriangle },
     ],
   },
   {
@@ -141,17 +160,21 @@ export default function Sidebar({ collapsed }: Props) {
                 {/* Children */}
                 {isOpen && (
                   <div className="nav-children">
-                    {item.children.map((child) => (
-                      <NavLink
-                        key={child.id}
-                        to={child.path}
-                        className={({ isActive }) =>
-                          isActive ? "active sub-link" : "sub-link"
-                        }
-                      >
-                        <span className="nav-label">{child.label}</span>
-                      </NavLink>
-                    ))}
+                    {item.children.map((child) => {
+                      const ChildIcon = child.icon;
+                      return (
+                        <NavLink
+                          key={child.id}
+                          to={child.path}
+                          className={({ isActive }) =>
+                            isActive ? "active sub-link" : "sub-link"
+                          }
+                        >
+                          <ChildIcon size={16} />
+                          <span className="nav-label">{child.label}</span>
+                        </NavLink>
+                      );
+                    })}
                   </div>
                 )}
               </div>
