@@ -848,3 +848,11 @@
     gap: 8px;
   }
 }
+
+.sidebar.collapsed .nav-group > a {
+  justify-content: center;
+}
+
+.sidebar.collapsed .nav-toggle-icon {
+  display: none;
+}
