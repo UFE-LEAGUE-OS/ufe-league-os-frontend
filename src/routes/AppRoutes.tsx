@@ -119,11 +119,8 @@ export default function AppRoutes() {
                 <Route path="/verify-email" element={<VerifyEmail />} />
                 <Route path="/fan/mvp-voting" element={<MVPVotingPage />} />
                 <Route path="/join-fantasy" element={<JoinFantasy />} />
-                <Route path="/sports-variants" element={<SuperVariants />} />
-                <Route path="/super-admin/rules" element={<RulesAndStandards />} />
-                <Route path="/super-admin/competition-formats" element={<CompetitionConfigurator />} />
-                <Route path="/super-admin/publish-standards" element={<PublishStandards />} />
-                
+
+
 
                 <Route path="/dashboard" element={protectedPage(<Navigate to="/dashboard/fan" replace />)} />
 
@@ -161,10 +158,10 @@ export default function AppRoutes() {
                     <Route path="/fantasy/player-market" element={<FantasyPlayerMarket />} />
 
                     {/* super admin */}
-                    <Route path="/super-admin" element={<SuperAdminDashboard />} />
+                    <Route path="/dashboard/super-admin" element={<SuperAdminDashboard />} />
                 </Route>
 
-               <Route path="/edit-profile" element={protectedPage(<Navigate to="/profile" replace />)} />
+                <Route path="/edit-profile" element={protectedPage(<Navigate to="/profile" replace />)} />
 
 
                 <Route path="/edit-profile" element={protectedPage(<Navigate to="/profile" replace />)} />
@@ -215,7 +212,7 @@ export default function AppRoutes() {
                 <Route path="/payments" element={<Payments />} />
 
                 {/* Super Admin routes - only accessible by users with super admin privileges */}
-                <Route path="/super-admin" element={<SuperAdminDashboard />}>
+                
                     <Route index element={<SuperAdminHome />} />
                     <Route path="dashboard" element={<SuperAdminHome />} />
                     <Route path="payments-audit" element={<PaymentsAuditPage />} />
@@ -225,7 +222,14 @@ export default function AppRoutes() {
                     <Route path="data-access-log" element={<DataAccessLogPage />} />
                     <Route path="security-events" element={<SecurityEventsPage />} />
                     <Route path="profile" element={<SuperAdminProfilePage />} />
-                </Route>
+                    <Route path="/sports-variants" element={<SuperVariants />} />
+                    <Route path="/super-admin/rules" element={<RulesAndStandards />} />
+                    <Route path="/super-admin/competition-formats" element={<CompetitionConfigurator />} />
+                    <Route path="/super-admin/publish-standards" element={<PublishStandards />} />
+
+
+
+               
             </Routes>
 
         </Router>
