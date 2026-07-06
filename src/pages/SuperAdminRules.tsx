@@ -12,6 +12,7 @@ import Sidebar from "../components/SuperAdminSideBar";
 type Scope = "Global" | "Football" | "Basketball" | "Rugby";
 type Category = "Eligibility" | "Conduct" | "Certification" | "Facility";
 type CategoryFilter = "All" | Category;
+type Tone = "green" | "amber" | "purple" | "muted";
 
 type Rule = {
     id: string;
@@ -37,14 +38,14 @@ type FormState = {
 const SCOPES: Scope[] = ["Global", "Football", "Basketball", "Rugby"];
 const CATEGORIES: Category[] = ["Eligibility", "Conduct", "Certification", "Facility"];
 
-const CATEGORY_ACCENT: Record<Category, string> = {
+const CATEGORY_ACCENT: Record<Category, Tone> = {
     Eligibility: "green",
     Conduct: "amber",
     Certification: "purple",
-    Facility: "muted" as any, // maps to tone-muted via status-badge styles; see note below
+    Facility: "muted",
 };
 
-const STATUS_TONE: Record<Rule["status"], string> = {
+const STATUS_TONE: Record<Rule["status"], Tone> = {
     Active: "green",
     Draft: "amber",
     Archived: "muted",
