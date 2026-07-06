@@ -18,6 +18,14 @@ import {
   RotateCcw,
   FileSearch,
   AlertTriangle,
+  Users2,
+  ArrowLeftRight,
+  UserCheck,
+  History,
+  MonitorSmartphone,
+  UserSearch,
+  UserCog,
+  Shield,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import "./SuperAdminSideBar.css";
@@ -49,7 +57,17 @@ const NAV_ITEMS: NavItem[] = [
     id: "users",
     label: "User Management",
     icon: Users,
-    path: "/super-admin/users-management"
+    path: "/super-admin/users-management",
+    children: [
+    { id: "um-users",       label: "Manage Users",       path: "/super-admin/users-management", icon: UserCog },
+    { id: "um-roles",       label: "Role Templates",     path: "/super-admin/role-templates",    icon: Shield },
+    { id: "um-permissions", label: "Permission Bundles", path: "/super-admin/permissions",        icon: Users2 },
+    { id: "um-crossrole",   label: "Cross-Role Access",  path: "/super-admin/cross-role",          icon: ArrowLeftRight },
+    { id: "um-assignment",  label: "Role Assignment",    path: "/super-admin/role-assignment",     icon: UserCheck },
+    { id: "um-audit",       label: "Audit Log",          path: "/super-admin/audit-log",           icon: History },
+    { id: "um-sessions",    label: "Session Management", path: "/super-admin/sessions",            icon: MonitorSmartphone },
+    { id: "um-impersonate", label: "Impersonate User",   path: "/super-admin/impersonate",         icon: UserSearch },
+  ],
   },
   {
     id: "platform",

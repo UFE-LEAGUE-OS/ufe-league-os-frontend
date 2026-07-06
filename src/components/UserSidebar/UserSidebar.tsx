@@ -62,7 +62,7 @@ const sidebarSections: SidebarSection[] = [
             { label: "Fantasy", href: "/fantasy", icon: Swords },
             { label: "Polls Hub", href: "/fan/polls", icon: BarChart3 },
             { label: "MVP Voting", href: "/fan/mvp-voting", icon: Goal },
-            { label: "Become a Sponsor", href: "/sponsor/apply", icon: Handshake },
+            { label: "Become a Sponsor", href: "/sponsorhub", icon: Handshake },
         ],
     },
     {

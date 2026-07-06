@@ -51,6 +51,7 @@ const matchItems: NavbarDropdownItem[] = [
   { name: 'Standings', route: '/standings' },
 ];
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const publicNavLinks: NavbarLink[] = [
   { label: 'Sport', route: '/sports' },
   { label: 'Leagues', route: '/leagues/uganda-premier-league', showArrow: true, dropdownItems: leagueItems },
