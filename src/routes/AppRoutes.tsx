@@ -3,7 +3,7 @@ import {
     Navigate,
     Route,
     Routes,
-   
+
 } from 'react-router-dom';
 
 import { type ReactNode } from 'react';
@@ -84,6 +84,14 @@ import PublishStandards from "../pages/PublishStandards";
 
 
 import SponsorshipHub from '../pages/sponsor/SponsorshipHub';
+import SuperAdminHome from '../pages/super-admin/SuperAdminHome';
+import PaymentsAuditPage from '../pages/super-admin/payments-audit';
+import TransactionTrailPage from '../pages/super-admin/transaction-trail';
+import ApprovalsQueuePage from '../pages/super-admin/approvals-queue';
+import ChargebacksRefundsPage from '../pages/super-admin/chargebacks-refunds';
+import DataAccessLogPage from '../pages/super-admin/data-access-log';
+import SecurityEventsPage from '../pages/super-admin/security-events';
+import SuperAdminProfilePage from '../pages/super-admin/SuperAdminProfilePage';import SponsorshipHub from '../pages/sponsor/SponsorshipHub';
 import IndividualSponsorSetup from '../pages/sponsor/IndividualSponsorSetup';
 import CorporateSponsorSetup from '../pages/sponsor/CorporateSponsorSetup';
 import CorporateVerificationUpload from '../pages/sponsor/CorporateVerificationUpload';
@@ -159,6 +167,9 @@ export default function AppRoutes() {
                     <Route path="/super-admin" element={<SuperAdminDashboard />} />
                 </Route>
 
+               <Route path="/edit-profile" element={protectedPage(<Navigate to="/profile" replace />)} />
+
+
                 <Route path="/edit-profile" element={protectedPage(<Navigate to="/profile" replace />)} />
 
                 <Route path="/sports" element={<SportsPage />} />
@@ -205,7 +216,21 @@ export default function AppRoutes() {
 
 
                 <Route path="/payments" element={<Payments />} />
+
+                {/* Super Admin routes - only accessible by users with super admin privileges */}
+                <Route path="/super-admin" element={<SuperAdminDashboard />}>
+                    <Route index element={<SuperAdminHome />} />
+                    <Route path="dashboard" element={<SuperAdminHome />} />
+                    <Route path="payments-audit" element={<PaymentsAuditPage />} />
+                    <Route path="transaction-trail" element={<TransactionTrailPage />} />
+                    <Route path="approvals-queue" element={<ApprovalsQueuePage />} />
+                    <Route path="chargebacks-refunds" element={<ChargebacksRefundsPage />} />
+                    <Route path="data-access-log" element={<DataAccessLogPage />} />
+                    <Route path="security-events" element={<SecurityEventsPage />} />
+                    <Route path="profile" element={<SuperAdminProfilePage />} />
+                </Route>
             </Routes>
+
         </Router>
     );
 }

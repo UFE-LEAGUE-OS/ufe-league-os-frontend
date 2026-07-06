@@ -1,3 +1,4 @@
+import { Link, NavLink } from "react-router-dom";
 import {
   LayoutDashboard,
   Users,
@@ -69,6 +70,15 @@ const NAV_ITEMS: NavItem[] = [
   },
 ];
 
+const FINANCE_LINKS = [
+  { label: "Payments audit overview", to: "/super-admin/payments-audit" },
+  { label: "Transaction trail viewer", to: "/super-admin/transaction-trail" },
+  { label: "Approvals monitor queue", to: "/super-admin/approvals-queue" },
+  { label: "Chargebacks & refunds", to: "/super-admin/chargebacks-refunds" },
+  { label: "Data access audit log", to: "/super-admin/data-access-log" },
+  { label: "Security events & alerts", to: "/super-admin/security-events" },
+];
+
 type Props = {
   collapsed: boolean;
 };
@@ -83,7 +93,6 @@ export default function Sidebar({ collapsed }: Props) {
 
   return (
     <aside className={`sidebar ${collapsed ? "collapsed" : ""}`}>
-
       <nav>
   {NAV_ITEMS.map((item) => {
     const Icon = item.icon;
@@ -165,7 +174,6 @@ export default function Sidebar({ collapsed }: Props) {
           </div>
         </div>
       </div>
-
     </aside>
   );
 }
