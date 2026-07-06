@@ -7,6 +7,8 @@ export interface BackendMembershipCard {
     user_email: string;
     club: number;
     club_name: string;
+    club_slug: string;
+    club_logo_url: string;
     card_number: string;
     qr_code_data: string;
     tier: string;
@@ -26,6 +28,8 @@ export interface BackendMembershipSubscription {
     plan_name: string;
     club: number;
     club_name: string;
+    club_slug: string;
+    club_logo_url: string;
     status: string;
     starts_at: string | null;
     ends_at: string | null;
@@ -58,6 +62,11 @@ export interface BackendMembershipPaymentsResponse {
     results: BackendMembershipPayment[];
 }
 
+export interface BackendMembershipSubscriptionsResponse {
+    count: number;
+    results: BackendMembershipSubscription[];
+}
+
 function isNotFoundError(error: unknown) {
     return (
         typeof error === "object" &&
@@ -66,6 +75,14 @@ function isNotFoundError(error: unknown) {
         typeof (error as { response?: { status?: number } }).response === "object" &&
         (error as { response?: { status?: number } }).response?.status === 404
     );
+}
+
+export async function getMyMemberships(): Promise<BackendMembershipSubscription[]> {
+    const response = await apiClient.get<BackendMembershipSubscriptionsResponse>(
+        "/memberships/subscriptions/",
+    );
+
+    return response.data.results ?? [];
 }
 
 export async function getMyMembership(): Promise<BackendMembershipSubscription | null> {
