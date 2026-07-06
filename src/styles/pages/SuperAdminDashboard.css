@@ -602,6 +602,458 @@
     }
 }
 
+/* =============== FANTASY MODULE CONFIG =============== */
+
+/* Landing page grid */
+.fantasy-config-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));
+    gap:1.25rem;
+}
+
+.fantasy-config-card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:1.5rem;
+    cursor:pointer;
+    text-align:left;
+    transition:all .2s;
+    display:flex;
+    flex-direction:column;
+    gap:1rem;
+    width:100%;
+    font-family:inherit;
+    color:var(--text);
+}
+
+.fantasy-config-card:hover{
+    border-color:var(--purple);
+    transform:translateY(-2px);
+    box-shadow:0 8px 24px rgba(124,77,255,.12);
+}
+
+.fantasy-config-card-header{
+    display:flex;
+    align-items:center;
+    gap:12px;
+}
+
+.fantasy-config-icon{
+    width:48px;
+    height:48px;
+    border-radius:12px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:var(--purple-tint);
+    color:var(--purple);
+}
+
+.fantasy-config-card.accent-green .fantasy-config-icon{
+    background:var(--green-tint);
+    color:var(--green);
+}
+
+.fantasy-config-card.accent-amber .fantasy-config-icon{
+    background:var(--amber-tint);
+    color:var(--amber);
+}
+
+.fantasy-config-card.accent-purple .fantasy-config-icon{
+    background:var(--purple-tint);
+    color:var(--purple);
+}
+
+.fantasy-config-card-body h3{
+    font-size:1rem;
+    font-weight:600;
+    margin-bottom:4px;
+}
+
+.fantasy-config-card-body p{
+    font-size:0.8rem;
+    color:var(--muted);
+    line-height:1.5;
+}
+
+.fantasy-config-card-footer{
+    margin-top:auto;
+}
+
+.fantasy-config-cta{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    font-size:0.8rem;
+    font-weight:500;
+    color:var(--purple);
+}
+
+/* Sub pages (Scoring, Transfers, Squad) */
+.fantasy-sub-page{
+    display:flex;
+    flex-direction:column;
+    gap:1.5rem;
+}
+
+.fantasy-sub-header{
+    display:flex;
+    flex-direction:column;
+    gap:0.75rem;
+}
+
+.fantasy-sub-header h2{
+    font-size:1.25rem;
+    font-weight:600;
+}
+
+.back-btn{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    background:none;
+    border:none;
+    color:var(--muted);
+    font-size:0.8rem;
+    cursor:pointer;
+    padding:4px 0;
+    width:fit-content;
+    font-family:inherit;
+}
+
+.back-btn:hover{
+    color:var(--purple);
+}
+
+/* Inputs & selects */
+.fantasy-input{
+    background:var(--navy-alt);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:8px 12px;
+    color:var(--text);
+    font-size:0.85rem;
+    font-family:inherit;
+    width:100%;
+    outline:none;
+    transition:border-color .2s;
+}
+
+.fantasy-input:focus{
+    border-color:var(--purple);
+}
+
+.fantasy-input-narrow{
+    max-width:100px;
+}
+
+.fantasy-select{
+    background:var(--navy-alt);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:8px 12px;
+    color:var(--text);
+    font-size:0.85rem;
+    font-family:inherit;
+    outline:none;
+    cursor:pointer;
+    min-width:140px;
+}
+
+.fantasy-select:focus{
+    border-color:var(--purple);
+}
+
+/* Add rule row */
+.add-rule-row{
+    display:flex;
+    gap:0.75rem;
+    align-items:center;
+    flex-wrap:wrap;
+}
+
+/* Scoring rules table */
+.scoring-rules-table{
+    display:flex;
+    flex-direction:column;
+}
+
+.srt-header,
+.srt-row{
+    display:grid;
+    grid-template-columns:24px 60px 1fr 80px 100px 50px;
+    gap:8px;
+    align-items:center;
+    padding:10px 12px;
+    font-size:0.85rem;
+}
+
+.srt-header{
+    color:var(--muted);
+    font-weight:500;
+    border-bottom:1px solid var(--border);
+    text-transform:uppercase;
+    font-size:0.7rem;
+    letter-spacing:0.5px;
+}
+
+.srt-row{
+    border-bottom:1px solid var(--border);
+}
+
+.srt-row.disabled{
+    opacity:0.45;
+}
+
+.srt-row:hover{
+    background:var(--card-alt);
+}
+
+.drag-icon{
+    color:var(--muted);
+    cursor:grab;
+}
+
+.points-input{
+    background:var(--navy-alt);
+    border:1px solid var(--border);
+    border-radius:6px;
+    padding:4px 8px;
+    color:var(--text);
+    font-size:0.85rem;
+    width:70px;
+    text-align:center;
+    font-family:inherit;
+    outline:none;
+}
+
+.points-input:focus{
+    border-color:var(--purple);
+}
+
+.sport-badge{
+    display:inline-block;
+    padding:2px 8px;
+    border-radius:999px;
+    font-size:0.7rem;
+    font-weight:500;
+    text-transform:capitalize;
+}
+
+.sport-all{
+    background:var(--purple-tint);
+    color:var(--purple);
+}
+
+.sport-football{
+    background:var(--green-tint);
+    color:var(--green);
+}
+
+.sport-basketball{
+    background:var(--amber-tint);
+    color:var(--amber);
+}
+
+.sport-rugby{
+    background:rgba(239,71,111,0.12);
+    color:var(--red);
+}
+
+.icon-btn{
+    background:none;
+    border:none;
+    cursor:pointer;
+    padding:4px;
+    border-radius:6px;
+    color:var(--muted);
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    transition:all .15s;
+}
+
+.icon-btn.danger:hover{
+    background:var(--red-tint);
+    color:var(--red);
+}
+
+/* Toggle switch */
+.toggle-switch{
+    position:relative;
+    display:inline-block;
+    width:36px;
+    height:20px;
+    cursor:pointer;
+}
+
+.toggle-switch input{
+    opacity:0;
+    width:0;
+    height:0;
+}
+
+.toggle-slider{
+    position:absolute;
+    inset:0;
+    background:var(--navy-alt);
+    border:1px solid var(--border);
+    border-radius:999px;
+    transition:all .2s;
+}
+
+.toggle-slider::before{
+    content:"";
+    position:absolute;
+    width:14px;
+    height:14px;
+    left:2px;
+    bottom:2px;
+    background:var(--muted);
+    border-radius:50%;
+    transition:all .2s;
+}
+
+.toggle-switch input:checked + .toggle-slider{
+    background:var(--purple);
+    border-color:var(--purple);
+}
+
+.toggle-switch input:checked + .toggle-slider::before{
+    transform:translateX(16px);
+    background:white;
+}
+
+/* Transfer rules grid */
+.transfer-rules-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(320px, 1fr));
+    gap:1.25rem;
+}
+
+/* Config field list */
+.config-field-list{
+    display:flex;
+    flex-direction:column;
+    gap:1rem;
+    padding:0.25rem 0;
+}
+
+.config-field{
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+}
+
+.config-field label{
+    font-size:0.8rem;
+    color:var(--muted);
+}
+
+.config-field.toggle-field{
+    flex-direction:row;
+    align-items:center;
+    justify-content:space-between;
+}
+
+/* Squad limits grid */
+.squad-limits-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(320px, 1fr));
+    gap:1.25rem;
+}
+
+/* Position limits table */
+.position-limits-table{
+    display:flex;
+    flex-direction:column;
+}
+
+.plt-header,
+.plt-row{
+    display:grid;
+    grid-template-columns:1fr 60px 60px;
+    gap:8px;
+    align-items:center;
+    padding:10px 12px;
+    font-size:0.85rem;
+}
+
+.plt-header{
+    color:var(--muted);
+    font-weight:500;
+    border-bottom:1px solid var(--border);
+    text-transform:uppercase;
+    font-size:0.7rem;
+    letter-spacing:0.5px;
+}
+
+.plt-row{
+    border-bottom:1px solid var(--border);
+}
+
+.plt-row:hover{
+    background:var(--card-alt);
+}
+
+.plt-position{
+    display:flex;
+    align-items:center;
+    gap:8px;
+}
+
+.plt-icon{
+    font-size:1rem;
+}
+
+/* Formations grid */
+.formations-grid{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    padding:0.75rem 0;
+}
+
+.formation-chip{
+    background:var(--navy-alt);
+    border:1px solid var(--border);
+    border-radius:999px;
+    padding:6px 14px;
+    font-size:0.8rem;
+    color:var(--muted);
+    cursor:pointer;
+    transition:all .15s;
+    font-family:inherit;
+}
+
+.formation-chip.active{
+    background:var(--purple-tint);
+    border-color:var(--purple);
+    color:var(--purple);
+}
+
+.formation-chip:hover{
+    border-color:var(--purple);
+}
+
+/* Save bar */
+.save-bar{
+    display:flex;
+    justify-content:flex-end;
+    padding-top:0.5rem;
+}
+
+.action-btn.primary{
+    background:var(--purple);
+    color:white;
+    border:1px solid var(--purple);
+}
+
+.action-btn.primary:hover{
+    background:var(--purple-dark);
+}
+
 @media(max-width:520px){
     .stat-grid{
         grid-template-columns:1fr;

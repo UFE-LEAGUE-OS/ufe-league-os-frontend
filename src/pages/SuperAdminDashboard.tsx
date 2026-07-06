@@ -89,7 +89,6 @@ export default function SuperAdminDashboard() {
                 <Sidebar collapsed={!sidebarOpen} />
 
                 <main className="main-content">
-                    <Outlet />
                     {/* Child route content (e.g. /super-admin/users-management) */}
                     {!isHome && <Outlet />}
 
