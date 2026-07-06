@@ -155,7 +155,6 @@ export default function AppRoutes() {
                     <Route path="/memberships/:clubSlug/checkout" element={<MembershipCheckoutPage />} />
                     <Route path="/memberships/:clubSlug/success" element={<MembershipSuccessPage />} />
                     <Route path="/memberships/:clubSlug/failed" element={<MembershipFailedPage />} />
-                    <Route path="/memberships/payment/processing" element={<MembershipPaymentProcessingPage />} />
                     <Route path="/dashboard/memberships" element={<MyMembershipsPage />} />
 
                     {/* Fan Interaction */}
@@ -181,6 +180,7 @@ export default function AppRoutes() {
                 <Route path="/competitions" element={<Competitions />} />
                 <Route path="/news" element={<NewsSection />} />
                 <Route path="/tickets" element={<Tickets />} />
+                <Route path="/memberships/payment/processing" element={<MembershipPaymentProcessingPage />} />
                 <Route path="/tickets/payment/processing" element={<TicketPaymentProcessingPage />} />
                 <Route path="/tickets/payment/success" element={<TicketPaymentSuccessPage />} />
                 <Route path="/tickets/payment/failed" element={<TicketPaymentFailedPage />} />

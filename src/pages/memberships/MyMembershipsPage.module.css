@@ -32,6 +32,7 @@
 .cardActions button,
 .paymentNoteCard a,
 .digitalCardPreview a,
+.digitalCardPreview button,
 .recommendedItem a,
 .clubSupportCard a,
 .emptyState a {
@@ -647,6 +648,7 @@
 .paymentNoteCard a,
 .clubSupportCard a,
 .digitalCardPreview a,
+.digitalCardPreview button,
 .recommendedItem a {
     min-height: 40px;
     padding: 0 14px;
@@ -853,6 +855,7 @@
 .cardActions button:hover,
 .paymentNoteCard a:hover,
 .digitalCardPreview a:hover,
+.digitalCardPreview button:hover,
 .recommendedItem a:hover,
 .clubSupportCard a:hover,
 .emptyState a:hover {
@@ -1317,4 +1320,62 @@
     .membershipEmptyBanner a {
         width: 100%;
     }
+}
+
+
+.digitalCardPreview button {
+    width: 100%;
+    border: 0;
+    cursor: pointer;
+}
+
+
+.membershipPagination {
+    margin-top: 22px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.membershipPagination > div {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.membershipPagination button {
+    min-width: 38px;
+    min-height: 38px;
+    border-radius: 12px;
+    padding: 0 14px;
+
+    color: rgba(255, 255, 255, 0.82);
+    background: rgba(11, 18, 32, 0.82);
+    border: 1px solid rgba(255, 255, 255, 0.13);
+
+    font-size: 12px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.membershipPagination button:hover:not(:disabled),
+.membershipPagination button:focus-visible:not(:disabled) {
+    transform: translateY(-1px);
+    border-color: rgba(249, 115, 22, 0.58);
+    color: #ffffff;
+}
+
+.membershipPagination button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.membershipPagination .activeMembershipPage {
+    color: #ffffff;
+    background: linear-gradient(135deg, #7c3aed, #f97316);
+    border-color: rgba(255, 255, 255, 0.18);
 }
