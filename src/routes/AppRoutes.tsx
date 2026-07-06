@@ -80,6 +80,10 @@ import SuperVariants from '../pages/SuperVariantsPage';
 import RulesAndStandards from '../pages/SuperAdminRules';
 import CompetitionConfigurator from '../pages/CompetitionConfigurator';
 import PublishStandards from "../pages/PublishStandards";
+import FantasyModuleConfig from "../pages/super-admin/fantasy/FantasyModuleConfig";
+import ScoringRules from "../pages/super-admin/fantasy/ScoringRules";
+import TransferRules from "../pages/super-admin/fantasy/TransferRules";
+import SquadLimits from "../pages/super-admin/fantasy/SquadLimits";
 import SuperAdminHome from '../pages/super-admin/SuperAdminHome';
 import UserManagement    from '../pages/admin/UserManagement';
 import RoleTemplates     from '../pages/admin/RoleTemplates';
@@ -240,6 +244,12 @@ export default function AppRoutes() {
                     <Route path="data-access-log"   element={<DataAccessLogPage />} />
                     <Route path="security-events"   element={<SecurityEventsPage />} />
                     <Route path="profile"           element={<SuperAdminProfilePage />} />
+
+                    {/* ── Fantasy Module Config ── */}
+                    <Route path="fantasy-config" element={<FantasyModuleConfig />} />
+                    <Route path="fantasy-config/scoring" element={<ScoringRules />} />
+                    <Route path="fantasy-config/transfers" element={<TransferRules />} />
+                    <Route path="fantasy-config/squad-limits" element={<SquadLimits />} />
                 </Route>
             </Routes>
 
