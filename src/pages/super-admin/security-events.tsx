@@ -1,6 +1,6 @@
+import { useState } from 'react';
 import {
   Cell,
-  Legend,
   Line,
   LineChart,
   Pie,
@@ -10,6 +10,7 @@ import {
   Tooltip,
   XAxis,
   YAxis,
+  Legend,
 } from 'recharts';
 import {
   AlertTriangle,
@@ -24,6 +25,7 @@ import {
 
 import '../../styles/pages/SuperAdminFinance/SuperAdminFinance.css';
 import '../../styles/pages/SuperAdminFinance/SecurityEvents.css';
+import FilterDropdown from '../../components/FilterDropdown';
 
 const threatTrend = [
   { name: 'May 29', critical: 10, high: 20, medium: 60, low: 45 },
@@ -85,11 +87,17 @@ const alertStats: AlertStat[] = [
   { label: 'Open Incidents', value: '4', delta: '+1', sentiment: 'bad', icon: Flag, tone: 'purple' },
 ];
 
+const severityOptions = ['All', 'Critical', 'High', 'Medium', 'Low'];
+const sourceOptions = ['All sources', 'Auth', 'Network', 'Access'];
+
 function getTrendIcon(delta: string) {
   return delta.trim().startsWith('-') ? TrendingDown : TrendingUp;
 }
 
 export default function SecurityEventsPage() {
+  const [severityFilter, setSeverityFilter] = useState('All');
+  const [sourceFilter, setSourceFilter] = useState('All sources');
+
   return (
     <main className="super-admin-page finance-child">
       <section className="page-heading">
@@ -211,22 +219,19 @@ export default function SecurityEventsPage() {
           <div className="filter-group">
             <div className="filter-item">
               Alert severity
-              <select>
-                <option>All</option>
-                <option>Critical</option>
-                <option>High</option>
-                <option>Medium</option>
-                <option>Low</option>
-              </select>
+              <FilterDropdown
+                value={severityFilter}
+                options={severityOptions}
+                onChange={setSeverityFilter}
+              />
             </div>
             <div className="filter-item">
               Source
-              <select>
-                <option>All sources</option>
-                <option>Auth</option>
-                <option>Network</option>
-                <option>Access</option>
-              </select>
+              <FilterDropdown
+                value={sourceFilter}
+                options={sourceOptions}
+                onChange={setSourceFilter}
+              />
             </div>
           </div>
           <div className="table-actions">

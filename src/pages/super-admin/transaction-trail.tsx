@@ -12,6 +12,7 @@ import {
 
 import '../../styles/pages/SuperAdminFinance/SuperAdminFinance.css';
 import '../../styles/pages/SuperAdminFinance/TransactionTrail.css';
+import FilterDropdown from '../../components/FilterDropdown';
 
 const trailTrend = [
   { name: 'Jan', payment: 420, refunds: 48 },
@@ -457,19 +458,11 @@ export default function TransactionTrailPage() {
         </div>
         <div className="filter-item">
           Status
-          <select value={tableStatus} onChange={(e) => setTableStatus(e.target.value)}>
-            {statusOptions.map((s) => (
-              <option key={s} value={s}>{s}</option>
-            ))}
-          </select>
+          <FilterDropdown value={tableStatus} options={statusOptions} onChange={setTableStatus} />
         </div>
         <div className="filter-item">
           Method
-          <select value={tableMethod} onChange={(e) => setTableMethod(e.target.value)}>
-            {methodOptions.map((m) => (
-              <option key={m} value={m}>{m}</option>
-            ))}
-          </select>
+          <FilterDropdown value={tableMethod} options={methodOptions} onChange={setTableMethod} />
         </div>
       </div>
       <div className="table-actions">

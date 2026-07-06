@@ -107,14 +107,16 @@
     }
 }
 
-/* Chart card header layout */
 .chart-card{
     background:var(--card);
     border:1px solid var(--border);
     border-radius:22px;
     padding:24px;
     box-shadow:0 20px 50px rgba(0,0,0,0.12);
+    display:flex;
+    flex-direction:column;
 }
+
 
 .chart-card h2{
     margin:0 0 18px;
@@ -122,10 +124,7 @@
 }
 
 .chart-card .chart-header{
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 8px;
+    flex-shrink:0;
 }
 
 .chart-card .chart-label{
@@ -269,16 +268,15 @@
     border-color: rgba(139, 92, 246, 0.3);
 }
 
-/* Donut chart with side legend — single consolidated definition
-   (previously conflicting with a simpler version in SuperAdminDashboard.css) */
 .donut-with-legend{
     display: flex;
     align-items: center;
     gap: 24px;
+    flex:1;
 }
 
 .donut-svg{
-    flex: 0 0 200px;
+    flex: 0 0 220px;
     min-width: 0;
 }
 
@@ -286,7 +284,7 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 18px;
     min-width: 0;
 }
 
@@ -642,4 +640,69 @@
     display:block;
     color:var(--muted);
     font-size:13px;
+}
+
+/* Custom filter dropdown (replaces native <select> in filter bars —
+   native option popups don't reliably respect background/color CSS
+   across browsers, so this gives full control over the open menu) */
+.filter-dropdown{
+    position: relative;
+}
+
+.filter-dropdown-trigger{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #F8FAFC;
+    font-size: 13px;
+    cursor: pointer;
+    padding: 0;
+}
+
+.filter-dropdown-trigger svg{
+    color: var(--muted);
+    flex-shrink: 0;
+}
+
+.filter-dropdown-menu{
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    min-width: 160px;
+    background: #0F172A;
+    border: 1px solid rgba(148, 163, 184, 0.16);
+    border-radius: 12px;
+    padding: 6px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.35);
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.filter-dropdown-option{
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: none;
+    color: #E2E8F0;
+    font-size: 13px;
+    padding: 9px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.filter-dropdown-option:hover{
+    background: rgba(139, 92, 246, 0.14);
+    color: #fff;
+}
+
+.filter-dropdown-option.active{
+    background: rgba(124, 77, 255, 0.18);
+    color: #fff;
+    font-weight: 600;
 }

@@ -121,7 +121,6 @@ export default function AppRoutes() {
                 <Route path="/join-fantasy" element={<JoinFantasy />} />
 
 
-
                 <Route path="/dashboard" element={protectedPage(<Navigate to="/dashboard/fan" replace />)} />
 
                 <Route element={protectedPage(<AuthenticatedLayout />)}>
@@ -135,7 +134,6 @@ export default function AppRoutes() {
                     <Route path="/profile/notifications" element={<ProfileNotifications />} />
                     <Route path="/profile/privacy" element={<ProfilePrivacy />} />
                     <Route path="/profile/support" element={<ProfileSupport />} />
-                    <Route path="/super-admin" element={<SuperAdminDashboard />} />
                     <Route path="/memberships" element={<ExploreMembershipsPage />} />
                     <Route path="/memberships/:clubSlug" element={<ClubMembershipDetailPage />} />
                     <Route path="/memberships/:clubSlug/checkout" element={<MembershipCheckoutPage />} />
@@ -160,9 +158,6 @@ export default function AppRoutes() {
                     {/* super admin */}
                     <Route path="/dashboard/super-admin" element={<SuperAdminDashboard />} />
                 </Route>
-
-                <Route path="/edit-profile" element={protectedPage(<Navigate to="/profile" replace />)} />
-
 
                 <Route path="/edit-profile" element={protectedPage(<Navigate to="/profile" replace />)} />
 

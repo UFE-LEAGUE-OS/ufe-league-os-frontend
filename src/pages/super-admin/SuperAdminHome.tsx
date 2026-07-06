@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import {
     Users,
     ShieldCheck,
@@ -11,13 +12,72 @@ import {
     Server,
     Database,
     Radio,
+    Flag,
+    Building2,
+    Layers,
+    GitBranch,
+    BookOpen,
+    ClipboardCheck,
+    ArrowRight,
 } from "lucide-react";
 
 const STATS = [
-    { label: "Total Users", value: "1,240", delta: "+4.2%", trend: "up", icon: Users, accent: "green" },
-    { label: "Revenue", value: "$32,500", delta: "+1.8%", trend: "up", icon: Landmark, accent: "amber" },
-    { label: "Active Matches", value: "18", delta: "LIVE", trend: "live", icon: Trophy, accent: "green" },
-    { label: "Open Reports", value: "06", delta: "-2 today", trend: "down", icon: FileWarning, accent: "red" },
+    {
+        label: "Leagues",
+        value: "24",
+        delta: "+3",
+        trend: "up",
+        icon: Flag,
+        accent: "green",
+    },
+    {
+        label: "Clubs",
+        value: "168",
+        delta: "+12",
+        trend: "up",
+        icon: Building2,
+        accent: "amber",
+    },
+    {
+        label: "Total Users",
+        value: "1,240",
+        delta: "+4.2%",
+        trend: "up",
+        icon: Users,
+        accent: "green",
+    },
+    {
+        label: "Revenue",
+        value: "$32,500",
+        delta: "+1.8%",
+        trend: "up",
+        icon: Landmark,
+        accent: "amber",
+    },
+    {
+        label: "Active Matches",
+        value: "18",
+        delta: "LIVE",
+        trend: "live",
+        icon: Trophy,
+        accent: "green",
+    },
+    {
+        label: "Open Reports",
+        value: "06",
+        delta: "-2 today",
+        trend: "down",
+        icon: FileWarning,
+        accent: "red",
+    },
+    {
+        label: "Pending Standards",
+        value: "03",
+        delta: "Needs review",
+        trend: "down",
+        icon: ClipboardCheck,
+        accent: "red",
+    },
 ];
 
 const ACTIVITY = [
@@ -34,17 +94,57 @@ const SYSTEM_HEALTH = [
     { label: "Database", value: 87, icon: Database },
 ];
 
+// Governance pipeline: how a rule set moves from definition to being live for league admins.
+const GOVERNANCE_PIPELINE = [
+    {
+        key: "variants",
+        label: "Sport Variants",
+        detail: "24 active",
+        sub: "Football, Basketball, Rugby",
+        icon: Layers,
+        path: "/sports-variants",
+    },
+    {
+        key: "formats",
+        label: "Competition Formats",
+        detail: "12 templates",
+        sub: "League, knockout, groups",
+        icon: GitBranch,
+        path: "/super-admin/competition-formats",
+    },
+    {
+        key: "rules",
+        label: "Rules & Standards",
+        detail: "15 published",
+        sub: "Eligibility, conduct, discipline",
+        icon: BookOpen,
+        path: "/super-admin/rules",
+    },
+    {
+        key: "publish",
+        label: "Publish Standards",
+        detail: "3 pending",
+        sub: "Awaiting your approval",
+        icon: ClipboardCheck,
+        alert: true,
+        path: "/super-admin/publish-standards",
+    },
+];
+
 export default function SuperAdminHome() {
+    const navigate = useNavigate();
+
     return (
         <>
+            {/* HEADER WELCOME */}
             <div className="dashboard-header">
                 <div>
-                    <span className="eyebrow">System Overview</span>
-                    <h1>Welcome back, Merab 👋</h1>
+                    <h1>Welcome back, Merab </h1>
                     <p>Here's what's happening across League OS today.</p>
                 </div>
             </div>
 
+            {/* STAT TILES */}
             <section className="stat-grid">
                 {STATS.map((stat) => {
                     const Icon = stat.icon;
@@ -76,9 +176,55 @@ export default function SuperAdminHome() {
                 })}
             </section>
 
+            {/* GOVERNANCE PIPELINE */}
+            <section className="panel governance-panel">
+                <div className="panel-header">
+                    <div>
+                        <h3>Governance &amp; Standards</h3>
+                        <p className="governance-subtitle">
+                            How a rule moves from definition to live on the platform
+                        </p>
+                    </div>
+                </div>
+
+                <div className="governance-pipeline">
+                    {GOVERNANCE_PIPELINE.map((stage, i) => {
+                        const Icon = stage.icon;
+                        const isLast = i === GOVERNANCE_PIPELINE.length - 1;
+                        return (
+                            <div className="governance-stage-wrap" key={stage.key}>
+                                <button
+                                    className={`governance-stage${stage.alert ? " alert" : ""}`}
+                                    type="button"
+                                    onClick={() => navigate(stage.path)}
+                                >
+                                    <span className="governance-stage-icon">
+                                        <Icon size={18} />
+                                    </span>
+
+                                    <span className="governance-stage-body">
+                                        <strong>{stage.label}</strong>
+                                        <span className="governance-stage-detail">{stage.detail}</span>
+                                        <span className="governance-stage-sub">{stage.sub}</span>
+                                    </span>
+                                </button>
+                                {!isLast && (
+                                    <span className="governance-connector" aria-hidden="true">
+                                        <ArrowRight size={16} />
+                                    </span>
+                                )}
+                            </div>
+                        );
+                    })}
+                </div>
+            </section>
+
+            {/* DASHBOARD GRID */}
             <div className="dashboard-grid">
+                {/* QUICK ACTIONS */}
                 <section className="panel quick-actions">
                     <h3>Quick Actions</h3>
+
                     <button className="action-btn">
                         <UserPlus size={17} />
                         Add New User
@@ -86,6 +232,10 @@ export default function SuperAdminHome() {
                     <button className="action-btn">
                         <Trophy size={17} />
                         Manage Sports
+                    </button>
+                    <button className="action-btn">
+                        <BookOpen size={17} />
+                        Manage Standards
                     </button>
                     <button className="action-btn">
                         <Wallet size={17} />
@@ -97,11 +247,13 @@ export default function SuperAdminHome() {
                     </button>
                 </section>
 
+                {/* ACTIVITY FEED */}
                 <section className="panel activity">
                     <div className="panel-header">
                         <h3>Recent Activity</h3>
                         <button className="link-btn">View all</button>
                     </div>
+
                     <ul className="activity-list">
                         {ACTIVITY.map((item) => (
                             <li key={item.text}>
@@ -116,8 +268,10 @@ export default function SuperAdminHome() {
                     </ul>
                 </section>
 
+                {/* SYSTEM HEALTH */}
                 <section className="panel health">
                     <h3>System Health</h3>
+
                     {SYSTEM_HEALTH.map((h) => {
                         const Icon = h.icon;
                         return (
@@ -128,7 +282,10 @@ export default function SuperAdminHome() {
                                     <strong>{h.value}%</strong>
                                 </div>
                                 <div className="health-bar">
-                                    <div className="health-bar-fill" style={{ width: `${h.value}%` }} />
+                                    <div
+                                        className="health-bar-fill"
+                                        style={{ width: `${h.value}%` }}
+                                    />
                                 </div>
                             </div>
                         );

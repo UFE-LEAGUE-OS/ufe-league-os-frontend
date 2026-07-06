@@ -15,6 +15,7 @@ import {
 
 import '../../styles/pages/SuperAdminFinance/SuperAdminFinance.css';
 import '../../styles/pages/SuperAdminFinance/ChargebacksRefunds.css';
+import FilterDropdown from '../../components/FilterDropdown';
 
 const chargebackTrend = [
   { name: 'Jan', chargebacks: 12, refunds: 26 },
@@ -60,6 +61,9 @@ const caseStatusClass: Record<ChargebackCase['status'], string> = {
   Approved: 'case-status-approved',
   'Under Review': 'case-status-review',
 };
+
+const typeOptions = ['All', 'Chargeback', 'Refund'];
+const statusOptions = ['All', 'Open', 'Under Review', 'Approved'];
 
 function EyeIcon() {
   return (
@@ -215,20 +219,11 @@ export default function ChargebacksRefundsPage() {
             </div>
             <div className="filter-item">
               Type
-              <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
-                <option value="All">All</option>
-                <option value="Chargeback">Chargeback</option>
-                <option value="Refund">Refund</option>
-              </select>
+              <FilterDropdown value={typeFilter} options={typeOptions} onChange={setTypeFilter} />
             </div>
             <div className="filter-item">
               Status
-              <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
-                <option value="All">All</option>
-                <option value="Open">Open</option>
-                <option value="Under Review">Under Review</option>
-                <option value="Approved">Approved</option>
-              </select>
+              <FilterDropdown value={statusFilter} options={statusOptions} onChange={setStatusFilter} />
             </div>
           </div>
           <div className="table-actions">
