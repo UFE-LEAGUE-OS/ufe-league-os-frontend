@@ -1,3 +1,4 @@
+import { useMemo, useState } from 'react';
 import {
   Area,
   AreaChart,
@@ -13,6 +14,7 @@ import {
 
 import '../../styles/pages/SuperAdminFinance/SuperAdminFinance.css';
 import '../../styles/pages/SuperAdminFinance/PaymentsAudit.css';
+import FilterDropdown from '../../components/FilterDropdown';
 
 const paymentsTrend = [
   { name: 'Jan', total: 2240, revenue: 13200 },
@@ -56,6 +58,8 @@ const statusLabel: Record<Payment['status'], string> = {
   failed: 'Failed',
 };
 
+const statusOptions = ['All', 'Success', 'Pending', 'Failed'];
+
 function EyeIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
@@ -83,6 +87,32 @@ function ReceiptIcon() {
 }
 
 export default function PaymentsAuditPage() {
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('All');
+  const [methodFilter, setMethodFilter] = useState('All');
+
+  const methodOptions = useMemo(() => {
+    const unique = Array.from(new Set(recentPayments.map((p) => p.method)));
+    return ['All', ...unique];
+  }, []);
+
+  const filteredPayments = useMemo(() => {
+    const query = search.trim().toLowerCase();
+
+    return recentPayments.filter((payment) => {
+      const matchesStatus =
+        statusFilter === 'All' || statusLabel[payment.status] === statusFilter;
+      const matchesMethod = methodFilter === 'All' || payment.method === methodFilter;
+      const matchesSearch =
+        query === '' ||
+        payment.id.toLowerCase().includes(query) ||
+        payment.user.toLowerCase().includes(query) ||
+        payment.country.toLowerCase().includes(query);
+
+      return matchesStatus && matchesMethod && matchesSearch;
+    });
+  }, [search, statusFilter, methodFilter]);
+
   return (
     <main className="super-admin-page finance-child">
       <section className="page-heading">
@@ -97,37 +127,37 @@ export default function PaymentsAuditPage() {
       </section>
 
       <section className="top-stats-grid grid-6">
-    <article className="metric-card accent-green">
-        <div className="metric-label">Total Payments</div>
-        <div className="metric-value">1,248</div>
-        <div className="metric-delta positive">+0.4% vs last 30 days</div>
-    </article>
-    <article className="metric-card accent-amber">
-        <div className="metric-label">Successful Payments</div>
-        <div className="metric-value">1,102</div>
-        <div className="metric-delta positive">+6.7%</div>
-    </article>
-    <article className="metric-card accent-orange">
-        <div className="metric-label">Total Revenue</div>
-        <div className="metric-value">$32,500</div>
-        <div className="metric-delta positive">+7.3%</div>
-    </article>
-    <article className="metric-card accent-red">
-        <div className="metric-label">Refunds</div>
-        <div className="metric-value">$2,450</div>
-        <div className="metric-delta negative">-2.1%</div>
-    </article>
-    <article className="metric-card accent-purple">
-        <div className="metric-label">Chargebacks</div>
-        <div className="metric-value">$1,230</div>
-        <div className="metric-delta positive">+1.4%</div>
-    </article>
-    <article className="metric-card accent-red">
-        <div className="metric-label">Failed Payments</div>
-        <div className="metric-value">46</div>
-        <div className="metric-delta negative">-12.5%</div>
-    </article>
-</section>
+        <article className="metric-card accent-green">
+            <div className="metric-label">Total Payments</div>
+            <div className="metric-value">1,248</div>
+            <div className="metric-delta positive">+0.4% vs last 30 days</div>
+        </article>
+        <article className="metric-card accent-amber">
+            <div className="metric-label">Successful Payments</div>
+            <div className="metric-value">1,102</div>
+            <div className="metric-delta positive">+6.7%</div>
+        </article>
+        <article className="metric-card accent-orange">
+            <div className="metric-label">Total Revenue</div>
+            <div className="metric-value">$32,500</div>
+            <div className="metric-delta positive">+7.3%</div>
+        </article>
+        <article className="metric-card accent-red">
+            <div className="metric-label">Refunds</div>
+            <div className="metric-value">$2,450</div>
+            <div className="metric-delta negative">-2.1%</div>
+        </article>
+        <article className="metric-card accent-purple">
+            <div className="metric-label">Chargebacks</div>
+            <div className="metric-value">$1,230</div>
+            <div className="metric-delta positive">+1.4%</div>
+        </article>
+        <article className="metric-card accent-red">
+            <div className="metric-label">Failed Payments</div>
+            <div className="metric-value">46</div>
+            <div className="metric-delta negative">-12.5%</div>
+        </article>
+      </section>
 
       <section className="chart-grid">
         <article className="chart-card">
@@ -225,6 +255,48 @@ export default function PaymentsAuditPage() {
           <h2>Recent Payments</h2>
         </div>
 
+        <div className="table-toolbar">
+          <div className="filter-group">
+            <div className="filter-item">
+              Search
+              <input
+                type="text"
+                placeholder="Transaction ID, user, country…"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+            <div className="filter-item">
+              Status
+              <FilterDropdown
+                value={statusFilter}
+                options={statusOptions}
+                onChange={setStatusFilter}
+              />
+            </div>
+            <div className="filter-item">
+              Method
+              <FilterDropdown
+                value={methodFilter}
+                options={methodOptions}
+                onChange={setMethodFilter}
+              />
+            </div>
+          </div>
+          <div className="table-actions">
+            <button
+              className="button-secondary"
+              onClick={() => {
+                setSearch('');
+                setStatusFilter('All');
+                setMethodFilter('All');
+              }}
+            >
+              Clear filters
+            </button>
+          </div>
+        </div>
+
         <div className="table-scroll">
           <table className="payments-table">
             <thead>
@@ -240,28 +312,36 @@ export default function PaymentsAuditPage() {
               </tr>
             </thead>
             <tbody>
-              {recentPayments.map((payment) => (
-                <tr key={payment.id}>
-                  <td><a className="txn-link" href={`#${payment.id}`}>{payment.id}</a></td>
-                  <td>{payment.user}</td>
-                  <td>{payment.amount}</td>
-                  <td>{payment.method}</td>
-                  <td>
-                    <span className={`status-pill status-${payment.status}`}>
-                      {statusLabel[payment.status]}
-                    </span>
-                  </td>
-                  <td>{payment.date}</td>
-                  <td>{payment.country}</td>
-                  <td>
-                    <div className="row-actions">
-                      <button className="icon-btn" aria-label={`View ${payment.id}`}><EyeIcon /></button>
-                      <button className="icon-btn" aria-label={`Refund ${payment.id}`}><RefundIcon /></button>
-                      <button className="icon-btn" aria-label={`Receipt for ${payment.id}`}><ReceiptIcon /></button>
-                    </div>
+              {filteredPayments.length === 0 ? (
+                <tr>
+                  <td colSpan={8} style={{ textAlign: 'center', padding: '28px 20px', color: 'var(--muted)' }}>
+                    No payments match the current filters.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                filteredPayments.map((payment) => (
+                  <tr key={payment.id}>
+                    <td><a className="txn-link" href={`#${payment.id}`}>{payment.id}</a></td>
+                    <td>{payment.user}</td>
+                    <td>{payment.amount}</td>
+                    <td>{payment.method}</td>
+                    <td>
+                      <span className={`status-pill status-${payment.status}`}>
+                        {statusLabel[payment.status]}
+                      </span>
+                    </td>
+                    <td>{payment.date}</td>
+                    <td>{payment.country}</td>
+                    <td>
+                      <div className="row-actions">
+                        <button className="icon-btn" aria-label={`View ${payment.id}`}><EyeIcon /></button>
+                        <button className="icon-btn" aria-label={`Refund ${payment.id}`}><RefundIcon /></button>
+                        <button className="icon-btn" aria-label={`Receipt for ${payment.id}`}><ReceiptIcon /></button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

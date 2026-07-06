@@ -13,6 +13,7 @@ import {
 
 import '../../styles/pages/SuperAdminFinance/SuperAdminFinance.css';
 import '../../styles/pages/SuperAdminFinance/DataAccessLog.css';
+import FilterDropdown from '../../components/FilterDropdown';
 
 const accessTrend = [
   { name: 'Mon', logins: 24, exports: 2 },
@@ -153,39 +154,19 @@ export default function DataAccessLogPage() {
           </div>
 
           <div className="audit-select-wrap">
-            <select className="audit-select" value={role} onChange={(e) => setRole(e.target.value)}>
-              {roles.map((r) => (
-                <option key={r} value={r}>{r}</option>
-              ))}
-            </select>
-            <ChevronDown size={14} className="audit-select-chevron" />
+            <FilterDropdown value={role} options={roles} onChange={setRole} />
           </div>
 
           <div className="audit-select-wrap">
-            <select className="audit-select" value={moduleFilter} onChange={(e) => setModuleFilter(e.target.value)}>
-              {modules.map((m) => (
-                <option key={m} value={m}>{m}</option>
-              ))}
-            </select>
-            <ChevronDown size={14} className="audit-select-chevron" />
+            <FilterDropdown value={moduleFilter} options={modules} onChange={setModuleFilter} />
           </div>
 
           <div className="audit-select-wrap">
-            <select className="audit-select" value={actionFilter} onChange={(e) => setActionFilter(e.target.value)}>
-              {actionTypes.map((a) => (
-                <option key={a} value={a}>{a}</option>
-              ))}
-            </select>
-            <ChevronDown size={14} className="audit-select-chevron" />
+            <FilterDropdown value={actionFilter} options={actionTypes} onChange={setActionFilter} />
           </div>
 
           <div className="audit-select-wrap">
-            <select className="audit-select" value={resultFilter} onChange={(e) => setResultFilter(e.target.value)}>
-              {results.map((r) => (
-                <option key={r} value={r}>{r}</option>
-              ))}
-            </select>
-            <ChevronDown size={14} className="audit-select-chevron" />
+            <FilterDropdown value={resultFilter} options={results} onChange={setResultFilter} />
           </div>
 
           <button className="audit-filters-btn">
