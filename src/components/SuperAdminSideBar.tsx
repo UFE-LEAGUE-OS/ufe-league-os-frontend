@@ -8,6 +8,16 @@ import {
   Settings,
   Plus,
   Minus,
+  Trophy,
+  ListChecks,
+  BookOpen,
+  Send,
+  ClipboardList,
+  Route,
+  CheckSquare,
+  RotateCcw,
+  FileSearch,
+  AlertTriangle,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import "./SuperAdminSideBar.css";
@@ -24,6 +34,7 @@ type NavItem = {
     id: string;
     label: string;
     path: string;
+    icon: LucideIcon;
   }[];
 };
 
@@ -52,10 +63,10 @@ const NAV_ITEMS: NavItem[] = [
     icon: ShieldCheck,
     path: "/super-admin/governance",
     children: [
-      { id: "sports", label: "Sports Variants", path: "/sports-variants" },
-      { id: "competitions", label: "Competitions", path: "/super-admin/competition-formats" },
-      { id: "rules", label: "Rules & Standards", path: "/super-admin/rules" },
-      { id: "publish", label: "Publish Queue", path: "/super-admin/publish-standards" },
+      { id: "sports", label: "Sports Variants", path: "/sports-variants", icon: Trophy },
+      { id: "competitions", label: "Competitions", path: "/super-admin/competition-formats", icon: ListChecks },
+      { id: "rules", label: "Rules & Standards", path: "/super-admin/rules", icon: BookOpen },
+      { id: "publish", label: "Publish Queue", path: "/super-admin/publish-standards", icon: Send },
     ],
   },
   {
@@ -64,12 +75,12 @@ const NAV_ITEMS: NavItem[] = [
     icon: Wallet,
     path: "/super-admin/finance",
     children: [
-      { id: "payments-audit", label: "Payments Audit", path: "/super-admin/payments-audit" },
-      { id: "transaction-trail", label: "Transaction Trail", path: "/super-admin/transaction-trail" },
-      { id: "approvals-queue", label: "Approvals Queue", path: "/super-admin/approvals-queue" },
-      { id: "chargebacks-refunds", label: "Chargebacks & Refunds", path: "/super-admin/chargebacks-refunds" },
-      { id: "data-access-log", label: "Data Access Log", path: "/super-admin/data-access-log" },
-      { id: "security-events", label: "Security Events", path: "/super-admin/security-events" },
+      { id: "payments-audit", label: "Payments Audit", path: "/super-admin/payments-audit", icon: ClipboardList },
+      { id: "transaction-trail", label: "Transaction Trail", path: "/super-admin/transaction-trail", icon: Route },
+      { id: "approvals-queue", label: "Approvals Queue", path: "/super-admin/approvals-queue", icon: CheckSquare },
+      { id: "chargebacks-refunds", label: "Chargebacks & Refunds", path: "/super-admin/chargebacks-refunds", icon: RotateCcw },
+      { id: "data-access-log", label: "Data Access Log", path: "/super-admin/data-access-log", icon: FileSearch },
+      { id: "security-events", label: "Security Events", path: "/super-admin/security-events", icon: AlertTriangle },
     ],
   },
   {
@@ -131,17 +142,21 @@ export default function Sidebar({ collapsed }: Props) {
                 {/* Children */}
                 {isOpen && (
                   <div className="nav-children">
-                    {item.children.map((child) => (
-                      <NavLink
-                        key={child.id}
-                        to={child.path}
-                        className={({ isActive }) =>
-                          isActive ? "active sub-link" : "sub-link"
-                        }
-                      >
-                        <span className="nav-label">{child.label}</span>
-                      </NavLink>
-                    ))}
+                    {item.children.map((child) => {
+                      const ChildIcon = child.icon;
+                      return (
+                        <NavLink
+                          key={child.id}
+                          to={child.path}
+                          className={({ isActive }) =>
+                            isActive ? "active sub-link" : "sub-link"
+                          }
+                        >
+                          <ChildIcon size={16} />
+                          <span className="nav-label">{child.label}</span>
+                        </NavLink>
+                      );
+                    })}
                   </div>
                 )}
               </div>
