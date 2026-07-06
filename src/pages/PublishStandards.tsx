@@ -4,15 +4,14 @@ import "../styles/pages/SuperAdminDashboard.css";
 import "../styles/pages/SuperVariantsPage.css";
 
 import {
-    Menu,
+    
     X,
     Plus,
     Search,
     Users,
     Trophy,
     Inbox,
-    Bell,
-    ChevronDown,
+    
     CheckCircle2,
     Circle,
     XCircle,
@@ -23,8 +22,7 @@ import {
 
 import Footer from "../components/Footer";
 import Sidebar from "../components/SuperAdminSideBar";
-import logo from "../assets/logo.png";
-import profile from "../assets/kcca.png";
+import SuperAdminTopBar from "../components/SuperAdminTopBar";
 import superImage from "../assets/cta-banner.png";
 
 /* ---------------- TYPES ---------------- */
@@ -318,42 +316,10 @@ export default function PublishStandards() {
             }}
         >
             {/* HEADER */}
-            <header className="admin-header">
-                <div className="header-left">
-                    <div className="menu-container">
-                        <button
-                            className="menu-btn"
-                            onClick={() => setSidebarOpen(!sidebarOpen)}
-                            aria-label="Toggle navigation"
-                        >
-                            {sidebarOpen ? <X size={24} /> : <Menu size={24} />}
-                        </button>
-                    </div>
-                    <div className="header-logo">
-                        <img src={logo} alt="League OS" />
-                    </div>
-                </div>
-
-                <div className="header-search">
-                    <Search size={16} />
-                    <input type="text" placeholder="Search users, matches, transactions…" />
-                </div>
-
-                <div className="header-right">
-                    <button className="icon-btn" aria-label="Notifications">
-                        <Bell size={19} />
-                        <span className="notif-badge">3</span>
-                    </button>
-                    <div className="header-profile">
-                        <img src={profile} alt="Merab Apio" />
-                        <div className="profile-meta">
-                            <h4>Merab Apio</h4>
-                            <span className="role-badge">Super Admin</span>
-                        </div>
-                        <ChevronDown size={16} className="profile-caret" />
-                    </div>
-                </div>
-            </header>
+          <SuperAdminTopBar
+                         sidebarOpen={sidebarOpen}
+                         onToggleSidebar={() => setSidebarOpen((c) => !c)}
+                     />
 
             <div className="dashboard-layout">
                 <Sidebar collapsed={!sidebarOpen} />

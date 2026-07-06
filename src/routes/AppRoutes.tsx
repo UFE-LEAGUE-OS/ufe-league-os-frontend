@@ -81,14 +81,14 @@ import RulesAndStandards from '../pages/SuperAdminRules';
 import CompetitionConfigurator from '../pages/CompetitionConfigurator';
 import PublishStandards from "../pages/PublishStandards";
 import SuperAdminHome from '../pages/super-admin/SuperAdminHome';
-import UserManagement    from '../pages/admin/UserManagement';
-import RoleTemplates     from '../pages/admin/RoleTemplates';
+import UserManagement from '../pages/admin/UserManagement';
+import RoleTemplates from '../pages/admin/RoleTemplates';
 import PermissionBundles from '../pages/admin/PermissionBundles';
-import CrossRoleAccess   from '../pages/admin/CrossRoleAccess';
-import RoleAssignment    from '../pages/admin/RoleAssignment';
-import AuditLog          from '../pages/admin/AuditLog';
+import CrossRoleAccess from '../pages/admin/CrossRoleAccess';
+import RoleAssignment from '../pages/admin/RoleAssignment';
+import AuditLog from '../pages/admin/AuditLog';
 import SessionManagement from '../pages/admin/SessionManagement';
-import ImpersonateUser   from '../pages/admin/ImpersonateUser';
+import ImpersonateUser from '../pages/admin/ImpersonateUser';
 import PaymentsAuditPage from '../pages/super-admin/payments-audit';
 import TransactionTrailPage from '../pages/super-admin/transaction-trail';
 import ApprovalsQueuePage from '../pages/super-admin/approvals-queue';
@@ -168,7 +168,7 @@ export default function AppRoutes() {
                     <Route path="/fantasy/player-market" element={<FantasyPlayerMarket />} />
                 </Route>
 
-               <Route path="/edit-profile" element={protectedPage(<Navigate to="/profile" replace />)} />
+                <Route path="/edit-profile" element={protectedPage(<Navigate to="/profile" replace />)} />
 
                 <Route path="/sports" element={<SportsPage />} />
                 <Route path="/sports/football" element={<FootballPage />} />
@@ -216,30 +216,36 @@ export default function AppRoutes() {
                 <Route path="/payments" element={<Payments />} />
 
                 {/* Super Admin routes - only accessible by users with super admin privileges */}
-                <Route path="/super-admin" element={<SuperAdminDashboard />}>
+                <Route path="/dashboard/super-admin" element={
+                    <ProtectedRoute>
+                        <SuperAdminDashboard />
+                    </ProtectedRoute>
+                }>
                     <Route index element={<SuperAdminHome />} />
                     <Route path="dashboard" element={<SuperAdminHome />} />
+
+
 
                     {/* ── User Management ── */}
                     <Route path="users-management" element={<UserManagement />} />
 
                     {/* ── Governance / Role & Permission pages ── */}
-                    <Route path="role-templates"    element={<RoleTemplates />} />
-                    <Route path="permissions"       element={<PermissionBundles />} />
-                    <Route path="cross-role"        element={<CrossRoleAccess />} />
-                    <Route path="role-assignment"   element={<RoleAssignment />} />
-                    <Route path="audit-log"         element={<AuditLog />} />
-                    <Route path="sessions"          element={<SessionManagement />} />
-                    <Route path="impersonate"       element={<ImpersonateUser />} />
+                    <Route path="role-templates" element={<RoleTemplates />} />
+                    <Route path="permissions" element={<PermissionBundles />} />
+                    <Route path="cross-role" element={<CrossRoleAccess />} />
+                    <Route path="role-assignment" element={<RoleAssignment />} />
+                    <Route path="audit-log" element={<AuditLog />} />
+                    <Route path="sessions" element={<SessionManagement />} />
+                    <Route path="impersonate" element={<ImpersonateUser />} />
 
                     {/* ── Finance ── */}
-                    <Route path="payments-audit"    element={<PaymentsAuditPage />} />
+                    <Route path="payments-audit" element={<PaymentsAuditPage />} />
                     <Route path="transaction-trail" element={<TransactionTrailPage />} />
-                    <Route path="approvals-queue"   element={<ApprovalsQueuePage />} />
+                    <Route path="approvals-queue" element={<ApprovalsQueuePage />} />
                     <Route path="chargebacks-refunds" element={<ChargebacksRefundsPage />} />
-                    <Route path="data-access-log"   element={<DataAccessLogPage />} />
-                    <Route path="security-events"   element={<SecurityEventsPage />} />
-                    <Route path="profile"           element={<SuperAdminProfilePage />} />
+                    <Route path="data-access-log" element={<DataAccessLogPage />} />
+                    <Route path="security-events" element={<SecurityEventsPage />} />
+                    <Route path="profile" element={<SuperAdminProfilePage />} />
                 </Route>
             </Routes>
 
