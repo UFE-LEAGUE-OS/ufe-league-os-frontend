@@ -10,6 +10,8 @@ import {
 } from 'react-icons/fi';
 import Navbar from '../../components/Navbar';
 import SponsorSidebar from '../../components/SponsorSidebar';
+import { useAuthStore } from '../../store/authStore';
+import { getToken } from '../../utils/tokenManager';
 import '../../styles/pages/landing.css';
 import './SponsorshipHub.css';
 
@@ -42,13 +44,15 @@ const steps = [
 
 export default function SponsorshipHub() {
   const navigate = useNavigate();
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const isAuthenticated = Boolean(accessToken || getToken());
 
   return (
     <div className="sh-page">
       <Navbar />
 
       <div className="sh-layout">
-        <SponsorSidebar />
+        {isAuthenticated && <SponsorSidebar />}
 
         <main className="sh-main landing-page">
 

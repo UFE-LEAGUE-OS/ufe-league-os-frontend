@@ -17,6 +17,7 @@ export type AuthUser = {
   full_name?: string;
   first_name?: string;
   role?: UserRole;
+  sponsor_type?: 'INDIVIDUAL' | 'CORPORATE';
   [key: string]: unknown;
 } | null;
 
