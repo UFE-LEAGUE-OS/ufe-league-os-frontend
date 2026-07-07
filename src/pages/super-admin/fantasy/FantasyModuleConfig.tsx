@@ -6,6 +6,8 @@ import {
   GitBranch,
   Calendar,
   DollarSign,
+  UserCheck,
+  Send,
   ArrowRight,
 } from "lucide-react";
 import "../../../styles/pages/SuperAdminDashboard.css";
@@ -16,7 +18,7 @@ const FANTASY_CARDS = [
     label: "Scoring Rules",
     description: "Configure points awarded for goals, assists, clean sheets, saves, bonuses & more",
     icon: Goal,
-    path: "/super-admin/fantasy-config/scoring",
+    path: "scoring",
     accent: "green",
   },
   {
@@ -24,7 +26,7 @@ const FANTASY_CARDS = [
     label: "Transfer & Trade Rules",
     description: "Set transfer limits, budgets, wildcards, trading windows & deadlines",
     icon: ArrowLeftRight,
-    path: "/super-admin/fantasy-config/transfers",
+    path: "transfers",
     accent: "amber",
   },
   {
@@ -32,7 +34,7 @@ const FANTASY_CARDS = [
     label: "Squad Limits",
     description: "Define squad size, per-club caps, position requirements & formation rules",
     icon: Users,
-    path: "/super-admin/fantasy-config/squad-limits",
+    path: "squad-limits",
     accent: "purple",
   },
   {
@@ -40,7 +42,7 @@ const FANTASY_CARDS = [
     label: "Competition Mappings",
     description: "Map fantasy leagues to real-world competitions and configure gameweek alignment",
     icon: GitBranch,
-    path: "/super-admin/fantasy-config/competition-mappings",
+    path: "competition-mappings",
     accent: "blue",
   },
   {
@@ -48,7 +50,7 @@ const FANTASY_CARDS = [
     label: "Season & Gameweek Settings",
     description: "Manage fantasy seasons, gameweek deadlines, statuses, and scheduling",
     icon: Calendar,
-    path: "/super-admin/fantasy-config/season-gameweek",
+    path: "season-gameweek",
     accent: "pink",
   },
   {
@@ -56,8 +58,24 @@ const FANTASY_CARDS = [
     label: "Price Structure Governance",
     description: "Configure pricing models, price change formulas, floors, ceilings, and dynamic rules",
     icon: DollarSign,
-    path: "/super-admin/fantasy-config/price-structure",
+    path: "price-structure",
     accent: "cyan",
+  },
+  {
+    key: "eligibility-roster",
+    label: "Eligibility & Roster Rules",
+    description: "Configure player eligibility, squad size limits, position requirements, and formation rules per sport",
+    icon: UserCheck,
+    path: "eligibility-roster",
+    accent: "orange",
+  },
+  {
+    key: "publish-changes",
+    label: "Publish Changes Workflow",
+    description: "Review, approve, and publish fantasy configuration changes through a structured approval pipeline",
+    icon: Send,
+    path: "publish-changes",
+    accent: "teal",
   },
 ];
 
