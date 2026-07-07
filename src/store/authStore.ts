@@ -1,7 +1,23 @@
 import { create } from 'zustand';
-import { removeRefreshToken, removeToken, setRefreshToken, setToken } from '../utils/tokenManager.js';
+import {
+  clearAuthStorage,
+  getRefreshToken,
+  getStoredUser,
+  getToken,
+  setRefreshToken,
+  setStoredUser,
+  setToken,
+} from '../utils/tokenManager.js';
 
 export type UserRole =
+  | 'FAN'
+  | 'CLUB_ADMIN'
+  | 'LEAGUE_ADMIN'
+  | 'UNION_ADMIN'
+  | 'REFEREE'
+  | 'TICKETING_OFFICER'
+  | 'SPONSOR'
+  | 'SUPER_ADMIN'
   | 'fan'
   | 'club_admin'
   | 'league_admin'
@@ -16,7 +32,7 @@ export type AuthUser = {
   email?: string;
   full_name?: string;
   first_name?: string;
-  role?: UserRole;
+  role?: UserRole | string;
   sponsor_type?: 'INDIVIDUAL' | 'CORPORATE';
   [key: string]: unknown;
 } | null;
@@ -36,20 +52,27 @@ type AuthStore = {
 };
 
 export const useAuthStore = create<AuthStore>()((set) => ({
-  user: null,
-  accessToken: null,
-  refreshToken: null,
+  user: getStoredUser<AuthUser>(),
+  accessToken: getToken(),
+  refreshToken: getRefreshToken(),
   requiresEmailVerification: false,
 
   setAuth: ({ user, access, refresh, requiresEmailVerification }) => {
     setToken(access);
     setRefreshToken(refresh);
-    set({ user, accessToken: access, refreshToken: refresh, requiresEmailVerification });
+    setStoredUser(user);
+
+    set({
+      user,
+      accessToken: access,
+      refreshToken: refresh,
+      requiresEmailVerification,
+    });
   },
 
   clearAuth: () => {
-    removeToken();
-    removeRefreshToken();
+    clearAuthStorage();
+
     set({
       user: null,
       accessToken: null,

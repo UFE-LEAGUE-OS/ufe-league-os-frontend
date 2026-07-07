@@ -65,6 +65,7 @@ import MyMembershipsPage from '../pages/memberships/MyMembershipsPage';
 import MyTicketsPage from '../pages/fan/MyTicketsPage';
 import TicketDetailPage from '../pages/fan/TicketDetailPage';
 import ProtectedRoute from './ProtectedRoute';
+import RoleProtectedRoute from './RoleProtectedRoute';
 import Payments from '../pages/PaymentPage';
 import FanPollsPage from '../pages/fan/FanPollsPage';
 import TicketCheckoutPage from '../pages/tickets/TicketCheckoutPage';
@@ -129,6 +130,14 @@ function protectedPage(page: ReactNode) {
     return <ProtectedRoute>{page}</ProtectedRoute>;
 }
 
+function roleProtectedPage(page: ReactNode, allowedRoles: string[], redirectTo?: string) {
+    return (
+        <RoleProtectedRoute allowedRoles={allowedRoles} redirectTo={redirectTo}>
+            {page}
+        </RoleProtectedRoute>
+    );
+}
+
 export default function AppRoutes() {
     return (
         <Router>
@@ -152,7 +161,7 @@ export default function AppRoutes() {
                 <Route path="/dashboard" element={protectedPage(<Navigate to="/dashboard/fan" replace />)} />
 
                 <Route path="/union-admin" element={protectedPage(<Navigate to="/dashboard/union-admin" replace />)} />
-                <Route path="/dashboard/union-admin" element={protectedPage(<UnionAdminDashboard />)} />
+                <Route path="/dashboard/union-admin" element={roleProtectedPage(<UnionAdminDashboard />, ['UNION_ADMIN'])} />
 
                 <Route element={protectedPage(<AuthenticatedLayout />)}>
                     <Route path="/dashboard/fan" element={<Dashboard />} />
@@ -245,11 +254,7 @@ export default function AppRoutes() {
                 <Route path="/payments" element={<Payments />} />
 
                 {/* Super Admin routes */}
-                <Route path="/dashboard/super-admin" element={
-                    <ProtectedRoute>
-                        <SuperAdminDashboard />
-                    </ProtectedRoute>
-                }>
+                <Route path="/dashboard/super-admin" element={roleProtectedPage(<SuperAdminDashboard />, ['SUPER_ADMIN'])}>
                     <Route index element={<SuperAdminHome />} />
                     <Route path="dashboard" element={<SuperAdminHome />} />
 

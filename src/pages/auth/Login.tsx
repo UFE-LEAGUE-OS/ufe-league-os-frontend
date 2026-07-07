@@ -18,6 +18,11 @@ import {
 } from '../../utils/authFlow.js';
 import BackButton from '../../components/BackButton.js';
 import { getMyUnionWorkspaces } from '../../services/unionAdminService';
+import {
+    canRoleAccessRedirect,
+    getDefaultDashboardRoute,
+    normalizeRole,
+} from '../../utils/roleRoutes.js';
 
 import '../../styles/pages/auth/login.css';
 
@@ -122,12 +127,16 @@ function resolveDashboardRoute(result: LoginResult) {
 }
 
 async function resolvePostLoginRoute(result: LoginResult, postLoginRedirect?: string | null) {
-    if (postLoginRedirect) {
+    const backendRoute = resolveDashboardRoute(result);
+    const userRole = normalizeRole(result.user?.role);
+
+    if (postLoginRedirect && canRoleAccessRedirect(userRole, postLoginRedirect)) {
         return postLoginRedirect;
     }
 
-    const backendRoute = resolveDashboardRoute(result);
-    const userRole = getUserRole(result.user?.role);
+    if (userRole === 'SUPER_ADMIN') {
+        return getDefaultDashboardRoute(userRole);
+    }
 
     if (backendRoute === '/dashboard/fan' && userRole === 'FAN') {
         return backendRoute;
@@ -135,6 +144,10 @@ async function resolvePostLoginRoute(result: LoginResult, postLoginRedirect?: st
 
     if (backendRoute !== '/dashboard' && backendRoute !== '/dashboard/fan') {
         return backendRoute;
+    }
+
+    if (userRole === 'FAN') {
+        return getDefaultDashboardRoute(userRole);
     }
 
     try {
@@ -147,11 +160,7 @@ async function resolvePostLoginRoute(result: LoginResult, postLoginRedirect?: st
         // Keep the normal dashboard route if workspace lookup fails.
     }
 
-    return backendRoute;
-}
-
-function getUserRole(value: unknown) {
-    return typeof value === 'string' ? value.toUpperCase() : '';
+    return getDefaultDashboardRoute(userRole || 'FAN');
 }
 
 function getUserEmail(value: unknown) {
