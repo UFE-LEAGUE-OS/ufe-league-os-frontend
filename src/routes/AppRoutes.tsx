@@ -87,6 +87,8 @@ import SquadLimits from "../pages/super-admin/fantasy/SquadLimits";
 import CompetitionMappings from "../pages/super-admin/fantasy/CompetitionMappings";
 import SeasonGameweekSettings from "../pages/super-admin/fantasy/SeasonGameweekSettings";
 import PriceStructureGovernance from "../pages/super-admin/fantasy/PriceStructureGovernance";
+import EligibilityRosterRules from "../pages/super-admin/fantasy/EligibilityRosterRules";
+import PublishChangesWorkflow from "../pages/super-admin/fantasy/PublishChangesWorkflow";
 import SuperAdminHome from '../pages/super-admin/SuperAdminHome';
 import UserManagement from '../pages/admin/UserManagement';
 import RoleTemplates from '../pages/admin/RoleTemplates';
@@ -250,18 +252,21 @@ export default function AppRoutes() {
                     <Route path="transaction-trail" element={<TransactionTrailPage />} />
                     <Route path="approvals-queue" element={<ApprovalsQueuePage />} />
                     <Route path="chargebacks-refunds" element={<ChargebacksRefundsPage />} />
-<Route path="data-access-log" element={<DataAccessLogPage />} />
-<Route path="security-events" element={<SecurityEventsPage />} />
-<Route path="profile" element={<SuperAdminProfilePage />} />
+                    <Route path="data-access-log" element={<DataAccessLogPage />} />
+                    <Route path="security-events" element={<SecurityEventsPage />} />
+                    <Route path="profile" element={<SuperAdminProfilePage />} />
 
-{/* ── Fantasy Module Config ── */}
-<Route path="fantasy-config" element={<FantasyModuleConfig />} />
-<Route path="fantasy-config/scoring" element={<ScoringRules />} />
-<Route path="fantasy-config/transfers" element={<TransferRules />} />
-<Route path="fantasy-config/squad-limits" element={<SquadLimits />} />
-<Route path="fantasy-config/competition-mappings" element={<CompetitionMappings />} />
-<Route path="fantasy-config/season-gameweek" element={<SeasonGameweekSettings />} />
-<Route path="fantasy-config/price-structure" element={<PriceStructureGovernance />} />
+
+                    {/* ── Fantasy Module Config ── */}
+                    <Route path="fantasy-config" element={<FantasyModuleConfig />} />
+                    <Route path="fantasy-config/scoring" element={<ScoringRules />} />
+                    <Route path="fantasy-config/transfers" element={<TransferRules />} />
+                    <Route path="fantasy-config/squad-limits" element={<SquadLimits />} />
+                    <Route path="fantasy-config/competition-mappings" element={<CompetitionMappings />} />
+                    <Route path="fantasy-config/season-gameweek" element={<SeasonGameweekSettings />} />
+                    <Route path="fantasy-config/price-structure" element={<PriceStructureGovernance />} />
+                    <Route path="fantasy-config/eligibility-roster" element={<EligibilityRosterRules />} />
+                    <Route path="fantasy-config/publish-changes" element={<PublishChangesWorkflow />} />
                 </Route>
             </Routes>
 
