@@ -111,6 +111,7 @@ import SponsorPackages from '../pages/sponsor/SponsorPackages';
 import CampaignCreation from '../pages/sponsor/CampaignCreation';
 import CampaignAnalytics from '../pages/sponsor/CampaignAnalytics';
 import CampaignPlacementPreview from '../pages/sponsor/CampaignPlacementPreview';
+import UnionAdminDashboard from '../pages/union-admin/UnionAdminDashboard';
 
 function protectedPage(page: ReactNode) {
     return <ProtectedRoute>{page}</ProtectedRoute>;
@@ -138,6 +139,9 @@ export default function AppRoutes() {
 
 
                 <Route path="/dashboard" element={protectedPage(<Navigate to="/dashboard/fan" replace />)} />
+
+                <Route path="/union-admin" element={protectedPage(<Navigate to="/dashboard/union-admin" replace />)} />
+                <Route path="/dashboard/union-admin" element={protectedPage(<UnionAdminDashboard />)} />
 
                 <Route element={protectedPage(<AuthenticatedLayout />)}>
                     <Route path="/dashboard/fan" element={<Dashboard />} />
