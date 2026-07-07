@@ -56,6 +56,7 @@ export const publicNavLinks: NavbarLink[] = [
   { label: 'Sport', route: '/sports' },
   { label: 'Leagues', route: '/leagues/uganda-premier-league', showArrow: true, dropdownItems: leagueItems },
   { label: 'Clubs', route: '/clubs' },
+  { label: 'Unions', route: '/unions' },
   { label: 'Matches', route: '/fixtures', showArrow: true, dropdownItems: matchItems },
   { label: 'Competitions', route: '/competitions' },
   { label: 'News', route: '/news' },

@@ -6280,3 +6280,96 @@
         min-width: 0 !important;
     }
 }
+
+
+.unionWorkspacePanel {
+    margin-bottom: 24px;
+    padding: 18px;
+    border-radius: 12px;
+
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 18px;
+
+    background:
+        radial-gradient(circle at 92% 0%, rgba(249, 115, 22, 0.22), transparent 15rem),
+        radial-gradient(circle at 0% 0%, rgba(123, 63, 242, 0.24), transparent 16rem),
+        linear-gradient(135deg, rgba(15, 23, 42, 0.92), rgba(2, 6, 23, 0.72));
+    border: 1px solid rgba(123, 63, 242, 0.34);
+    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.24);
+    backdrop-filter: blur(8px);
+}
+
+.unionWorkspaceIcon {
+    width: 54px;
+    height: 54px;
+    border-radius: 14px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    color: #ffffff;
+    background: linear-gradient(135deg, #7b3ff2, #f97316);
+    box-shadow: 0 14px 28px rgba(123, 63, 242, 0.25);
+}
+
+.unionWorkspaceEyebrow {
+    color: #f97316;
+    font-size: 11px;
+    font-weight: 1000;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.unionWorkspacePanel h2 {
+    margin: 5px 0 0;
+    color: #ffffff;
+    font-size: clamp(20px, 2vw, 27px);
+    font-weight: 1000;
+    letter-spacing: -0.035em;
+}
+
+.unionWorkspacePanel p {
+    max-width: 780px;
+    margin: 7px 0 0;
+    color: rgba(255, 255, 255, 0.68);
+    font-size: 14px;
+    line-height: 1.55;
+}
+
+.unionWorkspacePanel a {
+    min-height: 42px;
+    border-radius: 7px;
+    padding: 0 16px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    color: #ffffff;
+    background: linear-gradient(135deg, #7b3ff2, #36106f);
+    border: 1px solid rgba(168, 85, 247, 0.44);
+
+    font-size: 13px;
+    font-weight: 1000;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.unionWorkspacePanel a:hover,
+.unionWorkspacePanel a:focus-visible {
+    background: #8b35ff;
+}
+
+@media (max-width: 760px) {
+    .unionWorkspacePanel {
+        grid-template-columns: 1fr;
+        align-items: flex-start;
+    }
+
+    .unionWorkspacePanel a {
+        width: 100%;
+    }
+}

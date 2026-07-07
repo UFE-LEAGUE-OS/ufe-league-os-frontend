@@ -17,6 +17,7 @@ import {
     type AuthFlowState,
 } from '../../utils/authFlow.js';
 import BackButton from '../../components/BackButton.js';
+import { getMyUnionWorkspaces } from '../../services/unionAdminService';
 
 import '../../styles/pages/auth/login.css';
 
@@ -32,6 +33,7 @@ type LoginResult = {
     requires_email_verification?: boolean;
     user?: {
         email?: unknown;
+        role?: unknown;
         frontend_dashboard_route?: unknown;
         dashboard_route?: unknown;
     };
@@ -119,6 +121,39 @@ function resolveDashboardRoute(result: LoginResult) {
     );
 }
 
+async function resolvePostLoginRoute(result: LoginResult, postLoginRedirect?: string | null) {
+    if (postLoginRedirect) {
+        return postLoginRedirect;
+    }
+
+    const backendRoute = resolveDashboardRoute(result);
+    const userRole = getUserRole(result.user?.role);
+
+    if (backendRoute === '/dashboard/fan' && userRole === 'FAN') {
+        return backendRoute;
+    }
+
+    if (backendRoute !== '/dashboard' && backendRoute !== '/dashboard/fan') {
+        return backendRoute;
+    }
+
+    try {
+        const workspaces = await getMyUnionWorkspaces();
+
+        if (workspaces.length > 0) {
+            return '/dashboard/union-admin';
+        }
+    } catch {
+        // Keep the normal dashboard route if workspace lookup fails.
+    }
+
+    return backendRoute;
+}
+
+function getUserRole(value: unknown) {
+    return typeof value === 'string' ? value.toUpperCase() : '';
+}
+
 function getUserEmail(value: unknown) {
     return typeof value === 'string' && value.includes('@') ? value : undefined;
 }
@@ -195,13 +230,15 @@ export default function Login() {
                             getUserEmail(result.user?.email) ??
                             getUserEmail(identifier.trim()),
                         message: 'Please verify your email address before continuing.',
-                        postLoginRedirect: postLoginRedirect ?? resolveDashboardRoute(result),
+                        postLoginRedirect: await resolvePostLoginRoute(result, postLoginRedirect),
                     },
                 });
                 return;
             }
 
-            navigate(postLoginRedirect ?? resolveDashboardRoute(result), { replace: true });
+            const redirectRoute = await resolvePostLoginRoute(result, postLoginRedirect);
+
+            navigate(redirectRoute, { replace: true });
         } catch (error) {
             const data = (error as ApiError).response?.data;
 
@@ -247,13 +284,15 @@ export default function Login() {
                     state: {
                         email: getUserEmail(result.user?.email),
                         message: 'Please verify your email address before continuing.',
-                        postLoginRedirect: postLoginRedirect ?? resolveDashboardRoute(result),
+                        postLoginRedirect: await resolvePostLoginRoute(result, postLoginRedirect),
                     },
                 });
                 return;
             }
 
-            navigate(postLoginRedirect ?? resolveDashboardRoute(result), { replace: true });
+            const redirectRoute = await resolvePostLoginRoute(result, postLoginRedirect);
+
+            navigate(redirectRoute, { replace: true });
         } catch (error) {
             setErrors({
                 general: getLoginErrorMessage(error),
