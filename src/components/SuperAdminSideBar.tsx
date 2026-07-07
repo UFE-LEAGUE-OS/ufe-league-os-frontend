@@ -26,6 +26,7 @@ import {
   UserSearch,
   UserCog,
   Shield,
+  FileEdit,
   Gamepad2,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -86,7 +87,7 @@ const NAV_ITEMS: NavItem[] = [
       { id: "competitions", label: "Competitions", path: "/super-admin/competition-formats", icon: ListChecks },
       { id: "rules", label: "Rules & Standards", path: "/super-admin/rules", icon: BookOpen },
       { id: "publish", label: "Publish Queue", path: "/super-admin/publish-standards", icon: Send },
-      { id: "fantasy-config", label: "Fantasy Module Config", path: "/super-admin/fantasy-config", icon: Gamepad2 },
+      { id: "fantasy-config", label: "Fantasy Module Config", path: "/dashboard/super-admin/fantasy-config", icon: Gamepad2 },
     ],
   },
   {
@@ -101,6 +102,23 @@ const NAV_ITEMS: NavItem[] = [
       { id: "chargebacks-refunds", label: "Chargebacks & Refunds", path: "/super-admin/chargebacks-refunds", icon: RotateCcw },
       { id: "data-access-log", label: "Data Access Log", path: "/super-admin/data-access-log", icon: FileSearch },
       { id: "security-events", label: "Security Events", path: "/super-admin/security-events", icon: AlertTriangle },
+    ],
+  },
+  {
+    id: "content-platform",
+    label: "Content & Platform",
+    icon: FileEdit,
+    path: "/super-admin/content-platform",
+    children: [
+      { id: "public-content", label: "Public Content", path: "/super-admin/public-content", icon: FileEdit },
+      { id: "announcements-banners", label: "Announcements & Banners", path: "/super-admin/announcements-banners", icon: Send },
+      { id: "notification-templates", label: "Notification Templates", path: "/super-admin/notification-templates", icon: ClipboardList },
+      { id: "broadcasts", label: "Broadcasts", path: "/super-admin/broadcasts", icon: Route },
+      { id: "support-settings", label: "Support Settings", path: "/super-admin/support-settings", icon: Settings },
+      { id: "help-center", label: "Help Center", path: "/super-admin/help-center", icon: BookOpen },
+      { id: "feature-flags", label: "Feature Flags", path: "/super-admin/feature-flags", icon: CheckSquare },
+      { id: "system-messages", label: "System Messages", path: "/super-admin/system-messages", icon: AlertTriangle },
+      { id: "bulk-operations", label: "Bulk Operations", path: "/super-admin/bulk-operations", icon: RotateCcw },
     ],
   },
   {
