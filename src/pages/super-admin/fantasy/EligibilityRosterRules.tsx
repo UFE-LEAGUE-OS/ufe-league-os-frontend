@@ -112,7 +112,7 @@ export default function EligibilityRosterRules() {
       <div className="fantasy-sub-header">
         <button
           className="back-btn"
-          onClick={() => navigate("..")}
+          onClick={() => navigate("/dashboard/super-admin/fantasy-config")}
         >
           <ArrowLeft size={16} />
           Back to Fantasy Config
