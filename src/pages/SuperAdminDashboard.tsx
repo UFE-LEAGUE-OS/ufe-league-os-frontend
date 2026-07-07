@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import axios from "axios";
 import "../styles/pages/SuperAdminDashboard.css";
 import "../components/SuperAdminSideBar.css";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
@@ -34,7 +35,7 @@ import SuperAdminTopBar from "../components/SuperAdminTopBar";
 
 
 
-const STATS = [
+{/*const STATS = [
     { label: "Leagues",           value: "24",      delta: "+3",           trend: "up",   icon: Flag,           accent: "green" },
     { label: "Clubs",             value: "168",     delta: "+12",          trend: "up",   icon: Building2,      accent: "amber" },
     { label: "Total Users",       value: "1,240",   delta: "+4.2%",        trend: "up",   icon: Users,          accent: "green" },
@@ -42,7 +43,7 @@ const STATS = [
     { label: "Active Matches",    value: "18",      delta: "LIVE",         trend: "live", icon: Trophy,         accent: "green" },
     { label: "Open Reports",      value: "06",      delta: "-2 today",     trend: "down", icon: FileWarning,    accent: "red" },
     { label: "Pending Standards", value: "03",      delta: "Needs review", trend: "down", icon: ClipboardCheck, accent: "red" },
-];
+];*/}
 
 const ACTIVITY = [
     { text: "New user registered",        meta: "Kato W. · Owner",   time: "2m ago",  tone: "green" },
@@ -69,6 +70,92 @@ export default function SuperAdminDashboard() {
     const navigate = useNavigate();
     const location = useLocation();
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [dashboardStats, setDashboardStats] = useState({
+    leagues: 0,
+    clubs: 0,
+    users: 0,
+    revenue: 0,
+    active_matches: 0,
+    open_reports: 0,
+    pending_standards: 0,
+});
+
+
+useEffect(() => {
+    axios
+        .get("http://127.0.0.1:8000/api/dashboard/stats/")
+        .then((response) => {
+            setDashboardStats(response.data);
+        })
+        .catch((error) => {
+            console.error("Dashboard API error:", error);
+        });
+}, []);
+
+const STATS = [
+    {
+        label: "Leagues",
+        value: dashboardStats.leagues,
+        delta: "+3",
+        trend: "up",
+        icon: Flag,
+        accent: "green"
+    },
+
+    {
+        label: "Clubs",
+        value: dashboardStats.clubs,
+        delta: "+12",
+        trend: "up",
+        icon: Building2,
+        accent: "amber"
+    },
+
+    {
+        label: "Total Users",
+        value: dashboardStats.users,
+        delta: "+4.2%",
+        trend: "up",
+        icon: Users,
+        accent: "green"
+    },
+
+    {
+        label: "Revenue",
+        value: `$${dashboardStats.revenue}`,
+        delta: "+1.8%",
+        trend: "up",
+        icon: Landmark,
+        accent: "amber"
+    },
+
+    {
+        label: "Active Matches",
+        value: dashboardStats.active_matches,
+        delta: "LIVE",
+        trend: "live",
+        icon: Trophy,
+        accent: "green"
+    },
+
+    {
+        label: "Open Reports",
+        value: dashboardStats.open_reports,
+        delta: "-2 today",
+        trend: "down",
+        icon: FileWarning,
+        accent: "red"
+    },
+
+    {
+        label: "Pending Standards",
+        value: dashboardStats.pending_standards,
+        delta: "Needs review",
+        trend: "down",
+        icon: ClipboardCheck,
+        accent: "red"
+    },
+];
 
     // Show <Outlet> content for any sub-route; show dashboard home only at /super-admin exactly
     const isHome = location.pathname === "/super-admin" || location.pathname === "/super-admin/";
