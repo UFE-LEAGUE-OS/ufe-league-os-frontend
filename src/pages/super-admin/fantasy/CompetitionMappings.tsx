@@ -87,7 +87,7 @@ export default function CompetitionMappings() {
   return (
     <div className="fantasy-sub-page">
       <div className="fantasy-sub-header">
-        <button className="back-btn" onClick={() => navigate("/super-admin/fantasy-config")}>
+        <button className="back-btn" onClick={() => navigate("..")}>
           <ArrowLeft size={16} />
           Back to Fantasy Config
         </button>
