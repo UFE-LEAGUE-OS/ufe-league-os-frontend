@@ -85,7 +85,8 @@
   display: flex;
   gap: 48px;
   align-self: flex-end;
-  padding-bottom: 48px;
+  padding-bottom: 0px;
+  margin-top: 40px;
 }
 
 .stat {

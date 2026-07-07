@@ -1,6 +1,4 @@
-/* ═══════════════════════════════════════════════
-   CORPORATE VERIFICATION UPLOAD
-   ═══════════════════════════════════════════════ */
+
 
 .cvu-page {
   display: flex;
@@ -11,20 +9,16 @@
   font-family: 'Inter', sans-serif;
 }
 
-.cvu-layout {
-  display: flex;
-  flex: 1;
-  min-height: 0;
-}
-
 .cvu-main {
   flex: 1;
   min-width: 0;
   overflow-x: hidden;
   padding: 32px 48px 60px;
+  max-width: 1100px;
+  width: 100%;
+  margin: 0 auto;
 }
 
-/* ── Back link ───────────────────────────────── */
 .cvu-back-link {
   display: inline-flex;
   align-items: center;
@@ -41,7 +35,6 @@
 }
 .cvu-back-link:hover { color: #ffffff; }
 
-/* ── Header ──────────────────────────────────── */
 .cvu-header { margin-bottom: 28px; }
 
 .cvu-title {
@@ -58,7 +51,6 @@
   margin: 0;
 }
 
-/* ── Stepper ─────────────────────────────────── */
 .cvu-stepper {
   display: flex;
   align-items: flex-start;
@@ -91,7 +83,6 @@
   background: #1e2340;
   color: #6B7280;
   border: 2px solid #1e2340;
-  flex-shrink: 0;
 }
 
 .cvu-step-circle-active {
@@ -138,7 +129,6 @@
   margin-bottom: 32px;
 }
 
-/* ── Upload cards ────────────────────────────── */
 .cvu-uploads {
   display: flex;
   flex-direction: column;
@@ -181,7 +171,6 @@
   margin: 0 0 4px;
 }
 
-/* Drop zone */
 .cvu-drop-zone {
   border: 2px dashed #1e2340;
   border-radius: 12px;
@@ -218,10 +207,7 @@
 }
 .cvu-upload-btn:hover { background: #9b55fb; }
 
-.cvu-drag-text {
-  font-size: 12px;
-  color: #6B7280;
-}
+.cvu-drag-text { font-size: 12px; color: #6B7280; }
 
 .cvu-uploaded {
   display: flex;
@@ -307,7 +293,6 @@
   line-height: 1.5;
 }
 
-/* Assistance card */
 .cvu-assistance-card {
   background: rgba(18, 19, 31, 0.92);
   border: 1px solid #1e2340;

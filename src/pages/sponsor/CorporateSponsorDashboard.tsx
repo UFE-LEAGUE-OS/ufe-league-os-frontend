@@ -14,35 +14,9 @@ import {
 } from 'react-icons/fi';
 import Navbar from '../../components/Navbar';
 import SponsorSidebar from '../../components/SponsorSidebar';
+import { useAuthStore } from '../../store/authStore';
 import '../../styles/pages/landing.css';
 import './CorporateSponsorDashboard.css';
-
-const stats = [
-  {
-    icon: FiShield,
-    label: 'Active Sponsorships',
-    value: '5',
-    change: '+1 from last month',
-  },
-  {
-    icon: FiUsers,
-    label: 'Total Reach',
-    value: '2.4M',
-    change: '+18.5% vs last month',
-  },
-  {
-    icon: FiTrendingUp,
-    label: 'Engagements',
-    value: '186K',
-    change: '+31.2% vs last month',
-  },
-  {
-    icon: FiDollarSign,
-    label: 'ROI / Media Value',
-    value: 'UGX 2.4B',
-    change: '+32.0% vs last month',
-  },
-];
 
 const campaigns = [
   {
@@ -86,35 +60,81 @@ const campaigns = [
   },
 ];
 
-const quickActions = [
-  {
-    icon: FiPlus,
-    title: 'Create Campaign',
-    desc: 'Launch a new sponsorship campaign or activation',
-    route: '/sponsor/campaigns/new',
-  },
-  {
-    icon: FiBarChart2,
-    title: 'View Analytics',
-    desc: 'Explore performance insights and audience analytics',
-    route: '/sponsor/analytics',
-  },
-  {
-    icon: FiUsers,
-    title: 'Manage Team',
-    desc: 'Add team members and manage permissions',
-    route: '/sponsor/team',
-  },
-  {
-    icon: FiGrid,
-    title: 'Browse Packages',
-    desc: 'Discover sponsorship opportunities and packages',
-    route: '/sponsor/packages',
-  },
-];
-
 export default function CorporateSponsorDashboard() {
   const navigate = useNavigate();
+  const user = useAuthStore((state) => state.user);
+  const sponsorType = (user?.sponsor_type as string) ?? 'CORPORATE';
+  const isIndividual = sponsorType === 'INDIVIDUAL';
+
+  const displayName = isIndividual
+    ? (user?.full_name as string) || (user?.first_name as string) || 'Sponsor'
+    : 'Nile Breweries Limited';
+
+  const pageTitle = isIndividual
+    ? 'Individual Sponsorship Dashboard'
+    : 'Corporate Sponsorship Dashboard';
+
+  const stats = [
+    {
+      icon: FiShield,
+      label: 'Active Sponsorships',
+      value: isIndividual ? '2' : '5',
+      change: '+1 from last month',
+    },
+    {
+      icon: FiUsers,
+      label: 'Total Reach',
+      value: isIndividual ? '850K' : '2.4M',
+      change: '+18.5% vs last month',
+    },
+    {
+      icon: FiTrendingUp,
+      label: 'Engagements',
+      value: isIndividual ? '64K' : '186K',
+      change: '+31.2% vs last month',
+    },
+    {
+      icon: FiDollarSign,
+      label: 'ROI / Media Value',
+      value: isIndividual ? 'UGX 450M' : 'UGX 2.4B',
+      change: '+32.0% vs last month',
+    },
+  ];
+
+  const quickActions = [
+    {
+      icon: FiPlus,
+      title: 'Create Campaign',
+      desc: 'Launch a new sponsorship campaign or activation',
+      route: '/sponsor/campaigns/new',
+      showFor: 'both',
+    },
+    {
+      icon: FiBarChart2,
+      title: 'View Analytics',
+      desc: 'Explore performance insights and audience analytics',
+      route: '/sponsor/analytics',
+      showFor: 'both',
+    },
+    {
+      icon: FiUsers,
+      title: 'Manage Team',
+      desc: 'Add team members and manage permissions',
+      route: '/sponsor/team',
+      showFor: 'corporate',
+    },
+    {
+      icon: FiGrid,
+      title: 'Browse Packages',
+      desc: 'Discover sponsorship opportunities and packages',
+      route: '/sponsor/packages',
+      showFor: 'both',
+    },
+  ];
+
+  const filteredActions = quickActions.filter(
+    (a) => a.showFor === 'both' || (a.showFor === 'corporate' && !isIndividual)
+  );
 
   return (
     <div className="csd-page">
@@ -130,31 +150,43 @@ export default function CorporateSponsorDashboard() {
             <div className="csd-hero-left">
               <div className="csd-welcome-text">Welcome back,</div>
               <div className="csd-company-row">
-                <h1 className="csd-company-name">Nile Breweries Limited</h1>
-                <span className="csd-verified-badge">
-                  Verified Sponsor ✓
-                </span>
+                <h1 className="csd-company-name">{displayName}</h1>
+                <span className="csd-verified-badge">Verified Sponsor ✓</span>
               </div>
-              <div className="csd-tagline">Building champions. Together.</div>
+              <div className="csd-tagline">
+                {isIndividual ? 'Supporting sport. Making an impact.' : 'Building champions. Together.'}
+              </div>
               <div className="csd-meta-row">
                 <span className="csd-meta-item">
                   <FiMapPin size={13} /> Kampala, Uganda
                 </span>
-                <span className="csd-meta-divider">|</span>
-                <span className="csd-meta-item">
-                  <FiGlobe size={13} /> www.nilebreweries.com
-                </span>
+                {!isIndividual && (
+                  <>
+                    <span className="csd-meta-divider">|</span>
+                    <span className="csd-meta-item">
+                      <FiGlobe size={13} /> www.nilebreweries.com
+                    </span>
+                  </>
+                )}
               </div>
             </div>
             <div className="csd-hero-logo">
               <div className="csd-nile-logo-card">
-                <div className="csd-nile-emblem">🦁</div>
-                <div className="csd-nile-name">NILE</div>
-                <div className="csd-nile-special">— SPECIAL —</div>
-                <div className="csd-nile-bars">
-                  <span className="csd-bar csd-bar-orange" />
-                  <span className="csd-bar csd-bar-red" />
-                </div>
+                {isIndividual ? (
+                  <div className="csd-individual-avatar">
+                    {displayName.charAt(0).toUpperCase()}
+                  </div>
+                ) : (
+                  <>
+                    <div className="csd-nile-emblem">🦁</div>
+                    <div className="csd-nile-name">NILE</div>
+                    <div className="csd-nile-special">— SPECIAL —</div>
+                    <div className="csd-nile-bars">
+                      <span className="csd-bar csd-bar-orange" />
+                      <span className="csd-bar csd-bar-red" />
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -194,7 +226,7 @@ export default function CorporateSponsorDashboard() {
               </div>
 
               <div className="csd-campaigns-list">
-                {campaigns.map((c) => (
+                {campaigns.slice(0, isIndividual ? 1 : 3).map((c) => (
                   <div key={c.id} className="csd-campaign-row">
                     <div className="csd-campaign-logo">{c.logo}</div>
                     <div className="csd-campaign-info">
@@ -232,7 +264,7 @@ export default function CorporateSponsorDashboard() {
 
             {/* Quick actions */}
             <div className="csd-quick-actions">
-              {quickActions.map((action) => {
+              {filteredActions.map((action) => {
                 const Icon = action.icon;
                 return (
                   <div key={action.title} className="csd-action-card">
@@ -251,6 +283,11 @@ export default function CorporateSponsorDashboard() {
                 );
               })}
             </div>
+          </div>
+
+          {/* Page title indicator */}
+          <div className="csd-page-type-badge">
+            {pageTitle}
           </div>
         </main>
       </div>
