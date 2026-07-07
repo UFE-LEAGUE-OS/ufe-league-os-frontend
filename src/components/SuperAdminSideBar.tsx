@@ -87,7 +87,7 @@ const NAV_ITEMS: NavItem[] = [
       { id: "competitions", label: "Competitions", path: "/super-admin/competition-formats", icon: ListChecks },
       { id: "rules", label: "Rules & Standards", path: "/super-admin/rules", icon: BookOpen },
       { id: "publish", label: "Publish Queue", path: "/super-admin/publish-standards", icon: Send },
-      { id: "fantasy-config", label: "Fantasy Module Config", path: "/super-admin/fantasy-config", icon: Gamepad2 },
+      { id: "fantasy-config", label: "Fantasy Module Config", path: "/dashboard/super-admin/fantasy-config", icon: Gamepad2 },
     ],
   },
   {
