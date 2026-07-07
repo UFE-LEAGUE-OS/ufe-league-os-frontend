@@ -84,6 +84,9 @@ import FantasyModuleConfig from "../pages/super-admin/fantasy/FantasyModuleConfi
 import ScoringRules from "../pages/super-admin/fantasy/ScoringRules";
 import TransferRules from "../pages/super-admin/fantasy/TransferRules";
 import SquadLimits from "../pages/super-admin/fantasy/SquadLimits";
+import CompetitionMappings from "../pages/super-admin/fantasy/CompetitionMappings";
+import SeasonGameweekSettings from "../pages/super-admin/fantasy/SeasonGameweekSettings";
+import PriceStructureGovernance from "../pages/super-admin/fantasy/PriceStructureGovernance";
 import SuperAdminHome from '../pages/super-admin/SuperAdminHome';
 import UserManagement from '../pages/admin/UserManagement';
 import RoleTemplates from '../pages/admin/RoleTemplates';
@@ -246,7 +249,8 @@ export default function AppRoutes() {
                     <Route path="payments-audit" element={<PaymentsAuditPage />} />
                     <Route path="transaction-trail" element={<TransactionTrailPage />} />
                     <Route path="approvals-queue" element={<ApprovalsQueuePage />} />
-                    <Route path="chargebacks-refunds" element={<ChargebacksRefundsPage />} /><Route path="data-access-log" element={<DataAccessLogPage />} />
+                    <Route path="chargebacks-refunds" element={<ChargebacksRefundsPage />} />
+<Route path="data-access-log" element={<DataAccessLogPage />} />
 <Route path="security-events" element={<SecurityEventsPage />} />
 <Route path="profile" element={<SuperAdminProfilePage />} />
 
@@ -255,6 +259,9 @@ export default function AppRoutes() {
 <Route path="fantasy-config/scoring" element={<ScoringRules />} />
 <Route path="fantasy-config/transfers" element={<TransferRules />} />
 <Route path="fantasy-config/squad-limits" element={<SquadLimits />} />
+<Route path="fantasy-config/competition-mappings" element={<CompetitionMappings />} />
+<Route path="fantasy-config/season-gameweek" element={<SeasonGameweekSettings />} />
+<Route path="fantasy-config/price-structure" element={<PriceStructureGovernance />} />
                 </Route>
             </Routes>
 

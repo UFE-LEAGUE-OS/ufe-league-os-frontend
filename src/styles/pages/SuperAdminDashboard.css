@@ -665,6 +665,21 @@
     color:var(--purple);
 }
 
+.fantasy-config-card.accent-blue .fantasy-config-icon{
+    background:rgba(59,130,246,0.12);
+    color:#3B82F6;
+}
+
+.fantasy-config-card.accent-pink .fantasy-config-icon{
+    background:rgba(236,72,153,0.12);
+    color:#EC4899;
+}
+
+.fantasy-config-card.accent-cyan .fantasy-config-icon{
+    background:rgba(6,182,212,0.12);
+    color:#06B6D4;
+}
+
 .fantasy-config-card-body h3{
     font-size:1rem;
     font-weight:600;
@@ -1052,6 +1067,205 @@
 
 .action-btn.primary:hover{
     background:var(--purple-dark);
+}
+
+.action-btn.subtle{
+    background:transparent;
+    color:var(--muted);
+    border:1px solid var(--border);
+}
+
+.action-btn.subtle:hover{
+    color:var(--text);
+    border-color:var(--muted);
+}
+
+/* =============== COMPETITION MAPPINGS =============== */
+
+.add-mapping-form{
+    background:var(--card-alt);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:1.25rem;
+    margin-bottom:1rem;
+}
+
+.add-mapping-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));
+    gap:1rem;
+    margin-bottom:1rem;
+}
+
+.add-mapping-actions{
+    display:flex;
+    gap:0.75rem;
+    align-items:center;
+}
+
+.mapping-table{
+    display:flex;
+    flex-direction:column;
+}
+
+.mapping-header,
+.mapping-row{
+    display:grid;
+    grid-template-columns:1fr 1fr 100px 80px 100px 90px 50px;
+    gap:8px;
+    align-items:center;
+    padding:10px 12px;
+    font-size:0.85rem;
+}
+
+.mapping-header{
+    color:var(--muted);
+    font-weight:500;
+    border-bottom:1px solid var(--border);
+    text-transform:uppercase;
+    font-size:0.7rem;
+    letter-spacing:0.5px;
+}
+
+.mapping-row{
+    border-bottom:1px solid var(--border);
+}
+
+.mapping-row.disabled{
+    opacity:0.45;
+}
+
+.mapping-row:hover{
+    background:var(--card-alt);
+}
+
+/* =============== SEASON & GAMEWEEK =============== */
+
+.seasons-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));
+    gap:0.75rem;
+    margin-top:0.5rem;
+}
+
+.season-card{
+    background:var(--card-alt);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:1rem;
+    cursor:pointer;
+    transition:all .15s;
+    position:relative;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+}
+
+.season-card:hover{
+    border-color:var(--purple);
+}
+
+.season-card.selected{
+    border-color:var(--purple);
+    background:var(--purple-tint);
+}
+
+.season-card-top{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+}
+
+.season-card-top strong{
+    font-size:0.9rem;
+}
+
+.season-sport{
+    font-size:0.7rem;
+    padding:2px 8px;
+    border-radius:999px;
+    background:var(--purple-tint);
+    color:var(--purple);
+}
+
+.season-card-dates{
+    font-size:0.75rem;
+    color:var(--muted);
+}
+
+.season-card-bottom{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    font-size:0.75rem;
+}
+
+.season-gw-count{
+    color:var(--muted);
+}
+
+.season-status{
+    font-weight:600;
+    text-transform:capitalize;
+}
+
+.season-delete{
+    position:absolute;
+    top:6px;
+    right:6px;
+    opacity:0;
+    transition:opacity .15s;
+}
+
+.season-card:hover .season-delete{
+    opacity:1;
+}
+
+/* Gameweeks table */
+.gameweeks-table{
+    display:flex;
+    flex-direction:column;
+}
+
+.gw-header,
+.gw-row{
+    display:grid;
+    grid-template-columns:40px 1fr 1fr 120px 50px;
+    gap:8px;
+    align-items:center;
+    padding:10px 12px;
+    font-size:0.85rem;
+}
+
+.gw-header{
+    color:var(--muted);
+    font-weight:500;
+    border-bottom:1px solid var(--border);
+    text-transform:uppercase;
+    font-size:0.7rem;
+    letter-spacing:0.5px;
+}
+
+.gw-row{
+    border-bottom:1px solid var(--border);
+}
+
+.gw-row:hover{
+    background:var(--card-alt);
+}
+
+.gw-number{
+    font-weight:600;
+    color:var(--purple);
+    text-align:center;
+}
+
+/* =============== PRICE STRUCTURE =============== */
+
+.price-structure-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(320px, 1fr));
+    gap:1.25rem;
 }
 
 @media(max-width:520px){
