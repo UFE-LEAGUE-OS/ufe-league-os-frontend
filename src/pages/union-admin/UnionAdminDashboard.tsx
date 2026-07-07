@@ -903,7 +903,7 @@ export default function UnionAdminDashboard() {
         return () => {
             isMounted = false;
         };
-    }, [activeWorkspace?.slug, isLoadingWorkspaces]);
+    }, [activeWorkspace?.acronym, activeWorkspace?.slug, isLoadingWorkspaces]);
 
     useEffect(() => {
         let isMounted = true;
@@ -944,7 +944,7 @@ export default function UnionAdminDashboard() {
         return () => {
             isMounted = false;
         };
-    }, [activeTab, activeWorkspace?.slug, activeWorkspace?.permissions, isLoadingWorkspaces]);
+    }, [activeTab, activeWorkspace?.acronym, activeWorkspace?.slug, activeWorkspace?.permissions, isLoadingWorkspaces]);
 
     async function handleWorkspaceChange(nextSlug: string) {
         localStorage.setItem(UNION_WORKSPACE_STORAGE_KEY, nextSlug);

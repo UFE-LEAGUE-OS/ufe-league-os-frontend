@@ -2788,3 +2788,842 @@ tr:last-child td {
         padding-bottom: 102px;
     }
 }
+
+
+
+/* Union dashboard mobile shell v3 - match Fan dashboard layout */
+@media (max-width: 760px) {
+    html,
+    body {
+        overflow-x: hidden;
+        background: #020617;
+    }
+
+    .pageShell {
+        display: block !important;
+        width: 100%;
+        min-height: 100vh;
+        background:
+            radial-gradient(circle at top right, rgba(139, 53, 255, 0.12), transparent 34%),
+            #020617;
+        overflow-x: hidden;
+    }
+
+    .sidebar {
+        display: none !important;
+    }
+
+    .contentArea {
+        width: 100%;
+        max-width: 375px;
+        min-width: 0;
+        margin: 0 auto;
+        padding: 24px 16px 112px;
+        box-sizing: border-box;
+    }
+
+    .contentArea > * {
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
+    .heroHeader {
+        display: block !important;
+        width: 100%;
+        margin: 0 0 22px;
+        padding: 0 !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+    }
+
+    .heroHeader > div {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .liveBadge {
+        width: fit-content;
+        margin-bottom: 14px;
+        padding: 7px 11px;
+        border-radius: 9px;
+        font-size: 8px;
+        line-height: 1;
+        letter-spacing: 0.11em;
+    }
+
+    .heroHeader h1 {
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+        color: #ffffff;
+        font-size: clamp(30px, 10vw, 38px);
+        line-height: 0.98;
+        letter-spacing: -0.065em;
+        word-break: normal;
+        overflow-wrap: normal;
+    }
+
+    .heroHeader p {
+        width: 100%;
+        max-width: 100%;
+        margin: 12px 0 0;
+        color: rgba(255, 255, 255, 0.78);
+        font-size: 13px;
+        line-height: 1.55;
+    }
+
+    .headerActions {
+        width: 100%;
+        display: grid !important;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+    .headerActions a,
+    .headerActions button {
+        width: 100%;
+        min-height: 44px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 950;
+    }
+
+    .alertBanner {
+        width: 100%;
+        margin: 0 0 10px;
+        padding: 12px;
+        border-radius: 13px;
+        font-size: 11px;
+        line-height: 1.45;
+    }
+
+    .statsGrid {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 14px;
+        width: 100%;
+        margin: 0 0 18px;
+    }
+
+    .statCard {
+        width: 100%;
+        min-height: 122px;
+        padding: 20px 22px;
+        border-radius: 16px;
+    }
+
+    .statCard span {
+        font-size: 12px;
+        line-height: 1.25;
+    }
+
+    .statCard strong {
+        margin-top: 12px;
+        font-size: 32px;
+        line-height: 1;
+    }
+
+    .statCard small {
+        margin-top: 8px;
+        font-size: 12px;
+        line-height: 1.35;
+    }
+
+    .statCard svg {
+        width: 34px;
+        height: 34px;
+    }
+
+    .panelLarge,
+    .panelFull,
+    .sidePanel,
+    .sidePanelCompact,
+    .actionRail,
+    .formPanel,
+    .profileCard,
+    .competitionMainPanel,
+    .competitionSidePanel,
+    .competitionInfoPanel,
+    .fixtureStepperPanel,
+    .fixtureFormPanel,
+    .fixturePreviewPanel,
+    .financeDashboard,
+    .financeChartPanel,
+    .financeTablePanel,
+    .financeConnectionPanel {
+        width: 100%;
+        padding: 16px;
+        border-radius: 16px;
+        box-sizing: border-box;
+    }
+
+    .panelLarge,
+    .panelFull {
+        margin-top: 16px;
+    }
+
+    .sectionHeader {
+        display: block !important;
+        margin-bottom: 16px;
+    }
+
+    .sectionHeader h2 {
+        margin: 0;
+        font-size: clamp(25px, 8.5vw, 32px);
+        line-height: 1.02;
+        letter-spacing: -0.055em;
+    }
+
+    .sectionHeader p {
+        margin-top: 8px;
+        font-size: 12.5px;
+        line-height: 1.5;
+    }
+
+    .sectionActions,
+    .buttonRow,
+    .buttonColumn,
+    .toolbarRow {
+        width: 100%;
+        display: grid !important;
+        grid-template-columns: 1fr;
+        gap: 9px;
+        margin-top: 14px;
+    }
+
+    .sectionActions > *,
+    .buttonRow > *,
+    .buttonColumn > *,
+    .toolbarRow > * {
+        width: 100%;
+    }
+
+    .primaryButton,
+    .secondaryButton,
+    .tableActionButton,
+    .primaryAction,
+    .secondaryAction {
+        min-height: 42px;
+        border-radius: 12px;
+        font-size: 11px;
+    }
+
+    .overviewLayout,
+    .contentSplit,
+    .scannerLayout,
+    .financeMainGrid,
+    .competitionWorkspaceGrid,
+    .competitionDetailGrid,
+    .fixtureGeneratorShell,
+    .overviewInsightsGrid,
+    .approvalSummaryGrid,
+    .leagueSnapshotGrid,
+    .recommendationGrid,
+    .playerPoolMetrics,
+    .financeKpiGrid,
+    .financeConnectionGrid,
+    .financeTablesGrid,
+    .competitionCommandGrid,
+    .competitionDetailHero,
+    .profileGrid,
+    .availabilityGrid {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 14px;
+        width: 100%;
+    }
+
+    .competitionCommandGrid article,
+    .competitionDetailHero article,
+    .snapshotList article,
+    .coverageList article,
+    .fixtureMiniList article,
+    .recommendationGrid article,
+    .playerPoolMetrics article,
+    .teamReadinessList button,
+    .financeMixItem,
+    .financePayoutList article {
+        width: 100%;
+        min-height: auto;
+        padding: 14px;
+        border-radius: 14px;
+    }
+
+    .snapshotList,
+    .coverageList,
+    .fixtureMiniList,
+    .teamReadinessList,
+    .financeMixList,
+    .financePayoutList {
+        display: grid;
+        gap: 10px;
+    }
+
+    .snapshotList strong,
+    .coverageList strong,
+    .fixtureMiniList strong,
+    .recommendationGrid strong,
+    .playerPoolMetrics strong,
+    .teamReadinessList strong {
+        font-size: 12px;
+        line-height: 1.35;
+    }
+
+    .snapshotList small,
+    .coverageList small,
+    .fixtureMiniList small,
+    .recommendationGrid small,
+    .playerPoolMetrics small,
+    .teamReadinessList span {
+        font-size: 10.5px;
+        line-height: 1.4;
+    }
+
+    .tabStrip,
+    .filterChips {
+        width: 100%;
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        padding-bottom: 6px;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .tabStrip button,
+    .filterChips button {
+        flex: 0 0 auto;
+        min-height: 34px;
+        padding: 0 12px;
+        border-radius: 999px;
+        font-size: 10px;
+    }
+
+    .searchBar {
+        width: 100%;
+        min-height: 42px;
+        border-radius: 12px;
+    }
+
+    .searchBar input {
+        font-size: 12px;
+    }
+
+    .tableShell,
+    .competitionMainPanel,
+    .financeTablePanel {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    table,
+    .competitionMainPanel table,
+    .financeTableHead,
+    .financeTableRow {
+        min-width: 640px;
+    }
+
+    .dashboardFooterWrap {
+        width: 100vw;
+        margin: 34px 0 -112px calc(50% - 50vw);
+        padding: 0 16px 112px;
+        box-sizing: border-box;
+        background:
+            linear-gradient(180deg, rgba(3, 7, 18, 0), rgba(3, 7, 18, 0.96) 18%),
+            #020617;
+    }
+
+    .dashboardFooterWrap > * {
+        width: 100%;
+        max-width: 375px;
+        margin-left: auto;
+        margin-right: auto;
+        box-sizing: border-box;
+    }
+}
+
+@media (max-width: 390px) {
+    .contentArea {
+        max-width: 360px;
+        padding: 24px 16px 108px;
+    }
+
+    .heroHeader h1 {
+        font-size: clamp(29px, 10.5vw, 36px);
+    }
+
+    .statCard {
+        min-height: 118px;
+        padding: 18px 20px;
+    }
+
+    .dashboardFooterWrap > * {
+        max-width: 360px;
+    }
+}
+
+@media (max-width: 360px) {
+    .contentArea {
+        max-width: 344px;
+        padding-inline: 12px;
+    }
+
+    .headerActions {
+        grid-template-columns: 1fr;
+    }
+
+    .dashboardFooterWrap {
+        padding-inline: 12px;
+    }
+
+    .dashboardFooterWrap > * {
+        max-width: 344px;
+    }
+}
+
+
+
+/* Union dashboard mobile shell v4 - Fan dashboard parity */
+@media (max-width: 760px) {
+    html,
+    body {
+        overflow-x: hidden !important;
+        background: #020617 !important;
+    }
+
+    .pageShell {
+        display: block !important;
+        width: 100vw !important;
+        max-width: 100vw !important;
+        min-height: 100vh !important;
+        overflow-x: hidden !important;
+        background:
+            radial-gradient(circle at top right, rgba(124, 45, 255, 0.16), transparent 34%),
+            #020617 !important;
+    }
+
+    .pageShell::before,
+    .pageShell::after,
+    .contentArea::before,
+    .contentArea::after,
+    .heroHeader::before,
+    .heroHeader::after {
+        display: none !important;
+        content: none !important;
+    }
+
+    .sidebar {
+        display: none !important;
+    }
+
+    .contentArea {
+        width: 100% !important;
+        max-width: 375px !important;
+        min-width: 0 !important;
+        margin: 0 auto !important;
+        padding: 24px 16px 142px !important;
+        overflow-x: hidden !important;
+        box-sizing: border-box !important;
+    }
+
+    .contentArea > * {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        box-sizing: border-box !important;
+    }
+
+    .heroHeader {
+        display: block !important;
+        width: 100% !important;
+        margin: 0 0 22px !important;
+        padding: 0 !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        overflow: visible !important;
+    }
+
+    .heroHeader > div {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    .liveBadge {
+        width: fit-content !important;
+        margin: 0 0 14px !important;
+        padding: 7px 11px !important;
+        border-radius: 9px !important;
+        font-size: 8px !important;
+        line-height: 1 !important;
+        letter-spacing: 0.11em !important;
+    }
+
+    .heroHeader h1 {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        color: #ffffff !important;
+        font-size: clamp(30px, 10vw, 38px) !important;
+        line-height: 0.98 !important;
+        letter-spacing: -0.065em !important;
+        white-space: normal !important;
+        word-break: normal !important;
+        overflow-wrap: normal !important;
+    }
+
+    .heroHeader p {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 12px 0 0 !important;
+        color: rgba(255, 255, 255, 0.78) !important;
+        font-size: 13px !important;
+        line-height: 1.55 !important;
+    }
+
+    .headerActions {
+        width: 100% !important;
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 10px !important;
+        margin-top: 20px !important;
+    }
+
+    .headerActions a,
+    .headerActions button {
+        width: 100% !important;
+        min-width: 0 !important;
+        min-height: 44px !important;
+        padding: 0 10px !important;
+        border-radius: 12px !important;
+        font-size: 10.5px !important;
+        font-weight: 950 !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+
+    .alertBanner {
+        width: 100% !important;
+        margin: 0 0 10px !important;
+        padding: 12px !important;
+        border-radius: 13px !important;
+        font-size: 11px !important;
+        line-height: 1.45 !important;
+    }
+
+    .statsGrid,
+    .financeKpiGrid,
+    .approvalSummaryGrid,
+    .leagueSnapshotGrid,
+    .overviewInsightsGrid,
+    .competitionCommandGrid,
+    .competitionDetailHero,
+    .profileGrid,
+    .availabilityGrid,
+    .financeConnectionGrid,
+    .financeTablesGrid,
+    .overviewLayout,
+    .contentSplit,
+    .scannerLayout,
+    .financeMainGrid,
+    .competitionWorkspaceGrid,
+    .competitionDetailGrid,
+    .fixtureGeneratorShell,
+    .recommendationGrid,
+    .playerPoolMetrics {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 14px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    .statCard {
+        width: 100% !important;
+        min-height: 122px !important;
+        padding: 20px 22px !important;
+        border-radius: 16px !important;
+    }
+
+    .statCard span {
+        font-size: 12px !important;
+        line-height: 1.25 !important;
+    }
+
+    .statCard strong {
+        margin-top: 12px !important;
+        font-size: 32px !important;
+        line-height: 1 !important;
+    }
+
+    .statCard small {
+        margin-top: 8px !important;
+        font-size: 12px !important;
+        line-height: 1.35 !important;
+    }
+
+    .statCard svg {
+        width: 34px !important;
+        height: 34px !important;
+    }
+
+    .panelLarge,
+    .panelFull,
+    .sidePanel,
+    .sidePanelCompact,
+    .actionRail,
+    .formPanel,
+    .profileCard,
+    .competitionMainPanel,
+    .competitionSidePanel,
+    .competitionInfoPanel,
+    .fixtureStepperPanel,
+    .fixtureFormPanel,
+    .fixturePreviewPanel,
+    .financeDashboard,
+    .financeChartPanel,
+    .financeTablePanel,
+    .financeConnectionPanel {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        padding: 16px !important;
+        border-radius: 16px !important;
+        box-sizing: border-box !important;
+    }
+
+    .panelLarge,
+    .panelFull {
+        margin-top: 16px !important;
+        overflow: hidden !important;
+    }
+
+    .sectionHeader {
+        display: block !important;
+        width: 100% !important;
+        margin-bottom: 16px !important;
+    }
+
+    .sectionHeader h2,
+    .blockTitle {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        font-size: clamp(25px, 8.5vw, 32px) !important;
+        line-height: 1.02 !important;
+        letter-spacing: -0.055em !important;
+        white-space: normal !important;
+        overflow-wrap: anywhere !important;
+    }
+
+    .sectionHeader p {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin-top: 8px !important;
+        font-size: 12.5px !important;
+        line-height: 1.5 !important;
+    }
+
+    .sectionActions,
+    .buttonRow,
+    .buttonColumn,
+    .toolbarRow {
+        width: 100% !important;
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 9px !important;
+        margin-top: 14px !important;
+    }
+
+    .sectionActions > *,
+    .buttonRow > *,
+    .buttonColumn > *,
+    .toolbarRow > * {
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    .primaryButton,
+    .secondaryButton,
+    .tableActionButton,
+    .primaryAction,
+    .secondaryAction,
+    .viewMoreClubButton {
+        width: 100% !important;
+        min-width: 0 !important;
+        min-height: 42px !important;
+        padding-inline: 10px !important;
+        border-radius: 12px !important;
+        font-size: 10.5px !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+
+    .competitionCommandGrid article,
+    .competitionDetailHero article,
+    .snapshotList article,
+    .coverageList article,
+    .fixtureMiniList article,
+    .recommendationGrid article,
+    .playerPoolMetrics article,
+    .teamReadinessList button,
+    .financeMixItem,
+    .financePayoutList article {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-height: auto !important;
+        padding: 14px !important;
+        border-radius: 14px !important;
+        box-sizing: border-box !important;
+    }
+
+    .snapshotList,
+    .coverageList,
+    .fixtureMiniList,
+    .teamReadinessList,
+    .financeMixList,
+    .financePayoutList {
+        display: grid !important;
+        gap: 10px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    .snapshotList strong,
+    .coverageList strong,
+    .fixtureMiniList strong,
+    .recommendationGrid strong,
+    .playerPoolMetrics strong,
+    .teamReadinessList strong {
+        font-size: 12px !important;
+        line-height: 1.35 !important;
+        white-space: normal !important;
+        overflow-wrap: anywhere !important;
+    }
+
+    .snapshotList small,
+    .coverageList small,
+    .fixtureMiniList small,
+    .recommendationGrid small,
+    .playerPoolMetrics small,
+    .teamReadinessList span {
+        font-size: 10.5px !important;
+        line-height: 1.4 !important;
+        white-space: normal !important;
+        overflow-wrap: anywhere !important;
+    }
+
+    .tabStrip,
+    .filterChips {
+        width: 100% !important;
+        display: flex !important;
+        gap: 8px !important;
+        overflow-x: auto !important;
+        flex-wrap: nowrap !important;
+        justify-content: flex-start !important;
+        padding-bottom: 6px !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+
+    .tabStrip button,
+    .filterChips button {
+        flex: 0 0 auto !important;
+        min-height: 34px !important;
+        padding: 0 12px !important;
+        border-radius: 999px !important;
+        font-size: 10px !important;
+    }
+
+    .searchBar {
+        width: 100% !important;
+        min-height: 42px !important;
+        border-radius: 12px !important;
+    }
+
+    .searchBar input {
+        font-size: 12px !important;
+    }
+
+    .tableShell,
+    .competitionMainPanel,
+    .financeTablePanel {
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+
+    table,
+    .competitionMainPanel table,
+    .financeTableHead,
+    .financeTableRow {
+        min-width: 620px !important;
+    }
+
+    .dashboardFooterWrap {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 36px 0 -142px !important;
+        padding-bottom: 128px !important;
+        overflow: hidden !important;
+        box-sizing: border-box !important;
+    }
+
+    .dashboardFooterWrap :global(footer) {
+        width: calc(100% + 32px) !important;
+        margin-left: -16px !important;
+        margin-right: -16px !important;
+        padding: 34px 20px 112px !important;
+        box-sizing: border-box !important;
+    }
+
+    .dashboardFooterWrap :global(footer > div) {
+        width: 100% !important;
+        max-width: 343px !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+        box-sizing: border-box !important;
+    }
+}
+
+@media (max-width: 390px) {
+    .contentArea {
+        max-width: 360px !important;
+        padding: 24px 16px 138px !important;
+    }
+
+    .heroHeader h1 {
+        font-size: clamp(29px, 10.5vw, 36px) !important;
+    }
+
+    .statCard {
+        min-height: 118px !important;
+        padding: 18px 20px !important;
+    }
+}
+
+@media (max-width: 360px) {
+    .contentArea {
+        max-width: 344px !important;
+        padding-inline: 12px !important;
+    }
+
+    .headerActions {
+        grid-template-columns: 1fr !important;
+    }
+
+    .dashboardFooterWrap :global(footer) {
+        width: calc(100% + 24px) !important;
+        margin-left: -12px !important;
+        margin-right: -12px !important;
+    }
+}

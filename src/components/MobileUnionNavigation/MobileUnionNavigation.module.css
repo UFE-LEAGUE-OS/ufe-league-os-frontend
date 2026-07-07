@@ -8,23 +8,21 @@
     .mobileNav {
         position: fixed;
         left: 50%;
-        bottom: max(12px, env(safe-area-inset-bottom));
+        bottom: max(10px, env(safe-area-inset-bottom));
         z-index: 100;
 
-        width: min(calc(100vw - 28px), 350px);
-        min-height: 62px;
+        width: min(calc(100vw - 32px), 328px);
+        min-height: 70px;
         display: grid;
         grid-template-columns: repeat(5, minmax(0, 1fr));
-        gap: 4px;
-        padding: 6px;
+        gap: 5px;
+        padding: 7px;
 
-        border: 1px solid rgba(139, 53, 255, 0.42);
-        border-radius: 999px;
-        background:
-            radial-gradient(circle at 18% 0%, rgba(139, 53, 255, 0.36), transparent 34%),
-            linear-gradient(180deg, rgba(18, 12, 40, 0.98), rgba(4, 7, 19, 0.98));
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 22px;
+        background: rgba(7, 11, 26, 0.96);
         box-shadow:
-            0 20px 52px rgba(0, 0, 0, 0.52),
+            0 18px 42px rgba(0, 0, 0, 0.48),
             inset 0 1px 0 rgba(255, 255, 255, 0.08);
         backdrop-filter: blur(18px);
         transform: translateX(-50%);
@@ -32,19 +30,19 @@
 
     .mobileNavLink {
         min-width: 0;
-        min-height: 50px;
+        min-height: 56px;
         display: grid;
         place-items: center;
         align-content: center;
-        gap: 3px;
+        gap: 4px;
 
         border: 0;
-        border-radius: 999px;
+        border-radius: 16px;
         background: transparent;
-        color: rgba(255, 255, 255, 0.62);
+        color: rgba(255, 255, 255, 0.68);
         font: inherit;
-        font-size: 8.5px;
-        font-weight: 1000;
+        font-size: 9px;
+        font-weight: 900;
         line-height: 1;
         text-decoration: none;
         cursor: pointer;
@@ -56,36 +54,29 @@
     }
 
     .mobileNavLink svg {
-        width: 18px;
-        height: 18px;
+        width: 20px;
+        height: 20px;
         transition: transform 0.18s ease;
     }
 
     .mobileNavLink span {
         width: 100%;
-        max-width: 58px;
+        max-width: 56px;
         overflow: hidden;
         text-align: center;
         text-overflow: ellipsis;
         white-space: nowrap;
     }
 
-    .mobileNavLink:hover {
-        color: #ffffff;
-        background: rgba(255, 255, 255, 0.06);
-    }
-
     .activeMobileNavLink {
         color: #ffffff;
-        background: linear-gradient(135deg, #7c2dff, #c04bd2 52%, #ff7a18);
-        box-shadow:
-            0 10px 22px rgba(139, 53, 255, 0.32),
-            0 6px 14px rgba(255, 122, 24, 0.2);
+        background: linear-gradient(135deg, #7c2dff, #4c1d95);
+        box-shadow: 0 10px 22px rgba(124, 45, 255, 0.32);
         transform: translateY(-1px);
     }
 
     .activeMobileNavLink svg {
-        transform: translateY(-1px) scale(1.03);
+        transform: translateY(-1px);
     }
 
     .backdrop {
@@ -101,21 +92,20 @@
     .drawer {
         position: fixed;
         left: 50%;
-        bottom: calc(86px + env(safe-area-inset-bottom));
+        bottom: calc(88px + env(safe-area-inset-bottom));
         z-index: 110;
 
-        width: min(calc(100vw - 28px), 370px);
+        width: min(calc(100vw - 32px), 340px);
         max-height: min(76vh, 640px);
         display: grid;
         grid-template-rows: auto minmax(0, 1fr);
         overflow: hidden;
 
-        border: 1px solid rgba(139, 53, 255, 0.35);
-        border-radius: 26px;
+        border: 1px solid rgba(124, 45, 255, 0.34);
+        border-radius: 22px;
         background:
-            radial-gradient(circle at top left, rgba(139, 53, 255, 0.24), transparent 34%),
-            radial-gradient(circle at bottom right, rgba(255, 122, 24, 0.16), transparent 36%),
-            rgba(4, 8, 21, 0.98);
+            radial-gradient(circle at top left, rgba(124, 45, 255, 0.24), transparent 34%),
+            rgba(7, 11, 26, 0.98);
         box-shadow: 0 28px 72px rgba(0, 0, 0, 0.58);
 
         opacity: 0;
@@ -148,8 +138,8 @@
         place-items: center;
         border-radius: 15px;
         color: #ffffff;
-        background: linear-gradient(135deg, #8b35ff, #ff7a18);
-        box-shadow: 0 14px 30px rgba(139, 53, 255, 0.26);
+        background: linear-gradient(135deg, #7c2dff, #4c1d95);
+        box-shadow: 0 14px 30px rgba(124, 45, 255, 0.26);
     }
 
     .drawerHeader span,
@@ -235,33 +225,31 @@
 
     .drawerLink:hover,
     .activeDrawerLink {
-        border-color: rgba(139, 53, 255, 0.6);
+        border-color: rgba(124, 45, 255, 0.6);
         color: #ffffff;
-        background: rgba(139, 53, 255, 0.18);
+        background: rgba(124, 45, 255, 0.18);
     }
 }
 
-@media (max-width: 420px) {
+@media (max-width: 360px) {
     .mobileNav {
-        width: min(calc(100vw - 24px), 326px);
-        bottom: max(10px, env(safe-area-inset-bottom));
-        min-height: 60px;
+        width: min(calc(100vw - 24px), 316px);
+        min-height: 66px;
         padding: 6px;
     }
 
     .mobileNavLink {
-        min-height: 48px;
+        min-height: 52px;
         font-size: 8px;
     }
 
     .mobileNavLink svg {
-        width: 17px;
-        height: 17px;
+        width: 18px;
+        height: 18px;
     }
 
     .drawer {
-        width: min(calc(100vw - 24px), 340px);
-        bottom: calc(82px + env(safe-area-inset-bottom));
-        border-radius: 22px;
+        width: min(calc(100vw - 24px), 328px);
+        bottom: calc(84px + env(safe-area-inset-bottom));
     }
 }

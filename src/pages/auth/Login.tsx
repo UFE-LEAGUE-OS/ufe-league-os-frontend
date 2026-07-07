@@ -33,6 +33,7 @@ type LoginResult = {
     requires_email_verification?: boolean;
     user?: {
         email?: unknown;
+        role?: unknown;
         frontend_dashboard_route?: unknown;
         dashboard_route?: unknown;
     };
@@ -126,6 +127,11 @@ async function resolvePostLoginRoute(result: LoginResult, postLoginRedirect?: st
     }
 
     const backendRoute = resolveDashboardRoute(result);
+    const userRole = getUserRole(result.user?.role);
+
+    if (backendRoute === '/dashboard/fan' && userRole === 'FAN') {
+        return backendRoute;
+    }
 
     if (backendRoute !== '/dashboard' && backendRoute !== '/dashboard/fan') {
         return backendRoute;
@@ -142,6 +148,10 @@ async function resolvePostLoginRoute(result: LoginResult, postLoginRedirect?: st
     }
 
     return backendRoute;
+}
+
+function getUserRole(value: unknown) {
+    return typeof value === 'string' ? value.toUpperCase() : '';
 }
 
 function getUserEmail(value: unknown) {
