@@ -223,7 +223,7 @@ export default function AppRoutes() {
                 <Route path="/payments" element={<Payments />} />
 
                 {/* Super Admin routes - only accessible by users with super admin privileges */}
-                <Route path="/dashboard/super-admin" >
+                <Route path="/dashboard/super-admin" element={<SuperAdminDashboard />} >
                     <Route index element={<SuperAdminHome />} />
                     <Route path="dashboard" element={<SuperAdminHome />} />
 

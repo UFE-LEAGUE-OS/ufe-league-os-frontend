@@ -1,10 +1,11 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import axios from "axios";
 import "../components/SuperAdminSideBar.css";
 import "../styles/pages/SuperAdminDashboard.css";
 import "../styles/pages/SuperVariantsPage.css";
 
 import {
-  
+
     X,
     Plus,
     Pencil,
@@ -14,7 +15,7 @@ import {
     Repeat,
     Trophy,
     Inbox,
-    
+
 } from "lucide-react";
 
 import Footer from "../components/Footer";
@@ -71,73 +72,7 @@ const STATUS_TONE: Record<Variant["status"], string> = {
 
 /* ---------------- DATA ---------------- */
 
-const INITIAL_VARIANTS: Variant[] = [
-    {
-        id: "v1",
-        sport: "Football",
-        name: "11-a-side",
-        shortCode: "FB-11",
-        teamSize: 11,
-        squadMax: 23,
-        duration: "90 min",
-        subs: 5,
-        status: "Active",
-        leagues: 14,
-        updated: "2 days ago",
-    },
-    {
-        id: "v2",
-        sport: "Football",
-        name: "7-a-side",
-        shortCode: "FB-07",
-        teamSize: 7,
-        squadMax: 14,
-        duration: "60 min",
-        subs: "Rolling",
-        status: "Active",
-        leagues: 6,
-        updated: "1 week ago",
-    },
-    {
-        id: "v3",
-        sport: "Football",
-        name: "Futsal",
-        shortCode: "FB-FS",
-        teamSize: 5,
-        squadMax: 12,
-        duration: "40 min",
-        subs: "Rolling",
-        status: "Draft",
-        leagues: 0,
-        updated: "3 hours ago",
-    },
-    {
-        id: "v4",
-        sport: "Basketball",
-        name: "5-on-5",
-        shortCode: "BB-05",
-        teamSize: 5,
-        squadMax: 15,
-        duration: "40 min",
-        subs: "Unlimited",
-        status: "Active",
-        leagues: 9,
-        updated: "5 days ago",
-    },
-    {
-        id: "v5",
-        sport: "Basketball",
-        name: "3x3",
-        shortCode: "BB-03",
-        teamSize: 3,
-        squadMax: 6,
-        duration: "10 min",
-        subs: "Unlimited",
-        status: "Active",
-        leagues: 3,
-        updated: "2 weeks ago",
-    },
-];
+
 
 const EMPTY_FORM: FormState = {
     sport: "Football",
@@ -154,15 +89,89 @@ const EMPTY_FORM: FormState = {
 
 export default function SportVariants() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
-    const [variants, setVariants] = useState<Variant[]>(INITIAL_VARIANTS);
+    const [variants, setVariants] = useState<Variant[]>([]);
     /*const [activeNav, setActiveNav] = useState("dashboard");*/
     const [activeSport, setActiveSport] = useState<"All" | Variant["sport"]>("All");
     const [statusFilter, setStatusFilter] = useState<StatusFilter>("All");
     const [query, setQuery] = useState("");
-
     const [modalOpen, setModalOpen] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [form, setForm] = useState<FormState>(EMPTY_FORM);
+
+
+    // GET SPORT VARIANTS FROM DJANGO
+    useEffect(() => {
+
+        axios
+            .get("/api/governance/sport-variants/")
+            .then((response) => {
+
+                console.log(
+                    "SPORT VARIANTS API:",
+                    response.data
+                );
+
+
+                const apiVariants = response.data.map((item: any) => ({
+                    id: String(item.id),
+
+                    sport:
+                        item.sport || "Football",
+
+                    name:
+                        item.name || "",
+
+                    shortCode:
+                        item.shortCode ||
+                        item.short_code ||
+                        "",
+
+                    teamSize:
+                        item.teamSize ||
+                        item.team_size ||
+                        0,
+
+                    squadMax:
+                        item.squadMax ||
+                        item.squad_max ||
+                        0,
+
+                    duration:
+                        item.duration || "",
+
+                    subs:
+                        item.subs ||
+                        item.substitutions ||
+                        "",
+
+                    status:
+                        item.status || "Draft",
+
+                    leagues:
+                        item.leagues || 0,
+
+                    updated:
+                        item.updated ||
+                        item.updated_at ||
+                        "Recently",
+                }));
+
+
+                setVariants(apiVariants);
+
+
+            })
+            .catch((error) => {
+
+                console.error(
+                    "Sport variants API error:",
+                    error
+                );
+
+            });
+
+
+    }, []);
 
     /* ---------------- FILTERED ---------------- */
 
@@ -221,51 +230,132 @@ export default function SportVariants() {
         setForm(EMPTY_FORM);
     }
 
-    function handleSubmit(e: React.FormEvent) {
+    async function handleSubmit(e: React.FormEvent) {
+
         e.preventDefault();
 
-        const normalized: Omit<Variant, "id" | "leagues" | "updated"> = {
-            sport: form.sport,
-            name: form.name,
-            shortCode: form.shortCode,
-            teamSize: Number(form.teamSize),
-            squadMax: Number(form.squadMax),
-            duration: form.duration,
-            subs: form.subs,
-            status: form.status,
-        };
 
-        if (editingId) {
+        try {
+
+
+            const payload = {
+
+                sport: form.sport,
+
+                name: form.name,
+
+                short_code: form.shortCode,
+
+                team_size: Number(form.teamSize),
+
+                squad_max: Number(form.squadMax),
+
+                duration: form.duration,
+
+                subs: form.subs,
+
+                status: form.status,
+
+            };
+
+
+
+            if (editingId) {
+
+
+                const response = await axios.put(
+                    `/api/governance/sport-variants/${editingId}/`,
+                    payload
+                );
+
+
+                setVariants((prev) =>
+                    prev.map((variant) =>
+                        variant.id === editingId
+                            ? response.data
+                            : variant
+                    )
+                );
+
+
+            } else {
+
+
+                const response = await axios.post(
+                    "/api/governance/sport-variants/",
+                    payload
+                );
+
+
+                setVariants((prev) => [
+                    response.data,
+                    ...prev
+                ]);
+
+            }
+
+
+
+            closeModal();
+
+
+
+        } catch (error) {
+
+
+            console.error(
+                "Failed saving sport variant:",
+                error
+            );
+
+
+        }
+
+    }
+
+    async function setStatus(
+        variant: Variant,
+        status: Variant["status"]
+    ) {
+
+
+        if (status === variant.status) return;
+
+
+
+        try {
+
+
+            const response = await axios.patch(
+                `/api/governance/sport-variants/${variant.id}/`,
+                {
+                    status
+                }
+            );
+
+
+
             setVariants((prev) =>
                 prev.map((v) =>
-                    v.id === editingId
-                        ? { ...v, ...normalized, updated: "Just now" }
+                    v.id === variant.id
+                        ? response.data
                         : v
                 )
             );
-        } else {
-            const newVariant: Variant = {
-                id: `v${Date.now()}`,
-                ...normalized,
-                leagues: 0,
-                updated: "Just now",
-            };
 
-            setVariants((prev) => [newVariant, ...prev]);
+
+
+        } catch (error) {
+
+
+            console.error(
+                "Failed updating variant status:",
+                error
+            );
+
+
         }
 
-        closeModal();
-    }
-
-    function setStatus(variant: Variant, status: Variant["status"]) {
-        if (status === variant.status) return;
-        setVariants((prev) =>
-            prev.map((v) =>
-                v.id === variant.id
-                    ? { ...v, status, updated: "Just now" }
-                    : v
-            )
-        );
     }
 
     /* ---------------- UI ---------------- */
@@ -277,15 +367,15 @@ export default function SportVariants() {
             }}
         >
             {/* HEADER */}
-           <SuperAdminTopBar
-                                       sidebarOpen={sidebarOpen}
-                                       onToggleSidebar={() => setSidebarOpen((current) => !current)}
-                                   />
+            <SuperAdminTopBar
+                sidebarOpen={sidebarOpen}
+                onToggleSidebar={() => setSidebarOpen((current) => !current)}
+            />
 
             <div className="dashboard-layout"
-            style={{
-                            backgroundImage: `linear-gradient(rgba(15, 18, 24, 0.38), rgba(15, 18, 24, 0.34)), url(${superImage})`,
-                        }}
+                style={{
+                    backgroundImage: `linear-gradient(rgba(15, 18, 24, 0.38), rgba(15, 18, 24, 0.34)), url(${superImage})`,
+                }}
             >
                 {/* SIDEBAR */}
                 <Sidebar

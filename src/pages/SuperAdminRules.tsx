@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react";
+import axios from "axios";
+import { useEffect, useState, useMemo } from "react";
 import "../styles/pages/SuperAdminDashboard.css";
 import "../styles/pages/SuperVariantsPage.css";
 import "../components/SuperAdminSideBar.css";
@@ -17,14 +18,14 @@ type CategoryFilter = "All" | Category;
 type Tone = "green" | "amber" | "purple" | "muted";
 
 type Rule = {
-    id: string;
+    id: number;
     scope: Scope;
     category: Category;
     title: string;
     description: string;
     status: "Active" | "Draft" | "Archived";
     version: number;
-    updated: string;
+    updated_at: string;
 };
 
 type FormState = {
@@ -55,48 +56,7 @@ const STATUS_TONE: Record<Rule["status"], Tone> = {
 
 /* ---------------- DATA ---------------- */
 
-const INITIAL_RULES: Rule[] = [
-    {
-        id: "r1",
-        scope: "Global",
-        category: "Conduct",
-        title: "Code of conduct",
-        description: "Baseline behavior standard for all players, staff, and officials platform-wide.",
-        status: "Active",
-        version: 3,
-        updated: "1 month ago",
-    },
-    {
-        id: "r2",
-        scope: "Global",
-        category: "Certification",
-        title: "Referee certification tiers",
-        description: "Bronze/Silver/Gold certification levels required to officiate by competition tier.",
-        status: "Active",
-        version: 2,
-        updated: "3 weeks ago",
-    },
-    {
-        id: "r3",
-        scope: "Football",
-        category: "Eligibility",
-        title: "Squad registration deadline",
-        description: "Squads must be registered 14 days before season start; no mid-season additions above cap.",
-        status: "Active",
-        version: 1,
-        updated: "2 days ago",
-    },
-    {
-        id: "r4",
-        scope: "Basketball",
-        category: "Facility",
-        title: "Court certification standard",
-        description: "Courts must meet FIBA-equivalent dimension and flooring standards to host sanctioned games.",
-        status: "Draft",
-        version: 1,
-        updated: "5 hours ago",
-    },
-];
+
 
 const EMPTY_FORM: FormState = {
     scope: "Global",
@@ -110,15 +70,61 @@ const EMPTY_FORM: FormState = {
 
 export default function RulesAndStandards() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
-    const [rules, setRules] = useState<Rule[]>(INITIAL_RULES);
+    const [rules, setRules] = useState<Rule[]>([]);
 
     const [activeScope, setActiveScope] = useState<"All" | Scope>("All");
     const [categoryFilter, setCategoryFilter] = useState<"All" | Category>("All");
     const [query, setQuery] = useState("");
 
     const [modalOpen, setModalOpen] = useState(false);
-    const [editingId, setEditingId] = useState<string | null>(null);
+    const [editingId, setEditingId] = useState<number | null>(null);
     const [form, setForm] = useState<FormState>(EMPTY_FORM);
+
+    useEffect(() => {
+        axios
+            .get("/api/governance/rules/")
+            .then((response) => {
+
+                console.log("RULES API:", response.data);
+
+                const apiRules = response.data.map((item: any) => ({
+                    id: item.id,
+
+                    scope:
+                        item.scope || "Global",
+
+                    category:
+                        item.category || "Eligibility",
+
+                    title:
+                        item.title || "",
+
+                    description:
+                        item.description || "",
+
+                    status:
+                        item.status || "Draft",
+
+                    version:
+                        item.version || 1,
+
+                    updated_at:
+                        item.updated_at || new Date().toISOString(),
+                }));
+
+                setRules(apiRules);
+
+            })
+            .catch((error) => {
+
+                console.error(
+                    "Failed to fetch rules:",
+                    error
+                );
+
+            });
+
+    }, []);
 
     /* ---------------- FILTERED ---------------- */
 
@@ -165,33 +171,77 @@ export default function RulesAndStandards() {
         setForm(EMPTY_FORM);
     }
 
-    function handleSubmit(e: React.FormEvent) {
-        e.preventDefault();
+    async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+
+    try {
 
         if (editingId) {
+
+            const response = await axios.put(
+                `/api/governance/rules/${editingId}/`,
+                {
+                    scope: form.scope,
+                    category: form.category,
+                    title: form.title,
+                    description: form.description,
+                    status: form.status,
+                }
+            );
+
+
             setRules((prev) =>
-                prev.map((r) =>
-                    r.id === editingId
-                        ? { ...r, ...form, version: r.version + 1, updated: "Just now" }
-                        : r
+                prev.map((rule) =>
+                    rule.id === editingId
+                        ? response.data
+                        : rule
                 )
             );
+
+
         } else {
-            const newRule: Rule = {
-                id: `r${Date.now()}`,
-                ...form,
-                version: 1,
-                updated: "Just now",
-            };
-            setRules((prev) => [newRule, ...prev]);
+
+            const response = await axios.post(
+                "/api/governance/rules/",
+                {
+                    scope: form.scope,
+                    category: form.category,
+                    title: form.title,
+                    description: form.description,
+                    status: form.status,
+                    version: 1
+                }
+            );
+
+
+            setRules((prev) => [
+                response.data,
+                ...prev
+            ]);
+
         }
+
+
         closeModal();
+
+
+    } catch(error) {
+
+        console.error(
+            "Failed saving rule:",
+            error
+        );
+
     }
+}
 
     function setStatus(rule: Rule, status: Rule["status"]) {
         if (status === rule.status) return;
         setRules((prev) =>
-            prev.map((r) => (r.id === rule.id ? { ...r, status, updated: "Just now" } : r))
+            prev.map((r) => (r.id === rule.id ? {
+                ...r, status, updated_at: new Date().toISOString()
+            }
+                : r))
         );
     }
 
@@ -199,7 +249,7 @@ export default function RulesAndStandards() {
 
     return (
         <div className="super-adminv"
-        style={{
+            style={{
                 backgroundImage: `linear-gradient(rgba(15, 18, 24, 0.38), rgba(15, 18, 24, 0.34)), url(${superImage})`,
             }}
         >
@@ -294,7 +344,9 @@ export default function RulesAndStandards() {
                                     </div>
 
                                     <div className="variant-card-footer">
-                                        <span className="variant-updated">Updated {r.updated}</span>
+                                        <span className="variant-updated">
+                                            Updated {new Date(r.updated_at).toLocaleDateString()}
+                                        </span>
                                     </div>
 
                                     <div className="variant-actions">
