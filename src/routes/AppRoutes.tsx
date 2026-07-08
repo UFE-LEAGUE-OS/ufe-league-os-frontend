@@ -127,6 +127,11 @@ import CorporateSponsorComplete from '../pages/sponsor/CorporateSponsorComplete'
 import SponsorCampaigns from '../pages/sponsor/SponsorCampaigns';
 import SponsorSettings from '../pages/sponsor/SponsorSettings';
 import SponsorHelp from '../pages/sponsor/SponsorHelp';
+import CampaignTargeting from '../pages/sponsor/CampaignTargeting';
+import CampaignBudget from '../pages/sponsor/CampaignBudget';
+import CampaignReview from '../pages/sponsor/CampaignReview';
+import CampaignLaunch from '../pages/sponsor/CampaignLaunch';
+
 import UnionAdminDashboard from '../pages/union-admin/UnionAdminDashboard';
 
 function protectedPage(page: ReactNode) {
@@ -256,7 +261,11 @@ export default function AppRoutes() {
                 <Route path="/sponsor/campaigns" element={<SponsorCampaigns />} />
                 <Route path="/sponsor/settings" element={<SponsorSettings />} />
                 <Route path="/sponsor/support" element={<SponsorHelp />} />
-
+                <Route path="/sponsor/campaigns/new/targeting" element={<CampaignTargeting />} />
+                <Route path="/sponsor/campaigns/new/budget" element={<CampaignBudget />} />
+                <Route path="/sponsor/campaigns/new/review" element={<CampaignReview />} />
+                <Route path="/sponsor/campaigns/new/launch" element={<CampaignLaunch />} />
+             
                 <Route path="/payments" element={<Payments />} />
 
                 {/* Super Admin routes */}
