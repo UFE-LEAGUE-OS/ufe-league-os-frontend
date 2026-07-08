@@ -28,7 +28,7 @@
 }
 
 .logo-league {
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-body);
   font-weight: 900;
   font-size: 20px;
   color: #ffffff;
@@ -36,7 +36,7 @@
 }
 
 .logo-os {
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-body);
   font-weight: 900;
   font-size: 20px;
   color: #a855f7;

@@ -20,10 +20,29 @@ const axiosInstance = axios.create({
   },
 });
 
+const publicAuthPaths = [
+  '/accounts/login/',
+  '/accounts/register/',
+  '/accounts/google/',
+  '/accounts/verify-otp/',
+  '/accounts/resend-otp/',
+  '/accounts/password-reset/request/',
+  '/accounts/password-reset/confirm/',
+];
+
 axiosInstance.interceptors.request.use((config) => {
   const accessToken = getToken();
+  const requestUrl = String(config.url || '');
 
-  if (accessToken) {
+  const isPublicAuthRequest = publicAuthPaths.some((path) =>
+    requestUrl.includes(path),
+  );
+
+  if (isPublicAuthRequest && config.headers) {
+    delete config.headers.Authorization;
+  }
+
+  if (accessToken && !isPublicAuthRequest) {
     config.headers.Authorization = `Bearer ${accessToken}`;
   }
 

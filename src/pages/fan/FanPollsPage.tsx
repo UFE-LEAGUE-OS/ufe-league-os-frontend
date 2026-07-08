@@ -8,7 +8,7 @@ const darkTheme = createTheme({
     background: { default: "#0e0e1f", paper: "#12122a" },
     primary: { main: "#a855f7" },
   },
-  typography: { fontFamily: '"Inter", "Roboto", "Helvetica", sans-serif' },
+  typography: { fontFamily: 'var(--font-body)' },
   components: {
     MuiButton: { defaultProps: { disableElevation: true } },
     MuiListItem: { defaultProps: { disablePadding: false } },

@@ -15,157 +15,119 @@ import {
     User,
 } from "lucide-react";
 import type { FormEvent } from "react";
-import { useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useCurrentUser } from "../../hooks/useCurrentUser";
 import { initializeMembershipCheckout } from "../../services/membershipCheckoutService";
+import {
+    formatMembershipCurrency,
+    getMembershipCatalogForClubSlug,
+    type MembershipClubCatalog,
+} from "../../services/membershipService";
 import styles from "./MembershipCheckoutPage.module.css";
 
-const checkoutMemberships = [
-    {
-        slug: "kobs",
-        clubName: "KCB KOBS",
-        sport: "Rugby Club",
-        logo: "/assets/clubs/kobs.jpg",
-        season: "2025/2026 Season",
-        tone: "purple",
-        tiers: [
-            { id: "kobs-bronze", name: "Bronze Member", price: 50000, popular: false },
-            { id: "kobs-gold", name: "Gold Member", price: 120000, popular: true },
-            { id: "kobs-platinum", name: "Platinum Member", price: 250000, popular: false },
-        ],
-    },
-    {
-        slug: "sc-villa",
-        clubName: "SC Villa",
-        sport: "Football Club",
-        logo: "/assets/clubs/sc-villa.png",
-        season: "2025/2026 Season",
-        tone: "blue",
-        tiers: [
-            { id: "villa-bronze", name: "Bronze Member", price: 40000, popular: false },
-            { id: "villa-silver", name: "Silver Member", price: 80000, popular: true },
-            { id: "villa-gold", name: "Gold Member", price: 160000, popular: false },
-        ],
-    },
-    {
-        slug: "city-oilers",
-        clubName: "City Oilers",
-        sport: "Basketball Club",
-        logo: "/assets/clubs/city-oilers.png",
-        season: "2025 NBL Season",
-        tone: "orange",
-        tiers: [
-            { id: "oilers-fan", name: "Fan Member", price: 70000, popular: false },
-            { id: "oilers-courtside", name: "Courtside Member", price: 150000, popular: true },
-        ],
-    },
-    {
-        slug: "vipers-sc",
-        clubName: "Vipers SC",
-        sport: "Football Club",
-        logo: "/assets/clubs/vipers-sc.png",
-        season: "2025/2026 Season",
-        tone: "green",
-        tiers: [
-            { id: "vipers-fan", name: "Fan Member", price: 60000, popular: true },
-            { id: "vipers-premium", name: "Premium Member", price: 130000, popular: false },
-        ],
-    },
-    {
-        slug: "black-pirates",
-        clubName: "Black Pirates",
-        sport: "Rugby Club",
-        logo: "/assets/clubs/black-pirates.png",
-        season: "2025/2026 Season",
-        tone: "purple",
-        tiers: [
-            { id: "pirates-bronze", name: "Bronze Member", price: 50000, popular: true },
-            { id: "pirates-gold", name: "Gold Member", price: 120000, popular: false },
-        ],
-    },
-    {
-        slug: "kcca-fc",
-        clubName: "KCCA FC",
-        sport: "Football Club",
-        logo: "/assets/clubs/kcca-fc.png",
-        season: "2025/2026 Season",
-        tone: "blue",
-        tiers: [
-            { id: "kcca-fan", name: "Fan Member", price: 55000, popular: false },
-            { id: "kcca-family", name: "Family Member", price: 100000, popular: true },
-        ],
-    },
-    {
-        slug: "impis-rfc",
-        clubName: "IMPIS RFC",
-        sport: "Rugby Club",
-        logo: "/assets/clubs/impis-rfc.jpg",
-        season: "2025/2026 Season",
-        tone: "orange",
-        tiers: [
-            { id: "impis-fan", name: "Fan Member", price: 40000, popular: true },
-        ],
-    },
-    {
-        slug: "platinum-heathens",
-        clubName: "Platinum Credit Heathens",
-        sport: "Rugby Club",
-        logo: "/assets/clubs/platinum-heathens.jpg",
-        season: "2025/2026 Season",
-        tone: "green",
-        tiers: [
-            { id: "heathens-gold", name: "Gold Member", price: 120000, popular: true },
-        ],
-    },
-    {
-        slug: "namuwongo-blazers",
-        clubName: "Namuwongo Blazers",
-        sport: "Basketball Club",
-        logo: "/assets/clubs/namuwongo-blazers.png",
-        season: "2025 NBL Season",
-        tone: "orange",
-        tiers: [
-            { id: "blazers-fan", name: "Fan Member", price: 60000, popular: true },
-        ],
-    },
-];
-
-function formatCurrency(amount: number) {
-    return new Intl.NumberFormat("en-UG", {
-        style: "currency",
-        currency: "UGX",
-        maximumFractionDigits: 0,
-    }).format(amount);
-}
-
 function MembershipCheckoutPage() {
-    const { clubSlug } = useParams();
+    const { clubSlug = "" } = useParams();
+    const [searchParams] = useSearchParams();
+    const requestedPlanId = searchParams.get("plan");
     const navigate = useNavigate();
     const { currentUser } = useCurrentUser();
 
-    const membership = checkoutMemberships.find((item) => item.slug === clubSlug);
-
-    const defaultTierId =
-        membership?.tiers.find((tier) => tier.popular)?.id ??
-        membership?.tiers[0]?.id ??
-        "";
-
-    const [selectedTierId, setSelectedTierId] = useState(defaultTierId);
+    const [membership, setMembership] = useState<MembershipClubCatalog | null>(null);
+    const [selectedTierId, setSelectedTierId] = useState("");
+    const [isLoading, setIsLoading] = useState(true);
+    const [errorMessage, setErrorMessage] = useState("");
     const [fullName, setFullName] = useState(
-        currentUser.name && currentUser.name !== "Fan" ? currentUser.name : ""
+        currentUser.name && currentUser.name !== "Fan" ? currentUser.name : "",
     );
     const [email, setEmail] = useState(
-        currentUser.email && currentUser.email !== "No email available" ? currentUser.email : ""
+        currentUser.email && currentUser.email !== "No email available"
+            ? currentUser.email
+            : "",
     );
     const [phone, setPhone] = useState(
-        currentUser.phoneNumber && currentUser.phoneNumber !== "No phone number added" ? currentUser.phoneNumber : ""
+        currentUser.phoneNumber && currentUser.phoneNumber !== "No phone number added"
+            ? currentUser.phoneNumber
+            : "",
     );
     const [acceptedTerms, setAcceptedTerms] = useState(false);
     const [statusMessage, setStatusMessage] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    if (!membership) {
+    useEffect(() => {
+        let active = true;
+
+        async function loadMembership() {
+            setIsLoading(true);
+            setErrorMessage("");
+
+            try {
+                const data = await getMembershipCatalogForClubSlug(clubSlug);
+
+                if (!active) return;
+
+                setMembership(data);
+            } catch {
+                if (!active) return;
+
+                setErrorMessage(
+                    "Could not load this membership checkout from the backend.",
+                );
+            } finally {
+                if (active) {
+                    setIsLoading(false);
+                }
+            }
+        }
+
+        void loadMembership();
+
+        return () => {
+            active = false;
+        };
+    }, [clubSlug]);
+
+    useEffect(() => {
+        if (!membership || membership.plans.length === 0) return;
+
+        const requestedTier = requestedPlanId
+            ? membership.plans.find((tier) => String(tier.id) === requestedPlanId)
+            : null;
+        const popularTier = membership.plans.find((tier) => tier.popular);
+        const fallbackTier = membership.plans[0];
+        const nextTier = requestedTier || popularTier || fallbackTier;
+
+        if (nextTier && !membership.plans.some((tier) => String(tier.id) === selectedTierId)) {
+            setSelectedTierId(String(nextTier.id));
+        }
+    }, [membership, requestedPlanId, selectedTierId]);
+
+    const selectedTier = useMemo(() => {
+        if (!membership) return null;
+
+        return (
+            membership.plans.find((tier) => String(tier.id) === selectedTierId) ||
+            membership.plans[0] ||
+            null
+        );
+    }, [membership, selectedTierId]);
+
+    if (isLoading) {
+        return (
+            <section className={styles.page}>
+                <div className={styles.notFoundCard}>
+                    <Loader2 size={48} strokeWidth={2.3} aria-hidden="true" />
+                    <div>
+                        <h1>Loading checkout</h1>
+                        <p>League OS is loading the selected membership plan from the backend.</p>
+                    </div>
+                    <Link to="/memberships">Back to Club Memberships</Link>
+                </div>
+            </section>
+        );
+    }
+
+    if (!membership || !selectedTier || errorMessage) {
         return (
             <section className={styles.page}>
                 <div className={styles.notFoundCard}>
@@ -173,8 +135,8 @@ function MembershipCheckoutPage() {
                     <div>
                         <h1>Checkout page not found</h1>
                         <p>
-                            We could not find that club membership checkout. Please return to
-                            the membership directory and choose another club.
+                            {errorMessage ||
+                                "We could not find that club membership checkout in the backend catalogue."}
                         </p>
                     </div>
                     <Link to="/memberships">Back to Club Memberships</Link>
@@ -183,16 +145,8 @@ function MembershipCheckoutPage() {
         );
     }
 
-    const membershipSlug = membership.slug;
-
-    const selectedTier =
-        membership.tiers.find((tier) => tier.id === selectedTierId) ??
-        membership.tiers[0];
-
-    const selectedTierIdForRedirect = selectedTier.id;
-
-    const serviceFee = Math.round(selectedTier.price * 0.03);
-    const totalAmount = selectedTier.price + serviceFee;
+    const serviceFee = Math.round(selectedTier.priceAmount * 0.03);
+    const totalAmount = selectedTier.priceAmount + serviceFee;
 
     async function handleCheckoutSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -207,15 +161,15 @@ function MembershipCheckoutPage() {
 
         try {
             const response = await initializeMembershipCheckout({
-                demo_plan_code: selectedTier.id,
+                plan: selectedTier.id,
             });
 
             localStorage.setItem(
                 "league_os_pending_membership_checkout",
                 JSON.stringify({
                     tx_ref: response.tx_ref,
-                    club_slug: membershipSlug,
-                    tier_id: selectedTierIdForRedirect,
+                    club_slug: membership.clubSlug,
+                    tier_id: String(selectedTier.id),
                     payment_id: response.payment.id,
                     subscription_id: response.subscription.id,
                 }),
@@ -230,8 +184,8 @@ function MembershipCheckoutPage() {
                 replace: true,
                 state: {
                     tx_ref: response.tx_ref,
-                    club_slug: membershipSlug,
-                    tier_id: selectedTierIdForRedirect,
+                    club_slug: membership.clubSlug,
+                    tier_id: String(selectedTier.id),
                 },
             });
         } catch {
@@ -245,7 +199,10 @@ function MembershipCheckoutPage() {
 
     return (
         <section className={styles.page}>
-            <Link to={`/memberships/${membership.slug}`} className={styles.backLink}>
+            <Link
+                to={`/memberships/${membership.clubSlug}?plan=${selectedTier.id}`}
+                className={styles.backLink}
+            >
                 <ArrowLeft size={18} strokeWidth={2.4} aria-hidden="true" />
                 Back to {membership.clubName} Membership
             </Link>
@@ -259,7 +216,16 @@ function MembershipCheckoutPage() {
                         checkout.
                     </p>
                 </div>
-                <img src={membership.logo} alt="" aria-hidden="true" />
+                {membership.logoUrl ? (
+                    <img
+                        src={membership.logoUrl}
+                        alt=""
+                        aria-hidden="true"
+                        onError={(event) => {
+                            event.currentTarget.style.display = "none";
+                        }}
+                    />
+                ) : null}
             </header>
 
             {statusMessage ? (
@@ -277,8 +243,9 @@ function MembershipCheckoutPage() {
                     <h2>Payment method selection happens in Flutterwave checkout</h2>
                     <p>
                         League OS should not store raw card, mobile money or bank details.
-                        The platform should create a checkout request, receive payment
-                        confirmation, then activate the club membership.
+                        The platform creates a backend checkout request using the selected
+                        membership plan ID, receives payment confirmation, then activates the
+                        club membership.
                     </p>
                 </div>
                 <Link to="/profile/payments">View Payments &amp; Receipts</Link>
@@ -290,23 +257,23 @@ function MembershipCheckoutPage() {
                         <div className={styles.panelHeader}>
                             <div>
                                 <h2>Confirm Membership Tier</h2>
-                                <p>Choose the club tier you want to purchase, renew or upgrade.</p>
+                                <p>Choose the backend club tier you want to purchase, renew or upgrade.</p>
                             </div>
                         </div>
 
                         <div className={styles.tierGrid}>
-                            {membership.tiers.map((tier) => (
+                            {membership.plans.map((tier) => (
                                 <button
                                     type="button"
                                     className={`${styles.tierCard} ${selectedTier.id === tier.id ? styles.selectedTier : ""}`}
                                     key={tier.id}
-                                    onClick={() => setSelectedTierId(tier.id)}
+                                    onClick={() => setSelectedTierId(String(tier.id))}
                                 >
                                     <Crown size={28} strokeWidth={2.2} aria-hidden="true" />
                                     <div>
                                         <h3>{tier.name}</h3>
-                                        <strong>{formatCurrency(tier.price)}</strong>
-                                        <p>per season</p>
+                                        <strong>{tier.priceLabel}</strong>
+                                        <p>{tier.billingLabel}</p>
                                     </div>
                                     {tier.popular ? <span>Popular</span> : null}
                                 </button>
@@ -409,7 +376,7 @@ function MembershipCheckoutPage() {
                                 <span>1</span>
                                 <div>
                                     <h3>Create checkout request</h3>
-                                    <p>League OS sends selected tier and member details.</p>
+                                    <p>League OS sends the selected backend plan ID.</p>
                                 </div>
                             </article>
                             <article>
@@ -440,10 +407,19 @@ function MembershipCheckoutPage() {
                 <aside className={styles.sideColumn}>
                     <section className={styles.orderCard}>
                         <div className={styles.orderHeader}>
-                            <img src={membership.logo} alt="" aria-hidden="true" />
+                            {membership.logoUrl ? (
+                                <img
+                                    src={membership.logoUrl}
+                                    alt=""
+                                    aria-hidden="true"
+                                    onError={(event) => {
+                                        event.currentTarget.style.display = "none";
+                                    }}
+                                />
+                            ) : null}
                             <div>
                                 <h2>{membership.clubName}</h2>
-                                <p>{membership.sport}</p>
+                                <p>{membership.sportLabel} Club</p>
                             </div>
                         </div>
 
@@ -452,22 +428,26 @@ function MembershipCheckoutPage() {
                             <div>
                                 <span>Selected Tier</span>
                                 <strong>{selectedTier.name}</strong>
-                                <small>{membership.season}</small>
+                                <small>Backend plan ID: {selectedTier.id}</small>
                             </div>
                         </div>
 
                         <div className={styles.priceList}>
                             <article>
                                 <span>Membership price</span>
-                                <strong>{formatCurrency(selectedTier.price)}</strong>
+                                <strong>{selectedTier.priceLabel}</strong>
                             </article>
                             <article>
                                 <span>Estimated service fee</span>
-                                <strong>{formatCurrency(serviceFee)}</strong>
+                                <strong>
+                                    {formatMembershipCurrency(serviceFee, selectedTier.currency)}
+                                </strong>
                             </article>
                             <article className={styles.totalRow}>
                                 <span>Total</span>
-                                <strong>{formatCurrency(totalAmount)}</strong>
+                                <strong>
+                                    {formatMembershipCurrency(totalAmount, selectedTier.currency)}
+                                </strong>
                             </article>
                         </div>
 

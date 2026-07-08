@@ -3,7 +3,7 @@
 }
 
 .pageHeader {
-    margin-bottom: 28px;
+    margin-bottom: 24px;
 
     display: flex;
     align-items: flex-start;
@@ -11,9 +11,20 @@
     gap: 24px;
 }
 
+.eyebrow {
+    display: inline-flex;
+    margin-bottom: 10px;
+
+    color: #c084fc;
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
 .pageHeader h1 {
     margin: 0;
-    font-size: clamp(32px, 3vw, 46px);
+    font-size: clamp(38px, 4vw, 56px);
     font-weight: 900;
     letter-spacing: -0.045em;
 }
@@ -22,23 +33,31 @@
     max-width: 820px;
     margin: 8px 0 0;
     color: rgba(255, 255, 255, 0.68);
-    font-size: 17px;
+    font-size: 16px;
+    line-height: 1.55;
+}
+
+.headerActionGroup {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
 }
 
 .primaryHeaderAction,
-.warningCard a {
-    height: 42px;
-    border-radius: 6px;
-    padding: 0 18px;
+.secondaryHeaderAction,
+.warningCard a,
+.notificationActions a,
+.notificationActions button,
+.emptyState button {
+    min-height: 42px;
+    border-radius: 9px;
+    padding: 0 16px;
 
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
-
-    color: #ffffff;
-    background: var(--color-vivid-violet);
-    border: 1px solid var(--color-vivid-violet);
 
     font-family: var(--font-subhead);
     font-size: 13px;
@@ -47,128 +66,159 @@
     cursor: pointer;
 
     transition:
-        transform 0.2s ease,
-        background-color 0.2s ease,
-        box-shadow 0.2s ease;
+        transform 0.18s ease,
+        border-color 0.18s ease,
+        background-color 0.18s ease,
+        box-shadow 0.18s ease;
+}
+
+.primaryHeaderAction {
+    color: #ffffff;
+    background: linear-gradient(135deg, var(--color-vivid-violet), #6d28d9);
+    border: 1px solid rgba(168, 85, 247, 0.74);
+}
+
+.secondaryHeaderAction {
+    color: rgba(255, 255, 255, 0.82);
+    background: rgba(255, 255, 255, 0.055);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.primaryHeaderAction:hover,
+.secondaryHeaderAction:hover,
+.warningCard a:hover,
+.notificationActions a:hover,
+.notificationActions button:hover,
+.emptyState button:hover {
+    transform: translateY(-2px);
+}
+
+.primaryHeaderAction:disabled,
+.secondaryHeaderAction:disabled {
+    cursor: not-allowed;
+    opacity: 0.56;
+    transform: none;
 }
 
 .saveMessage,
-.summaryCard,
-.panel,
-.warningCard {
-    background: linear-gradient(
-        135deg,
-        rgba(15, 23, 42, 0.9),
-        rgba(2, 6, 23, 0.62)
-    );
-    border: 1px solid rgba(255, 255, 255, 0.13);
-    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.24);
-    backdrop-filter: blur(8px);
-}
-
-.saveMessage {
-    min-height: 50px;
-    border-radius: 8px;
-    padding: 0 18px;
-    margin-bottom: 20px;
+.errorMessage {
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 18px;
 
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 9px;
 
-    color: #22c55e;
-    border-color: rgba(34, 197, 94, 0.4);
-    background: linear-gradient(
-        135deg,
-        rgba(34, 197, 94, 0.13),
-        rgba(15, 23, 42, 0.78)
-    );
+    font-size: 13px;
+    font-weight: 800;
+}
 
-    font-size: 14px;
-    font-weight: 900;
+.saveMessage {
+    color: #ffffff;
+    background: rgba(34, 197, 94, 0.12);
+    border: 1px solid rgba(34, 197, 94, 0.28);
+}
+
+.errorMessage {
+    color: #ffffff;
+    background: rgba(239, 68, 68, 0.12);
+    border: 1px solid rgba(239, 68, 68, 0.28);
 }
 
 .summaryGrid {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 18px;
-    margin-bottom: 26px;
+    gap: 16px;
+    margin-bottom: 22px;
+}
+
+.summaryCard,
+.panel,
+.warningCard,
+.alertDetailCard {
+    background: linear-gradient(
+        135deg,
+        rgba(15, 23, 42, 0.9),
+        rgba(2, 6, 23, 0.66)
+    );
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.24);
+    backdrop-filter: blur(8px);
 }
 
 .summaryCard {
-    min-height: 112px;
-    border-radius: 8px;
-    padding: 22px;
+    min-height: 120px;
+    border-radius: 12px;
+    padding: 20px;
 
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 18px;
+    gap: 16px;
+
+    transition:
+        transform 0.18s ease,
+        border-color 0.18s ease,
+        box-shadow 0.18s ease;
+}
+
+.summaryCard:hover,
+.panel:hover,
+.warningCard:hover {
+    transform: translateY(-2px);
+    border-color: rgba(168, 85, 247, 0.42);
+    box-shadow: 0 22px 52px rgba(0, 0, 0, 0.3);
 }
 
 .summaryCard p {
     margin: 0;
-    color: rgba(255, 255, 255, 0.76);
-    font-size: 14px;
-    font-weight: 800;
+    color: rgba(255, 255, 255, 0.66);
+    font-size: 13px;
+    font-weight: 900;
 }
 
 .summaryCard strong {
     display: block;
     margin-top: 8px;
-
     color: #ffffff;
-    font-size: 30px;
+    font-size: 28px;
     font-weight: 900;
     line-height: 1;
 }
 
 .summaryCard span {
     display: block;
-    margin-top: 8px;
-
-    color: rgba(255, 255, 255, 0.56);
-    font-size: 13px;
-    font-weight: 700;
+    margin-top: 7px;
+    color: rgba(255, 255, 255, 0.54);
+    font-size: 12px;
+    font-weight: 800;
 }
 
 .purple svg {
     color: var(--color-vivid-violet);
 }
 
-.orange svg {
-    color: #ff5a18;
-}
-
-.blue svg {
-    color: #5b7cff;
-}
-
 .green svg {
     color: #22c55e;
 }
 
-.layoutGrid {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 390px;
-    align-items: start;
-    gap: 26px;
+.orange svg {
+    color: #fb923c;
 }
 
-.mainColumn,
-.sideColumn {
-    display: grid;
-    gap: 24px;
+.blue svg {
+    color: #60a5fa;
 }
 
-.panel,
-.warningCard {
-    border-radius: 10px;
+.panel {
+    border-radius: 14px;
     padding: 22px;
+    margin-bottom: 24px;
 }
 
 .panelHeader {
-    margin-bottom: 20px;
+    margin-bottom: 18px;
 
     display: flex;
     align-items: flex-start;
@@ -181,470 +231,127 @@
 .warningCard h2 {
     margin: 0;
     color: #ffffff;
-    font-size: 21px;
+    font-size: 19px;
     font-weight: 900;
 }
 
 .panelHeader p,
 .sidePanelHeader p,
 .warningCard p {
-    margin: 8px 0 0;
-    color: rgba(255, 255, 255, 0.64);
-    font-size: 14px;
-    line-height: 1.5;
+    margin: 6px 0 0;
+    color: rgba(255, 255, 255, 0.62);
+    font-size: 13px;
+    line-height: 1.45;
 }
 
-.channelGrid {
+.inboxControls {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 14px;
+    margin-bottom: 18px;
 }
 
-.channelCard {
-    min-height: 108px;
+.inboxSearch {
+    min-height: 48px;
     border-radius: 10px;
-    padding: 18px;
+    padding: 0 14px;
 
-    display: grid;
-    grid-template-columns: 54px minmax(0, 1fr) auto;
+    display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 10px;
+
+    color: rgba(255, 255, 255, 0.54);
+    background: rgba(15, 23, 42, 0.76);
+    border: 1px solid rgba(255, 255, 255, 0.11);
+}
+
+.inboxSearch:focus-within {
+    border-color: rgba(123, 63, 242, 0.78);
+    box-shadow: 0 0 0 3px rgba(123, 63, 242, 0.16);
+}
+
+.inboxSearch input {
+    width: 100%;
+    border: 0;
+    outline: 0;
 
     color: #ffffff;
-    background: rgba(15, 23, 42, 0.62);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: transparent;
 
-    text-align: left;
-    cursor: pointer;
-
-    transition:
-        transform 0.2s ease,
-        border-color 0.2s ease,
-        background-color 0.2s ease;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 800;
 }
 
-.channelCard:hover,
-.channelCard:focus-visible,
-.channelCardEnabled {
-    transform: translateY(-2px);
-    border-color: rgba(123, 63, 242, 0.58);
-    background: linear-gradient(
-        135deg,
-        rgba(123, 63, 242, 0.16),
-        rgba(15, 23, 42, 0.72)
-    );
+.inboxSearch input::placeholder {
+    color: rgba(255, 255, 255, 0.4);
 }
 
-.channelIcon,
-.alertGroupHeader > span,
-.sidePanelHeader > span,
-.recentItem > span {
-    width: 50px;
-    height: 50px;
+.inboxSearch button {
+    width: 32px;
+    height: 32px;
+    border: 0;
     border-radius: 999px;
 
     display: inline-flex;
     align-items: center;
     justify-content: center;
 
-    color: var(--color-vivid-violet);
-    background: rgba(123, 63, 242, 0.14);
-    border: 1px solid rgba(123, 63, 242, 0.32);
-}
-
-.channelText {
-    display: grid;
-    gap: 6px;
-}
-
-.channelText strong {
-    color: #ffffff;
-    font-size: 15px;
-    font-weight: 900;
-}
-
-.channelText small {
-    color: rgba(255, 255, 255, 0.58);
-    font-size: 12px;
-    line-height: 1.4;
-}
-
-.enabledBadge,
-.disabledBadge,
-.highPriority,
-.mediumPriority,
-.lowPriority {
-    min-height: 26px;
-    border-radius: 999px;
-    padding: 0 10px;
-
-    display: inline-flex;
-    align-items: center;
-
-    font-size: 11px;
-    font-weight: 900;
-    text-transform: uppercase;
-}
-
-.enabledBadge {
-    color: #22c55e;
-    background: rgba(34, 197, 94, 0.12);
-    border: 1px solid rgba(34, 197, 94, 0.28);
-}
-
-.disabledBadge {
-    color: rgba(255, 255, 255, 0.58);
+    color: rgba(255, 255, 255, 0.72);
     background: rgba(255, 255, 255, 0.06);
-}
-
-.alertGroups {
-    display: grid;
-    gap: 18px;
-}
-
-.alertGroup {
-    border-radius: 10px;
-    padding: 18px;
-
-    background: rgba(15, 23, 42, 0.5);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.alertGroupHeader {
-    margin-bottom: 16px;
-
-    display: flex;
-    align-items: center;
-    gap: 14px;
-}
-
-.alertGroupHeader h3 {
-    margin: 0;
-    color: #ffffff;
-    font-size: 18px;
-    font-weight: 900;
-}
-
-.alertGroupHeader p {
-    margin: 6px 0 0;
-    color: rgba(255, 255, 255, 0.58);
-    font-size: 13px;
-}
-
-.alertList {
-    display: grid;
-    gap: 10px;
-}
-
-.alertRow {
-    min-height: 72px;
-    border-radius: 8px;
-    padding: 14px;
-
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto;
-    align-items: center;
-    gap: 14px;
-
-    background: rgba(2, 6, 23, 0.36);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.alertRow input,
-.quietToggle input {
-    accent-color: var(--color-vivid-violet);
     cursor: pointer;
 }
 
-.alertRow strong,
-.quietToggle strong,
-.recentItem h3 {
-    color: #ffffff;
-    font-size: 14px;
-    font-weight: 900;
-}
-
-.alertRow small,
-.quietToggle small,
-.recentItem p,
-.recentItem small {
-    display: block;
-    margin-top: 5px;
-    color: rgba(255, 255, 255, 0.56);
-    font-size: 12px;
-    line-height: 1.35;
-}
-
-.highPriority {
-    color: #ff6b6b;
-    background: rgba(255, 107, 107, 0.08);
-    border: 1px solid rgba(255, 107, 107, 0.26);
-}
-
-.mediumPriority {
-    color: #facc15;
-    background: rgba(250, 204, 21, 0.1);
-    border: 1px solid rgba(250, 204, 21, 0.24);
-}
-
-.lowPriority {
-    color: rgba(255, 255, 255, 0.68);
-    background: rgba(255, 255, 255, 0.06);
-}
-
-.sidePanelHeader {
-    margin-bottom: 18px;
-
+.filterPillRow {
     display: flex;
     align-items: center;
-    gap: 14px;
-}
-
-.quietToggle {
-    min-height: 72px;
-    border-radius: 8px;
-    padding: 14px;
-
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
-    align-items: center;
-    gap: 12px;
-
-    background: rgba(15, 23, 42, 0.58);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.quietNote {
-    border-radius: 8px;
-    padding: 14px;
-    margin-top: 14px;
-
-    display: grid;
-    grid-template-columns: 22px minmax(0, 1fr);
     gap: 10px;
-
-    color: #22c55e;
-    background: rgba(34, 197, 94, 0.09);
-    border: 1px solid rgba(34, 197, 94, 0.2);
-}
-
-.quietNote p {
-    margin: 0;
-    color: rgba(255, 255, 255, 0.62);
-    font-size: 12px;
-    line-height: 1.45;
-}
-
-.recentList {
-    display: grid;
-    gap: 12px;
-}
-
-.recentItem {
-    border-radius: 8px;
-    padding: 14px;
-
-    display: grid;
-    grid-template-columns: 42px minmax(0, 1fr) auto;
-    align-items: center;
-    gap: 12px;
-
-    background: rgba(15, 23, 42, 0.58);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.recentItem > span {
-    width: 40px;
-    height: 40px;
-}
-
-.recentItem h3 {
-    margin: 0;
-}
-
-.deliveredIcon {
-    color: #22c55e;
-}
-
-.pendingIcon {
-    color: #facc15;
-}
-
-.warningCard {
-    display: grid;
-    gap: 14px;
-
-    border-color: rgba(250, 204, 21, 0.26);
-    background:
-        radial-gradient(
-            circle at 90% 0%,
-            rgba(250, 204, 21, 0.18),
-            transparent 36%
-        ),
-        linear-gradient(135deg, rgba(15, 23, 42, 0.92), rgba(54, 42, 10, 0.62));
-}
-
-.warningCard > svg {
-    width: 62px;
-    height: 62px;
-    border-radius: 999px;
-    padding: 14px;
-
-    color: #facc15;
-    background: rgba(250, 204, 21, 0.12);
-    border: 1px solid rgba(250, 204, 21, 0.28);
-}
-
-.warningCard a {
-    width: max-content;
-}
-
-.primaryHeaderAction:hover,
-.warningCard a:hover {
-    transform: translateY(-2px);
-    background: #a855f7;
-    box-shadow: 0 16px 32px rgba(123, 63, 242, 0.28);
-}
-
-.primaryHeaderAction:focus-visible,
-.warningCard a:focus-visible,
-.channelCard:focus-visible {
-    outline: 3px solid rgba(123, 63, 242, 0.78);
-    outline-offset: 4px;
-}
-
-@media (max-width: 1360px) {
-    .layoutGrid {
-        grid-template-columns: 1fr;
-    }
-
-    .sideColumn {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .warningCard {
-        grid-column: 1 / -1;
-    }
-}
-
-@media (max-width: 1080px) {
-    .summaryGrid,
-    .channelGrid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-}
-
-@media (max-width: 760px) {
-    .pageHeader {
-        flex-direction: column;
-    }
-
-    .summaryGrid,
-    .channelGrid,
-    .sideColumn {
-        grid-template-columns: 1fr;
-    }
-
-    .channelCard,
-    .alertRow,
-    .recentItem {
-        grid-template-columns: 1fr;
-    }
-}
-
-.headerActionGroup {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 12px;
     flex-wrap: wrap;
 }
 
-.secondaryHeaderAction {
-    min-height: 42px;
-    border-radius: 6px;
-    padding: 0 18px;
+.filterButton,
+.unreadToggle {
+    min-height: 38px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.11);
+    padding: 0 14px;
 
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
 
-    color: #ffffff;
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.18);
-
-    font-family: var(--font-subhead);
-    font-size: 13px;
-    font-weight: 900;
-    text-decoration: none;
-    cursor: pointer;
-
-    transition:
-        transform 0.2s ease,
-        background-color 0.2s ease,
-        box-shadow 0.2s ease;
-}
-
-.secondaryHeaderAction:hover:not(:disabled) {
-    transform: translateY(-2px);
-    background: rgba(255, 255, 255, 0.12);
-}
-
-.secondaryHeaderAction:disabled {
-    cursor: not-allowed;
-    opacity: 0.58;
-}
-
-.errorMessage {
-    min-height: 50px;
-    border-radius: 8px;
-    padding: 0 18px;
-    margin-bottom: 20px;
-
-    display: flex;
-    align-items: center;
-    gap: 10px;
-
-    color: #ffb4b4;
-    border: 1px solid rgba(255, 107, 107, 0.4);
-    background: linear-gradient(
-        135deg,
-        rgba(255, 107, 107, 0.14),
-        rgba(15, 23, 42, 0.78)
-    );
-
-    font-size: 14px;
-    font-weight: 900;
-}
-
-.inboxToolbar {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-wrap: wrap;
-    margin-bottom: 18px;
-}
-
-.filterButton {
-    min-height: 34px;
-    border-radius: 999px;
-    padding: 0 13px;
-
     color: rgba(255, 255, 255, 0.72);
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.045);
 
     font-size: 12px;
     font-weight: 900;
     cursor: pointer;
+
+    transition:
+        transform 0.18s ease,
+        border-color 0.18s ease,
+        background-color 0.18s ease;
+}
+
+.filterButton:hover,
+.unreadToggle:hover,
+.filterButton:focus-visible,
+.unreadToggle:focus-visible {
+    transform: translateY(-1px);
+    color: #ffffff;
+    border-color: rgba(168, 85, 247, 0.44);
 }
 
 .activeFilterButton,
-.filterButton:hover {
+.activeUnreadToggle {
     color: #ffffff;
-    background: rgba(123, 63, 242, 0.2);
-    border-color: rgba(123, 63, 242, 0.48);
+    background: rgba(123, 63, 242, 0.26);
+    border-color: rgba(168, 85, 247, 0.7);
+    box-shadow: 0 10px 24px rgba(123, 63, 242, 0.2);
+}
+
+.unreadToggle {
+    margin-left: auto;
 }
 
 .fullInboxList {
@@ -653,30 +360,43 @@
 }
 
 .inboxItem {
-    border-radius: 10px;
-    padding: 15px;
+    border-radius: 12px;
+    padding: 14px;
 
     display: grid;
     grid-template-columns: 44px minmax(0, 1fr) auto;
-    align-items: center;
     gap: 14px;
+    align-items: center;
 
-    background: rgba(15, 23, 42, 0.54);
+    background: rgba(2, 6, 23, 0.48);
     border: 1px solid rgba(255, 255, 255, 0.08);
+
+    transition:
+        transform 0.18s ease,
+        border-color 0.18s ease,
+        background-color 0.18s ease;
+}
+
+.inboxItem:hover {
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.035);
+    border-color: rgba(123, 63, 242, 0.34);
 }
 
 .unreadInboxItem {
-    background: linear-gradient(
-        135deg,
-        rgba(123, 63, 242, 0.16),
-        rgba(15, 23, 42, 0.7)
-    );
-    border-color: rgba(123, 63, 242, 0.42);
+    border-color: rgba(123, 63, 242, 0.46);
+    background:
+        radial-gradient(circle at 0% 0%, rgba(123, 63, 242, 0.12), transparent 40%),
+        rgba(2, 6, 23, 0.54);
 }
 
-.inboxItem > span {
-    width: 42px;
-    height: 42px;
+.inboxItem > span,
+.channelIcon,
+.alertGroupIcon,
+.sidePanelHeader > span,
+.recentItem > span {
+    width: 44px;
+    height: 44px;
     border-radius: 999px;
 
     display: inline-flex;
@@ -685,7 +405,7 @@
 
     color: var(--color-vivid-violet);
     background: rgba(123, 63, 242, 0.14);
-    border: 1px solid rgba(123, 63, 242, 0.32);
+    border: 1px solid rgba(123, 63, 242, 0.34);
 }
 
 .notificationTitleRow {
@@ -696,41 +416,40 @@
 }
 
 .notificationTitleRow h3,
-.inboxItem h3 {
+.recentItem h3 {
     margin: 0;
     color: #ffffff;
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 900;
 }
 
-.inboxItem p {
-    margin: 6px 0 0;
-    color: rgba(255, 255, 255, 0.64);
+.inboxItem p,
+.recentItem p {
+    margin: 5px 0 0;
+    color: rgba(255, 255, 255, 0.62);
     font-size: 13px;
-    line-height: 1.45;
+    line-height: 1.42;
 }
 
-.inboxItem small {
+.inboxItem small,
+.recentItem small {
     display: block;
-    margin-top: 7px;
-    color: rgba(255, 255, 255, 0.5);
-    font-size: 12px;
-    font-weight: 700;
+    margin-top: 6px;
+    color: rgba(255, 255, 255, 0.44);
+    font-size: 11px;
+    font-weight: 800;
 }
 
 .unreadBadge {
-    min-height: 22px;
     border-radius: 999px;
-    padding: 0 9px;
+    padding: 4px 8px;
 
-    display: inline-flex;
-    align-items: center;
-
-    color: #facc15;
-    background: rgba(250, 204, 21, 0.1);
-    border: 1px solid rgba(250, 204, 21, 0.26);
+    color: #ffffff;
+    background: rgba(123, 63, 242, 0.34);
+    border: 1px solid rgba(168, 85, 247, 0.44);
 
     font-size: 10px;
+    font-style: normal;
     font-weight: 900;
     text-transform: uppercase;
 }
@@ -739,202 +458,898 @@
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    gap: 10px;
-    flex-wrap: wrap;
+    gap: 9px;
 }
 
 .notificationActions a,
 .notificationActions button {
-    min-height: 30px;
-    border-radius: 999px;
-    padding: 0 11px;
-
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+    min-width: 98px;
+    min-height: 36px;
+    border: 1px solid rgba(123, 63, 242, 0.52);
 
     color: #ffffff;
-    background: rgba(123, 63, 242, 0.16);
-    border: 1px solid rgba(123, 63, 242, 0.36);
-
-    font-size: 11px;
-    font-weight: 900;
-    text-decoration: none;
-    cursor: pointer;
+    background: rgba(123, 63, 242, 0.14);
 }
 
-.emptyState,
-.emptyMiniState {
-    border-radius: 10px;
-    padding: 22px;
+.deliveredIcon {
+    color: #22c55e;
+}
+
+.pendingIcon {
+    color: #fbbf24;
+}
+
+.emptyState {
+    min-height: 230px;
+    border-radius: 12px;
+    padding: 28px 22px;
 
     display: grid;
-    justify-items: center;
+    place-items: center;
     text-align: center;
-    gap: 8px;
 
-    color: rgba(255, 255, 255, 0.68);
-    background: rgba(15, 23, 42, 0.5);
+    background:
+        radial-gradient(circle at 50% 0%, rgba(123, 63, 242, 0.18), transparent 42%),
+        rgba(255, 255, 255, 0.032);
     border: 1px dashed rgba(255, 255, 255, 0.16);
 }
 
+.emptyState svg {
+    color: var(--color-vivid-violet);
+}
+
 .emptyState strong {
+    margin-top: 10px;
     color: #ffffff;
     font-size: 15px;
     font-weight: 900;
 }
 
 .emptyState p {
-    max-width: 560px;
-    margin: 0;
+    max-width: 460px;
+    margin: 8px auto 0;
+    color: rgba(255, 255, 255, 0.62);
     font-size: 13px;
-    line-height: 1.5;
+    line-height: 1.45;
 }
 
-.emptyMiniState {
-    justify-items: start;
-    text-align: left;
-    padding: 16px;
-    font-size: 13px;
-}
-
-@media (max-width: 760px) {
-    .inboxItem {
-        grid-template-columns: 40px minmax(0, 1fr);
-    }
-
-    .notificationActions {
-        grid-column: 1 / -1;
-        justify-content: flex-start;
-    }
-
-    .headerActionGroup {
-        justify-content: flex-start;
-    }
-}
-
-/* Screenshot-inspired notification inbox refinements */
-.page {
-    max-width: 1480px;
-    margin: 0 auto;
-}
-
-.pageHeader {
-    padding-top: 6px;
-}
-
-.pageHeader h1 {
-    font-family: var(--font-heading);
-    font-style: italic;
-    text-transform: uppercase;
-    letter-spacing: -0.035em;
-}
-
-.panel {
-    background:
-        radial-gradient(circle at 100% 0%, rgba(123, 63, 242, 0.16), transparent 35%),
-        linear-gradient(135deg, rgba(3, 11, 26, 0.94), rgba(2, 6, 23, 0.78));
-    border-color: rgba(148, 163, 184, 0.18);
+.emptyState button {
+    margin-top: 16px;
+    border: 1px solid rgba(123, 63, 242, 0.58);
+    color: #ffffff;
+    background: rgba(123, 63, 242, 0.14);
 }
 
 .layoutGrid {
-    grid-template-columns: minmax(0, 1fr) 405px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 380px;
+    gap: 26px;
+    align-items: start;
 }
 
-.fullInboxList {
-    gap: 10px;
+.mainColumn,
+.sideColumn {
+    min-width: 0;
+
+    display: grid;
+    align-content: start;
+    gap: 24px;
 }
 
-.inboxItem {
-    min-height: 104px;
-    border-radius: 10px;
-    padding: 16px 18px;
-    background:
-        linear-gradient(90deg, rgba(8, 20, 42, 0.9), rgba(8, 20, 42, 0.72)),
-        radial-gradient(circle at 95% 25%, rgba(123, 63, 242, 0.12), transparent 30%);
-    border-color: rgba(148, 163, 184, 0.16);
-}
-
-.inboxItem:hover {
-    border-color: rgba(168, 85, 247, 0.48);
-    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.22);
-}
-
-.unreadInboxItem {
-    background:
-        linear-gradient(90deg, rgba(12, 23, 48, 0.96), rgba(10, 17, 36, 0.86)),
-        radial-gradient(circle at 95% 25%, rgba(168, 85, 247, 0.22), transparent 32%);
-}
-
-.inboxToolbar {
-    margin-top: -4px;
-    margin-bottom: 16px;
-}
-
-.filterButton {
-    min-width: 88px;
-    min-height: 42px;
-    border-radius: 7px;
-    color: #ffffff;
-    background: rgba(8, 17, 35, 0.84);
-    border-color: rgba(148, 163, 184, 0.18);
-}
-
-.activeFilterButton {
-    background: linear-gradient(135deg, #6725d8, #36106f);
-    border-color: rgba(168, 85, 247, 0.7);
-    box-shadow: 0 10px 24px rgba(123, 63, 242, 0.28);
-}
-
-.notificationActions a,
-.notificationActions button,
-.primaryHeaderAction,
-.secondaryHeaderAction {
-    border-radius: 7px;
-}
-
-.notificationActions a,
-.notificationActions button {
-    min-width: 112px;
-    min-height: 38px;
-    background: linear-gradient(135deg, #6725d8, #36106f);
-    border-color: rgba(168, 85, 247, 0.55);
-}
-
+.mainColumn .panel,
 .sideColumn .panel {
-    border-radius: 10px;
+    margin-bottom: 0;
 }
 
 .channelGrid {
-    grid-template-columns: 1fr;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
 }
 
 .channelCard {
-    min-height: 74px;
+    min-height: 104px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 14px;
+
+    display: grid;
     grid-template-columns: 44px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 12px;
+
+    color: #ffffff;
+    background: rgba(2, 6, 23, 0.48);
+    text-align: left;
+    cursor: pointer;
+
+    transition:
+        transform 0.18s ease,
+        border-color 0.18s ease,
+        background-color 0.18s ease;
 }
 
-.channelIcon {
-    width: 42px;
-    height: 42px;
+.channelCard:hover,
+.channelCard:focus-visible {
+    transform: translateY(-2px);
+    border-color: rgba(168, 85, 247, 0.4);
 }
 
-.summaryGrid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+.channelCardEnabled {
+    border-color: rgba(123, 63, 242, 0.5);
+    background:
+        radial-gradient(circle at 0% 0%, rgba(123, 63, 242, 0.14), transparent 42%),
+        rgba(2, 6, 23, 0.54);
 }
 
-@media (max-width: 1180px) {
-    .layoutGrid {
-        grid-template-columns: 1fr;
-    }
+.channelText {
+    display: grid;
+    gap: 5px;
 }
 
-@media (max-width: 760px) {
+.channelText strong {
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 900;
+}
+
+.channelText small {
+    color: rgba(255, 255, 255, 0.58);
+    font-size: 12px;
+    line-height: 1.35;
+}
+
+.enabledBadge,
+.disabledBadge {
+    border-radius: 999px;
+    padding: 6px 9px;
+
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.enabledBadge {
+    color: #22c55e;
+    background: rgba(34, 197, 94, 0.14);
+}
+
+.disabledBadge {
+    color: rgba(255, 255, 255, 0.56);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.alertOverviewGrid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.alertGroupButton {
+    min-height: 96px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 14px;
+
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 12px;
+
+    color: #ffffff;
+    background: rgba(2, 6, 23, 0.48);
+    text-align: left;
+    cursor: pointer;
+
+    transition:
+        transform 0.18s ease,
+        border-color 0.18s ease,
+        background-color 0.18s ease;
+}
+
+.alertGroupButton:hover,
+.alertGroupButton:focus-visible,
+.activeAlertGroupButton {
+    transform: translateY(-2px);
+    border-color: rgba(168, 85, 247, 0.54);
+    background:
+        radial-gradient(circle at 0% 0%, rgba(123, 63, 242, 0.14), transparent 42%),
+        rgba(2, 6, 23, 0.58);
+}
+
+.alertGroupButton strong {
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 900;
+}
+
+.alertGroupButton small {
+    display: block;
+    margin-top: 5px;
+    color: rgba(255, 255, 255, 0.56);
+    font-size: 12px;
+    line-height: 1.35;
+}
+
+.alertCount {
+    border-radius: 999px;
+    padding: 6px 9px;
+
+    color: #ffffff;
+    background: rgba(123, 63, 242, 0.2);
+    border: 1px solid rgba(123, 63, 242, 0.36);
+
+    font-size: 11px;
+    font-style: normal;
+    font-weight: 900;
+}
+
+.alertDetailCard {
+    border-radius: 12px;
+    padding: 18px;
+}
+
+.alertDetailHeader {
+    margin-bottom: 14px;
+
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+}
+
+.alertDetailHeader h3 {
+    margin: 0;
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: 900;
+}
+
+.alertDetailHeader p {
+    margin: 6px 0 0;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 13px;
+}
+
+.alertDetailHeader > span {
+    border-radius: 999px;
+    padding: 7px 10px;
+
+    color: #22c55e;
+    background: rgba(34, 197, 94, 0.12);
+    border: 1px solid rgba(34, 197, 94, 0.26);
+
+    font-size: 11px;
+    font-weight: 900;
+    white-space: nowrap;
+}
+
+.alertList {
+    display: grid;
+    gap: 10px;
+}
+
+.alertRow {
+    min-height: 68px;
+    border-radius: 10px;
+    padding: 12px 14px;
+
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 14px;
+
+    background: rgba(2, 6, 23, 0.48);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+
+    transition:
+        transform 0.18s ease,
+        border-color 0.18s ease,
+        background-color 0.18s ease;
+}
+
+.alertRow:hover {
+    transform: translateY(-1px);
+    border-color: rgba(123, 63, 242, 0.28);
+    background: rgba(255, 255, 255, 0.035);
+}
+
+.alertRow input {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--color-vivid-violet);
+    cursor: pointer;
+}
+
+.alertRow strong {
+    display: block;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 900;
+}
+
+.alertRow small {
+    display: block;
+    margin-top: 4px;
+    color: rgba(255, 255, 255, 0.56);
+    font-size: 12px;
+    line-height: 1.35;
+}
+
+.highPriority,
+.mediumPriority,
+.lowPriority {
+    border-radius: 999px;
+    padding: 5px 8px;
+
+    font-size: 10px;
+    font-style: normal;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.highPriority {
+    color: #fda4af;
+    background: rgba(244, 63, 94, 0.12);
+    border: 1px solid rgba(244, 63, 94, 0.26);
+}
+
+.mediumPriority {
+    color: #facc15;
+    background: rgba(234, 179, 8, 0.12);
+    border: 1px solid rgba(234, 179, 8, 0.26);
+}
+
+.lowPriority {
+    color: rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.sidePanelHeader {
+    margin-bottom: 16px;
+
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.quietToggle {
+    border-radius: 10px;
+    padding: 14px;
+
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 12px;
+
+    background: rgba(2, 6, 23, 0.48);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.quietToggle input {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--color-vivid-violet);
+    cursor: pointer;
+}
+
+.quietToggle strong {
+    display: block;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 900;
+}
+
+.quietToggle small {
+    display: block;
+    margin-top: 4px;
+    color: rgba(255, 255, 255, 0.56);
+    font-size: 12px;
+}
+
+.quietNote {
+    border-radius: 10px;
+    padding: 12px;
+    margin-top: 12px;
+
+    display: flex;
+    gap: 10px;
+
+    color: rgba(255, 255, 255, 0.66);
+    background: rgba(255, 255, 255, 0.035);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.quietNote svg {
+    color: #22c55e;
+    flex: 0 0 auto;
+}
+
+.quietNote p {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+.recentList {
+    display: grid;
+    gap: 10px;
+}
+
+.recentItem {
+    border-radius: 10px;
+    padding: 12px;
+
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr) auto;
+    gap: 10px;
+    align-items: start;
+
+    background: rgba(2, 6, 23, 0.48);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.recentItem > span {
+    width: 40px;
+    height: 40px;
+}
+
+.emptyMiniState {
+    border-radius: 10px;
+    padding: 16px;
+
+    color: rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.035);
+    border: 1px dashed rgba(255, 255, 255, 0.14);
+
+    font-size: 13px;
+    text-align: center;
+}
+
+.warningCard {
+    border-radius: 14px;
+    padding: 22px;
+
+    display: grid;
+    gap: 16px;
+
+    background:
+        radial-gradient(circle at 0% 0%, rgba(251, 191, 36, 0.2), transparent 42%),
+        linear-gradient(135deg, rgba(15, 23, 42, 0.92), rgba(2, 6, 23, 0.72));
+    border-color: rgba(251, 191, 36, 0.28);
+}
+
+.warningCard > svg {
+    width: 58px;
+    height: 58px;
+    border-radius: 999px;
+    padding: 12px;
+
+    color: #fbbf24;
+    background: rgba(251, 191, 36, 0.12);
+    border: 1px solid rgba(251, 191, 36, 0.28);
+}
+
+.warningCard a {
+    width: fit-content;
+    border: 1px solid rgba(251, 191, 36, 0.3);
+    color: #ffffff;
+    background: rgba(251, 191, 36, 0.1);
+}
+
+@media (max-width: 1360px) {
     .summaryGrid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
-    .filterButton {
-        min-width: auto;
+    .layoutGrid {
+        grid-template-columns: 1fr;
     }
+
+    .sideColumn {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .warningCard {
+        grid-column: span 2;
+    }
+}
+
+@media (max-width: 980px) {
+    .channelGrid,
+    .alertOverviewGrid,
+    .sideColumn {
+        grid-template-columns: 1fr;
+    }
+
+    .warningCard {
+        grid-column: span 1;
+    }
+}
+
+@media (max-width: 760px) {
+    .pageHeader,
+    .panelHeader,
+    .alertDetailHeader {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .headerActionGroup,
+    .primaryHeaderAction,
+    .secondaryHeaderAction {
+        width: 100%;
+    }
+
+    .summaryGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .filterPillRow {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .filterButton,
+    .unreadToggle {
+        width: 100%;
+        margin-left: 0;
+    }
+
+    .inboxItem,
+    .channelCard,
+    .alertGroupButton,
+    .alertRow,
+    .recentItem {
+        grid-template-columns: 1fr;
+    }
+
+    .notificationActions {
+        justify-content: stretch;
+        flex-direction: column;
+    }
+
+    .notificationActions a,
+    .notificationActions button,
+    .emptyState button,
+    .warningCard a {
+        width: 100%;
+    }
+}
+
+
+/* Notification compact cards, quiet hours and ad slot */
+
+/* Make inbox category filters cleaner and prevent tall wrapping. */
+.filterPillRow {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 4px;
+}
+
+.filterPillRow::-webkit-scrollbar {
+    height: 6px;
+}
+
+.filterPillRow::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.16);
+}
+
+.filterButton,
+.unreadToggle {
+    flex: 0 0 auto;
+}
+
+/* Compact expandable notification channel cards. */
+.channelCard {
+    min-height: 78px;
+    align-items: center;
+}
+
+.channelText small {
+    max-height: 0;
+    margin-top: 0;
+
+    opacity: 0;
+    overflow: hidden;
+
+    transition:
+        max-height 0.2s ease,
+        margin-top 0.2s ease,
+        opacity 0.2s ease;
+}
+
+.channelCard:hover .channelText small,
+.channelCard:focus-visible .channelText small {
+    max-height: 46px;
+    margin-top: 5px;
+    opacity: 1;
+}
+
+.channelCard:hover,
+.channelCard:focus-visible {
+    min-height: 104px;
+}
+
+/* Compact expandable alert category cards. */
+.alertGroupButton {
+    min-height: 74px;
+}
+
+.alertGroupButton small {
+    max-height: 0;
+    margin-top: 0;
+
+    opacity: 0;
+    overflow: hidden;
+
+    transition:
+        max-height 0.2s ease,
+        margin-top 0.2s ease,
+        opacity 0.2s ease;
+}
+
+.alertGroupButton:hover small,
+.alertGroupButton:focus-visible small,
+.activeAlertGroupButton small {
+    max-height: 48px;
+    margin-top: 5px;
+    opacity: 1;
+}
+
+.alertGroupButton:hover,
+.alertGroupButton:focus-visible,
+.activeAlertGroupButton {
+    min-height: 96px;
+}
+
+/* Compact alert rows: reveal helper text on hover/focus. */
+.alertRow {
+    min-height: 54px;
+}
+
+.alertRow small {
+    max-height: 0;
+    margin-top: 0;
+
+    opacity: 0;
+    overflow: hidden;
+
+    transition:
+        max-height 0.2s ease,
+        margin-top 0.2s ease,
+        opacity 0.2s ease;
+}
+
+.alertRow:hover small,
+.alertRow:focus-within small {
+    max-height: 42px;
+    margin-top: 4px;
+    opacity: 1;
+}
+
+.alertRow:hover,
+.alertRow:focus-within {
+    min-height: 68px;
+}
+
+/* Adjustable quiet hours. */
+.quietTimeGrid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.quietTimeGrid label {
+    min-width: 0;
+    border-radius: 10px;
+    padding: 10px 12px;
+
+    display: grid;
+    gap: 7px;
+
+    background: rgba(2, 6, 23, 0.48);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.quietTimeGrid span {
+    color: rgba(255, 255, 255, 0.48);
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.quietTimeGrid input {
+    width: 100%;
+    border: 0;
+    outline: 0;
+
+    color: #ffffff;
+    background: transparent;
+
+    font: inherit;
+    font-size: 14px;
+    font-weight: 900;
+    color-scheme: dark;
+}
+
+.quietTimeGrid input:disabled {
+    color: rgba(255, 255, 255, 0.36);
+    cursor: not-allowed;
+}
+
+/* Replace critical-alert card with sponsor placement. */
+.notificationAdCard {
+    min-height: 260px;
+    border-radius: 14px;
+    padding: 22px;
+
+    display: grid;
+    align-content: space-between;
+    gap: 18px;
+
+    background:
+        radial-gradient(circle at 80% 0%, rgba(251, 146, 60, 0.22), transparent 38%),
+        radial-gradient(circle at 0% 100%, rgba(123, 63, 242, 0.24), transparent 42%),
+        linear-gradient(135deg, rgba(15, 23, 42, 0.92), rgba(2, 6, 23, 0.74));
+    border: 1px solid rgba(251, 146, 60, 0.28);
+    box-shadow: 0 22px 50px rgba(0, 0, 0, 0.22);
+    backdrop-filter: blur(10px);
+
+    transition:
+        transform 0.18s ease,
+        border-color 0.18s ease,
+        box-shadow 0.18s ease;
+}
+
+.notificationAdCard:hover,
+.notificationAdCard:focus-within {
+    transform: translateY(-2px);
+    border-color: rgba(251, 146, 60, 0.54);
+    box-shadow:
+        0 24px 54px rgba(0, 0, 0, 0.28),
+        0 0 0 1px rgba(251, 146, 60, 0.1);
+}
+
+.notificationAdCard > span {
+    width: fit-content;
+    border-radius: 999px;
+    padding: 6px 10px;
+
+    color: #fed7aa;
+    background: rgba(251, 146, 60, 0.12);
+    border: 1px solid rgba(251, 146, 60, 0.34);
+
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.notificationAdCard h2 {
+    margin: 0;
+    color: #ffffff;
+    font-size: 24px;
+    font-weight: 900;
+    line-height: 1.12;
+}
+
+.notificationAdCard p {
+    max-width: 330px;
+    margin: 9px 0 0;
+    color: rgba(255, 255, 255, 0.66);
+    font-size: 13px;
+    line-height: 1.48;
+}
+
+.notificationAdCard a {
+    min-height: 42px;
+    border-radius: 9px;
+    padding: 0 14px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: fit-content;
+
+    color: #ffffff;
+    background:
+        linear-gradient(135deg, rgba(251, 146, 60, 0.22), rgba(123, 63, 242, 0.18));
+    border: 1px solid rgba(251, 146, 60, 0.38);
+
+    font-size: 13px;
+    font-weight: 900;
+    text-decoration: none;
+
+    transition:
+        transform 0.18s ease,
+        background-color 0.18s ease,
+        border-color 0.18s ease;
+}
+
+.notificationAdCard a:hover,
+.notificationAdCard a:focus-visible {
+    transform: translateY(-2px);
+    background:
+        linear-gradient(135deg, rgba(251, 146, 60, 0.3), rgba(123, 63, 242, 0.26));
+    border-color: rgba(251, 146, 60, 0.62);
+}
+
+@media (max-width: 1360px) {
+    .notificationAdCard {
+        grid-column: span 2;
+        min-height: 220px;
+    }
+}
+
+@media (max-width: 980px) {
+    .notificationAdCard {
+        grid-column: span 1;
+    }
+}
+
+@media (max-width: 760px) {
+    .filterPillRow {
+        align-items: stretch;
+        flex-direction: column;
+        overflow-x: visible;
+    }
+
+    .filterButton,
+    .unreadToggle {
+        width: 100%;
+    }
+
+    .quietTimeGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .channelCard,
+    .alertGroupButton,
+    .alertRow {
+        min-height: auto;
+    }
+
+    .channelText small,
+    .alertGroupButton small,
+    .alertRow small {
+        max-height: none;
+        margin-top: 5px;
+        opacity: 1;
+    }
+
+    .notificationAdCard {
+        min-height: 230px;
+    }
+
+    .notificationAdCard a {
+        width: 100%;
+    }
+}
+
+/* Notification preference autosave status */
+
+.syncMessage {
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 18px;
+
+    display: flex;
+    align-items: center;
+    gap: 9px;
+
+    color: #ffffff;
+    background: rgba(59, 130, 246, 0.12);
+    border: 1px solid rgba(59, 130, 246, 0.28);
+
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.syncMessage svg {
+    color: #60a5fa;
 }

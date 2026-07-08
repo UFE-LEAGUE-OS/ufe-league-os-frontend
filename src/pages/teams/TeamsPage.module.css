@@ -326,7 +326,7 @@
 .cardActions a {
     min-height: 34px;
     padding: 0 10px;
-    font-size: 11px;
+    font-size: 14px;
 }
 
 .purple {
@@ -386,7 +386,7 @@
     color: #ffffff;
     background: rgba(123, 63, 242, 0.26);
     border: 1px solid rgba(123, 63, 242, 0.42);
-    font-size: 11px;
+    font-size: 14px;
     font-weight: 950;
 }
 
@@ -461,7 +461,7 @@
 .tableHeader {
     padding: 10px 0;
     color: rgba(255, 255, 255, 0.46);
-    font-size: 11px;
+    font-size: 14px;
     font-weight: 900;
     text-transform: uppercase;
 }
@@ -523,7 +523,7 @@
 .activityList time {
     display: block;
     color: rgba(255, 255, 255, 0.46);
-    font-size: 11px;
+    font-size: 14px;
     text-align: right;
 }
 

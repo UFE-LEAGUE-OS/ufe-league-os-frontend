@@ -1,0 +1,142 @@
+/* ═══════════════════════════════════════════════
+   SPONSOR SIDEBAR — SponsorSidebar.css
+   ═══════════════════════════════════════════════ */
+
+.sp-sidebar {
+  width: 220px;
+  min-width: 220px;
+  background: #0a0b14;
+  border-right: 1px solid #1e2340;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 24px 0 0;
+  position: sticky;
+  top: 75px;
+  height: calc(100vh - 75px);
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+
+.sp-sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 0 12px;
+}
+
+.sp-nav-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sp-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: #9CA3AF;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.sp-nav-item:hover {
+  background: rgba(129, 53, 250, 0.1);
+  color: #ffffff;
+}
+
+.sp-nav-item-active {
+  background: #8135FA;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.sp-nav-item-active:hover {
+  background: #9b55fb;
+}
+
+.sp-nav-icon {
+  flex-shrink: 0;
+}
+
+.sp-sidebar-divider {
+  height: 1px;
+  background: #1e2340;
+  margin: 16px 0;
+}
+
+/* ── CTA card ────────────────────────────────── */
+.sp-sidebar-cta {
+  margin: 16px 12px 24px;
+  background: linear-gradient(135deg, #1a1030 0%, #12131F 100%);
+  border: 1px solid rgba(129, 53, 250, 0.3);
+  border-radius: 14px;
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+}
+
+.sp-cta-icon-wrap {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(129, 53, 250, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+
+.sp-cta-icon {
+  color: #8135FA;
+}
+
+.sp-cta-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+}
+
+.sp-cta-desc {
+  font-size: 12px;
+  color: #9CA3AF;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.sp-cta-btn {
+  width: 100%;
+  background: #8135FA;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 0;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 4px;
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.sp-cta-btn:hover {
+  background: #9b55fb;
+  transform: scale(1.03);
+}
+
+/* ── Responsive ──────────────────────────────── */
+@media (max-width: 768px) {
+  .sp-sidebar {
+    display: none;
+  }
+}

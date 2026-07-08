@@ -24,4 +24,15 @@ export const fetchProfile = () => axiosInstance.get('/accounts/profile/');
 export const updateProfile = (payload: AuthPayload) =>
   axiosInstance.patch('/accounts/profile/', payload);
 
+export const uploadAvatar = (file: File) => {
+  const formData = new FormData();
+  formData.append('avatar', file);
+
+  return axiosInstance.patch('/accounts/profile/', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+};
+
 export const removeAvatar = () => axiosInstance.delete('/accounts/profile/avatar/');

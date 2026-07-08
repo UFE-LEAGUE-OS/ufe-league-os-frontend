@@ -1,5 +1,6 @@
 import {
     Bell,
+    Building2,
     ChevronDown,
     ChevronDownIcon,
     LayoutDashboard,
@@ -14,12 +15,14 @@ import { Link, NavLink, useNavigate } from "react-router-dom";
 import leagueLogo from "../../assets/logos/league-os-horizontal.png";
 import { useAuth } from "../../hooks/useAuth.js";
 import { useCurrentUser } from "../../hooks/useCurrentUser";
+import { getMyUnionWorkspaces } from "../../services/unionAdminService";
 import styles from "./LoggedInHeader.module.css";
 
 const navItems = [
     { label: "Sport", href: "/" },
     { label: "Leagues", href: "/" },
     { label: "Clubs", href: "/clubs" },
+    { label: "Unions", href: "/unions" },
     { label: "Competitions", href: "/" },
     { label: "News", href: "/" },
     { label: "Club Memberships", href: "/memberships" },
@@ -125,6 +128,7 @@ function LoggedInHeader() {
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
+    const [unionWorkspaceCount, setUnionWorkspaceCount] = useState(0);
     const normalizedQuery = searchQuery.trim().toLowerCase();
 
     const filteredSearchResults = useMemo(() => {
@@ -140,6 +144,30 @@ function LoggedInHeader() {
             })
             .slice(0, 8);
     }, [normalizedQuery]);
+
+    useEffect(() => {
+        let isMounted = true;
+
+        async function loadUnionWorkspaceCount() {
+            try {
+                const workspaces = await getMyUnionWorkspaces();
+
+                if (isMounted) {
+                    setUnionWorkspaceCount(workspaces.length);
+                }
+            } catch {
+                if (isMounted) {
+                    setUnionWorkspaceCount(0);
+                }
+            }
+        }
+
+        void loadUnionWorkspaceCount();
+
+        return () => {
+            isMounted = false;
+        };
+    }, []);
 
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
@@ -235,7 +263,13 @@ function LoggedInHeader() {
                         aria-expanded={isUserMenuOpen}
                         onClick={() => setIsUserMenuOpen((currentValue) => !currentValue)}
                     >
-                        <span className={styles.avatar}>{currentUser.avatarInitials}</span>
+                        <span className={styles.avatar}>
+                            {currentUser.avatarUrl ? (
+                                <img src={currentUser.avatarUrl} alt="" aria-hidden="true" />
+                            ) : (
+                                currentUser.avatarInitials
+                            )}
+                        </span>
 
                         <span className={styles.userText}>
                             <strong>{currentUser.name}</strong>
@@ -258,6 +292,20 @@ function LoggedInHeader() {
                                 <LayoutDashboard size={16} strokeWidth={2.4} />
                                 Dashboard
                             </button>
+
+                            {unionWorkspaceCount > 0 ? (
+                                <button
+                                    type="button"
+                                    role="menuitem"
+                                    onClick={() => {
+                                        setIsUserMenuOpen(false);
+                                        navigate("/dashboard/union-admin");
+                                    }}
+                                >
+                                    <Building2 size={16} strokeWidth={2.4} />
+                                    Union Workspace
+                                </button>
+                            ) : null}
 
                             <button
                                 type="button"

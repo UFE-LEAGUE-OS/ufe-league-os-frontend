@@ -1,4 +1,4 @@
-import Navbar from '../../components/Navbar';
+import Navbar, { publicNavLinks } from '../../components/Navbar';
 import Hero from '../../components/Hero';
 import FeaturedCompetitions from '../../components/FeaturedCompetitions';
 import SportCategories from '../../components/SportCategories';
@@ -13,7 +13,7 @@ import '../../styles/pages/landing.css';
 export default function Landing() {
   return (
     <div className="landing-page">
-      <Navbar />
+      <Navbar links={publicNavLinks} />
       <Hero />
       <FeaturedCompetitions />
       <SportCategories />

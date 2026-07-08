@@ -196,7 +196,7 @@
     background: rgba(239, 68, 68, 0.12);
     border: 1px solid rgba(239, 68, 68, 0.28);
 
-    font-size: 11px;
+    font-size: 14px;
     font-weight: 900;
     text-transform: uppercase;
 }
@@ -332,7 +332,7 @@
 
 .referenceBox span {
     color: rgba(255, 255, 255, 0.52);
-    font-size: 11px;
+    font-size: 14px;
     font-weight: 900;
     text-transform: uppercase;
     letter-spacing: 0.08em;

@@ -4,7 +4,7 @@
     radial-gradient(circle at left bottom, rgba(44, 104, 255, 0.15), transparent 34%),
     radial-gradient(circle at right bottom, rgba(124, 58, 237, 0.1), transparent 30%),
     linear-gradient(180deg, rgba(2, 5, 14, 0.6), rgba(2, 5, 14, 0.6)),
-    url('../../assets/stadium-bg.svg');
+    url('../../assets/cta-banner.png');
   background-position: center center;
   background-repeat: no-repeat;
   background-size: cover;
@@ -87,7 +87,7 @@
 
 .hero-scoreboard strong {
   color: #fff;
-  font-family: 'League Spartan', sans-serif;
+  font-family: var(--font-heading);
   font-size: 4rem;
   line-height: 1;
   font-weight: 800;
@@ -166,7 +166,7 @@
 .cta-banner h2 {
   margin: 0;
   max-width: 13ch;
-  font-family: 'League Spartan', sans-serif;
+  font-family: var(--font-heading);
   font-size: clamp(2.2rem, 4vw, 3.8rem);
   line-height: 0.92;
   text-transform: uppercase;

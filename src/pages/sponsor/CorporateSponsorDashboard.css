@@ -1,0 +1,442 @@
+
+.csd-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #00030D;
+  color: #ffffff;
+  font-family: 'Inter', sans-serif;
+}
+
+.csd-layout {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.csd-main {
+  flex: 1;
+  min-width: 0;
+  overflow-x: hidden;
+  padding: 32px 40px 60px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.csd-hero-card {
+  background: linear-gradient(135deg, #0d0e1f 0%, #12131F 60%, #1a0a2e 100%);
+  border: 1px solid #1e2340;
+  border-radius: 16px;
+  padding: 32px 36px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.csd-hero-left {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.csd-welcome-text {
+  font-size: 15px;
+  font-weight: 600;
+  color: #8135FA;
+}
+
+.csd-company-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.csd-company-name {
+  font-size: 32px;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0;
+  line-height: 1.1;
+}
+
+.csd-verified-badge {
+  background: rgba(22, 163, 74, 0.15);
+  border: 1px solid rgba(22, 163, 74, 0.4);
+  color: #16a34a;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.csd-tagline {
+  font-size: 14px;
+  color: #9CA3AF;
+}
+
+.csd-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.csd-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  color: #9CA3AF;
+}
+
+.csd-meta-divider { color: #1e2340; }
+
+/* Nile logo card */
+.csd-hero-logo { flex-shrink: 0; }
+
+.csd-nile-logo-card {
+  background: #0a0b14;
+  border: 1px solid #1e2340;
+  border-radius: 12px;
+  padding: 20px 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 140px;
+}
+
+.csd-nile-emblem { font-size: 28px; }
+
+.csd-nile-name {
+  font-size: 24px;
+  font-weight: 900;
+  color: #ffffff;
+  letter-spacing: 0.1em;
+  line-height: 1;
+}
+
+.csd-nile-special {
+  font-size: 9px;
+  font-weight: 700;
+  color: #DC2626;
+  letter-spacing: 0.15em;
+}
+
+.csd-nile-bars {
+  display: flex;
+  gap: 3px;
+  margin-top: 4px;
+}
+
+.csd-bar {
+  display: block;
+  width: 18px;
+  height: 4px;
+  border-radius: 2px;
+}
+
+.csd-bar-orange { background: #F97316; }
+.csd-bar-red { background: #DC2626; }
+
+.csd-stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.csd-stat-card {
+  background: rgba(18, 19, 31, 0.92);
+  border: 1px solid #1e2340;
+  border-radius: 14px;
+  padding: 20px 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.csd-stat-icon-wrap {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: rgba(129, 53, 250, 0.15);
+  border: 1px solid rgba(129, 53, 250, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.csd-stat-icon { color: #8135FA; }
+
+.csd-stat-label {
+  font-size: 12px;
+  color: #9CA3AF;
+  margin-bottom: 4px;
+}
+
+.csd-stat-value {
+  font-size: 26px;
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1.1;
+  margin-bottom: 4px;
+}
+
+.csd-stat-change {
+  font-size: 12px;
+  font-weight: 600;
+  color: #16a34a;
+}
+
+.csd-bottom {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 20px;
+  align-items: start;
+}
+
+.csd-campaigns-card {
+  background: rgba(18, 19, 31, 0.92);
+  border: 1px solid #1e2340;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.csd-campaigns-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid #1e2340;
+}
+
+.csd-campaigns-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+}
+
+.csd-view-all {
+  background: none;
+  border: none;
+  color: #8135FA;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.csd-view-all:hover { color: #9b55fb; }
+
+.csd-campaigns-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.csd-campaign-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 24px;
+  border-bottom: 1px solid #1e2340;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.csd-campaign-row:last-child { border-bottom: none; }
+.csd-campaign-row:hover { background: rgba(129, 53, 250, 0.05); }
+
+.csd-campaign-logo {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: #1e2340;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.csd-campaign-info { flex: 1; min-width: 0; }
+
+.csd-campaign-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 3px;
+}
+
+.csd-campaign-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.csd-live-badge {
+  background: rgba(22, 163, 74, 0.15);
+  border: 1px solid rgba(22, 163, 74, 0.3);
+  color: #16a34a;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.csd-campaign-role {
+  font-size: 12px;
+  color: #9CA3AF;
+  margin-bottom: 3px;
+}
+
+.csd-campaign-dates {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: #6B7280;
+}
+
+.csd-campaign-stats {
+  display: flex;
+  gap: 24px;
+  flex-shrink: 0;
+}
+
+.csd-campaign-stat { text-align: right; }
+
+.csd-cs-label {
+  font-size: 11px;
+  color: #6B7280;
+  margin-bottom: 2px;
+}
+
+.csd-cs-value {
+  font-size: 15px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.csd-cs-change {
+  font-size: 11px;
+  font-weight: 600;
+  color: #16a34a;
+}
+
+.csd-campaign-chevron {
+  color: #6B7280;
+  flex-shrink: 0;
+}
+
+.csd-quick-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.csd-action-card {
+  background: rgba(18, 19, 31, 0.92);
+  border: 1px solid #1e2340;
+  border-radius: 14px;
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+.csd-action-card:hover {
+  border-color: #8135FA;
+  background: rgba(129, 53, 250, 0.06);
+}
+
+.csd-action-icon-wrap {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: rgba(129, 53, 250, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+
+.csd-action-icon { color: #8135FA; }
+
+.csd-action-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.csd-action-desc {
+  font-size: 12px;
+  color: #9CA3AF;
+  line-height: 1.4;
+  flex: 1;
+}
+
+.csd-action-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #8135FA;
+  border: none;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  margin-top: 4px;
+  transition: background 0.2s;
+  align-self: flex-start;
+}
+.csd-action-btn:hover { background: #9b55fb; }
+
+@media (max-width: 1280px) {
+  .csd-main { padding: 28px 28px 48px; }
+  .csd-bottom { grid-template-columns: 1fr 240px; }
+}
+
+@media (max-width: 1024px) {
+  .csd-main { padding: 24px 20px 40px; }
+  .csd-stats-row { grid-template-columns: repeat(2, 1fr); }
+  .csd-bottom { grid-template-columns: 1fr; }
+  .csd-quick-actions { grid-template-columns: repeat(4, 1fr); }
+}
+
+@media (max-width: 768px) {
+  .csd-main { padding: 20px 16px 32px; }
+  .csd-hero-card { flex-direction: column; align-items: flex-start; }
+  .csd-company-name { font-size: 24px; }
+  .csd-stats-row { grid-template-columns: 1fr 1fr; }
+  .csd-quick-actions { grid-template-columns: 1fr 1fr; }
+  .csd-campaign-stats { display: none; }
+}
+
+@media (max-width: 480px) {
+  .csd-stats-row { grid-template-columns: 1fr; }
+  .csd-quick-actions { grid-template-columns: 1fr; }
+}
+
+.csd-individual-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #8135FA 0%, #F97316 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  font-weight: 900;
+  color: #ffffff;
+}
+
+.csd-page-type-badge {
+  display: none;
+}

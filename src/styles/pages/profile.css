@@ -18,7 +18,7 @@
   place-items: center;
   background: linear-gradient(135deg, rgba(142, 78, 255, 0.96), rgba(255, 132, 37, 0.96));
   color: #fff;
-  font-family: 'League Spartan', sans-serif;
+  font-family: var(--font-heading);
   font-size: 3.2rem;
   letter-spacing: 0.08em;
   font-weight: 800;
@@ -28,7 +28,7 @@
 .profile-copy h1 {
   margin: 0 0 8px;
   color: #fff;
-  font-family: 'League Spartan', sans-serif;
+  font-family: var(--font-heading);
   font-size: clamp(2.6rem, 4vw, 4rem);
   text-transform: uppercase;
   font-weight: 800;

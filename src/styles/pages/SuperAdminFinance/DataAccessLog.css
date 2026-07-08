@@ -1,0 +1,214 @@
+/* ============================================================
+   DataAccessLog.css — styles unique to DataAccessLogPage
+   ============================================================ */
+
+/* Audit Summary panel — colored progress bars */
+.progress-fill{
+    display: block;
+    transition: width 0.3s ease;
+}
+
+.progress-fill-purple{
+    background: linear-gradient(90deg, #8B5CF6, #A78BFA);
+    box-shadow: 0 0 12px rgba(139, 92, 246, 0.45);
+}
+
+.progress-fill-red{
+    background: linear-gradient(90deg, #EF476F, #F87171);
+    box-shadow: 0 0 12px rgba(239, 71, 111, 0.45);
+}
+
+.progress-fill-green{
+    background: linear-gradient(90deg, #22C55E, #4ADE80);
+    box-shadow: 0 0 12px rgba(34, 197, 94, 0.45);
+}
+
+.progress-row{
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.progress-value{
+    min-width: 34px;
+    text-align: right;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text);
+}
+
+/* Vertically center the Audit Summary panel content within the chart-grid card */
+.chart-grid .page-panel{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 28px;
+    height: 100%;
+}
+
+.chart-grid .page-panel .mini-progress{
+    margin-top: 0;
+    padding-top: 0;
+}
+
+/* Audit Log toolbar + table */
+.audit-log-section{
+    padding: 20px;
+}
+
+.audit-toolbar{
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.date-range-badge{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+    background: rgba(148, 163, 184, 0.06);
+    border: 1px solid rgba(148, 163, 184, 0.14);
+    border-radius: 10px;
+    padding: 8px 14px;
+    position: relative;
+    min-width: 150px;
+}
+
+.date-range-label{
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+}
+
+.date-range-value{
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.date-range-badge svg{
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+}
+
+.audit-select-wrap{
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.audit-select{
+    appearance: none;
+    background: rgba(148, 163, 184, 0.06);
+    border: 1px solid rgba(148, 163, 184, 0.14);
+    border-radius: 10px;
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 500;
+    padding: 11px 32px 11px 14px;
+    cursor: pointer;
+    min-width: 130px;
+}
+
+.audit-select:hover{
+    border-color: rgba(139, 92, 246, 0.35);
+}
+
+.audit-select-chevron{
+    position: absolute;
+    right: 12px;
+    pointer-events: none;
+    color: var(--muted);
+}
+
+.audit-filters-btn,
+.audit-export-btn{
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    white-space: nowrap;
+}
+
+.audit-filters-btn{
+    background: rgba(148, 163, 184, 0.08);
+    border: 1px solid rgba(148, 163, 184, 0.16);
+    color: var(--text);
+}
+
+.audit-filters-btn:hover{
+    border-color: rgba(139, 92, 246, 0.35);
+}
+
+.audit-export-btn{
+    background: linear-gradient(135deg, var(--purple), var(--purple-dark));
+    color: #fff;
+    margin-left: auto;
+}
+
+.audit-export-btn:hover{
+    filter: brightness(1.08);
+}
+
+.audit-log-table{
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.audit-log-table thead th{
+    text-align: left;
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    color: var(--muted);
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+    white-space: nowrap;
+    background: rgba(148, 163, 184, 0.03);
+}
+
+.audit-log-table tbody td{
+    padding: 14px 16px;
+    font-size: 13.5px;
+    color: #E5E7EB;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.06);
+    white-space: nowrap;
+}
+
+.audit-log-table tbody tr:last-child td{
+    border-bottom: none;
+}
+
+.audit-log-table tbody tr:hover{
+    background: rgba(139, 92, 246, 0.04);
+}
+
+.audit-result-success{
+    color: #4ADE80;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.audit-result-failed{
+    color: #F87171;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+@media (max-width: 900px){
+    .audit-export-btn{
+        margin-left: 0;
+    }
+}
