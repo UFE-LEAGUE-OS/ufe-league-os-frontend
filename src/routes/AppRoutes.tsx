@@ -65,6 +65,7 @@ import MyMembershipsPage from '../pages/memberships/MyMembershipsPage';
 import MyTicketsPage from '../pages/fan/MyTicketsPage';
 import TicketDetailPage from '../pages/fan/TicketDetailPage';
 import ProtectedRoute from './ProtectedRoute';
+import RoleProtectedRoute from './RoleProtectedRoute';
 import Payments from '../pages/PaymentPage';
 import FanPollsPage from '../pages/fan/FanPollsPage';
 import TicketCheckoutPage from '../pages/tickets/TicketCheckoutPage';
@@ -126,9 +127,18 @@ import CorporateSponsorComplete from '../pages/sponsor/CorporateSponsorComplete'
 import SponsorCampaigns from '../pages/sponsor/SponsorCampaigns';
 import SponsorSettings from '../pages/sponsor/SponsorSettings';
 import SponsorHelp from '../pages/sponsor/SponsorHelp';
+import UnionAdminDashboard from '../pages/union-admin/UnionAdminDashboard';
 
 function protectedPage(page: ReactNode) {
     return <ProtectedRoute>{page}</ProtectedRoute>;
+}
+
+function roleProtectedPage(page: ReactNode, allowedRoles: string[], redirectTo?: string) {
+    return (
+        <RoleProtectedRoute allowedRoles={allowedRoles} redirectTo={redirectTo}>
+            {page}
+        </RoleProtectedRoute>
+    );
 }
 
 export default function AppRoutes() {
@@ -152,6 +162,9 @@ export default function AppRoutes() {
                 <Route path="/super-admin/publish-standards" element={<PublishStandards />} />
 
                 <Route path="/dashboard" element={protectedPage(<Navigate to="/dashboard/fan" replace />)} />
+
+                <Route path="/union-admin" element={protectedPage(<Navigate to="/dashboard/union-admin" replace />)} />
+                <Route path="/dashboard/union-admin" element={roleProtectedPage(<UnionAdminDashboard />, ['UNION_ADMIN'])} />
 
                 <Route element={protectedPage(<AuthenticatedLayout />)}>
                     <Route path="/dashboard/fan" element={<Dashboard />} />
@@ -247,11 +260,7 @@ export default function AppRoutes() {
                 <Route path="/payments" element={<Payments />} />
 
                 {/* Super Admin routes */}
-                <Route path="/dashboard/super-admin" element={
-                    <ProtectedRoute>
-                        <SuperAdminDashboard />
-                    </ProtectedRoute>
-                }>
+                <Route path="/dashboard/super-admin" element={roleProtectedPage(<SuperAdminDashboard />, ['SUPER_ADMIN'])}>
                     <Route index element={<SuperAdminHome />} />
                     <Route path="dashboard" element={<SuperAdminHome />} />
 
