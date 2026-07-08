@@ -123,6 +123,9 @@ import CampaignAnalytics from '../pages/sponsor/CampaignAnalytics';
 import CampaignPlacementPreview from '../pages/sponsor/CampaignPlacementPreview';
 import CorporateSponsorReview from '../pages/sponsor/CorporateSponsorReview';
 import CorporateSponsorComplete from '../pages/sponsor/CorporateSponsorComplete';
+import SponsorCampaigns from '../pages/sponsor/SponsorCampaigns';
+import SponsorSettings from '../pages/sponsor/SponsorSettings';
+import SponsorHelp from '../pages/sponsor/SponsorHelp';
 
 function protectedPage(page: ReactNode) {
     return <ProtectedRoute>{page}</ProtectedRoute>;
@@ -237,6 +240,9 @@ export default function AppRoutes() {
                 <Route path="/sponsor/campaigns/new" element={<CampaignCreation />} />
                 <Route path="/sponsor/analytics" element={<CampaignAnalytics />} />
                 <Route path="/sponsor/campaigns/preview" element={<CampaignPlacementPreview />} />
+                <Route path="/sponsor/campaigns" element={<SponsorCampaigns />} />
+                <Route path="/sponsor/settings" element={<SponsorSettings />} />
+                <Route path="/sponsor/support" element={<SponsorHelp />} />
 
                 <Route path="/payments" element={<Payments />} />
 

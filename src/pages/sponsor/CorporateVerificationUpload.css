@@ -14,9 +14,6 @@
   min-width: 0;
   overflow-x: hidden;
   padding: 32px 48px 60px;
-  max-width: 1100px;
-  width: 100%;
-  margin: 0 auto;
 }
 
 .cvu-back-link {
@@ -120,7 +117,6 @@
 
 .cvu-step-line-completed { background: #8135FA; }
 
-/* ── Body ────────────────────────────────────── */
 .cvu-body {
   display: grid;
   grid-template-columns: 1fr 260px;
@@ -225,7 +221,6 @@
   text-align: center;
 }
 
-/* ── Tips panel ──────────────────────────────── */
 .cvu-tips-panel {
   display: flex;
   flex-direction: column;
@@ -333,7 +328,6 @@
   background: rgba(129, 53, 250, 0.08);
 }
 
-/* ── Bottom nav ──────────────────────────────── */
 .cvu-bottom-nav {
   display: flex;
   align-items: center;
@@ -379,7 +373,6 @@
   transform: scale(1.02);
 }
 
-/* ── Responsive ──────────────────────────────── */
 @media (max-width: 1280px) {
   .cvu-main { padding: 28px 32px 48px; }
   .cvu-body { grid-template-columns: 1fr 220px; }

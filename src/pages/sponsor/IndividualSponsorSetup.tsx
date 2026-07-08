@@ -11,7 +11,6 @@ import {
 } from 'react-icons/fi';
 import { GiSoccerBall, GiRugbyConversion } from 'react-icons/gi';
 import { MdSportsBasketball } from 'react-icons/md';
-import Navbar from '../../components/Navbar';
 import '../../styles/pages/landing.css';
 import './IndividualSponsorSetup.css';
 
@@ -65,7 +64,6 @@ export default function IndividualSponsorSetup() {
 
   return (
     <div className="iss-page">
-      <Navbar />
 
       <main className="iss-main landing-page">
 

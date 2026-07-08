@@ -1,6 +1,3 @@
-/* ═══════════════════════════════════════════════
-   SPONSORSHIP HUB — SponsorshipHub.css
-   ═══════════════════════════════════════════════ */
 
 .sh-page {
   display: flex;
@@ -211,9 +208,13 @@
   transition: border-color 0.2s ease, transform 0.15s ease;
 }
 
+.sh-step-card {
+  cursor: default;
+}
+
 .sh-step-card:hover {
-  border-color: #8135FA;
-  transform: translateY(-3px);
+  border-color: #1e2340;
+  transform: none;
 }
 
 .sh-step-icon-wrap {

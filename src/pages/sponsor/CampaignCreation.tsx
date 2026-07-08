@@ -9,7 +9,6 @@ import {
   FiShoppingCart,
   FiHeart,
 } from 'react-icons/fi';
-import Navbar from '../../components/Navbar';
 import SponsorSidebar from '../../components/SponsorSidebar';
 import '../../styles/pages/landing.css';
 import './CampaignCreation.css';
@@ -94,7 +93,6 @@ export default function CampaignCreation() {
 
   return (
     <div className="cc-page">
-      <Navbar />
 
       <div className="cc-layout">
         <SponsorSidebar />

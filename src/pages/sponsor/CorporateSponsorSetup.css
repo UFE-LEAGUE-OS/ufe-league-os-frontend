@@ -13,9 +13,6 @@
   min-width: 0;
   overflow-x: hidden;
   padding: 32px 48px 60px;
-  max-width: 1100px;
-  width: 100%;
-  margin: 0 auto;
 }
 
 
@@ -35,7 +32,6 @@
 }
 .css-back-link:hover { color: #ffffff; }
 
-/* ── Page header ─────────────────────────────── */
 .css-header { margin-bottom: 28px; }
 
 .css-title {
@@ -52,7 +48,6 @@
   margin: 0;
 }
 
-/* ── Stepper ─────────────────────────────────── */
 .css-stepper {
   display: flex;
   align-items: flex-start;
@@ -122,7 +117,6 @@
 
 .css-step-line-completed { background: #8135FA; }
 
-/* ── Body layout ─────────────────────────────── */
 .css-body {
   display: grid;
   grid-template-columns: 1fr 240px;
@@ -130,7 +124,6 @@
   align-items: start;
 }
 
-/* ── Form card ───────────────────────────────── */
 .css-form-card {
   background: rgba(18, 19, 31, 0.92);
   border: 1px solid #1e2340;
@@ -151,7 +144,6 @@
   margin: 0 0 24px;
 }
 
-/* ── Fields ──────────────────────────────────── */
 .css-field-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -299,7 +291,6 @@
 }
 .css-next-btn:hover { background: #9b55fb; transform: scale(1.01); }
 
-/* ── Right info panel ────────────────────────── */
 .css-info-panel {
   display: flex;
   flex-direction: column;

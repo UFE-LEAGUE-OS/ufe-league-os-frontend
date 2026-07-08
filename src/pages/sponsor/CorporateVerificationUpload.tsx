@@ -11,7 +11,6 @@ import {
   FiHelpCircle,
   FiCheckCircle,
 } from 'react-icons/fi';
-import Navbar from '../../components/Navbar';
 import '../../styles/pages/landing.css';
 import './CorporateVerificationUpload.css';
 
@@ -95,7 +94,6 @@ export default function CorporateVerificationUpload() {
 
   return (
     <div className="cvu-page">
-      <Navbar />
 
       <main className="cvu-main landing-page">
 

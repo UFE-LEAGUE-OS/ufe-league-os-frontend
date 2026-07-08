@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiArrowLeft, FiArrowRight, FiCheck } from 'react-icons/fi';
-import Navbar from '../../components/Navbar';
 import '../../styles/pages/landing.css';
 import './IndividualSponsorPreferences.css';
 
@@ -60,7 +59,6 @@ export default function IndividualSponsorPreferences() {
 
   return (
     <div className="isp-page">
-      <Navbar />
 
       <main className="isp-main landing-page">
 

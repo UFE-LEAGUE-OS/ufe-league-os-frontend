@@ -80,7 +80,7 @@ export default function SponsorSidebar() {
         </p>
         <button
           className="sp-cta-btn"
-          onClick={() => navigate('/sponsor/apply')}
+          onClick={() => navigate('/sponsor/campaigns/new')}
         >
           Get Started
         </button>

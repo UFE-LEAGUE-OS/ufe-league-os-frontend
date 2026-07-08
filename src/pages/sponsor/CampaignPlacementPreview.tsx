@@ -7,7 +7,6 @@ import {
   FiArrowRight,
   FiCheckCircle,
 } from 'react-icons/fi';
-import Navbar from '../../components/Navbar';
 import SponsorSidebar from '../../components/SponsorSidebar';
 import '../../styles/pages/landing.css';
 import './CampaignPlacementPreview.css';
@@ -46,7 +45,6 @@ export default function CampaignPlacementPreview() {
 
   return (
     <div className="cpp-page">
-      <Navbar />
 
       <div className="cpp-layout">
         <SponsorSidebar />

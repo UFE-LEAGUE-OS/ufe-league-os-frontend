@@ -12,7 +12,6 @@ import {
   FiClock,
   FiUser,
 } from 'react-icons/fi';
-import Navbar from '../../components/Navbar';
 import SponsorSidebar from '../../components/SponsorSidebar';
 import '../../styles/pages/landing.css';
 import './SponsorPermissions.css';
@@ -98,7 +97,6 @@ export default function SponsorPermissions() {
 
   return (
     <div className="sp-page">
-      <Navbar />
 
       <div className="sp-layout">
         <SponsorSidebar />

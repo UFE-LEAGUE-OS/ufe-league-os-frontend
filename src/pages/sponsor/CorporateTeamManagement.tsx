@@ -15,7 +15,6 @@ import {
   FiChevronLeft,
   FiChevronRight,
 } from 'react-icons/fi';
-import Navbar from '../../components/Navbar';
 import SponsorSidebar from '../../components/SponsorSidebar';
 import '../../styles/pages/landing.css';
 import './CorporateTeamManagement.css';
@@ -161,7 +160,6 @@ export default function CorporateTeamManagement() {
 
   return (
     <div className="ctm-page">
-      <Navbar />
 
       <div className="ctm-layout">
         <SponsorSidebar />

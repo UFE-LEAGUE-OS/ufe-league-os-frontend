@@ -7,7 +7,6 @@ import {
   FiUser,
   FiHeart,
 } from 'react-icons/fi';
-import Navbar from '../../components/Navbar';
 import '../../styles/pages/landing.css';
 import './IndividualSponsorReview.css';
 
@@ -25,7 +24,6 @@ export default function IndividualSponsorReview() {
 
   return (
     <div className="isr-page">
-      <Navbar />
 
       <main className="isr-main landing-page">
 
