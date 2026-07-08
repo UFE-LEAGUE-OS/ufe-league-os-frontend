@@ -1,5 +1,6 @@
 import {
     Bell,
+    Building2,
     CalendarDays,
     Crown,
     LogOut,
@@ -36,6 +37,10 @@ import {
     type PublicClubApi,
     type PublicFixtureApi,
 } from "../../services/publicDashboardService";
+import {
+    getMyUnionWorkspaces,
+    type UnionWorkspaceOption,
+} from "../../services/unionAdminService";
 import styles from "./FanDashboardPage.module.css";
 
 const summaryCards = [
@@ -502,7 +507,7 @@ function normalizeDashboardPaymentStatus(status: string) {
 
 
 function FanDashboardPage() {
-    const { currentUser } = useCurrentUser();
+    const { currentUser, profile } = useCurrentUser();
     const { logout } = useAuth();
     const navigate = useNavigate();
     const [isCustomizeOpen, setIsCustomizeOpen] = useState(false);
@@ -524,6 +529,7 @@ function FanDashboardPage() {
     const [dashboardClubs, setDashboardClubs] = useState<DashboardClub[]>([]);
     const [isLoadingClubs, setIsLoadingClubs] = useState(true);
     const [clubError, setClubError] = useState("");
+    const [unionWorkspaces, setUnionWorkspaces] = useState<UnionWorkspaceOption[]>([]);
 
     const loadDashboardMemberships = useCallback(async () => {
         setIsLoadingMemberships(true);
@@ -604,6 +610,30 @@ function FanDashboardPage() {
         void loadDashboardClubs();
     }, [loadDashboardClubs, loadDashboardFixtures]);
 
+    useEffect(() => {
+        let isMounted = true;
+
+        async function loadUnionWorkspaces() {
+            try {
+                const workspaces = await getMyUnionWorkspaces();
+
+                if (isMounted) {
+                    setUnionWorkspaces(workspaces);
+                }
+            } catch {
+                if (isMounted) {
+                    setUnionWorkspaces([]);
+                }
+            }
+        }
+
+        void loadUnionWorkspaces();
+
+        return () => {
+            isMounted = false;
+        };
+    }, []);
+
     const loadDashboardTickets = useCallback(async () => {
         setIsLoadingTickets(true);
         setTicketError("");
@@ -670,6 +700,14 @@ function FanDashboardPage() {
         dashboardSponsorPlacements[sponsorPage % dashboardSponsorPlacements.length];
 
     const dashboardMembershipCount = dashboardMemberships.length;
+    const profileRoles = Array.isArray(profile?.roles)
+        ? profile.roles.map((role) => String(role).toUpperCase())
+        : [];
+    const hasUnionWorkspaceAccess =
+        unionWorkspaces.length > 0 ||
+        String(profile?.role ?? "").toUpperCase() === "UNION_ADMIN" ||
+        profileRoles.includes("UNION_ADMIN");
+    const primaryUnionWorkspace = unionWorkspaces[0] ?? null;
 
     const dashboardSummaryCards = summaryCards.map((card) => {
         if (card.label === "My Memberships") {
@@ -774,6 +812,31 @@ function FanDashboardPage() {
                     </div>
                 </div>
             )}
+
+            {hasUnionWorkspaceAccess ? (
+                <div className={styles.unionWorkspacePanel}>
+                    <span className={styles.unionWorkspaceIcon}>
+                        <Building2 size={24} strokeWidth={2.3} aria-hidden="true" />
+                    </span>
+
+                    <div>
+                        <span className={styles.unionWorkspaceEyebrow}>
+                            Admin workspace available
+                        </span>
+                        <h2>
+                            Switch to {primaryUnionWorkspace?.acronym ?? "Union"} Admin Workspace
+                        </h2>
+                        <p>
+                            Your fan account is attached to {unionWorkspaces.length || "a"} union
+                            workspace{unionWorkspaces.length === 1 ? "" : "s"}. Open the Union Admin
+                            portal to manage federations, competitions, clubs, officials and
+                            registrations.
+                        </p>
+                    </div>
+
+                    <Link to="/dashboard/union-admin">Open Union Workspace</Link>
+                </div>
+            ) : null}
 
             <div className={styles.summaryGrid}>
                 {dashboardSummaryCards.map((card) => {

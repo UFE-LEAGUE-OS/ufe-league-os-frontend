@@ -1,6 +1,7 @@
 import {
     BarChart3,
     Bell,
+    Building2,
     CalendarDays,
     CircleHelp,
     Compass,
@@ -22,6 +23,7 @@ import {
 import type { LucideIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
+import { getMyUnionWorkspaces } from "../../services/unionAdminService";
 import styles from "./MobileFanNavigation.module.css";
 
 interface MobileNavLink {
@@ -58,6 +60,7 @@ const drawerSections: MobileNavSection[] = [
         links: [
             { label: "Competitions", href: "/competitions", icon: Trophy },
             { label: "Clubs & Teams", href: "/clubs", icon: Users },
+            { label: "Unions", href: "/unions", icon: Building2 },
             { label: "Fixtures", href: "/fixtures", icon: CalendarDays },
             { label: "Results", href: "/results", icon: BarChart3 },
             { label: "Tickets", href: "/tickets", icon: Ticket },
@@ -85,7 +88,32 @@ const drawerSections: MobileNavSection[] = [
 
 function MobileFanNavigation() {
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+    const [unionWorkspaceCount, setUnionWorkspaceCount] = useState(0);
     const location = useLocation();
+
+    useEffect(() => {
+        let isMounted = true;
+
+        async function loadUnionWorkspaceCount() {
+            try {
+                const workspaces = await getMyUnionWorkspaces();
+
+                if (isMounted) {
+                    setUnionWorkspaceCount(workspaces.length);
+                }
+            } catch {
+                if (isMounted) {
+                    setUnionWorkspaceCount(0);
+                }
+            }
+        }
+
+        void loadUnionWorkspaceCount();
+
+        return () => {
+            isMounted = false;
+        };
+    }, []);
 
     useEffect(() => {
         setIsDrawerOpen(false);
@@ -122,6 +150,25 @@ function MobileFanNavigation() {
                 </div>
 
                 <div className={styles.drawerContent}>
+                    {unionWorkspaceCount > 0 ? (
+                        <section className={styles.drawerSection}>
+                            <h2>Admin workspace</h2>
+                            <div className={styles.drawerLinks}>
+                                <NavLink
+                                    to="/dashboard/union-admin"
+                                    className={({ isActive }) =>
+                                        isActive
+                                            ? `${styles.drawerLink} ${styles.activeDrawerLink}`
+                                            : styles.drawerLink
+                                    }
+                                >
+                                    <Building2 size={19} strokeWidth={2.2} aria-hidden="true" />
+                                    Union Workspace
+                                </NavLink>
+                            </div>
+                        </section>
+                    ) : null}
+
                     {drawerSections.map((section) => (
                         <section className={styles.drawerSection} key={section.title}>
                             <h2>{section.title}</h2>

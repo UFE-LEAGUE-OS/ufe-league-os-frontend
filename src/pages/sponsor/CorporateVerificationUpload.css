@@ -1,6 +1,4 @@
-/* ═══════════════════════════════════════════════
-   CORPORATE VERIFICATION UPLOAD
-   ═══════════════════════════════════════════════ */
+
 
 .cvu-page {
   display: flex;
@@ -11,12 +9,6 @@
   font-family: 'Inter', sans-serif;
 }
 
-.cvu-layout {
-  display: flex;
-  flex: 1;
-  min-height: 0;
-}
-
 .cvu-main {
   flex: 1;
   min-width: 0;
@@ -24,7 +16,6 @@
   padding: 32px 48px 60px;
 }
 
-/* ── Back link ───────────────────────────────── */
 .cvu-back-link {
   display: inline-flex;
   align-items: center;
@@ -41,7 +32,6 @@
 }
 .cvu-back-link:hover { color: #ffffff; }
 
-/* ── Header ──────────────────────────────────── */
 .cvu-header { margin-bottom: 28px; }
 
 .cvu-title {
@@ -58,7 +48,6 @@
   margin: 0;
 }
 
-/* ── Stepper ─────────────────────────────────── */
 .cvu-stepper {
   display: flex;
   align-items: flex-start;
@@ -91,7 +80,6 @@
   background: #1e2340;
   color: #6B7280;
   border: 2px solid #1e2340;
-  flex-shrink: 0;
 }
 
 .cvu-step-circle-active {
@@ -129,7 +117,6 @@
 
 .cvu-step-line-completed { background: #8135FA; }
 
-/* ── Body ────────────────────────────────────── */
 .cvu-body {
   display: grid;
   grid-template-columns: 1fr 260px;
@@ -138,7 +125,6 @@
   margin-bottom: 32px;
 }
 
-/* ── Upload cards ────────────────────────────── */
 .cvu-uploads {
   display: flex;
   flex-direction: column;
@@ -181,7 +167,6 @@
   margin: 0 0 4px;
 }
 
-/* Drop zone */
 .cvu-drop-zone {
   border: 2px dashed #1e2340;
   border-radius: 12px;
@@ -218,10 +203,7 @@
 }
 .cvu-upload-btn:hover { background: #9b55fb; }
 
-.cvu-drag-text {
-  font-size: 12px;
-  color: #6B7280;
-}
+.cvu-drag-text { font-size: 12px; color: #6B7280; }
 
 .cvu-uploaded {
   display: flex;
@@ -239,7 +221,6 @@
   text-align: center;
 }
 
-/* ── Tips panel ──────────────────────────────── */
 .cvu-tips-panel {
   display: flex;
   flex-direction: column;
@@ -307,7 +288,6 @@
   line-height: 1.5;
 }
 
-/* Assistance card */
 .cvu-assistance-card {
   background: rgba(18, 19, 31, 0.92);
   border: 1px solid #1e2340;
@@ -348,7 +328,6 @@
   background: rgba(129, 53, 250, 0.08);
 }
 
-/* ── Bottom nav ──────────────────────────────── */
 .cvu-bottom-nav {
   display: flex;
   align-items: center;
@@ -394,7 +373,6 @@
   transform: scale(1.02);
 }
 
-/* ── Responsive ──────────────────────────────── */
 @media (max-width: 1280px) {
   .cvu-main { padding: 28px 32px 48px; }
   .cvu-body { grid-template-columns: 1fr 220px; }

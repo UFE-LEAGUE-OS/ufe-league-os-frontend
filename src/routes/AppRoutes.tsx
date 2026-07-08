@@ -3,7 +3,6 @@ import {
     Navigate,
     Route,
     Routes,
-
 } from 'react-router-dom';
 
 import { type ReactNode } from 'react';
@@ -66,6 +65,7 @@ import MyMembershipsPage from '../pages/memberships/MyMembershipsPage';
 import MyTicketsPage from '../pages/fan/MyTicketsPage';
 import TicketDetailPage from '../pages/fan/TicketDetailPage';
 import ProtectedRoute from './ProtectedRoute';
+import RoleProtectedRoute from './RoleProtectedRoute';
 import Payments from '../pages/PaymentPage';
 import FanPollsPage from '../pages/fan/FanPollsPage';
 import TicketCheckoutPage from '../pages/tickets/TicketCheckoutPage';
@@ -79,14 +79,16 @@ import SuperAdminDashboard from '../pages/SuperAdminDashboard';
 import SuperVariants from '../pages/SuperVariantsPage';
 import RulesAndStandards from '../pages/SuperAdminRules';
 import CompetitionConfigurator from '../pages/CompetitionConfigurator';
-import PublishStandards from "../pages/PublishStandards";
-import FantasyModuleConfig from "../pages/super-admin/fantasy/FantasyModuleConfig";
-import ScoringRules from "../pages/super-admin/fantasy/ScoringRules";
-import TransferRules from "../pages/super-admin/fantasy/TransferRules";
-import SquadLimits from "../pages/super-admin/fantasy/SquadLimits";
-import CompetitionMappings from "../pages/super-admin/fantasy/CompetitionMappings";
-import SeasonGameweekSettings from "../pages/super-admin/fantasy/SeasonGameweekSettings";
-import PriceStructureGovernance from "../pages/super-admin/fantasy/PriceStructureGovernance";
+import PublishStandards from '../pages/PublishStandards';
+import FantasyModuleConfig from '../pages/super-admin/fantasy/FantasyModuleConfig';
+import ScoringRules from '../pages/super-admin/fantasy/ScoringRules';
+import TransferRules from '../pages/super-admin/fantasy/TransferRules';
+import SquadLimits from '../pages/super-admin/fantasy/SquadLimits';
+import CompetitionMappings from '../pages/super-admin/fantasy/CompetitionMappings';
+import SeasonGameweekSettings from '../pages/super-admin/fantasy/SeasonGameweekSettings';
+import PriceStructureGovernance from '../pages/super-admin/fantasy/PriceStructureGovernance';
+import EligibilityRosterRules from '../pages/super-admin/fantasy/EligibilityRosterRules';
+import PublishChangesWorkflow from '../pages/super-admin/fantasy/PublishChangesWorkflow';
 import SuperAdminHome from '../pages/super-admin/SuperAdminHome';
 import UserManagement from '../pages/admin/UserManagement';
 import RoleTemplates from '../pages/admin/RoleTemplates';
@@ -103,10 +105,16 @@ import ChargebacksRefundsPage from '../pages/super-admin/chargebacks-refunds';
 import DataAccessLogPage from '../pages/super-admin/data-access-log';
 import SecurityEventsPage from '../pages/super-admin/security-events';
 import SuperAdminProfilePage from '../pages/super-admin/SuperAdminProfilePage';
+
+// Sponsor pages
 import SponsorshipHub from '../pages/sponsor/SponsorshipHub';
 import IndividualSponsorSetup from '../pages/sponsor/IndividualSponsorSetup';
+import IndividualSponsorPreferences from '../pages/sponsor/IndividualSponsorPreferences';
+import IndividualSponsorReview from '../pages/sponsor/IndividualSponsorReview';
+import IndividualSponsorComplete from '../pages/sponsor/IndividualSponsorComplete';
 import CorporateSponsorSetup from '../pages/sponsor/CorporateSponsorSetup';
 import CorporateVerificationUpload from '../pages/sponsor/CorporateVerificationUpload';
+import CorporateContactPerson from '../pages/sponsor/CorporateContactPerson';
 import CorporateSponsorDashboard from '../pages/sponsor/CorporateSponsorDashboard';
 import CorporateTeamManagement from '../pages/sponsor/CorporateTeamManagement';
 import SponsorPermissions from '../pages/sponsor/SponsorPermissions';
@@ -114,9 +122,23 @@ import SponsorPackages from '../pages/sponsor/SponsorPackages';
 import CampaignCreation from '../pages/sponsor/CampaignCreation';
 import CampaignAnalytics from '../pages/sponsor/CampaignAnalytics';
 import CampaignPlacementPreview from '../pages/sponsor/CampaignPlacementPreview';
+import CorporateSponsorReview from '../pages/sponsor/CorporateSponsorReview';
+import CorporateSponsorComplete from '../pages/sponsor/CorporateSponsorComplete';
+import SponsorCampaigns from '../pages/sponsor/SponsorCampaigns';
+import SponsorSettings from '../pages/sponsor/SponsorSettings';
+import SponsorHelp from '../pages/sponsor/SponsorHelp';
+import UnionAdminDashboard from '../pages/union-admin/UnionAdminDashboard';
 
 function protectedPage(page: ReactNode) {
     return <ProtectedRoute>{page}</ProtectedRoute>;
+}
+
+function roleProtectedPage(page: ReactNode, allowedRoles: string[], redirectTo?: string) {
+    return (
+        <RoleProtectedRoute allowedRoles={allowedRoles} redirectTo={redirectTo}>
+            {page}
+        </RoleProtectedRoute>
+    );
 }
 
 export default function AppRoutes() {
@@ -139,8 +161,10 @@ export default function AppRoutes() {
                 <Route path="/super-admin/competition-formats" element={<CompetitionConfigurator />} />
                 <Route path="/super-admin/publish-standards" element={<PublishStandards />} />
 
-
                 <Route path="/dashboard" element={protectedPage(<Navigate to="/dashboard/fan" replace />)} />
+
+                <Route path="/union-admin" element={protectedPage(<Navigate to="/dashboard/union-admin" replace />)} />
+                <Route path="/dashboard/union-admin" element={roleProtectedPage(<UnionAdminDashboard />, ['UNION_ADMIN'])} />
 
                 <Route element={protectedPage(<AuthenticatedLayout />)}>
                     <Route path="/dashboard/fan" element={<Dashboard />} />
@@ -153,11 +177,13 @@ export default function AppRoutes() {
                     <Route path="/profile/notifications" element={<ProfileNotifications />} />
                     <Route path="/profile/privacy" element={<ProfilePrivacy />} />
                     <Route path="/profile/support" element={<ProfileSupport />} />
+
                     <Route path="/memberships" element={<ExploreMembershipsPage />} />
                     <Route path="/memberships/:clubSlug" element={<ClubMembershipDetailPage />} />
                     <Route path="/memberships/:clubSlug/checkout" element={<MembershipCheckoutPage />} />
                     <Route path="/memberships/:clubSlug/success" element={<MembershipSuccessPage />} />
                     <Route path="/memberships/:clubSlug/failed" element={<MembershipFailedPage />} />
+                    <Route path="/memberships/payment/processing" element={<MembershipPaymentProcessingPage />} />
                     <Route path="/dashboard/memberships" element={<MyMembershipsPage />} />
 
                     {/* Fan Interaction */}
@@ -165,6 +191,9 @@ export default function AppRoutes() {
                     <Route path="/dashboard/tickets" element={<MyTicketsPage />} />
                     <Route path="/dashboard/tickets/:ticketId" element={<TicketDetailPage />} />
                     <Route path="/tickets/:matchId/checkout" element={<TicketCheckoutPage />} />
+                    <Route path="/tickets/payment/processing" element={<TicketPaymentProcessingPage />} />
+                    <Route path="/tickets/payment/success" element={<TicketPaymentSuccessPage />} />
+                    <Route path="/tickets/payment/failed" element={<TicketPaymentFailedPage />} />
 
                     {/* Fantasy — protected, requires login */}
                     <Route path="/fantasy" element={<FantasyPage />} />
@@ -209,8 +238,14 @@ export default function AppRoutes() {
                 {/* Sponsor routes */}
                 <Route path="/sponsorhub" element={<SponsorshipHub />} />
                 <Route path="/sponsor/individualsetup" element={<IndividualSponsorSetup />} />
+                <Route path="/sponsor/individual/preferences" element={<IndividualSponsorPreferences />} />
+                <Route path="/sponsor/individual/review" element={<IndividualSponsorReview />} />
+                <Route path="/sponsor/individual/complete" element={<IndividualSponsorComplete />} />
                 <Route path="/sponsor/corporatesetup" element={<CorporateSponsorSetup />} />
+                <Route path="/sponsor/corporatesetup/contact" element={<CorporateContactPerson />} />
                 <Route path="/sponsor/corporatesetup/verification" element={<CorporateVerificationUpload />} />
+                <Route path="/sponsor/corporatesetup/review" element={<CorporateSponsorReview />} />
+                <Route path="/sponsor/corporatesetup/complete" element={<CorporateSponsorComplete />} />
                 <Route path="/sponsor/dashboard" element={<CorporateSponsorDashboard />} />
                 <Route path="/sponsor/team" element={<CorporateTeamManagement />} />
                 <Route path="/sponsor/permissions" element={<SponsorPermissions />} />
@@ -218,21 +253,21 @@ export default function AppRoutes() {
                 <Route path="/sponsor/campaigns/new" element={<CampaignCreation />} />
                 <Route path="/sponsor/analytics" element={<CampaignAnalytics />} />
                 <Route path="/sponsor/campaigns/preview" element={<CampaignPlacementPreview />} />
-
+                <Route path="/sponsor/campaigns" element={<SponsorCampaigns />} />
+                <Route path="/sponsor/settings" element={<SponsorSettings />} />
+                <Route path="/sponsor/support" element={<SponsorHelp />} />
 
                 <Route path="/payments" element={<Payments />} />
 
-                {/* Super Admin routes - only accessible by users with super admin privileges */}
-                <Route path="/dashboard/super-admin" element={<SuperAdminDashboard />} >
+                {/* Super Admin routes */}
+                <Route path="/dashboard/super-admin" element={roleProtectedPage(<SuperAdminDashboard />, ['SUPER_ADMIN'])}>
                     <Route index element={<SuperAdminHome />} />
                     <Route path="dashboard" element={<SuperAdminHome />} />
 
-
-
-                    {/* ── User Management ── */}
+                    {/* User Management */}
                     <Route path="users-management" element={<UserManagement />} />
 
-                    {/* ── Governance / Role & Permission pages ── */}
+                    {/* Governance / Role & Permission pages */}
                     <Route path="role-templates" element={<RoleTemplates />} />
                     <Route path="permissions" element={<PermissionBundles />} />
                     <Route path="cross-role" element={<CrossRoleAccess />} />
@@ -241,7 +276,7 @@ export default function AppRoutes() {
                     <Route path="sessions" element={<SessionManagement />} />
                     <Route path="impersonate" element={<ImpersonateUser />} />
 
-                    {/* ── Finance ── */}
+                    {/* Finance */}
                     <Route path="payments-audit" element={<PaymentsAuditPage />} />
                     <Route path="transaction-trail" element={<TransactionTrailPage />} />
                     <Route path="approvals-queue" element={<ApprovalsQueuePage />} />
@@ -250,7 +285,7 @@ export default function AppRoutes() {
                     <Route path="security-events" element={<SecurityEventsPage />} />
                     <Route path="profile" element={<SuperAdminProfilePage />} />
 
-                    {/* ── Fantasy Module Config ── */}
+                    {/* Fantasy Module Config */}
                     <Route path="fantasy-config" element={<FantasyModuleConfig />} />
                     <Route path="fantasy-config/scoring" element={<ScoringRules />} />
                     <Route path="fantasy-config/transfers" element={<TransferRules />} />
@@ -258,9 +293,10 @@ export default function AppRoutes() {
                     <Route path="fantasy-config/competition-mappings" element={<CompetitionMappings />} />
                     <Route path="fantasy-config/season-gameweek" element={<SeasonGameweekSettings />} />
                     <Route path="fantasy-config/price-structure" element={<PriceStructureGovernance />} />
+                    <Route path="fantasy-config/eligibility-roster" element={<EligibilityRosterRules />} />
+                    <Route path="fantasy-config/publish-changes" element={<PublishChangesWorkflow />} />
                 </Route>
             </Routes>
-
         </Router>
     );
 }

@@ -1,5 +1,30 @@
 import apiClient from "./apiClient.js";
 
+export interface PublicUnionApi {
+    id: number;
+    name: string;
+    slug: string;
+    logo?: string | null;
+    description?: string;
+    website?: string;
+    founded_year?: number | null;
+    country?: string;
+    created_at?: string;
+}
+
+export interface PublicLeagueApi {
+    id: number;
+    name: string;
+    slug: string;
+    logo?: string | null;
+    description?: string;
+    union: number;
+    union_name: string;
+    founded_year?: number | null;
+    is_active: boolean;
+    created_at?: string;
+}
+
 export interface PublicClubApi {
     id: number;
     name: string;
@@ -65,6 +90,23 @@ export interface PublicFixtureApi {
     home_score?: number | null;
     away_score?: number | null;
     created_at?: string;
+}
+
+export async function getPublicUnions(): Promise<PublicUnionApi[]> {
+    const response = await apiClient.get<PublicUnionApi[]>(
+        "/dashboards/public/unions/",
+    );
+
+    return response.data;
+}
+
+export async function getPublicLeagues(unionId?: number): Promise<PublicLeagueApi[]> {
+    const query = unionId ? `?union=${encodeURIComponent(String(unionId))}` : "";
+    const response = await apiClient.get<PublicLeagueApi[]>(
+        `/dashboards/public/leagues/${query}`,
+    );
+
+    return response.data;
 }
 
 export async function getPublicClubs(): Promise<PublicClubApi[]> {

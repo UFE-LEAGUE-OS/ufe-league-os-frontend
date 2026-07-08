@@ -24,7 +24,6 @@
   gap: 24px;
 }
 
-/* ── Hero card ───────────────────────────────── */
 .csd-hero-card {
   background: linear-gradient(135deg, #0d0e1f 0%, #12131F 60%, #1a0a2e 100%);
   border: 1px solid #1e2340;
@@ -144,7 +143,6 @@
 .csd-bar-orange { background: #F97316; }
 .csd-bar-red { background: #DC2626; }
 
-/* ── Stats row ───────────────────────────────── */
 .csd-stats-row {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -195,7 +193,6 @@
   color: #16a34a;
 }
 
-/* ── Bottom section ──────────────────────────── */
 .csd-bottom {
   display: grid;
   grid-template-columns: 1fr 280px;
@@ -203,7 +200,6 @@
   align-items: start;
 }
 
-/* ── Campaigns card ──────────────────────────── */
 .csd-campaigns-card {
   background: rgba(18, 19, 31, 0.92);
   border: 1px solid #1e2340;
@@ -337,7 +333,6 @@
   flex-shrink: 0;
 }
 
-/* ── Quick actions ───────────────────────────── */
 .csd-quick-actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -403,7 +398,6 @@
 }
 .csd-action-btn:hover { background: #9b55fb; }
 
-/* ── Responsive ──────────────────────────────── */
 @media (max-width: 1280px) {
   .csd-main { padding: 28px 28px 48px; }
   .csd-bottom { grid-template-columns: 1fr 240px; }
@@ -428,4 +422,21 @@
 @media (max-width: 480px) {
   .csd-stats-row { grid-template-columns: 1fr; }
   .csd-quick-actions { grid-template-columns: 1fr; }
+}
+
+.csd-individual-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #8135FA 0%, #F97316 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  font-weight: 900;
+  color: #ffffff;
+}
+
+.csd-page-type-badge {
+  display: none;
 }
