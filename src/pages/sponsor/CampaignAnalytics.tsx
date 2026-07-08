@@ -21,7 +21,6 @@ import {
   Pie,
   Cell,
 } from 'recharts';
-import Navbar from '../../components/Navbar';
 import SponsorSidebar from '../../components/SponsorSidebar';
 import '../../styles/pages/landing.css';
 import './CampaignAnalytics.css';
@@ -90,7 +89,7 @@ export default function CampaignAnalytics() {
 
   return (
     <div className="ca-page">
-      <Navbar />
+
 
       <div className="ca-layout">
         <SponsorSidebar />

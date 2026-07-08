@@ -11,8 +11,6 @@ import {
   FiHelpCircle,
   FiCheckCircle,
 } from 'react-icons/fi';
-import Navbar from '../../components/Navbar';
-import SponsorSidebar from '../../components/SponsorSidebar';
 import '../../styles/pages/landing.css';
 import './CorporateVerificationUpload.css';
 
@@ -24,7 +22,7 @@ const steps = [
   { number: 5, label: 'Complete' },
 ];
 
-const currentStep = 4;
+const currentStep = 3;
 
 const uploadDocs = [
   {
@@ -96,164 +94,162 @@ export default function CorporateVerificationUpload() {
 
   return (
     <div className="cvu-page">
-      <Navbar />
 
-      <div className="cvu-layout">
-        <SponsorSidebar />
+      <main className="cvu-main landing-page">
 
-        <main className="cvu-main landing-page">
+        {/* Back link */}
+        <button
+          className="cvu-back-link"
+          onClick={() => navigate('/sponsor/corporatesetup/contact')}
+        >
+          <FiArrowLeft size={15} />
+          Back to Contact Person
+        </button>
 
-          {/* Back link */}
-          <button className="cvu-back-link" onClick={() => navigate('/sponsor/corporatesetup/contact')}>
-            <FiArrowLeft size={15} />
-            Back to Sponsorship Hub
-          </button>
+        {/* Header */}
+        <div className="cvu-header">
+          <h1 className="cvu-title">Corporate Verification Upload</h1>
+          <p className="cvu-subtitle">
+            Tell us about your organization so we can tailor the best partnership experience.
+          </p>
+        </div>
 
-          {/* Header */}
-          <div className="cvu-header">
-            <h1 className="cvu-title">Corporate Verification Upload</h1>
-            <p className="cvu-subtitle">
-              Tell us about your organization so we can tailor the best partnership experience.
-            </p>
-          </div>
-
-          {/* Stepper */}
-          <div className="cvu-stepper">
-            {steps.map((step, index) => {
-              const isActive = step.number === currentStep;
-              const isCompleted = step.number < currentStep;
-              return (
-                <div key={step.number} className="cvu-step-wrap">
-                  <div className="cvu-step">
-                    <div className={`cvu-step-circle ${isActive ? 'cvu-step-circle-active' : ''} ${isCompleted ? 'cvu-step-circle-completed' : ''}`}>
-                      {isCompleted ? <FiCheckCircle size={18} /> : step.number}
-                    </div>
-                    <div className={`cvu-step-label ${isActive ? 'cvu-step-label-active' : ''}`}>
-                      {step.label}
-                    </div>
+        {/* Stepper */}
+        <div className="cvu-stepper">
+          {steps.map((step, index) => {
+            const isActive = step.number === currentStep;
+            const isCompleted = step.number < currentStep;
+            return (
+              <div key={step.number} className="cvu-step-wrap">
+                <div className="cvu-step">
+                  <div className={`cvu-step-circle ${isActive ? 'cvu-step-circle-active' : ''} ${isCompleted ? 'cvu-step-circle-completed' : ''}`}>
+                    {isCompleted ? <FiCheckCircle size={18} /> : step.number}
                   </div>
-                  {index < steps.length - 1 && (
-                    <div className={`cvu-step-line ${isCompleted ? 'cvu-step-line-completed' : ''}`} />
+                  <div className={`cvu-step-label ${isActive ? 'cvu-step-label-active' : ''}`}>
+                    {step.label}
+                  </div>
+                </div>
+                {index < steps.length - 1 && (
+                  <div className={`cvu-step-line ${isCompleted ? 'cvu-step-line-completed' : ''}`} />
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Body */}
+        <div className="cvu-body">
+
+          {/* Upload cards */}
+          <div className="cvu-uploads">
+            {uploadDocs.map((doc) => (
+              <div key={doc.id} className="cvu-upload-card">
+                <div className="cvu-upload-info">
+                  <h3 className="cvu-upload-title">
+                    {doc.title}
+                    <FiHelpCircle size={14} className="cvu-help-icon" />
+                  </h3>
+                  <p className="cvu-upload-desc">{doc.desc}</p>
+                  <p className="cvu-upload-formats">{doc.formats}</p>
+                  {doc.recommended && (
+                    <p className="cvu-upload-formats">{doc.recommended}</p>
                   )}
                 </div>
-              );
-            })}
-          </div>
 
-          {/* Body */}
-          <div className="cvu-body">
-
-            {/* Upload cards */}
-            <div className="cvu-uploads">
-              {uploadDocs.map((doc) => (
-                <div key={doc.id} className="cvu-upload-card">
-                  <div className="cvu-upload-info">
-                    <h3 className="cvu-upload-title">
-                      {doc.title}
-                      <FiHelpCircle size={14} className="cvu-help-icon" />
-                    </h3>
-                    <p className="cvu-upload-desc">{doc.desc}</p>
-                    <p className="cvu-upload-formats">{doc.formats}</p>
-                    {doc.recommended && (
-                      <p className="cvu-upload-formats">{doc.recommended}</p>
-                    )}
-                  </div>
-
-                  <div
-                    className="cvu-drop-zone"
-                    onDragOver={(e) => e.preventDefault()}
-                    onDrop={(e) => handleDrop(doc.id, e)}
-                    onClick={() => inputRefs.current[doc.id]?.click()}
-                  >
-                    <input
-                      type="file"
-                      className="cvu-file-input"
-                      ref={(el) => { inputRefs.current[doc.id] = el; }}
-                      onChange={(e) => handleFileChange(doc.id, e)}
-                    />
-                    {uploads[doc.id] ? (
-                      <div className="cvu-uploaded">
-                        <FiCheckCircle size={22} className="cvu-uploaded-icon" />
-                        <span className="cvu-uploaded-name">{uploads[doc.id]!.name}</span>
-                      </div>
-                    ) : (
-                      <>
-                        <FiUpload size={24} className="cvu-upload-icon" />
-                        <button
-                          className="cvu-upload-btn"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            inputRefs.current[doc.id]?.click();
-                          }}
-                        >
-                          Upload File
-                        </button>
-                        <span className="cvu-drag-text">or drag and drop</span>
-                      </>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Right tips panel */}
-            <div className="cvu-tips-panel">
-              <div className="cvu-tips-card">
-                <div className="cvu-tips-header">
-                  <FiShield size={18} className="cvu-shield-icon" />
-                  <h3 className="cvu-tips-title">Verification Tips</h3>
-                </div>
-                <div className="cvu-tips-list">
-                  {tips.map((tip) => {
-                    const Icon = tip.icon;
-                    return (
-                      <div key={tip.title} className="cvu-tip-item">
-                        <div className="cvu-tip-icon-wrap">
-                          <Icon size={16} className="cvu-tip-icon" />
-                        </div>
-                        <div>
-                          <div className="cvu-tip-title">{tip.title}</div>
-                          <div className="cvu-tip-desc">{tip.desc}</div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="cvu-assistance-card">
-                <div className="cvu-assistance-title">Need assistance?</div>
-                <div className="cvu-assistance-desc">Our verification team is ready to help.</div>
-                <button
-                  className="cvu-support-btn"
-                  onClick={() => navigate('/support')}
+                <div
+                  className="cvu-drop-zone"
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={(e) => handleDrop(doc.id, e)}
+                  onClick={() => inputRefs.current[doc.id]?.click()}
                 >
-                  Contact Support
-                  <FiArrowRight size={15} />
-                </button>
+                  <input
+                    type="file"
+                    className="cvu-file-input"
+                    ref={(el) => { inputRefs.current[doc.id] = el; }}
+                    onChange={(e) => handleFileChange(doc.id, e)}
+                  />
+                  {uploads[doc.id] ? (
+                    <div className="cvu-uploaded">
+                      <FiCheckCircle size={22} className="cvu-uploaded-icon" />
+                      <span className="cvu-uploaded-name">{uploads[doc.id]!.name}</span>
+                    </div>
+                  ) : (
+                    <>
+                      <FiUpload size={24} className="cvu-upload-icon" />
+                      <button
+                        className="cvu-upload-btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          inputRefs.current[doc.id]?.click();
+                        }}
+                      >
+                        Upload File
+                      </button>
+                      <span className="cvu-drag-text">or drag and drop</span>
+                    </>
+                  )}
+                </div>
               </div>
-            </div>
+            ))}
           </div>
 
-          {/* Bottom nav */}
-          <div className="cvu-bottom-nav">
-            <button
-              className="cvu-back-btn"
-              onClick={() => navigate('/sponsor/corporatesetup/contact')}
-            >
-              <FiArrowLeft size={15} />
-              Back: Contact Person
-            </button>
-            <button
-              className="cvu-next-btn"
-              onClick={() => navigate('/sponsor/corporatesetup/review')}
-            >
-              Next: Review
-              <FiArrowRight size={15} />
-            </button>
+          {/* Right tips panel */}
+          <div className="cvu-tips-panel">
+            <div className="cvu-tips-card">
+              <div className="cvu-tips-header">
+                <FiShield size={18} className="cvu-shield-icon" />
+                <h3 className="cvu-tips-title">Verification Tips</h3>
+              </div>
+              <div className="cvu-tips-list">
+                {tips.map((tip) => {
+                  const Icon = tip.icon;
+                  return (
+                    <div key={tip.title} className="cvu-tip-item">
+                      <div className="cvu-tip-icon-wrap">
+                        <Icon size={16} className="cvu-tip-icon" />
+                      </div>
+                      <div>
+                        <div className="cvu-tip-title">{tip.title}</div>
+                        <div className="cvu-tip-desc">{tip.desc}</div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="cvu-assistance-card">
+              <div className="cvu-assistance-title">Need assistance?</div>
+              <div className="cvu-assistance-desc">Our verification team is ready to help.</div>
+              <button
+                className="cvu-support-btn"
+                onClick={() => navigate('/support')}
+              >
+                Contact Support
+                <FiArrowRight size={15} />
+              </button>
+            </div>
           </div>
-        </main>
-      </div>
+        </div>
+
+        {/* Bottom nav */}
+        <div className="cvu-bottom-nav">
+          <button
+            className="cvu-back-btn"
+            onClick={() => navigate('/sponsor/corporatesetup/contact')}
+          >
+            <FiArrowLeft size={15} />
+            Back: Contact Person
+          </button>
+          <button
+            className="cvu-next-btn"
+            onClick={() => navigate('/sponsor/corporatesetup/review')}
+          >
+            Next: Review
+            <FiArrowRight size={15} />
+          </button>
+        </div>
+      </main>
     </div>
   );
 }

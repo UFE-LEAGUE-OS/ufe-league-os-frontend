@@ -472,3 +472,178 @@
         width: 134px;
     }
 }
+
+
+.workspaceButton {
+    min-height: 44px;
+    border-radius: 9px;
+    margin: 0 8px 18px;
+    padding: 0 12px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+
+    color: #ffffff;
+    background: linear-gradient(135deg, rgba(123, 63, 242, 0.95), rgba(249, 115, 22, 0.86));
+    border: 1px solid rgba(255, 255, 255, 0.14);
+
+    font-size: 13px;
+    font-weight: 1000;
+    text-align: center;
+    text-decoration: none;
+
+    box-shadow: 0 14px 28px rgba(123, 63, 242, 0.24);
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        filter 0.2s ease;
+}
+
+.workspaceButton:hover,
+.workspaceButton:focus-visible {
+    transform: translateY(-2px);
+    filter: brightness(1.05);
+    box-shadow: 0 18px 34px rgba(123, 63, 242, 0.34);
+}
+
+.workspaceButton:focus-visible {
+    outline: 3px solid rgba(123, 63, 242, 0.78);
+    outline-offset: 3px;
+}
+
+.collapsedSidebar .workspaceButton {
+    width: 48px;
+    height: 48px;
+    min-height: 48px;
+    margin: 0 auto 14px;
+    padding: 0;
+}
+
+.collapsedSidebar .workspaceButton span {
+    display: none;
+}
+
+
+.brandHeader {
+    margin: 0 8px 18px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.brandLogo {
+    width: 100%;
+    max-width: 170px;
+    height: auto;
+    display: block;
+}
+
+.logoutButton {
+    width: calc(100% - 16px);
+    min-height: 44px;
+    margin: 16px 8px 0;
+    border: 1px solid rgba(239, 68, 68, 0.28);
+    border-radius: 10px;
+    padding: 0 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    background: rgba(127, 29, 29, 0.16);
+    color: #ffffff;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 1000;
+    cursor: pointer;
+    transition:
+        transform 0.2s ease,
+        background 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.logoutButton:hover,
+.logoutButton:focus-visible {
+    transform: translateY(-1px);
+    background: rgba(220, 38, 38, 0.22);
+    border-color: rgba(239, 68, 68, 0.45);
+}
+
+.collapsedSidebar .brandHeader {
+    margin: 0 auto 14px;
+    padding-bottom: 0;
+    border-bottom: 0;
+    width: 44px;
+    overflow: hidden;
+}
+
+.collapsedSidebar .brandLogo {
+    max-width: 150px;
+}
+
+.collapsedSidebar .logoutButton {
+    width: 48px;
+    min-height: 48px;
+    margin: 16px auto 0;
+    padding: 0;
+}
+
+.collapsedSidebar .logoutButton span {
+    display: none;
+}
+
+
+/* Sidebar logout button should match normal sidebar tabs */
+.logoutButton {
+    width: 100%;
+    min-height: 42px;
+    margin-top: 14px;
+    border: 0;
+    border-radius: 9px;
+    padding: 0 12px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 11px;
+
+    background: transparent;
+    color: rgba(255, 255, 255, 0.72);
+    box-shadow: none;
+
+    font: inherit;
+    font-size: 14px;
+    font-weight: 900;
+    text-align: left;
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.logoutButton:hover,
+.logoutButton:focus-visible {
+    background: linear-gradient(135deg, rgba(123, 63, 242, 0.86), rgba(59, 23, 122, 0.78));
+    color: #ffffff;
+    transform: none;
+    outline: none;
+}
+
+.logoutButton svg {
+    color: currentColor;
+    flex: 0 0 auto;
+}
+
+.collapsedSidebar .logoutButton {
+    width: 48px;
+    min-height: 48px;
+    margin: 16px auto 0;
+    padding: 0;
+    justify-content: center;
+}
+
+.collapsedSidebar .logoutButton span {
+    display: none;
+}

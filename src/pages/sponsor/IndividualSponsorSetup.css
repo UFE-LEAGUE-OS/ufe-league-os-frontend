@@ -1,6 +1,3 @@
-/* ═══════════════════════════════════════════════
-   INDIVIDUAL SPONSOR SETUP — IndividualSponsorSetup.css
-   ═══════════════════════════════════════════════ */
 
 .iss-page {
   display: flex;
@@ -11,23 +8,14 @@
   font-family: 'Inter', sans-serif;
 }
 
-.iss-layout {
-  display: flex;
-  flex: 1;
-  min-height: 0;
-}
-
 .iss-main {
   flex: 1;
-  min-width: 0;
+  width: 100%;
   overflow-x: hidden;
   padding: 40px 48px 60px;
 }
 
-/* ── Page header ─────────────────────────────── */
-.iss-header {
-  margin-bottom: 32px;
-}
+.iss-header { margin-bottom: 32px; }
 
 .iss-title {
   font-size: 36px;
@@ -43,7 +31,6 @@
   margin: 0;
 }
 
-/* ── Progress stepper ────────────────────────── */
 .iss-stepper {
   display: flex;
   align-items: center;
@@ -108,9 +95,7 @@
   white-space: nowrap;
 }
 
-.iss-step-label-active {
-  color: #ffffff;
-}
+.iss-step-label-active { color: #ffffff; }
 
 .iss-step-sub {
   font-size: 11px;
@@ -125,11 +110,8 @@
   margin: 0 16px;
 }
 
-.iss-step-line-completed {
-  background: #8135FA;
-}
+.iss-step-line-completed { background: #8135FA; }
 
-/* ── Form card ───────────────────────────────── */
 .iss-form-card {
   background: rgba(18, 19, 31, 0.92);
   border: 1px solid #1e2340;
@@ -151,7 +133,6 @@
   margin: 0 0 28px;
 }
 
-/* ── Field layout ────────────────────────────── */
 .iss-field-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -165,9 +146,7 @@
   gap: 8px;
 }
 
-.iss-field-full {
-  margin-bottom: 20px;
-}
+.iss-field-full { margin-bottom: 20px; }
 
 .iss-label {
   font-size: 13px;
@@ -175,10 +154,7 @@
   color: #d1d5db;
 }
 
-.iss-required {
-  color: #DC2626;
-  margin-left: 2px;
-}
+.iss-required { color: #DC2626; margin-left: 2px; }
 
 .iss-field-hint {
   font-size: 12px;
@@ -186,7 +162,6 @@
   margin: -4px 0 12px;
 }
 
-/* ── Inputs ──────────────────────────────────── */
 .iss-input-wrap {
   position: relative;
   display: flex;
@@ -216,16 +191,52 @@
   box-sizing: border-box;
 }
 
-.iss-input::placeholder {
-  color: #4B5563;
+.iss-input::placeholder { color: #4B5563; }
+.iss-input:focus { border-color: #8135FA; }
+
+/* Phone */
+.iss-phone-wrap {
+  display: flex;
+  align-items: center;
+  background: #0d0e1a;
+  border: 1px solid #1e2340;
+  border-radius: 10px;
+  overflow: hidden;
+  transition: border-color 0.2s;
 }
 
-.iss-input:focus {
-  border-color: #8135FA;
+.iss-phone-wrap:focus-within { border-color: #8135FA; }
+
+.iss-phone-prefix {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 10px;
+  border-right: 1px solid #1e2340;
+  min-height: 46px;
+  color: #d1d5db;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
+.iss-flag { font-size: 16px; }
+.iss-code { font-size: 13px; }
+
+.iss-phone-input {
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  flex: 1;
+  padding: 13px 12px;
+}
+
+/* Select */
 .iss-select-wrap {
   position: relative;
+  display: flex;
+  align-items: center;
 }
 
 .iss-select {
@@ -242,9 +253,8 @@
   font-size: 12px;
 }
 
-.iss-textarea-wrap {
-  align-items: flex-start;
-}
+/* Textarea */
+.iss-textarea-wrap { align-items: flex-start; }
 
 .iss-textarea-icon {
   top: 14px;
@@ -259,7 +269,6 @@
   line-height: 1.5;
 }
 
-/* ── Sports grid ─────────────────────────────── */
 .iss-sports-grid {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
@@ -344,10 +353,7 @@
 }
 
 /* ── Footer ──────────────────────────────────── */
-.iss-footer {
-  display: flex;
-  justify-content: flex-end;
-}
+.iss-footer { display: flex; justify-content: flex-end; }
 
 .iss-next-btn {
   background: #8135FA;
