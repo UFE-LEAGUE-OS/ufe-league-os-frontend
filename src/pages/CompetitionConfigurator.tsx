@@ -89,7 +89,46 @@ type FormState = {
     tiebreakers: string;
     status: Status;
 };
+type CompetitionFormatAPIResponse = {
+    id: number;
+    sport: Sport;
 
+    variantId?: string;
+    variant_id?: string;
+
+    name: string;
+
+    type?: FormatType;
+    format_type?: FormatType;
+    competition_type?: FormatType;
+
+    legs?: Legs;
+
+    pointsWin?: number;
+    points_win?: number;
+
+    pointsDraw?: number;
+    points_draw?: number;
+
+    pointsLoss?: number;
+    points_loss?: number;
+
+    groups?: number | null;
+
+    teamsPerGroup?: number;
+    teams_per_group?: number;
+
+    advancing?: number | null;
+
+    tiebreakers?: string;
+
+    status?: Status;
+
+    leaguesUsing?: number;
+    leagues_using?: number;
+
+    updated?: string;
+};
 /* ---------------- CONSTANTS ---------------- */
 
 const SPORTS: Sport[] = ["Football", "Basketball", "Rugby"];
@@ -164,67 +203,73 @@ useEffect(() => {
         .then((response) => {
             console.log("Competition Formats API:", response.data);
 
-            const apiFormats = response.data.map((item: any) => ({
-                id: String(item.id),
+            const apiFormats = response.data.map(
+                (item: CompetitionFormatAPIResponse): CompetitionFormat => ({
+                    id: String(item.id),
 
-                sport: item.sport,
+                    sport: item.sport,
 
-                variantId:
-                    item.variantId ||
-                    item.variant_id ||
-                    "",
+                    variantId:
+                        item.variantId ||
+                        item.variant_id ||
+                        "",
 
-                name: item.name,
+                    name: item.name,
 
-                type:
-                    item.type ||
-                    item.format_type ||
-                    item.competition_type,
+                    type:
+                        item.type ||
+                        item.format_type ||
+                        item.competition_type ||
+                        "League",
 
-                legs: item.legs || "Single",
+                    legs:
+                        item.legs ||
+                        "Single",
 
-                pointsWin:
-                    item.pointsWin ||
-                    item.points_win ||
-                    0,
+                    pointsWin:
+                        item.pointsWin ||
+                        item.points_win ||
+                        0,
 
-                pointsDraw:
-                    item.pointsDraw ||
-                    item.points_draw ||
-                    0,
+                    pointsDraw:
+                        item.pointsDraw ||
+                        item.points_draw ||
+                        0,
 
-                pointsLoss:
-                    item.pointsLoss ||
-                    item.points_loss ||
-                    0,
+                    pointsLoss:
+                        item.pointsLoss ||
+                        item.points_loss ||
+                        0,
 
-                groups:
-                    item.groups ?? null,
+                    groups:
+                        item.groups ?? null,
 
-                teamsPerGroup:
-                    item.teamsPerGroup ||
-                    item.teams_per_group ||
-                    null,
+                    teamsPerGroup:
+                        item.teamsPerGroup ||
+                        item.teams_per_group ||
+                        null,
 
-                advancing:
-                    item.advancing ?? null,
+                    advancing:
+                        item.advancing ?? null,
 
-                tiebreakers:
-                    item.tiebreakers ||
-                    "",
+                    tiebreakers:
+                        item.tiebreakers ||
+                        "",
 
-                status:
-                    item.status || "Draft",
+                    status:
+                        item.status ||
+                        "Draft",
 
-                leaguesUsing:
-                    item.leaguesUsing ||
-                    item.leagues_using ||
-                    0,
+                    leaguesUsing:
+                        item.leaguesUsing ||
+                        item.leagues_using ||
+                        0,
 
-                updated:
-                    item.updated ||
-                    "Recently",
-            }));
+                    updated:
+                        item.updated ||
+                        "Recently",
+                })
+            );
 
             setFormats(apiFormats);
         })

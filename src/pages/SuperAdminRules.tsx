@@ -16,7 +16,16 @@ type Scope = "Global" | "Football" | "Basketball" | "Rugby";
 type Category = "Eligibility" | "Conduct" | "Certification" | "Facility";
 type CategoryFilter = "All" | Category;
 type Tone = "green" | "amber" | "purple" | "muted";
-
+type RuleAPIResponse = {
+    id: number;
+    scope?: Scope;
+    category?: Category;
+    title?: string;
+    description?: string;
+    status?: "Active" | "Draft" | "Archived";
+    version?: number;
+    updated_at?: string;
+};
 type Rule = {
     id: number;
     scope: Scope;
@@ -81,50 +90,59 @@ export default function RulesAndStandards() {
     const [form, setForm] = useState<FormState>(EMPTY_FORM);
 
     useEffect(() => {
-        axios
-            .get("/api/governance/rules/")
-            .then((response) => {
+    axios
+        .get("/api/governance/rules/")
+        .then((response) => {
 
-                console.log("RULES API:", response.data);
+            console.log("RULES API:", response.data);
 
-                const apiRules = response.data.map((item: any) => ({
+            const apiRules: Rule[] = response.data.map(
+                (item: RuleAPIResponse) => ({
                     id: item.id,
 
                     scope:
-                        item.scope || "Global",
+                        item.scope ||
+                        "Global",
 
                     category:
-                        item.category || "Eligibility",
+                        item.category ||
+                        "Eligibility",
 
                     title:
-                        item.title || "",
+                        item.title ||
+                        "",
 
                     description:
-                        item.description || "",
+                        item.description ||
+                        "",
 
                     status:
-                        item.status || "Draft",
+                        item.status ||
+                        "Draft",
 
                     version:
-                        item.version || 1,
+                        item.version ||
+                        1,
 
                     updated_at:
-                        item.updated_at || new Date().toISOString(),
-                }));
+                        item.updated_at ||
+                        new Date().toISOString(),
+                })
+            );
 
-                setRules(apiRules);
+            setRules(apiRules);
 
-            })
-            .catch((error) => {
+        })
+        .catch((error) => {
 
-                console.error(
-                    "Failed to fetch rules:",
-                    error
-                );
+            console.error(
+                "Failed to fetch rules:",
+                error
+            );
 
-            });
+        });
 
-    }, []);
+}, []);
 
     /* ---------------- FILTERED ---------------- */
 

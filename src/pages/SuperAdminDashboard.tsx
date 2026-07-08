@@ -38,6 +38,16 @@ interface Activity {
     time: string;
     tone: string;
 }
+interface StatusResponse {
+    status: "Active" | "Draft" | "Archived";
+}
+
+interface ActivityResponse {
+    text: string;
+    meta: string;
+    time: string;
+    tone: string;
+}
 
 export default function SuperAdminDashboard() {
     
@@ -94,7 +104,6 @@ const GOVERNANCE_PIPELINE = [
 
 useEffect(() => {
 
-
     // Dashboard statistics
     axios
         .get("/api/dashboard/stats/")
@@ -120,33 +129,34 @@ useEffect(() => {
 
 
     // Recent activity
-    // Recent activity
-axios
-    .get("/api/dashboard/activity/")
-    .then((response) => {
+    axios
+        .get("/api/dashboard/activity/")
+        .then((response) => {
 
-        console.log(
-            "ACTIVITY:",
-            response.data
-        );
-
-
-        const activityData = Array.isArray(response.data)
-            ? response.data
-            : response.data.results || response.data.activities || [];
+            console.log(
+                "ACTIVITY:",
+                response.data
+            );
 
 
-        setActivities(activityData);
+            const activityData: ActivityResponse[] = Array.isArray(response.data)
+                ? response.data
+                : response.data.results || response.data.activities || [];
 
-    })
-    .catch((error) => {
 
-        console.error(
-            "Activity error:",
-            error
-        );
+            setActivities(activityData);
 
-    });
+        })
+        .catch((error) => {
+
+            console.error(
+                "Activity error:",
+                error
+            );
+
+        });
+
+
 
     // Governance statistics
     Promise.all([
@@ -162,11 +172,11 @@ axios
     .then(([variants, formats, rules]) => {
 
 
-        const variantData = variants.data;
+        const variantData: StatusResponse[] = variants.data;
 
-        const formatData = formats.data;
+        const formatData: StatusResponse[] = formats.data;
 
-        const ruleData = rules.data;
+        const ruleData: StatusResponse[] = rules.data;
 
 
 
@@ -178,7 +188,7 @@ axios
 
                 active:
                     variantData.filter(
-                        (item:any)=>
+                        (item: StatusResponse) =>
                             item.status === "Active"
                     ).length,
 
@@ -191,7 +201,7 @@ axios
 
                 active:
                     formatData.filter(
-                        (item:any)=>
+                        (item: StatusResponse) =>
                             item.status === "Active"
                     ).length,
 
@@ -204,7 +214,7 @@ axios
 
                 active:
                     ruleData.filter(
-                        (item:any)=>
+                        (item: StatusResponse) =>
                             item.status === "Active"
                     ).length,
 
