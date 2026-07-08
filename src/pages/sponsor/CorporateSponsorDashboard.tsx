@@ -12,7 +12,6 @@ import {
   FiBarChart2,
   FiGrid,
 } from 'react-icons/fi';
-import Navbar from '../../components/Navbar';
 import SponsorSidebar from '../../components/SponsorSidebar';
 import { useAuthStore } from '../../store/authStore';
 import '../../styles/pages/landing.css';
@@ -138,7 +137,6 @@ export default function CorporateSponsorDashboard() {
 
   return (
     <div className="csd-page">
-      <Navbar />
 
       <div className="csd-layout">
         <SponsorSidebar />

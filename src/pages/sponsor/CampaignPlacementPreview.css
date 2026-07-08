@@ -434,7 +434,6 @@
   letter-spacing: 0.08em;
 }
 
-/* ── Comments card ───────────────────────────── */
 .cpp-comments-card {
   background: rgba(18, 19, 31, 0.92);
   border: 1px solid #1e2340;
@@ -594,14 +593,12 @@
   border: 1px solid rgba(249, 115, 22, 0.25);
 }
 
-/* ── Right sidebar ───────────────────────────── */
 .cpp-sidebar {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-/* Campaign Summary */
 .cpp-summary-card {
   background: rgba(18, 19, 31, 0.92);
   border: 1px solid #1e2340;
@@ -688,7 +685,6 @@
   border-radius: 4px;
 }
 
-/* Placement Checklist */
 .cpp-checklist-card {
   background: rgba(18, 19, 31, 0.92);
   border: 1px solid #1e2340;
@@ -741,7 +737,6 @@
 
 .cpp-check-desc { font-size: 11px; color: #4B5563; }
 
-/* Action buttons */
 .cpp-action-btns {
   display: flex;
   flex-direction: column;

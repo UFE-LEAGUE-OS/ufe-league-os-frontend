@@ -8,7 +8,6 @@ import {
   FiChevronDown,
   FiLinkedin,
 } from 'react-icons/fi';
-import Navbar from '../../components/Navbar';
 import '../../styles/pages/landing.css';
 import './CorporateContactPerson.css';
 
@@ -58,7 +57,6 @@ export default function CorporateContactPerson() {
 
   return (
     <div className="ccp-page">
-      <Navbar />
 
       <main className="ccp-main landing-page">
 

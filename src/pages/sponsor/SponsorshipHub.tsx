@@ -49,7 +49,7 @@ export default function SponsorshipHub() {
 
   return (
     <div className="sh-page">
-      <Navbar />
+       {!isAuthenticated && <Navbar />}
 
       <div className="sh-layout">
         {isAuthenticated && <SponsorSidebar />}

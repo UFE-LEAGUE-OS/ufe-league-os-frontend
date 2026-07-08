@@ -102,7 +102,6 @@
 }
 .spkg-compare-btn:hover { background: #9b55fb; transform: scale(1.02); }
 
-/* ── Filter tabs ─────────────────────────────── */
 .spkg-filter-tabs {
   display: flex;
   gap: 8px;
@@ -129,7 +128,6 @@
   font-weight: 700;
 }
 
-/* ── Package cards grid ──────────────────────── */
 .spkg-cards-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -215,7 +213,6 @@
   line-height: 1;
 }
 
-/* Price */
 .spkg-price-row {
   display: flex;
   align-items: baseline;
@@ -255,7 +252,6 @@
   background: #1e2340;
 }
 
-/* Features */
 .spkg-features {
   list-style: none;
   margin: 0;
@@ -281,7 +277,6 @@
 .pkg-check-orange { color: #F97316; }
 .pkg-check-grey   { color: #6B7280; }
 
-/* Button */
 .spkg-btn {
   width: 100%;
   border: none;
@@ -306,7 +301,6 @@
 }
 .pkg-btn-orange:hover { background: #fb923c; transform: scale(1.01); }
 
-/* ── Bottom banner ───────────────────────────── */
 .spkg-bottom-banner {
   display: flex;
   align-items: center;
@@ -345,7 +339,6 @@
 }
 .spkg-talk-btn:hover { color: #9b55fb; }
 
-/* ── Responsive ──────────────────────────────── */
 @media (max-width: 1280px) {
   .spkg-main { padding: 28px 28px 48px; }
   .spkg-cards-grid { grid-template-columns: repeat(2, 1fr); }

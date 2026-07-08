@@ -1,0 +1,474 @@
+/* ═══════════════════════════════════════════════
+   SPONSOR HELP & SUPPORT — SponsorHelp.css
+   ═══════════════════════════════════════════════ */
+
+.shelp-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #00030D;
+  color: #ffffff;
+  font-family: 'Inter', sans-serif;
+}
+
+.shelp-layout {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.shelp-main {
+  flex: 1;
+  min-width: 0;
+  overflow-x: hidden;
+  padding: 36px 40px 60px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+/* ── Header ──────────────────────────────────── */
+.shelp-header {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.shelp-title {
+  font-size: 34px;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0;
+  line-height: 1.1;
+}
+
+.shelp-subtitle {
+  font-size: 14px;
+  color: #9CA3AF;
+  margin: 0;
+}
+
+.shelp-search-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  max-width: 600px;
+  margin-top: 8px;
+}
+
+.shelp-search-icon {
+  position: absolute;
+  left: 16px;
+  color: #6B7280;
+  pointer-events: none;
+}
+
+.shelp-search {
+  width: 100%;
+  background: rgba(18, 19, 31, 0.92);
+  border: 1px solid #1e2340;
+  border-radius: 12px;
+  padding: 14px 16px 14px 48px;
+  font-size: 15px;
+  font-family: 'Inter', sans-serif;
+  color: #ffffff;
+  outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+.shelp-search::placeholder { color: #4B5563; }
+.shelp-search:focus { border-color: #8135FA; }
+
+/* ── Quick cards ─────────────────────────────── */
+.shelp-quick-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
+}
+
+.shelp-quick-card {
+  background: rgba(18, 19, 31, 0.92);
+  border: 1px solid #1e2340;
+  border-radius: 14px;
+  padding: 22px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  cursor: pointer;
+  transition: border-color 0.2s, transform 0.15s;
+}
+.shelp-quick-card:hover { transform: translateY(-2px); }
+
+.shelp-card-purple:hover { border-color: #8135FA; }
+.shelp-card-blue:hover { border-color: #3B82F6; }
+.shelp-card-green:hover { border-color: #16a34a; }
+.shelp-card-orange:hover { border-color: #F97316; }
+.shelp-card-teal:hover { border-color: #14B8A6; }
+
+.shelp-quick-icon-wrap {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.shelp-card-purple .shelp-quick-icon-wrap { background: rgba(129, 53, 250, 0.15); }
+.shelp-card-blue .shelp-quick-icon-wrap { background: rgba(59, 130, 246, 0.15); }
+.shelp-card-green .shelp-quick-icon-wrap { background: rgba(22, 163, 74, 0.15); }
+.shelp-card-orange .shelp-quick-icon-wrap { background: rgba(249, 115, 22, 0.15); }
+.shelp-card-teal .shelp-quick-icon-wrap { background: rgba(20, 184, 166, 0.15); }
+
+.shelp-card-purple .shelp-quick-icon { color: #8135FA; }
+.shelp-card-blue .shelp-quick-icon { color: #3B82F6; }
+.shelp-card-green .shelp-quick-icon { color: #16a34a; }
+.shelp-card-orange .shelp-quick-icon { color: #F97316; }
+.shelp-card-teal .shelp-quick-icon { color: #14B8A6; }
+
+.shelp-quick-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.shelp-quick-desc {
+  font-size: 12px;
+  color: #9CA3AF;
+  line-height: 1.5;
+}
+
+/* ── Section title ───────────────────────────── */
+.shelp-section-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0 0 12px;
+}
+
+/* ── FAQ ─────────────────────────────────────── */
+.shelp-faq-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.shelp-faq-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.shelp-faq-cats {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.shelp-faq-cat {
+  background: rgba(18, 19, 31, 0.92);
+  border: 1px solid #1e2340;
+  border-radius: 999px;
+  padding: 7px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #9CA3AF;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+.shelp-faq-cat:hover { border-color: #8135FA; color: #ffffff; }
+
+.shelp-faq-cat-active {
+  background: #8135FA;
+  border-color: #8135FA;
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.shelp-faq-list {
+  background: rgba(18, 19, 31, 0.92);
+  border: 1px solid #1e2340;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.shelp-faq-item {
+  border-bottom: 1px solid #1e2340;
+}
+.shelp-faq-item:last-child { border-bottom: none; }
+
+.shelp-faq-question {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: none;
+  border: none;
+  color: #ffffff;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 18px 24px;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s;
+}
+.shelp-faq-question:hover { background: rgba(129, 53, 250, 0.04); }
+
+.shelp-faq-open .shelp-faq-question {
+  color: #8135FA;
+  background: rgba(129, 53, 250, 0.05);
+}
+
+.shelp-faq-chevron { flex-shrink: 0; color: #6B7280; }
+
+.shelp-faq-answer {
+  padding: 0 24px 18px;
+  font-size: 13px;
+  color: #9CA3AF;
+  line-height: 1.7;
+}
+
+.shelp-no-results {
+  padding: 40px 24px;
+  font-size: 14px;
+  color: #6B7280;
+  text-align: center;
+}
+
+/* ── Bottom grid ─────────────────────────────── */
+.shelp-bottom-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+/* ── Contact card ────────────────────────────── */
+.shelp-contact-card,
+.shelp-resources-card {
+  background: rgba(18, 19, 31, 0.92);
+  border: 1px solid #1e2340;
+  border-radius: 14px;
+  padding: 28px;
+}
+
+.shelp-contact-desc {
+  font-size: 13px;
+  color: #9CA3AF;
+  margin: -4px 0 20px;
+  line-height: 1.5;
+}
+
+.shelp-contact-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.shelp-contact-option {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  background: #0d0e1a;
+  border: 1px solid #1e2340;
+  border-radius: 12px;
+  text-decoration: none;
+  transition: border-color 0.2s;
+}
+.shelp-contact-option:hover { border-color: #8135FA; }
+
+.shelp-contact-icon-wrap {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #ffffff;
+}
+
+.shelp-contact-purple { background: rgba(129, 53, 250, 0.15); color: #8135FA; }
+.shelp-contact-green { background: rgba(22, 163, 74, 0.15); color: #16a34a; }
+.shelp-contact-blue { background: rgba(59, 130, 246, 0.15); color: #3B82F6; }
+
+.shelp-contact-label {
+  font-size: 12px;
+  color: #9CA3AF;
+  margin-bottom: 2px;
+}
+
+.shelp-contact-val {
+  font-size: 13px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+/* ── Ticket form ─────────────────────────────── */
+.shelp-ticket-form {
+  border-top: 1px solid #1e2340;
+  padding-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.shelp-ticket-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+}
+
+.shelp-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.shelp-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #d1d5db;
+}
+
+.shelp-input {
+  width: 100%;
+  background: #0d0e1a;
+  border: 1px solid #1e2340;
+  border-radius: 10px;
+  padding: 11px 14px;
+  font-size: 14px;
+  font-family: 'Inter', sans-serif;
+  color: #ffffff;
+  outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+.shelp-input::placeholder { color: #4B5563; }
+.shelp-input:focus { border-color: #8135FA; }
+
+.shelp-select { appearance: none; cursor: pointer; }
+
+.shelp-textarea {
+  resize: vertical;
+  min-height: 100px;
+  line-height: 1.5;
+}
+
+.shelp-submit-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #8135FA;
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 22px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  align-self: flex-start;
+  transition: background 0.2s, transform 0.15s;
+}
+.shelp-submit-btn:hover:not(:disabled) { background: #9b55fb; transform: scale(1.02); }
+.shelp-submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.shelp-ticket-success {
+  background: rgba(22, 163, 74, 0.1);
+  border: 1px solid rgba(22, 163, 74, 0.25);
+  color: #16a34a;
+  border-radius: 10px;
+  padding: 16px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* ── Resources ───────────────────────────────── */
+.shelp-resources-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.shelp-resource-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid #1e2340;
+  text-decoration: none;
+  transition: background 0.15s;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.shelp-resource-item:last-child { border-bottom: none; }
+.shelp-resource-item:hover { background: rgba(129, 53, 250, 0.04); padding-left: 8px; }
+
+.shelp-resource-icon-wrap {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: rgba(129, 53, 250, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.shelp-resource-icon { color: #8135FA; }
+
+.shelp-resource-info { flex: 1; }
+
+.shelp-resource-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 3px;
+}
+
+.shelp-resource-desc {
+  font-size: 12px;
+  color: #9CA3AF;
+  margin-bottom: 4px;
+}
+
+.shelp-resource-type {
+  font-size: 10px;
+  font-weight: 700;
+  background: rgba(129, 53, 250, 0.12);
+  color: #8135FA;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.shelp-resource-link { color: #6B7280; flex-shrink: 0; }
+
+/* ── Responsive ──────────────────────────────── */
+@media (max-width: 1280px) {
+  .shelp-main { padding: 28px 28px 48px; }
+  .shelp-quick-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 1024px) {
+  .shelp-main { padding: 24px 20px 40px; }
+  .shelp-quick-grid { grid-template-columns: repeat(2, 1fr); }
+  .shelp-bottom-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 768px) {
+  .shelp-main { padding: 20px 16px 32px; }
+  .shelp-title { font-size: 26px; }
+  .shelp-quick-grid { grid-template-columns: 1fr 1fr; }
+  .shelp-faq-header { flex-direction: column; align-items: flex-start; }
+}
+
+@media (max-width: 480px) {
+  .shelp-quick-grid { grid-template-columns: 1fr; }
+}

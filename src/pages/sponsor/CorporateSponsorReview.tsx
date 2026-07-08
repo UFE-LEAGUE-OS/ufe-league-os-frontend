@@ -8,7 +8,6 @@ import {
   FiUser,
   FiFileText,
 } from 'react-icons/fi';
-import Navbar from '../../components/Navbar';
 import '../../styles/pages/landing.css';
 import './CorporateSponsorReview.css';
 
@@ -27,7 +26,6 @@ export default function CorporateSponsorReview() {
 
   return (
     <div className="csr-page">
-      <Navbar />
 
       <main className="csr-main landing-page">
 

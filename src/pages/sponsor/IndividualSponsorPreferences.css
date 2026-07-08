@@ -13,9 +13,6 @@
   min-width: 0;
   overflow-x: hidden;
   padding: 40px 48px 60px;
-  max-width: 1100px;
-  width: 100%;
-  margin: 0 auto;
 }
 
 .isp-header { margin-bottom: 32px; }
@@ -195,7 +192,6 @@
   color: #9CA3AF;
 }
 
-/* ── Radio ───────────────────────────────────── */
 .isp-radio {
   width: 18px;
   height: 18px;
@@ -215,7 +211,6 @@
   background: #8135FA;
 }
 
-/* ── Types grid ──────────────────────────────── */
 .isp-types-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -282,7 +277,6 @@
   line-height: 1.4;
 }
 
-/* ── Goals chips ─────────────────────────────── */
 .isp-goals-grid {
   display: flex;
   flex-wrap: wrap;
@@ -315,7 +309,6 @@
   color: #ffffff;
 }
 
-/* ── Duration grid ───────────────────────────── */
 .isp-duration-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -348,7 +341,6 @@
   color: #ffffff;
 }
 
-/* ── Bottom nav ──────────────────────────────── */
 .isp-bottom-nav {
   display: flex;
   align-items: center;
@@ -388,7 +380,6 @@
 }
 .isp-next-btn:hover { background: #9b55fb; transform: scale(1.02); }
 
-/* ── Responsive ──────────────────────────────── */
 @media (max-width: 1280px) {
   .isp-main { padding: 32px 32px 48px; }
   .isp-budget-grid { grid-template-columns: repeat(2, 1fr); }

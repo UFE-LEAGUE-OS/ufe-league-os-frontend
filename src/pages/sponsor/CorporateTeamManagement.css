@@ -1,6 +1,3 @@
-/* ═══════════════════════════════════════════════
-   CORPORATE TEAM MANAGEMENT
-   ═══════════════════════════════════════════════ */
 
 .ctm-page {
   display: flex;
@@ -27,7 +24,6 @@
   gap: 24px;
 }
 
-/* ── Header ──────────────────────────────────── */
 .ctm-header {
   display: flex;
   align-items: flex-start;
@@ -67,7 +63,6 @@
 }
 .ctm-invite-btn:hover { background: #9b55fb; transform: scale(1.02); }
 
-/* ── Stats ───────────────────────────────────── */
 .ctm-stats-row {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -128,7 +123,6 @@
 .ctm-sub-green  { color: #16a34a; }
 .ctm-sub-orange { color: #F97316; }
 
-/* ── Controls ────────────────────────────────── */
 .ctm-controls {
   display: flex;
   align-items: center;
@@ -202,7 +196,6 @@
 }
 .ctm-filter-btn:hover { border-color: #8135FA; color: #ffffff; }
 
-/* ── Table ───────────────────────────────────── */
 .ctm-table-card {
   background: rgba(18, 19, 31, 0.92);
   border: 1px solid #1e2340;
@@ -241,7 +234,6 @@
 
 .ctm-td { display: flex; align-items: center; }
 
-/* Member cell */
 .ctm-td-member { gap: 12px; }
 
 .ctm-avatar {
@@ -324,7 +316,6 @@
 .ctm-status-active  { background: rgba(22, 163, 74, 0.12); color: #16a34a; border: 1px solid rgba(22, 163, 74, 0.25); }
 .ctm-status-pending { background: rgba(249, 115, 22, 0.12); color: #F97316; border: 1px solid rgba(249, 115, 22, 0.25); }
 
-/* Actions cell */
 .ctm-td-actions { gap: 6px; justify-content: flex-end; }
 
 .ctm-action-icon-btn {
@@ -346,7 +337,6 @@
   background: rgba(129, 53, 250, 0.1);
 }
 
-/* Pagination */
 .ctm-pagination {
   display: flex;
   align-items: center;
@@ -399,7 +389,6 @@
 .ctm-page-num:hover { border-color: #8135FA; color: #ffffff; }
 .ctm-page-active { background: #8135FA; border-color: #8135FA; color: #ffffff; }
 
-/* ── Ad panel ────────────────────────────────── */
 .ctm-ad-panel {
   width: 160px;
   min-width: 160px;
@@ -458,7 +447,6 @@
   margin-top: 8px;
 }
 
-/* ── Responsive ──────────────────────────────── */
 @media (max-width: 1280px) {
   .ctm-main { padding: 28px 28px 48px; }
   .ctm-ad-panel { display: none; }

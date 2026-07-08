@@ -8,7 +8,6 @@ import {
   FiStar,
 } from 'react-icons/fi';
 import { FiSliders } from 'react-icons/fi';
-import Navbar from '../../components/Navbar';
 import SponsorSidebar from '../../components/SponsorSidebar';
 import '../../styles/pages/landing.css';
 import './SponsorPackages.css';
@@ -122,7 +121,6 @@ export default function SponsorPackages() {
 
   return (
     <div className="spkg-page">
-      <Navbar />
 
       <div className="spkg-layout">
         <SponsorSidebar />

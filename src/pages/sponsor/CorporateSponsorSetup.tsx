@@ -6,7 +6,6 @@ import {
   FiMapPin,
   FiChevronDown,
 } from 'react-icons/fi';
-import Navbar from '../../components/Navbar';
 import '../../styles/pages/landing.css';
 import './CorporateSponsorSetup.css';
 
@@ -54,7 +53,6 @@ export default function CorporateSponsorSetup() {
 
   return (
     <div className="css-page">
-      <Navbar />
 
       <main className="css-main landing-page">
 

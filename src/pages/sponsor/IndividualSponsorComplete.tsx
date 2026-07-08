@@ -5,7 +5,6 @@ import {
   FiHome,
   FiPackage,
 } from 'react-icons/fi';
-import Navbar from '../../components/Navbar';
 import '../../styles/pages/landing.css';
 import './IndividualSponsorComplete.css';
 
@@ -39,7 +38,6 @@ export default function IndividualSponsorComplete() {
 
   return (
     <div className="isc-page">
-      <Navbar />
 
       <main className="isc-main landing-page">
 

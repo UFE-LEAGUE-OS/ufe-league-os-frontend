@@ -5,7 +5,6 @@ import {
   FiHome,
   FiBarChart2,
 } from 'react-icons/fi';
-import Navbar from '../../components/Navbar';
 import '../../styles/pages/landing.css';
 import './CorporateSponsorComplete.css';
 
@@ -40,7 +39,6 @@ export default function CorporateSponsorComplete() {
 
   return (
     <div className="csc-page">
-      <Navbar />
 
       <main className="csc-main landing-page">
 
