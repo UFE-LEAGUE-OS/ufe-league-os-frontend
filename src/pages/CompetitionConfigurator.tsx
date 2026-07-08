@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import axios from "axios";
 import "../components/SuperAdminSideBar.css";
 import "../styles/pages/SuperAdminDashboard.css";
 import "../styles/pages/SuperVariantsPage.css";
@@ -55,15 +56,21 @@ type CompetitionFormat = {
     name: string;
     type: FormatType;
     legs: Legs;
+
     pointsWin: number;
     pointsDraw: number;
     pointsLoss: number;
+
     groups: number | null;
     teamsPerGroup: number | null;
     advancing: number | null;
+
     tiebreakers: string;
+
     status: Status;
+
     leaguesUsing: number;
+
     updated: string;
 };
 
@@ -82,7 +89,46 @@ type FormState = {
     tiebreakers: string;
     status: Status;
 };
+type CompetitionFormatAPIResponse = {
+    id: number;
+    sport: Sport;
 
+    variantId?: string;
+    variant_id?: string;
+
+    name: string;
+
+    type?: FormatType;
+    format_type?: FormatType;
+    competition_type?: FormatType;
+
+    legs?: Legs;
+
+    pointsWin?: number;
+    points_win?: number;
+
+    pointsDraw?: number;
+    points_draw?: number;
+
+    pointsLoss?: number;
+    points_loss?: number;
+
+    groups?: number | null;
+
+    teamsPerGroup?: number;
+    teams_per_group?: number;
+
+    advancing?: number | null;
+
+    tiebreakers?: string;
+
+    status?: Status;
+
+    leaguesUsing?: number;
+    leagues_using?: number;
+
+    updated?: string;
+};
 /* ---------------- CONSTANTS ---------------- */
 
 const SPORTS: Sport[] = ["Football", "Basketball", "Rugby"];
@@ -119,99 +165,6 @@ const VARIANTS: SportVariantRef[] = [
     { id: "v5", sport: "Basketball", name: "3x3", shortCode: "BB-03" },
 ];
 
-const INITIAL_FORMATS: CompetitionFormat[] = [
-    {
-        id: "cf1",
-        sport: "Football",
-        variantId: "v1",
-        name: "Premier League Format",
-        type: "League",
-        legs: "Double",
-        pointsWin: 3,
-        pointsDraw: 1,
-        pointsLoss: 0,
-        groups: null,
-        teamsPerGroup: null,
-        advancing: null,
-        tiebreakers: "Goal difference, Head-to-head, Goals scored",
-        status: "Active",
-        leaguesUsing: 4,
-        updated: "2 days ago",
-    },
-    {
-        id: "cf2",
-        sport: "Football",
-        variantId: "v2",
-        name: "Community Cup Knockout",
-        type: "Knockout",
-        legs: "Single",
-        pointsWin: 0,
-        pointsDraw: 0,
-        pointsLoss: 0,
-        groups: null,
-        teamsPerGroup: null,
-        advancing: null,
-        tiebreakers: "Penalty shootout",
-        status: "Active",
-        leaguesUsing: 2,
-        updated: "1 week ago",
-    },
-    {
-        id: "cf3",
-        sport: "Football",
-        variantId: "v3",
-        name: "Regional Group Stage",
-        type: "Group + Knockout",
-        legs: "Single",
-        pointsWin: 3,
-        pointsDraw: 1,
-        pointsLoss: 0,
-        groups: 4,
-        teamsPerGroup: 4,
-        advancing: 2,
-        tiebreakers: "Goal difference, Head-to-head",
-        status: "Draft",
-        leaguesUsing: 0,
-        updated: "3 hours ago",
-    },
-    {
-        id: "cf4",
-        sport: "Basketball",
-        variantId: "v4",
-        name: "Conference Round Robin",
-        type: "League",
-        legs: "Single",
-        pointsWin: 2,
-        pointsDraw: 0,
-        pointsLoss: 1,
-        groups: null,
-        teamsPerGroup: null,
-        advancing: null,
-        tiebreakers: "Head-to-head, Point differential",
-        status: "Active",
-        leaguesUsing: 3,
-        updated: "5 days ago",
-    },
-    {
-        id: "cf5",
-        sport: "Basketball",
-        variantId: "v5",
-        name: "3x3 Knockout Showdown",
-        type: "Knockout",
-        legs: "Single",
-        pointsWin: 0,
-        pointsDraw: 0,
-        pointsLoss: 0,
-        groups: null,
-        teamsPerGroup: null,
-        advancing: null,
-        tiebreakers: "Sudden death overtime",
-        status: "Active",
-        leaguesUsing: 1,
-        updated: "2 weeks ago",
-    },
-];
-
 const EMPTY_FORM: FormState = {
     sport: "Football",
     variantId: "v1",
@@ -232,7 +185,7 @@ const EMPTY_FORM: FormState = {
 
 export default function CompetitionFormatConfigurator() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
-    const [formats, setFormats] = useState<CompetitionFormat[]>(INITIAL_FORMATS);
+   const [formats, setFormats] = useState<CompetitionFormat[]>([]);
 
     const [activeSport, setActiveSport] = useState<"All" | Sport>("All");
     const [typeFilter, setTypeFilter] = useState<FormatFilter>("All");
@@ -243,6 +196,90 @@ export default function CompetitionFormatConfigurator() {
     const [editingId, setEditingId] = useState<string | null>(null);
     const [form, setForm] = useState<FormState>(EMPTY_FORM);
 
+
+useEffect(() => {
+    axios
+        .get("/api/governance/competition-formats/")
+        .then((response) => {
+            console.log("Competition Formats API:", response.data);
+
+            const apiFormats = response.data.map(
+                (item: CompetitionFormatAPIResponse): CompetitionFormat => ({
+                    id: String(item.id),
+
+                    sport: item.sport,
+
+                    variantId:
+                        item.variantId ||
+                        item.variant_id ||
+                        "",
+
+                    name: item.name,
+
+                    type:
+                        item.type ||
+                        item.format_type ||
+                        item.competition_type ||
+                        "League",
+
+                    legs:
+                        item.legs ||
+                        "Single",
+
+                    pointsWin:
+                        item.pointsWin ||
+                        item.points_win ||
+                        0,
+
+                    pointsDraw:
+                        item.pointsDraw ||
+                        item.points_draw ||
+                        0,
+
+                    pointsLoss:
+                        item.pointsLoss ||
+                        item.points_loss ||
+                        0,
+
+                    groups:
+                        item.groups ?? null,
+
+                    teamsPerGroup:
+                        item.teamsPerGroup ||
+                        item.teams_per_group ||
+                        null,
+
+                    advancing:
+                        item.advancing ?? null,
+
+                    tiebreakers:
+                        item.tiebreakers ||
+                        "",
+
+                    status:
+                        item.status ||
+                        "Draft",
+
+                    leaguesUsing:
+                        item.leaguesUsing ||
+                        item.leagues_using ||
+                        0,
+
+                    updated:
+                        item.updated ||
+                        "Recently",
+                })
+            );
+
+            setFormats(apiFormats);
+        })
+        .catch((error) => {
+            console.error(
+                "Failed to load competition formats:",
+                error
+            );
+        });
+}, []);
     /* ---------------- FILTERED ---------------- */
 
     const filtered = useMemo(() => {

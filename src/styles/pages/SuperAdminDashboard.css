@@ -410,8 +410,8 @@
     padding:13px 14px;
     border:none;
     border-radius:10px;
-    background: linear-gradient(135deg, #7c3aed7c 0%, #4338CA 55%, #0A1228 100%);
-    color:white;
+    background: linear-gradient(135deg, #7c3aed7c 0%, #4338CA 55%, #0A1228 100%) !important;
+    color:white !important;
     font-size:13.5px;
     font-weight:600;
     cursor:pointer;
@@ -492,44 +492,61 @@
 }
 
 /* SYSTEM HEALTH */
-.health-row{
-    margin-bottom:16px;
+.health-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
 }
 
-.health-row:last-child{
-    margin-bottom:0;
+
+.health-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
-.health-label{
-    display:flex;
-    align-items:center;
-    gap:8px;
-    font-size:12.5px;
-    color:var(--muted);
-    margin-bottom:6px;
+
+.health-label div {
+    display: flex;
+    flex-direction: column;
 }
 
-.health-label span{
-    flex:1;
-    color:white;
+
+.health-label span {
+    font-weight: 600;
 }
 
-.health-label strong{
-    color:var(--purple);
-    font-size:12.5px;
+
+.health-label small {
+    color: #94a3b8;
+    font-size: 12px;
 }
 
-.health-bar{
-    height:7px;
-    border-radius:999px;
-    background:var(--purple-tint);
-    overflow:hidden;
+
+.health-row strong {
+    font-size: 13px;
+    color: #8135FA;
 }
 
-.health-bar-fill{
-    height:100%;
-    border-radius:999px;
-    background:linear-gradient(90deg, var(--purple), var(--green));
+
+.admin-overview-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 18px;
+    flex-wrap: wrap;
+}
+
+
+.admin-overview-actions .link-btn {
+    border: none;
+    background: rgba(129,53,250,0.12);
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    color: white !important;
 }
 
 /* ---------------- FOOTER ---------------- */
