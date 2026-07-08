@@ -41,6 +41,24 @@ type Variant = {
     leagues: number;
     updated: string;
 };
+type SportVariantAPI = {
+    id: number;
+    sport?: string;
+    name?: string;
+    shortCode?: string;
+    short_code?: string;
+    teamSize?: number;
+    team_size?: number;
+    squadMax?: number;
+    squad_max?: number;
+    duration?: string;
+    subs?: number | string;
+    substitutions?: number | string;
+    status?: "Active" | "Draft" | "Archived";
+    leagues?: number;
+    updated?: string;
+    updated_at?: string;
+};
 type StatusFilter = "All" | Variant["status"];
 
 type FormState = {
@@ -100,78 +118,77 @@ export default function SportVariants() {
 
 
     // GET SPORT VARIANTS FROM DJANGO
-    useEffect(() => {
+   useEffect(() => {
 
-        axios
-            .get("/api/governance/sport-variants/")
-            .then((response) => {
+    axios
+        .get("/api/governance/sport-variants/")
+        .then((response) => {
 
-                console.log(
-                    "SPORT VARIANTS API:",
-                    response.data
-                );
-
-
-                const apiVariants = response.data.map((item: any) => ({
-                    id: String(item.id),
-
-                    sport:
-                        item.sport || "Football",
-
-                    name:
-                        item.name || "",
-
-                    shortCode:
-                        item.shortCode ||
-                        item.short_code ||
-                        "",
-
-                    teamSize:
-                        item.teamSize ||
-                        item.team_size ||
-                        0,
-
-                    squadMax:
-                        item.squadMax ||
-                        item.squad_max ||
-                        0,
-
-                    duration:
-                        item.duration || "",
-
-                    subs:
-                        item.subs ||
-                        item.substitutions ||
-                        "",
-
-                    status:
-                        item.status || "Draft",
-
-                    leagues:
-                        item.leagues || 0,
-
-                    updated:
-                        item.updated ||
-                        item.updated_at ||
-                        "Recently",
-                }));
+            console.log(
+                "SPORT VARIANTS API:",
+                response.data
+            );
 
 
-                setVariants(apiVariants);
+            const apiVariants = response.data.map((item: SportVariantAPI) => ({
+                id: String(item.id),
+
+                sport:
+                    item.sport || "Football",
+
+                name:
+                    item.name || "",
+
+                shortCode:
+                    item.shortCode ||
+                    item.short_code ||
+                    "",
+
+                teamSize:
+                    item.teamSize ??
+                    item.team_size ??
+                    0,
+
+                squadMax:
+                    item.squadMax ??
+                    item.squad_max ??
+                    0,
+
+                duration:
+                    item.duration || "",
+
+                subs:
+                    item.subs ??
+                    item.substitutions ??
+                    "",
+
+                status:
+                    item.status || "Draft",
+
+                leagues:
+                    item.leagues ?? 0,
+
+                updated:
+                    item.updated ||
+                    item.updated_at ||
+                    "Recently",
+            }));
 
 
-            })
-            .catch((error) => {
+            setVariants(apiVariants);
 
-                console.error(
-                    "Sport variants API error:",
-                    error
-                );
+        })
+        .catch((error) => {
 
-            });
+            console.error(
+                "Sport variants API error:",
+                error
+            );
+
+        });
 
 
-    }, []);
+}, []);
 
     /* ---------------- FILTERED ---------------- */
 
