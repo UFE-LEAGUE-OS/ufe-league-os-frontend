@@ -6,7 +6,7 @@
   min-height: 100%;
   background: #02040e;
   color: #fff;
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-body);
 }
 
 /* ── LEFT ── */
@@ -21,7 +21,7 @@
 /* Page header */
 .pageHeader { }
 .pageHeader h1 {
-  font-family: 'Arial Black', Gadget, sans-serif;
+  font-family: var(--font-heading);
   font-size: clamp(1.4rem, 2.5vw, 2rem);
   font-weight: 900;
   margin: 0 0 6px;
@@ -48,7 +48,7 @@
 }
 .statIcon { font-size: 22px; flex-shrink: 0; }
 .statValue { font-size: 18px; font-weight: 900; line-height: 1.1; }
-.statLabel { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.7); }
+.statLabel { font-size: 14px; font-weight: 700; color: rgba(255,255,255,0.7); }
 .statSub   { font-size: 10px; color: rgba(255,255,255,0.35); }
 
 /* Tabs */
@@ -120,7 +120,7 @@
   border-radius: 8px;
   background: linear-gradient(135deg, #8135FA, #2563eb);
   display: flex; align-items: center; justify-content: center;
-  font-size: 11px; font-weight: 900; color: #fff;
+  font-size: 14px; font-weight: 900; color: #fff;
   flex-shrink: 0;
 }
 .leagueName { font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
@@ -146,7 +146,7 @@
 .pointsNum { font-size: 16px; font-weight: 900; color: #8135FA; }
 .pointsSub { font-size: 10px; color: rgba(255,255,255,0.35); }
 
-.updatedCell { font-size: 11px; color: rgba(255,255,255,0.45); }
+.updatedCell { font-size: 14px; color: rgba(255,255,255,0.45); }
 .liveIndicator { font-size: 10px; color: #22c55e; margin-top: 2px; }
 .offline { color: #9ca3af; }
 
@@ -173,7 +173,7 @@
   border-radius: 6px;
   padding: 7px 12px;
   font: inherit;
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 700;
   cursor: pointer;
   white-space: nowrap;
@@ -182,7 +182,7 @@
 .joinAnotherBtn:hover { background: rgba(129,53,250,0.15); }
 
 .tableFooter {
-  font-size: 11px;
+  font-size: 14px;
   color: rgba(255,255,255,0.3);
   padding: 10px 12px;
   border-top: 1px solid rgba(255,255,255,0.06);
@@ -212,16 +212,16 @@
   border-radius: 8px;
   background: linear-gradient(135deg, #8135FA, #f97316);
   display: flex; align-items: center; justify-content: center;
-  font-size: 11px; font-weight: 900; color: #fff;
+  font-size: 14px; font-weight: 900; color: #fff;
   flex-shrink: 0;
 }
 .publicCardName { font-size: 13px; font-weight: 700; }
-.publicCardSport { font-size: 11px; color: rgba(255,255,255,0.45); }
+.publicCardSport { font-size: 14px; color: rgba(255,255,255,0.45); }
 .publicCardMeta {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  font-size: 11px;
+  font-size: 14px;
   color: rgba(255,255,255,0.5);
 }
 .prize { color: #facc15; font-weight: 700; }
@@ -309,7 +309,7 @@
   margin-bottom: 12px;
 }
 .widgetTitle {
-  font-size: 11px; font-weight: 800;
+  font-size: 14px; font-weight: 800;
   letter-spacing: 0.1em; text-transform: uppercase;
   color: rgba(255,255,255,0.6);
 }
@@ -317,7 +317,7 @@
   background: rgba(255,255,255,0.06);
   border: 1px solid rgba(255,255,255,0.1);
   border-radius: 6px; padding: 4px 8px;
-  color: #fff; font: inherit; font-size: 11px;
+  color: #fff; font: inherit; font-size: 14px;
   cursor: pointer; outline: none;
 }
 .seasonSelect option { background: #0d0f1e; }
@@ -372,7 +372,7 @@
 
 /* Join private mini */
 .widgetJoin { }
-.widgetJoin p { font-size: 11px; color: rgba(255,255,255,0.45); margin: 6px 0 12px; }
+.widgetJoin p { font-size: 14px; color: rgba(255,255,255,0.45); margin: 6px 0 12px; }
 .miniCodeRow { display: flex; gap: 8px; }
 .miniCodeInput {
   flex: 1;
@@ -383,7 +383,7 @@
   letter-spacing: 0.08em; text-transform: uppercase; outline: none;
 }
 .miniCodeInput:focus { border-color: #8135FA; }
-.miniCodeInput::placeholder { text-transform: none; letter-spacing: 0; color: rgba(255,255,255,0.25); font-size: 11px; }
+.miniCodeInput::placeholder { text-transform: none; letter-spacing: 0; color: rgba(255,255,255,0.25); font-size: 14px; }
 .miniJoinBtn {
   background: #8135FA; color: #fff; border: none;
   border-radius: 7px; padding: 8px 16px;
@@ -404,11 +404,11 @@
   overflow: hidden;
 }
 .createCtaTitle {
-  font-size: 11px; font-weight: 800;
+  font-size: 14px; font-weight: 800;
   letter-spacing: 0.1em; text-transform: uppercase;
   color: #f97316;
 }
-.createCtaSub { font-size: 11px; color: rgba(255,255,255,0.55); margin-top: 3px; }
+.createCtaSub { font-size: 14px; color: rgba(255,255,255,0.55); margin-top: 3px; }
 .createCtaTrophy {
   font-size: 2.5rem;
   position: absolute; top: 10px; right: 14px;

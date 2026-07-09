@@ -4,7 +4,7 @@
   flex-direction: column;
   min-height: 100%;
   color: #fff;
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-body);
   background: #02040e;
 }
 
@@ -54,7 +54,7 @@
   background: rgba(129,53,250,0.2);
   border: 1px solid rgba(129,53,250,0.5);
   color: #a879ff;
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -64,7 +64,7 @@
 }
 
 .heroContent h1 {
-  font-family: 'Arial Black', Gadget, sans-serif;
+  font-family: var(--font-heading);
   font-size: clamp(2rem, 4vw, 3.4rem);
   font-weight: 900;
   line-height: 1.0;
@@ -149,7 +149,7 @@
   flex-shrink: 0;
 }
 .gwChipLabel { font-size: 16px; font-weight: 800; margin-bottom: 4px; }
-.gwChipDeadline { font-size: 11px; color: #9ca3af; margin-bottom: 10px; }
+.gwChipDeadline { font-size: 14px; color: #9ca3af; margin-bottom: 10px; }
 .gwChipBadge {
   display: inline-block;
   background: rgba(34,197,94,0.12);
@@ -308,7 +308,7 @@
   margin-bottom: 8px; flex-shrink: 0;
 }
 .howIcon { font-size: 18px; margin-bottom: 5px; }
-.howTitle { font-size: 11px; font-weight: 700; margin-bottom: 3px; }
+.howTitle { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
 .howDesc { font-size: 10px; color: #9ca3af; line-height: 1.4; }
 .howArrow {
   position: absolute; right: -8px; top: 10px;
@@ -330,7 +330,7 @@
 /* My team snapshot */
 .myTeamSnap { display: flex; flex-direction: column; gap: 6px; }
 .myTeamName { font-size: 14px; font-weight: 700; }
-.myTeamComp { font-size: 11px; color: #9ca3af; margin-bottom: 8px; }
+.myTeamComp { font-size: 14px; color: #9ca3af; margin-bottom: 8px; }
 .myTeamStats { display: flex; gap: 12px; }
 .myTeamStats div { display: flex; flex-direction: column; align-items: center; flex: 1; }
 .myTeamStats strong { font-size: 18px; font-weight: 800; color: #8135FA; }
@@ -341,7 +341,7 @@
 .prizeRow:last-child { border-bottom: none; }
 .prizeIcon { font-size: 18px; flex-shrink: 0; margin-top: 2px; }
 .prizeRow strong { font-size: 12px; font-weight: 700; display: block; }
-.prizeRow p { font-size: 11px; color: #9ca3af; margin: 2px 0 0; }
+.prizeRow p { font-size: 14px; color: #9ca3af; margin: 2px 0 0; }
 
 /* ── My Team page ── */
 .myTeamPage { display: flex; flex-direction: column; gap: 20px; }
@@ -372,7 +372,7 @@
     linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px);
   background-size: 40px 40px;
 }
-.pitchLabel { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.5); margin-bottom: 16px; z-index: 1; }
+.pitchLabel { font-size: 14px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.5); margin-bottom: 16px; z-index: 1; }
 .pitchPlayers { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; z-index: 1; }
 .pitchPlayer { display: flex; flex-direction: column; align-items: center; gap: 4px; }
 .pitchPlayerAvatar {
@@ -424,19 +424,19 @@
   font-size: 13px; font-weight: 800; flex-shrink: 0;
 }
 .transferPlayerInfo strong { font-size: 13px; font-weight: 700; display: block; }
-.transferPlayerInfo span { font-size: 11px; color: #9ca3af; }
+.transferPlayerInfo span { font-size: 14px; color: #9ca3af; }
 .transferPlayerRight { display: flex; align-items: center; gap: 8px; }
 .transferCost { font-size: 12px; font-weight: 700; color: #22c55e; }
 .transferOutBtn {
   background: rgba(239,68,68,0.15); color: #f87171;
   border: 1px solid rgba(239,68,68,0.3); border-radius: 5px;
-  padding: 4px 10px; font-size: 11px; font-weight: 600; cursor: pointer;
+  padding: 4px 10px; font-size: 14px; font-weight: 600; cursor: pointer;
 }
 .transferOutBtn:hover { background: rgba(239,68,68,0.25); }
 .transferInBtn {
   background: rgba(34,197,94,0.12); color: #22c55e;
   border: 1px solid rgba(34,197,94,0.3); border-radius: 5px;
-  padding: 4px 10px; font-size: 11px; font-weight: 600; cursor: pointer;
+  padding: 4px 10px; font-size: 14px; font-weight: 600; cursor: pointer;
 }
 .transferInBtn:hover { background: rgba(34,197,94,0.2); }
 

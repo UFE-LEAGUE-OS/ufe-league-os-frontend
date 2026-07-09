@@ -3,7 +3,7 @@
   min-height: 100%;
   background: #02040e;
   color: #fff;
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-body);
   display: flex;
   flex-direction: column;
 }
@@ -47,7 +47,7 @@
 .leagueBadgeIcon { font-size: 28px; }
 
 .title {
-  font-family: 'Arial Black', Gadget, sans-serif;
+  font-family: var(--font-heading);
   font-size: clamp(1.6rem, 3vw, 2.4rem);
   font-weight: 900;
   margin: 0 0 4px;
@@ -76,7 +76,7 @@
 }
 .budgetLabel { font-size: 10px; color: rgba(255,255,255,0.5); font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
 .budgetValue { font-size: 28px; font-weight: 900; line-height: 1; }
-.budgetSub   { font-size: 11px; color: rgba(255,255,255,0.45); }
+.budgetSub   { font-size: 14px; color: rgba(255,255,255,0.45); }
 .budgetIcon  { font-size: 28px; }
 
 /* ── Filters ── */
@@ -245,7 +245,7 @@
   display: inline-block;
   border-radius: 5px;
   padding: 3px 8px;
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 800;
   color: #fff;
 }
@@ -281,7 +281,7 @@
 /* Table footer */
 .tableFooter {
   padding: 10px 16px;
-  font-size: 11px;
+  font-size: 14px;
   color: rgba(255,255,255,0.35);
   border-top: 1px solid rgba(255,255,255,0.06);
 }
@@ -377,7 +377,7 @@
 .detailBody { padding: 16px; display: flex; flex-direction: column; gap: 10px; }
 
 .detailName {
-  font-family: 'Arial Black', sans-serif;
+  font-family: var(--font-heading);
   font-size: 18px; font-weight: 900; margin: 0;
 }
 .detailPos { font-size: 13px; font-weight: 700; }
@@ -416,7 +416,7 @@
   width: 26px; height: 26px;
   border-radius: 5px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 11px; font-weight: 900; color: #fff;
+  font-size: 14px; font-weight: 900; color: #fff;
 }
 
 .seasonStats {
@@ -432,7 +432,7 @@
 .seasonStat small { font-size: 9px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.06em; }
 
 .detailAbout {
-  font-size: 11px;
+  font-size: 14px;
   color: rgba(255,255,255,0.55);
   line-height: 1.6;
   margin: 0;
@@ -463,7 +463,7 @@
 }
 @media (max-width: 768px) {
   .filters { gap: 6px; }
-  .filterSelect, .filterBtn { font-size: 11px; }
+  .filterSelect, .filterBtn { font-size: 14px; }
   .tableHead, .tableRow { grid-template-columns: 2fr 1fr 0.6fr 0.8fr 1fr 0.5fr; }
   .tdSelected, .tdForm { display: none; }
 }

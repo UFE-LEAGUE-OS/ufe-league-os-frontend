@@ -129,7 +129,7 @@
 
 .personalize-header h1 {
   margin: 0 0 8px;
-  font-family: 'League Spartan', sans-serif;
+  font-family: var(--font-heading);
   font-size: clamp(1.8rem, 2.8vw, 2.8rem);
   font-weight: 800;
   font-style: italic;

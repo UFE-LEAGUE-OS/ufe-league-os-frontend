@@ -57,7 +57,7 @@
 }
 
 .sport-page-header h1 {
-  font-family: 'League Spartan', sans-serif;
+  font-family: var(--font-heading);
   font-size: 36px;
   font-weight: 800;
   font-style: italic;

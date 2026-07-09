@@ -16,6 +16,9 @@ const INITIAL: PasswordValidationResult = {
   disabled: false,
 };
 
+type ZxcvbnFn = (password: string) => { score: number };
+type ZxcvbnModule = Record<string, ZxcvbnFn>;
+
 export function usePasswordValidation() {
   const [validation, setValidation] = useState<PasswordValidationResult>(INITIAL);
 
@@ -49,9 +52,10 @@ export function usePasswordValidation() {
 
     // 3. Strength meter (zxcvbn)
     try {
-      const { ZxcvbnFactory } = await import('@zxcvbn-ts/core');
-      const zxcvbn = new ZxcvbnFactory();
-      const result = zxcvbn.check(value);
+      const zxcvbnModule = await import('@zxcvbn-ts/core');
+      const mod = zxcvbnModule as unknown as ZxcvbnModule;
+      const zxcvbn: ZxcvbnFn = mod.zxcvbn ?? mod.default;
+      const result = zxcvbn(value);
       const score = result.score;
 
       if (score <= 1) {

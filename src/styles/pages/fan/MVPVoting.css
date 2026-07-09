@@ -1,0 +1,31 @@
+.shell-root {
+  min-height: 100vh;
+  background-color: #1a1a2e;
+  background-image: url("../../../assets/cta-banner.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.shell-root > .footer {
+  position: relative;
+  z-index: 1300;
+}
+
+.shell-body {
+  display: flex;
+}
+
+.shell-content {
+  flex: 1;
+  padding-top: 76px;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+
+@media (max-width: 900px) {
+  .shell-body {
+    flex-direction: column;
+  }
+}

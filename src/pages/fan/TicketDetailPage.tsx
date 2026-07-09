@@ -11,16 +11,23 @@ import {
     Share2,
     ShieldCheck,
     Ticket,
-    WalletCards,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import SafeImage from "../../components/SafeImage/SafeImage";
+import { useCurrentUser } from "../../hooks/useCurrentUser";
+import {
+    getPublicFixtures,
+    type PublicFixtureApi,
+} from "../../services/publicDashboardService";
 import {
     fetchTicketQrObjectUrl,
-    getTicketById,
+    getMyTickets,
 } from "../../services/ticketingService";
 import type { TicketApi } from "../../services/ticketingService";
 import styles from "./TicketDetailPage.module.css";
+
+type TicketDetailTab = "ticket" | "match" | "entry";
 
 type TicketViewModel = {
     id: string;
@@ -43,6 +50,7 @@ type TicketViewModel = {
     section: string;
     row: string;
     gate: string;
+    access: string;
     orderId: string;
     bookedOn: string;
     price: string;
@@ -68,29 +76,114 @@ const demoTicket: TicketViewModel = {
     time: "4:00 PM EAT",
     venue: "Kings Park Arena",
     location: "Bweyogerere, Kampala",
-    ticketType: "VIP Stand",
-    quantity: "2",
-    seats: "A12, A13",
-    section: "A",
-    row: "12",
-    gate: "VIP Gate",
-    orderId: "#ORD-845672",
-    bookedOn: "15 May 2025",
-    price: "UGX 120,000",
+    ticketType: "Match Ticket",
+    quantity: "1",
+    seats: "General Admission",
+    section: "General",
+    row: "Not assigned",
+    gate: "Gate pending",
+    access: "Standard matchday access",
+    orderId: "#ORDER-PENDING",
+    bookedOn: "Date pending",
+    price: "See payment receipt",
     status: "CONFIRMED",
-    holderName: "Kato Richard",
-    holderEmail: "kato.richard@mail.com",
-    holderPhone: "+256 700 123 456",
-    fanId: "LGO-875432",
+    holderName: "Current Fan",
+    holderEmail: "Email unavailable",
+    holderPhone: "Phone unavailable",
+    fanId: "LOS-FAN",
 };
 
-function splitMatchLabel(matchLabel: string) {
-    const parts = matchLabel.split(/\s+vs\s+/i);
+type TicketHolderInfo = {
+    holderName: string;
+    holderEmail: string;
+    holderPhone: string;
+    fanId: string;
+};
+
+type TicketHolderSource = {
+    name?: string;
+    displayName?: string;
+    fullName?: string;
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    phone?: string;
+    phoneNumber?: string;
+    fanId?: string;
+    id?: string | number;
+};
+
+function cleanValue(value: unknown, fallback: string) {
+    if (typeof value === "string" && value.trim()) {
+        return value.trim();
+    }
+
+    if (typeof value === "number") {
+        return String(value);
+    }
+
+    return fallback;
+}
+
+function buildTicketHolder(user: TicketHolderSource): TicketHolderInfo {
+    const combinedName = [user.firstName, user.lastName]
+        .filter(Boolean)
+        .join(" ")
+        .trim();
 
     return {
-        homeTeam: parts[0]?.trim() || "KCB Kobs",
-        awayTeam: parts[1]?.trim() || "Heathens RFC",
+        holderName: cleanValue(
+            user.displayName || user.name || user.fullName || combinedName,
+            "Current Fan",
+        ),
+        holderEmail: cleanValue(user.email, "Email unavailable"),
+        holderPhone: cleanValue(user.phone || user.phoneNumber, "Phone unavailable"),
+        fanId: cleanValue(user.fanId || user.id, "LOS-FAN"),
     };
+}
+
+function buildTeamInitials(name: string) {
+    return (
+        name
+            .split(/\s+/)
+            .filter(Boolean)
+            .slice(0, 2)
+            .map((part) => part[0]?.toUpperCase())
+            .join("") || "LO"
+    );
+}
+
+function parseMatchLabel(matchLabel: string) {
+    const cleanLabel = matchLabel || "Match Ticket";
+    const [matchTitle, matchDate] = cleanLabel.split(" - ");
+    const parts = matchTitle.split(/\s+vs\s+/i);
+
+    return {
+        title: matchTitle.trim() || cleanLabel,
+        matchDate: matchDate?.trim() || "",
+        homeTeam: parts[0]?.trim() || "Home Team",
+        awayTeam: parts[1]?.trim() || "Away Team",
+    };
+}
+
+function formatMatchDateFromLabel(matchDate: string, fallback?: string | null) {
+    if (matchDate) {
+        const date = new Date(`${matchDate}T15:00:00`);
+
+        if (!Number.isNaN(date.getTime())) {
+            return {
+                dateDay: date.toLocaleString("en-US", { day: "2-digit" }),
+                dateMonth: date
+                    .toLocaleString("en-US", { month: "short" })
+                    .toUpperCase(),
+                dateYear: String(date.getFullYear()),
+                time: "Kickoff TBA",
+                bookedOn: formatDateParts(fallback).bookedOn,
+            };
+        }
+    }
+
+    return formatDateParts(fallback);
 }
 
 function formatDateParts(value?: string | null) {
@@ -134,7 +227,7 @@ function formatDateParts(value?: string | null) {
 }
 
 function normalizeStatus(status: string) {
-    if (status === "ISSUED") return "CONFIRMED";
+    if (status === "ACTIVE" || status === "ISSUED") return "CONFIRMED";
     if (status === "USED") return "USED";
     if (status === "CANCELLED") return "CANCELLED";
     if (status === "REFUNDED") return "REFUNDED";
@@ -142,26 +235,111 @@ function normalizeStatus(status: string) {
     return status || "CONFIRMED";
 }
 
-function mapTicketToViewModel(ticket: TicketApi | null): TicketViewModel {
+function mapTicketToViewModel(
+    ticket: TicketApi | null,
+    holder: TicketHolderInfo,
+    fixture: PublicFixtureApi | null,
+): TicketViewModel {
     if (!ticket) {
-        return demoTicket;
+        return {
+            ...demoTicket,
+            ...holder,
+        };
     }
 
-    const teams = splitMatchLabel(ticket.match_label);
-    const dateParts = formatDateParts(ticket.issued_at);
+    const match = parseMatchLabel(ticket.match_label);
+    const backendMatchDate = ticket.match_date ?? fixture?.match_date ?? null;
+    const dateParts = backendMatchDate
+        ? {
+              dateDay: new Date(backendMatchDate).toLocaleString("en-US", { day: "2-digit" }),
+              dateMonth: new Date(backendMatchDate)
+                  .toLocaleString("en-US", { month: "short" })
+                  .toUpperCase(),
+              dateYear: String(new Date(backendMatchDate).getFullYear()),
+              time: new Date(backendMatchDate).toLocaleString("en-US", {
+                  hour: "numeric",
+                  minute: "2-digit",
+                  hour12: true,
+              }),
+              bookedOn: formatDateParts(ticket.issued_at).bookedOn,
+          }
+        : formatMatchDateFromLabel(match.matchDate, ticket.issued_at);
+
+    const homeTeam = ticket.home_club_name ?? fixture?.home_club_name ?? match.homeTeam;
+    const awayTeam = ticket.away_club_name ?? fixture?.away_club_name ?? match.awayTeam;
 
     return {
         ...demoTicket,
+        ...holder,
         id: String(ticket.id),
         ticketCode: ticket.ticket_code || ticket.qr_payload || `TKT-${ticket.id}`,
-        title: ticket.match_label || demoTicket.title,
-        homeTeam: teams.homeTeam,
-        awayTeam: teams.awayTeam,
-        ticketType: ticket.ticket_type_name || demoTicket.ticketType,
-        orderId: `#ORD-${ticket.order}`,
+        competition: ticket.competition_name ?? fixture?.competition_name ?? "Match Ticket",
+        title: `${homeTeam} vs ${awayTeam}`,
+        homeTeam,
+        awayTeam,
+        homeLogo: ticket.home_club_logo_url ?? fixture?.home_club_logo_url ?? "",
+        awayLogo: ticket.away_club_logo_url ?? fixture?.away_club_logo_url ?? "",
+        venue: ticket.venue || fixture?.venue || "Venue to be confirmed",
+        location: `Home venue for ${homeTeam}`,
+        ticketType: ticket.ticket_type_name || "Match Ticket",
+        quantity: "1",
+        seats: "General Admission",
+        section: "General",
+        row: "Not assigned",
+        gate: "QR ready",
+        access: "Standard matchday access",
+        price: "See payment receipt",
+        orderId: `#ORDER-${ticket.order}`,
         status: normalizeStatus(ticket.status),
         ...dateParts,
     };
+}
+
+function normalizeMatchName(value: string) {
+    return value
+        .toLowerCase()
+        .replace(/\s+-\s+\d{4}-\d{2}-\d{2}.*/, "")
+        .replace(/\s+/g, " ")
+        .trim();
+}
+
+function findFixtureForTicket(ticket: TicketApi, fixtures: PublicFixtureApi[]) {
+    const byId = fixtures.find((fixture) => fixture.id === ticket.match_id);
+
+    if (byId) {
+        return byId;
+    }
+
+    const ticketMatchName = normalizeMatchName(ticket.match_label);
+
+    return (
+        fixtures.find((fixture) =>
+            normalizeMatchName(`${fixture.home_club_name} vs ${fixture.away_club_name}`) === ticketMatchName,
+        ) ?? null
+    );
+}
+
+function fixtureDateParts(fixture: PublicFixtureApi) {
+    const parts = formatDateParts(fixture.match_date);
+
+    return {
+        day: parts.dateDay,
+        month: parts.dateMonth,
+        time: parts.time,
+        full: `${parts.dateDay} ${parts.dateMonth} ${parts.dateYear} • ${parts.time}`,
+    };
+}
+
+function TeamMark({ name, logo }: { name: string; logo: string }) {
+    return (
+        <SafeImage
+            src={logo}
+            alt={name}
+            className={styles.teamLogoImage}
+            fallbackClassName={styles.teamFallbackBadge}
+            fallback={buildTeamInitials(name)}
+        />
+    );
 }
 
 function TicketQrPreview({
@@ -190,13 +368,50 @@ function TicketQrPreview({
 
 function TicketDetailPage() {
     const { ticketId } = useParams();
+    const navigate = useNavigate();
+    const { currentUser } = useCurrentUser();
     const [ticket, setTicket] = useState<TicketApi | null>(null);
+    const [allTickets, setAllTickets] = useState<TicketApi[]>([]);
+    const [publicFixture, setPublicFixture] = useState<PublicFixtureApi | null>(null);
+    const [recommendedFixtures, setRecommendedFixtures] = useState<PublicFixtureApi[]>([]);
     const [qrObjectUrl, setQrObjectUrl] = useState("");
     const [isLoading, setIsLoading] = useState(true);
     const [pageError, setPageError] = useState("");
+    const [actionMessage, setActionMessage] = useState("");
+    const [activeTab, setActiveTab] = useState<TicketDetailTab>("ticket");
+    const qrSectionRef = useRef<HTMLElement | null>(null);
+    const matchInfoRef = useRef<HTMLElement | null>(null);
+    const entryInfoRef = useRef<HTMLElement | null>(null);
 
-    const ticketView = useMemo(() => mapTicketToViewModel(ticket), [ticket]);
+    const ticketHolder = useMemo(
+        () => buildTicketHolder(currentUser as TicketHolderSource),
+        [currentUser],
+    );
+
+    const ticketView = useMemo(
+        () => mapTicketToViewModel(ticket, ticketHolder, publicFixture),
+        [publicFixture, ticket, ticketHolder],
+    );
     const canFetchBackendQr = Boolean(ticket?.id);
+
+    const relatedTickets = useMemo(() => {
+        if (!ticket) return [];
+
+        return allTickets
+            .filter(
+                (candidate) =>
+                    candidate.order === ticket.order ||
+                    candidate.match_id === ticket.match_id,
+            )
+            .sort((a, b) => Number(a.id) - Number(b.id));
+    }, [allTickets, ticket]);
+
+    function scrollToSection(tab: TicketDetailTab) {
+        setActiveTab(tab);
+        const target =
+            tab === "ticket" ? qrSectionRef.current : tab === "match" ? matchInfoRef.current : entryInfoRef.current;
+        target?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
 
     useEffect(() => {
         let isMounted = true;
@@ -214,16 +429,31 @@ function TicketDetailPage() {
                         return;
                     }
 
-                    const loadedTicket = await getTicketById(ticketId);
+                    const [tickets, fixtures] = await Promise.all([
+                        getMyTickets(),
+                        getPublicFixtures().catch(() => [] as PublicFixtureApi[]),
+                    ]);
+                    const loadedTicket =
+                        tickets.find((candidate) => String(candidate.id) === String(ticketId)) ?? null;
+                    const matchingFixture = loadedTicket
+                        ? findFixtureForTicket(loadedTicket, fixtures)
+                        : null;
 
                     if (isMounted) {
                         setTicket(loadedTicket);
+                        setAllTickets(tickets);
+                        setPublicFixture(matchingFixture ?? null);
+                        setRecommendedFixtures(
+                            fixtures
+                                .filter((fixture) => fixture.id !== loadedTicket?.match_id)
+                                .slice(0, 3),
+                        );
                     }
                 } catch {
                     if (isMounted) {
                         setTicket(null);
                         setPageError(
-                            "We could not load a live backend ticket, so the preview is showing sample ticket details.",
+                            "We could not load this backend ticket. Check your connection and try again.",
                         );
                     }
                 } finally {
@@ -282,6 +512,7 @@ function TicketDetailPage() {
     async function copyTicketCode() {
         try {
             await navigator.clipboard.writeText(ticketView.ticketCode);
+            setActionMessage("Ticket ID copied to clipboard.");
         } catch {
             // Clipboard may be blocked in some browsers. The visible ticket code remains available.
         }
@@ -296,6 +527,33 @@ function TicketDetailPage() {
         link.click();
     }
 
+    function handleTransferTicket() {
+        setActionMessage(
+            "Ticket transfer needs the backend transfer endpoint. For now, contact support with this ticket ID.",
+        );
+    }
+
+    async function shareTicket() {
+        const shareData = {
+            title: `League OS ticket: ${ticketView.title}`,
+            text: `${ticketView.title} • ${ticketView.dateDay} ${ticketView.dateMonth} ${ticketView.dateYear} • ${ticketView.ticketCode}`,
+            url: window.location.href,
+        };
+
+        try {
+            if (navigator.share) {
+                await navigator.share(shareData);
+                setActionMessage("Ticket share sheet opened.");
+                return;
+            }
+
+            await navigator.clipboard.writeText(`${shareData.text} ${shareData.url}`);
+            setActionMessage("Ticket link copied. You can now share it manually.");
+        } catch {
+            setActionMessage("Share was cancelled or blocked by the browser.");
+        }
+    }
+
     return (
         <section className={styles.page}>
             <div className={styles.breadcrumb}>
@@ -304,8 +562,8 @@ function TicketDetailPage() {
 
             <header className={styles.pageHeader}>
                 <div>
-                    <h1>View Ticket</h1>
-                    <p>{ticketView.competition}</p>
+                    <h1>Ticket QR & Match Details</h1>
+                    <p>Use this page at the gate to present your QR code and confirm match access.</p>
                 </div>
 
                 <Link to="/dashboard/tickets" className={styles.backLink}>
@@ -333,10 +591,10 @@ function TicketDetailPage() {
                     <h2>{ticketView.title}</h2>
 
                     <div className={styles.teamRow}>
-                        <img src={ticketView.homeLogo} alt="" aria-hidden="true" />
+                        <TeamMark name={ticketView.homeTeam} logo={ticketView.homeLogo} />
                         <strong>{ticketView.homeTeam}</strong>
                         <b>VS</b>
-                        <img src={ticketView.awayLogo} alt="" aria-hidden="true" />
+                        <TeamMark name={ticketView.awayTeam} logo={ticketView.awayLogo} />
                         <strong>{ticketView.awayTeam}</strong>
                     </div>
 
@@ -388,16 +646,39 @@ function TicketDetailPage() {
             </section>
 
             <nav className={styles.detailTabs} aria-label="Ticket detail sections">
-                <button type="button" className={styles.activeTab}>
+                <button
+                    type="button"
+                    className={activeTab === "ticket" ? styles.activeTab : ""}
+                    onClick={() => scrollToSection("ticket")}
+                >
                     Ticket Details
                 </button>
-                <button type="button">Match Info</button>
-                <button type="button">Entry Info</button>
+                <button
+                    type="button"
+                    className={activeTab === "match" ? styles.activeTab : ""}
+                    onClick={() => scrollToSection("match")}
+                >
+                    Match Info
+                </button>
+                <button
+                    type="button"
+                    className={activeTab === "entry" ? styles.activeTab : ""}
+                    onClick={() => scrollToSection("entry")}
+                >
+                    Entry Info
+                </button>
             </nav>
 
             <div className={styles.detailGrid}>
                 <main className={styles.mainColumn}>
-                    <section className={styles.ticketPreviewCard}>
+                    {actionMessage ? (
+                        <section className={styles.actionMessage} role="status">
+                            <Info size={18} strokeWidth={2.3} aria-hidden="true" />
+                            {actionMessage}
+                        </section>
+                    ) : null}
+
+                    <section className={styles.ticketPreviewCard} ref={qrSectionRef}>
                         <div className={styles.cardHeader}>
                             <h2>Ticket Preview</h2>
                             {isLoading ? <span>Loading...</span> : null}
@@ -409,7 +690,34 @@ function TicketDetailPage() {
                         />
                     </section>
 
-                    <section className={styles.infoPanel}>
+                    {relatedTickets.length > 1 ? (
+                        <section className={styles.relatedTicketsPanel}>
+                            <div className={styles.cardHeader}>
+                                <h2>Tickets in this purchase</h2>
+                                <span>{relatedTickets.length} tickets</span>
+                            </div>
+
+                            <div className={styles.relatedTicketList}>
+                                {relatedTickets.map((relatedTicket) => (
+                                    <Link
+                                        to={`/dashboard/tickets/${relatedTicket.id}`}
+                                        key={relatedTicket.id}
+                                        className={
+                                            String(relatedTicket.id) === String(ticket?.id)
+                                                ? `${styles.relatedTicketItem} ${styles.activeRelatedTicket}`
+                                                : styles.relatedTicketItem
+                                        }
+                                    >
+                                        <span>{relatedTicket.ticket_type_name}</span>
+                                        <strong>{String(relatedTicket.ticket_code).slice(0, 8)}...</strong>
+                                        <em>{normalizeStatus(relatedTicket.status)}</em>
+                                    </Link>
+                                ))}
+                            </div>
+                        </section>
+                    ) : null}
+
+                    <section className={styles.infoPanel} ref={matchInfoRef}>
                         <div className={styles.infoColumn}>
                             <h2>
                                 <MapPin size={18} strokeWidth={2.3} />
@@ -439,7 +747,7 @@ function TicketDetailPage() {
                                 </div>
                                 <div>
                                     <dt>Access</dt>
-                                    <dd>VIP Lounge Access</dd>
+                                    <dd>{ticketView.access}</dd>
                                 </div>
                             </dl>
 
@@ -496,7 +804,7 @@ function TicketDetailPage() {
                         </div>
                     </section>
 
-                    <section className={styles.entryNotice}>
+                    <section className={styles.entryNotice} ref={entryInfoRef}>
                         <Info size={26} strokeWidth={2.4} aria-hidden="true" />
                         <p>
                             Please ensure you have a stable internet connection when presenting
@@ -508,7 +816,11 @@ function TicketDetailPage() {
 
                 <aside className={styles.sideColumn}>
                     <section className={styles.actionsPanel}>
-                        <button type="button" className={styles.primaryAction}>
+                        <button
+                            type="button"
+                            className={styles.primaryAction}
+                            onClick={() => scrollToSection("ticket")}
+                        >
                             <QrCode size={18} strokeWidth={2.4} aria-hidden="true" />
                             View QR Ticket
                         </button>
@@ -523,12 +835,20 @@ function TicketDetailPage() {
                             Download Ticket
                         </button>
 
-                        <button type="button" className={styles.secondaryAction}>
+                        <button
+                            type="button"
+                            className={styles.secondaryAction}
+                            onClick={handleTransferTicket}
+                        >
                             <ArrowLeftRight size={18} strokeWidth={2.4} aria-hidden="true" />
                             Transfer Ticket
                         </button>
 
-                        <button type="button" className={styles.secondaryAction}>
+                        <button
+                            type="button"
+                            className={styles.secondaryAction}
+                            onClick={() => navigate("/profile/support")}
+                        >
                             <Headphones size={18} strokeWidth={2.4} aria-hidden="true" />
                             Contact Support
                         </button>
@@ -542,7 +862,11 @@ function TicketDetailPage() {
                             Copy Ticket ID
                         </button>
 
-                        <button type="button" className={styles.secondaryAction}>
+                        <button
+                            type="button"
+                            className={styles.secondaryAction}
+                            onClick={() => void shareTicket()}
+                        >
                             <Share2 size={18} strokeWidth={2.4} aria-hidden="true" />
                             Share Ticket
                         </button>
@@ -554,33 +878,34 @@ function TicketDetailPage() {
                             <Link to="/tickets">More Matches →</Link>
                         </div>
 
-                        {[
-                            ["SUN", "01", "JUN", "Pirates RFC vs Black Pirates", "2:00 PM EAT", "UGX 45,000"],
-                            ["SUN", "08", "JUN", "Kobs vs Pirates RFC", "2:00 PM EAT", "UGX 40,000"],
-                            ["SAT", "14", "JUN", "Heathens vs Rams RFC", "4:00 PM EAT", "UGX 35,000"],
-                        ].map((match) => (
-                            <article className={styles.recommendedMatch} key={match[3]}>
-                                <div>
-                                    <span>{match[0]}</span>
-                                    <strong>{match[1]}</strong>
-                                    <em>{match[2]}</em>
-                                </div>
+                        {recommendedFixtures.map((fixture) => {
+                            const fixtureDate = fixtureDateParts(fixture);
 
-                                <section>
-                                    <h3>{match[3]}</h3>
-                                    <p>{match[4]}</p>
-                                    <small>{match[5]}</small>
-                                </section>
+                            return (
+                                <article className={styles.recommendedMatch} key={fixture.id}>
+                                    <div>
+                                        <span>{fixtureDate.month}</span>
+                                        <strong>{fixtureDate.day}</strong>
+                                        <em>{fixtureDate.time}</em>
+                                    </div>
 
-                                <Link to="/tickets">Buy Tickets</Link>
-                            </article>
-                        ))}
+                                    <section>
+                                        <h3>{fixture.home_club_name} vs {fixture.away_club_name}</h3>
+                                        <p>{fixtureDate.full}</p>
+                                        <small>{fixture.venue || "Venue to be confirmed"}</small>
+                                    </section>
+
+                                    <Link to={`/tickets/${fixture.id}/checkout`}>Buy Tickets</Link>
+                                </article>
+                            );
+                        })}
                     </section>
 
-                    <section className={styles.walletPanel}>
-                        <WalletCards size={38} strokeWidth={2.1} aria-hidden="true" />
-                        <h2>Add to Wallet</h2>
-                        <p>Wallet support is prepared as a placeholder for Apple Wallet and Google Pay.</p>
+                    <section className={styles.sponsorPanel}>
+                        <span>Sponsored</span>
+                        <h2>Matchday partner space</h2>
+                        <p>Use this slot for a club sponsor, ticket bundle, food voucher, transport partner or broadcast promotion.</p>
+                        <Link to="/sponsor/apply">Advertise Here →</Link>
                     </section>
                 </aside>
             </div>
