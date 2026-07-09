@@ -1,10 +1,11 @@
 import React from 'react'
 import { MemoryRouter } from 'react-router-dom'
 import { GoogleOAuthProvider } from '@react-oauth/google'
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import Login from './Login'
+import { useAuthStore } from '../../store/authStore.js'
 
 const navigateMock = vi.hoisted(() => vi.fn())
 const loginMock = vi.hoisted(() => vi.fn())
@@ -22,10 +23,8 @@ vi.mock('react-router-dom', async () => {
   }
 })
 
-vi.mock('../../hooks/useAuth.js', () => ({
-  useAuth: () => ({
-    login: loginMock,
-  }),
+vi.mock('../../services/authService.js', () => ({
+  login: loginMock,
 }))
 
 function renderLogin(initialEntries?: { pathname: string; state?: object }[]) {
@@ -38,10 +37,43 @@ function renderLogin(initialEntries?: { pathname: string; state?: object }[]) {
   )
 }
 
+const verifiedLoginResponse = {
+  data: {
+    access: 'access-token',
+    refresh: 'refresh-token',
+    requires_email_verification: false,
+    user: {
+      email: 'fan@example.com',
+      role: 'FAN',
+      frontend_dashboard_route: '/dashboard/fan',
+    },
+  },
+}
+
+const verificationRequiredResponse = {
+  data: {
+    access: 'access-token',
+    refresh: 'refresh-token',
+    requires_email_verification: true,
+    user: {
+      email: 'fan@example.com',
+      role: 'FAN',
+      frontend_dashboard_route: '/dashboard/fan',
+    },
+  },
+}
+
 describe('Login page', () => {
   beforeEach(() => {
     navigateMock.mockClear()
     loginMock.mockReset()
+
+    useAuthStore.setState({
+      user: null,
+      accessToken: null,
+      refreshToken: null,
+      requiresEmailVerification: false,
+    })
   })
 
   it('renders the sign-in form and toggles password visibility', async () => {
@@ -70,16 +102,7 @@ describe('Login page', () => {
   it('redirects users who still need email verification to the OTP page', async () => {
     const user = userEvent.setup()
 
-    loginMock.mockResolvedValueOnce({
-      access: 'access-token',
-      refresh: 'refresh-token',
-      requires_email_verification: true,
-      user: {
-        email: 'fan@example.com',
-        role: 'FAN',
-        frontend_dashboard_route: '/dashboard/fan',
-      },
-    })
+    loginMock.mockResolvedValueOnce(verificationRequiredResponse)
 
     renderLogin([{ pathname: '/login', state: { postLoginRedirect: '/profile' } }])
 
@@ -87,13 +110,15 @@ describe('Login page', () => {
     await user.type(screen.getByPlaceholderText('Enter your password'), 'StrongPassword123')
     await user.click(screen.getByRole('button', { name: /^log in$/i }))
 
-    expect(navigateMock).toHaveBeenCalledWith('/verify-email', {
-      replace: true,
-      state: {
-        email: 'fan@example.com',
-        message: 'Please verify your email address before continuing.',
-        postLoginRedirect: '/profile',
-      },
+    await waitFor(() => {
+      expect(navigateMock).toHaveBeenCalledWith('/verify-email', {
+        replace: true,
+        state: {
+          email: 'fan@example.com',
+          message: 'Please verify your email address before continuing.',
+          postLoginRedirect: '/profile',
+        },
+      })
     })
   })
 
@@ -115,13 +140,15 @@ describe('Login page', () => {
     await user.type(screen.getByPlaceholderText('Enter your password'), 'StrongPassword123')
     await user.click(screen.getByRole('button', { name: /^log in$/i }))
 
-    expect(navigateMock).toHaveBeenCalledWith('/verify-email', {
-      replace: true,
-      state: {
-        email: 'fan@example.com',
-        message: 'Please verify your email address before continuing.',
-        postLoginRedirect: '/dashboard',
-      },
+    await waitFor(() => {
+      expect(navigateMock).toHaveBeenCalledWith('/verify-email', {
+        replace: true,
+        state: {
+          email: 'fan@example.com',
+          message: 'Please verify your email address before continuing.',
+          postLoginRedirect: '/dashboard',
+        },
+      })
     })
   })
 
@@ -166,16 +193,7 @@ describe('Login page', () => {
   it('submits valid credentials and redirects to the backend dashboard route', async () => {
     const user = userEvent.setup()
 
-    loginMock.mockResolvedValueOnce({
-      access: 'access-token',
-      refresh: 'refresh-token',
-      requires_email_verification: false,
-      user: {
-        email: 'fan@example.com',
-        role: 'FAN',
-        frontend_dashboard_route: '/dashboard/fan',
-      },
-    })
+    loginMock.mockResolvedValueOnce(verifiedLoginResponse)
 
     renderLogin()
 
@@ -187,22 +205,16 @@ describe('Login page', () => {
       identifier: 'fan@example.com',
       password: 'StrongPassword123',
     })
-    expect(navigateMock).toHaveBeenCalledWith('/dashboard/fan', { replace: true })
+
+    await waitFor(() => {
+      expect(navigateMock).toHaveBeenCalledWith('/dashboard/fan', { replace: true })
+    })
   })
 
   it('returns verified users to their requested protected page', async () => {
     const user = userEvent.setup()
 
-    loginMock.mockResolvedValueOnce({
-      access: 'access-token',
-      refresh: 'refresh-token',
-      requires_email_verification: false,
-      user: {
-        email: 'fan@example.com',
-        role: 'FAN',
-        frontend_dashboard_route: '/dashboard/fan',
-      },
-    })
+    loginMock.mockResolvedValueOnce(verifiedLoginResponse)
 
     renderLogin([{ pathname: '/login', state: { postLoginRedirect: '/memberships' } }])
 
@@ -210,6 +222,8 @@ describe('Login page', () => {
     await user.type(screen.getByPlaceholderText('Enter your password'), 'StrongPassword123')
     await user.click(screen.getByRole('button', { name: /^log in$/i }))
 
-    expect(navigateMock).toHaveBeenCalledWith('/memberships', { replace: true })
+    await waitFor(() => {
+      expect(navigateMock).toHaveBeenCalledWith('/memberships', { replace: true })
+    })
   })
 })
