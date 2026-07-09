@@ -21,6 +21,7 @@ import { getMyUnionWorkspaces } from '../../services/unionAdminService';
 import {
     canRoleAccessRedirect,
     getDefaultDashboardRoute,
+    getNormalizedRoles,
     normalizeRole,
 } from '../../utils/roleRoutes.js';
 
@@ -128,26 +129,27 @@ function resolveDashboardRoute(result: LoginResult) {
 
 async function resolvePostLoginRoute(result: LoginResult, postLoginRedirect?: string | null) {
     const backendRoute = resolveDashboardRoute(result);
+    const userRoles = getNormalizedRoles(result.user);
     const userRole = normalizeRole(result.user?.role);
+    const hasRole = (role: string) => userRoles.includes(role);
 
-    if (postLoginRedirect && canRoleAccessRedirect(userRole, postLoginRedirect)) {
+    if (postLoginRedirect && canRoleAccessRedirect(result.user ?? userRole, postLoginRedirect)) {
         return postLoginRedirect;
     }
 
-    if (userRole === 'SUPER_ADMIN') {
-        return getDefaultDashboardRoute(userRole);
+    if (hasRole('SUPER_ADMIN')) {
+        return getDefaultDashboardRoute(result.user);
     }
 
-    if (backendRoute === '/dashboard/fan' && userRole === 'FAN') {
-        return backendRoute;
+    if (
+        hasRole('UNION_ADMIN') &&
+        (backendRoute === '/dashboard' || backendRoute === '/dashboard/fan')
+    ) {
+        return '/dashboard/union-admin';
     }
 
     if (backendRoute !== '/dashboard' && backendRoute !== '/dashboard/fan') {
         return backendRoute;
-    }
-
-    if (userRole === 'FAN') {
-        return getDefaultDashboardRoute(userRole);
     }
 
     try {
@@ -160,7 +162,11 @@ async function resolvePostLoginRoute(result: LoginResult, postLoginRedirect?: st
         // Keep the normal dashboard route if workspace lookup fails.
     }
 
-    return getDefaultDashboardRoute(userRole || 'FAN');
+    if (hasRole('FAN') || userRole === 'FAN') {
+        return '/dashboard/fan';
+    }
+
+    return getDefaultDashboardRoute(result.user ?? (userRole || 'FAN'));
 }
 
 function getUserEmail(value: unknown) {
