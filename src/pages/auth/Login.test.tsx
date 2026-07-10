@@ -282,6 +282,9 @@ describe('Login page', () => {
       expect(apiClientPostMock).toHaveBeenCalledWith('/accounts/google/', {
         token: 'test-credential',
       });
+      
+      expect(screen.getByText(/invalid google token/i)).toBeInTheDocument();
+      expect(navigateMock).not.toHaveBeenCalled();
     });
 
     expect(await screen.findByText(/invalid google token/i)).toBeInTheDocument();
