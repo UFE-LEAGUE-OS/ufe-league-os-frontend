@@ -23,6 +23,10 @@ vi.mock('react-router-dom', async () => {
   }
 })
 
+vi.mock('../../services/unionAdminService', () => ({
+  getMyUnionWorkspaces: vi.fn().mockResolvedValue([]),
+}))
+
 vi.mock('../../services/authService.js', () => ({
   login: loginMock,
 }))
@@ -30,7 +34,7 @@ vi.mock('../../services/authService.js', () => ({
 function renderLogin(initialEntries?: { pathname: string; state?: object }[]) {
   return render(
     <GoogleOAuthProvider clientId="test-client-id">
-      <MemoryRouter initialEntries={initialEntries}>
+      <MemoryRouter initialEntries={initialEntries} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Login />
       </MemoryRouter>
     </GoogleOAuthProvider>,

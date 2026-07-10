@@ -291,7 +291,7 @@ const STATS = [
 ];
 
     // Show <Outlet> content for any sub-route; show dashboard home only at /super-admin exactly
-    const isHome = location.pathname === "/dashboard/super-admin" || location.pathname === "/dashboard/super-admin/";
+    const isHome = location.pathname === "/super-admin" || location.pathname === "/super-admin/";
 
     return (
         <div

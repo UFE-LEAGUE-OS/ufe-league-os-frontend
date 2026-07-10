@@ -6,7 +6,7 @@ import QuickLinks from './QuickLinks'
 describe('QuickLinks', () => {
   it('renders the core fan shortcuts', () => {
     render(
-      <MemoryRouter>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <QuickLinks />
       </MemoryRouter>
     )

@@ -44,7 +44,7 @@ describe('VerifyEmail page', () => {
     verifyOtpMock.mockResolvedValueOnce({ data: { message: 'OTP verified successfully.' } });
 
     render(
-      <MemoryRouter initialEntries={[{ pathname: '/verify-email', state: { email: 'fan@example.com', postLoginRedirect: '/personalize' } }]}>
+      <MemoryRouter initialEntries={[{ pathname: '/verify-email', state: { email: 'fan@example.com', postLoginRedirect: '/personalize' } }]} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <VerifyEmail />
       </MemoryRouter>,
     );
@@ -102,7 +102,7 @@ describe('VerifyEmail page', () => {
     loginMock.mockResolvedValueOnce({ user: { email: 'fan@example.com' } });
 
     render(
-      <MemoryRouter initialEntries={[{ pathname: '/verify-email', state: { email: 'fan@example.com', postLoginRedirect: '/personalize' } }]}>
+      <MemoryRouter initialEntries={[{ pathname: '/verify-email', state: { email: 'fan@example.com', postLoginRedirect: '/personalize' } }]} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <VerifyEmail />
       </MemoryRouter>,
     );
@@ -134,7 +134,7 @@ describe('VerifyEmail page', () => {
 
   it('shows a retry message when verification has no email context', async () => {
     render(
-      <MemoryRouter initialEntries={[{ pathname: '/verify-email' }]}>
+      <MemoryRouter initialEntries={[{ pathname: '/verify-email' }]} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <VerifyEmail />
       </MemoryRouter>,
     );
@@ -148,7 +148,7 @@ describe('VerifyEmail page', () => {
     resendOtpMock.mockResolvedValueOnce({ data: { message: 'A new OTP has been sent.' } });
 
     render(
-      <MemoryRouter initialEntries={[{ pathname: '/verify-email', state: { email: 'fan@example.com' } }]}>
+      <MemoryRouter initialEntries={[{ pathname: '/verify-email', state: { email: 'fan@example.com' } }]} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <VerifyEmail />
       </MemoryRouter>,
     );

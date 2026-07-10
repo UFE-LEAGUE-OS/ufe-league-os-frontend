@@ -23,9 +23,9 @@ import {
   TrendingDown,
 } from 'lucide-react';
 
-import '../../styles/pages/SuperAdminFinance/SuperAdminFinance.css';
-import '../../styles/pages/SuperAdminFinance/SecurityEvents.css';
-import FilterDropdown from '../../components/FilterDropdown';
+import '../../../styles/pages/super-admin/finance-security/SuperAdminFinance.css';
+import '../../../styles/pages/super-admin/finance-security/SecurityEvents.css';
+import FilterDropdown from '../../../components/FilterDropdown';
 
 const threatTrend = [
   { name: 'May 29', critical: 10, high: 20, medium: 60, low: 45 },

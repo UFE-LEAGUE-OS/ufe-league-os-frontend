@@ -98,7 +98,7 @@ function buildTicketTypes(matchId: number) {
 describe('Feature: Fan discovers League OS from the public landing page', () => {
   it('Scenario: a guest can understand the product and find public entry points', () => {
     render(
-      <MemoryRouter>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Landing />
       </MemoryRouter>,
     )
@@ -122,7 +122,7 @@ describe('Feature: Guest buys a match ticket', () => {
   it('Scenario: the guest filters ticket listings and is asked to sign in before checkout', async () => {
     const user = userEvent.setup()
     render(
-      <MemoryRouter>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <TicketsLandingPage />
       </MemoryRouter>,
     )
