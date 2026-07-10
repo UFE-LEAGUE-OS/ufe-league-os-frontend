@@ -259,6 +259,11 @@ describe('Login page', () => {
     await user.click(screen.getByRole('button', { name: /google login/i }));
 
     await waitFor(() => {
+      expect(apiClientPostMock).toHaveBeenCalledWith('/accounts/google/', {
+        token: 'test-credential',
+      });
+    });
+    await waitFor(() => {
       expect(navigateMock).toHaveBeenCalledWith('/personalize', { replace: true })
     })
   })
