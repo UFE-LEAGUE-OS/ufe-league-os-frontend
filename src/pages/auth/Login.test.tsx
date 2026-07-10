@@ -12,8 +12,33 @@ const loginMock = vi.hoisted(() => vi.fn())
 
 vi.mock('@react-oauth/google', () => ({
   GoogleOAuthProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+<<<<<<< Updated upstream
   GoogleLogin: () => <div data-testid="google-login" />,
 }))
+=======
+  GoogleLogin: ({ onSuccess }: { onSuccess?: (response: { credential?: string }) => void }) => (
+    <button type="button" onClick={() => onSuccess?.({ credential: 'test-credential' })}>
+      Google Login
+    </button>
+  ),
+}))
+
+vi.mock('axios', () => {
+  const mockAxiosInstance = {
+    get: vi.fn(),
+    post: vi.fn(),
+    interceptors: {
+      request: { use: vi.fn() },
+      response: { use: vi.fn() },
+    },
+  };
+  return {
+    default: {
+      create: vi.fn(() => mockAxiosInstance),
+    },
+  };
+});
+>>>>>>> Stashed changes
 
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom')

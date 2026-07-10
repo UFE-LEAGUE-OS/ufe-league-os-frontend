@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState } from 'react';
 import '../../../styles/pages/super-admin/content-platform-operations/SuperAdminContent.css';
-import FilterDropdown from '../../../components/common/FilterDropdown';
+import FilterDropdown from '../../../components/FilterDropdown';
 
 const tabs = ['Content', 'SEO', 'Navigation', 'Access'] as const;
 type Tab = typeof tabs[number];
