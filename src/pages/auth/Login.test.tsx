@@ -20,15 +20,6 @@ vi.mock('@react-oauth/google', () => ({
   ),
 }))
 
-vi.mock('axios', () => ({
-  default: {
-    create: vi.fn(() => ({
-      post: vi.fn(),
-    })),
-    post: vi.fn(),
-  },
-}))
-
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom')
   return {
@@ -40,6 +31,15 @@ vi.mock('react-router-dom', async () => {
 vi.mock('../../services/authService.js', () => ({
   login: loginMock,
 }))
+
+const axiosPostMock = vi.fn()
+
+vi.mock('axios', async () => {
+  const actual = await vi.importActual('axios')
+  return {
+    default: { ...actual, post: axiosPostMock },
+  }
+})
 
 function renderLogin(initialEntries?: { pathname: string; state?: object }[]) {
   return render(
@@ -55,7 +55,7 @@ describe('Login page', () => {
   beforeEach(() => {
     navigateMock.mockClear()
     loginMock.mockReset()
-    vi.mocked(axios.post).mockReset()
+    axiosPostMock.mockReset()
     useAuthStore.setState({
       user: null,
       accessToken: null,
@@ -235,5 +235,30 @@ describe('Login page', () => {
     await user.click(screen.getByRole('button', { name: /^log in$/i }))
 
     expect(navigateMock).toHaveBeenCalledWith('/memberships', { replace: true })
+  })
+
+  it('handles Google Sign-In success and navigation to personalization for a new user', async () => {
+    const user = userEvent.setup()
+
+    axiosPostMock.mockResolvedValueOnce({
+      data: {
+        access: 'google-access-token',
+        refresh: 'google-refresh-token',
+        requires_email_verification: false,
+        is_new_user: true,
+        user: {
+          email: 'new.google.user@example.com',
+        },
+      },
+    })
+
+    renderLogin()
+
+    await user.click(screen.getByRole('button', { name: /google login/i }))
+
+    await waitFor(() => {
+      expect(axiosPostMock).toHaveBeenCalledWith(expect.stringContaining('/google/'), { token: 'test-credential' })
+      expect(navigateMock).toHaveBeenCalledWith('/personalize', { replace: true })
+    })
   })
 })
