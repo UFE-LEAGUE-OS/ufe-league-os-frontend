@@ -645,7 +645,100 @@ export async function generateUnionAdminFixtures(
 
 // UNION ADMIN MANAGEMENT API END
 
+// UNION ADMIN CLUBS API START
 
+export interface UnionAdminClubMembershipSummary {
+  id: number;
+  league: number;
+  league_name: string;
+  season: number | null;
+  season_name: string | null;
+  status: string;
+  status_display: string;
+  promoted_from_league_name: string | null;
+  relegated_to_league_name: string | null;
+  notes: string;
+}
 
+export interface UnionAdminClubRecord {
+  id: number;
+  name: string;
+  slug: string;
+  short_name: string;
+  sport: string;
+  sport_display: string;
+  logo_url: string | null;
+  banner_url: string | null;
+  primary_color: string;
+  secondary_color: string;
+  admin: number | null;
+  admin_name: string;
+  admin_email: string;
+  teams: number;
+  players: number;
+  compliance: string;
+  memberships: UnionAdminClubMembershipSummary[];
+  created_at: string;
+}
 
+export interface UpsertUnionAdminClubPayload {
+  workspace: string;
+  name?: string;
+  short_name?: string;
+  sport?: string;
+  primary_color?: string;
+  secondary_color?: string;
+  admin_email?: string;
+}
+
+export async function getUnionAdminClubs(
+  workspaceSlug: string,
+  query = "",
+): Promise<UnionAdminClubRecord[]> {
+  const params = new URLSearchParams({ workspace: workspaceSlug });
+
+  if (query.trim()) {
+    params.set("q", query.trim());
+  }
+
+  const response = await apiClient.get<UnionAdminListResponse<UnionAdminClubRecord>>(
+    `/dashboards/union-admin/clubs/?${params.toString()}`,
+  );
+
+  return response.data.results ?? [];
+}
+
+export async function createUnionAdminClub(
+  payload: UpsertUnionAdminClubPayload,
+): Promise<UnionAdminClubRecord> {
+  const response = await apiClient.post<UnionAdminClubRecord>(
+    "/dashboards/union-admin/clubs/",
+    payload,
+  );
+
+  return response.data;
+}
+
+export async function updateUnionAdminClub(
+  clubId: number,
+  payload: UpsertUnionAdminClubPayload,
+): Promise<UnionAdminClubRecord> {
+  const response = await apiClient.patch<UnionAdminClubRecord>(
+    `/dashboards/union-admin/clubs/${clubId}/`,
+    payload,
+  );
+
+  return response.data;
+}
+
+export async function deleteUnionAdminClub(
+  clubId: number,
+  workspaceSlug: string,
+): Promise<void> {
+  await apiClient.delete(`/dashboards/union-admin/clubs/${clubId}/`, {
+    data: { workspace: workspaceSlug },
+  });
+}
+
+// UNION ADMIN CLUBS API END
 
