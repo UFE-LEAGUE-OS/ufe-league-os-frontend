@@ -265,4 +265,26 @@ describe('Login page', () => {
       expect(navigateMock).toHaveBeenCalledWith('/personalize', { replace: true })
     })
   })
+
+  it('shows an error message when Google Sign-In fails on the backend', async () => {
+    const user = userEvent.setup()
+
+    axiosPostMock.mockRejectedValueOnce({
+      response: {
+        data: {
+          detail: 'Invalid token or user not found.',
+        },
+      },
+    })
+
+    renderLogin()
+
+    await user.click(screen.getByRole('button', { name: /google login/i }))
+
+    await waitFor(() => {
+      expect(axiosPostMock).toHaveBeenCalledWith(expect.stringContaining('/google/'), { token: 'test-credential' })
+    })
+
+    expect(await screen.findByText(/invalid token or user not found/i)).toBeInTheDocument()
+  })
 })
