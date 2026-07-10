@@ -11,6 +11,7 @@ import {
   Trash2,
   GripVertical,
 } from 'lucide-react';
+import FilterDropdown from '../../../components/FilterDropdown';
 import '../../../styles/pages/super-admin/content-platform-operations/SuperAdminContent.css';
 import '../../../styles/pages/super-admin/content-platform-operations/SuperAdminOpsShared.css';
 import '../../../styles/pages/super-admin/content-platform-operations/AnnouncementsBannersPage.css';
@@ -121,6 +122,9 @@ const INITIAL_BANNERS: Banner[] = [
   },
 ];
 
+const TYPE_FILTER_OPTIONS = ['All Types', 'Alert', 'Info'];
+const STATUS_FILTER_OPTIONS = ['All Status', 'Scheduled', 'Active', 'Expired'];
+
 function statusBadge(status: Announcement['status']) {
   if (status === 'Active') return <span className="badge badge-green">Active</span>;
   if (status === 'Scheduled') return <span className="badge badge-grey">Scheduled</span>;
@@ -143,11 +147,20 @@ function typeBadge(type: Announcement['type']) {
 export default function AnnouncementsBannersPage() {
   const [activeTab, setActiveTab] = useState<Tab>('Announcements');
   const [search, setSearch] = useState('');
+  const [typeFilter, setTypeFilter] = useState('All Types');
+  const [statusFilter, setStatusFilter] = useState('All Status');
 
   const [banners, setBanners] = useState<Banner[]>(INITIAL_BANNERS);
   const [previewId, setPreviewId] = useState<string>(INITIAL_BANNERS[0].id);
 
   const previewBanner = banners.find((b) => b.id === previewId) ?? banners[0];
+
+  const filteredAnnouncements = ANNOUNCEMENTS.filter((a) => {
+    const matchesSearch = a.title.toLowerCase().includes(search.toLowerCase());
+    const matchesType = typeFilter === 'All Types' || a.type === typeFilter;
+    const matchesStatus = statusFilter === 'All Status' || a.status === statusFilter;
+    return matchesSearch && matchesType && matchesStatus;
+  });
 
   function moveBanner(id: string, direction: 'up' | 'down') {
     setBanners((current) => {
@@ -210,17 +223,16 @@ export default function AnnouncementsBannersPage() {
       {activeTab === 'Announcements' && (
         <>
           <div className="ops-toolbar">
-            <select className="page-select">
-              <option>All Types</option>
-              <option>Alert</option>
-              <option>Info</option>
-            </select>
-            <select className="page-select">
-              <option>All Status</option>
-              <option>Scheduled</option>
-              <option>Active</option>
-              <option>Expired</option>
-            </select>
+            <FilterDropdown
+              value={typeFilter}
+              options={TYPE_FILTER_OPTIONS}
+              onChange={setTypeFilter}
+            />
+            <FilterDropdown
+              value={statusFilter}
+              options={STATUS_FILTER_OPTIONS}
+              onChange={setStatusFilter}
+            />
             <div className="ops-search">
               <Search size={15} />
               <input
@@ -244,9 +256,7 @@ export default function AnnouncementsBannersPage() {
                 </tr>
               </thead>
               <tbody>
-                {ANNOUNCEMENTS.filter((a) =>
-                  a.title.toLowerCase().includes(search.toLowerCase())
-                ).map((a) => (
+                {filteredAnnouncements.map((a) => (
                   <tr key={a.title}>
                     <td>{a.title}</td>
                     <td>{typeBadge(a.type)}</td>
@@ -256,10 +266,20 @@ export default function AnnouncementsBannersPage() {
                     <td className="cell-muted">{a.end}</td>
                   </tr>
                 ))}
+
+                {filteredAnnouncements.length === 0 && (
+                  <tr>
+                    <td colSpan={6} className="cell-muted" style={{ textAlign: 'center', padding: '32px 0' }}>
+                      No announcements match your filters.
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
             <div className="table-pagination">
-              <span>Showing 1 to 4 of 4</span>
+              <span>
+                Showing {filteredAnnouncements.length === 0 ? 0 : 1} to {filteredAnnouncements.length} of {ANNOUNCEMENTS.length}
+              </span>
               <div className="pager">
                 <button disabled><ChevronLeft size={14} /></button>
                 <button className="current">1</button>
