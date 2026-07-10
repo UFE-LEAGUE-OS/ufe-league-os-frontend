@@ -11,9 +11,9 @@ import {
   YAxis,
 } from 'recharts';
 
-import '../../styles/pages/SuperAdminFinance/SuperAdminFinance.css';
-import '../../styles/pages/SuperAdminFinance/DataAccessLog.css';
-import FilterDropdown from '../../components/FilterDropdown';
+import '../../../styles/pages/super-admin/finance-security/SuperAdminFinance.css';
+import '../../../styles/pages/super-admin/finance-security/DataAccessLog.css';
+import FilterDropdown from '../../../components/FilterDropdown';
 
 const accessTrend = [
   { name: 'Mon', logins: 24, exports: 2 },

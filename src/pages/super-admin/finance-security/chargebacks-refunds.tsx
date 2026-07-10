@@ -13,9 +13,9 @@ import {
   YAxis,
 } from 'recharts';
 
-import '../../styles/pages/SuperAdminFinance/SuperAdminFinance.css';
-import '../../styles/pages/SuperAdminFinance/ChargebacksRefunds.css';
-import FilterDropdown from '../../components/FilterDropdown';
+import '../../../styles/pages/super-admin/finance-security/SuperAdminFinance.css';
+import '../../../styles/pages/super-admin/finance-security/ChargebacksRefunds.css';
+import FilterDropdown from '../../../components/FilterDropdown';
 
 const chargebackTrend = [
   { name: 'Jan', chargebacks: 12, refunds: 26 },

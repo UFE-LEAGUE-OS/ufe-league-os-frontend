@@ -12,9 +12,9 @@ import {
   YAxis,
 } from 'recharts';
 
-import '../../styles/pages/SuperAdminFinance/SuperAdminFinance.css';
-import '../../styles/pages/SuperAdminFinance/PaymentsAudit.css';
-import FilterDropdown from '../../components/FilterDropdown';
+import '../../../styles/pages/super-admin/finance-security/SuperAdminFinance.css';
+import '../../../styles/pages/super-admin/finance-security/PaymentsAudit.css';
+import FilterDropdown from '../../../components/FilterDropdown';
 
 const paymentsTrend = [
   { name: 'Jan', total: 2240, revenue: 13200 },
