@@ -358,6 +358,7 @@ export default function Login() {
                                 <GoogleLogin
                                     ux_mode="redirect"
                                     login_uri={`${apiBaseUrl}/google/login/?redirect_uri=${window.location.origin}/google-callback`}
+                                    onSuccess={() => { /* This is not called in redirect mode */ }}
                   onError={() => {
                     clearError('general');
                     setGoogleLoginMessage('Google sign-in failed. Please try again.');

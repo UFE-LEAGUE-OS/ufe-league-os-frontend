@@ -11,7 +11,7 @@ const loginMock = vi.hoisted(() => vi.fn())
 
 vi.mock('@react-oauth/google', () => ({
   GoogleOAuthProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-  GoogleLogin: ({ login_uri }: { login_uri?: string }) => (
+  GoogleLogin: ({ login_uri, onSuccess }: { login_uri?: string, onSuccess: () => void }) => (
     <button type="button" onClick={() => { if (login_uri) window.location.href = login_uri; }}>Google Login</button>
   ),
 }))
