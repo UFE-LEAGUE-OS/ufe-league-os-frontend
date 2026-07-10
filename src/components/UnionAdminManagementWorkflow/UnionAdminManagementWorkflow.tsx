@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { FormEvent } from "react";
 import {
   createUnionAdminCompetition,
-  createUnionAdminLeagueClubMembership,
+  bulkAddUnionAdminLeagueClubMemberships,
   createUnionAdminSeason,
   generateUnionAdminFixtures,
   getUnionAdminLeagueClubMemberships,
@@ -129,6 +129,7 @@ export default function UnionAdminManagementWorkflow({ workspaceSlug, workspaceL
     status: "ACTIVE" as UnionAdminClubMembershipStatus,
     notes: "",
   });
+  const [selectedClubIds, setSelectedClubIds] = useState<string[]>([]);
 
   const [movementForm, setMovementForm] = useState({
     club: "",
@@ -155,6 +156,42 @@ export default function UnionAdminManagementWorkflow({ workspaceSlug, workspaceL
       new Map(clubs.filter((club) => club.id && club.name).map((club) => [club.id, club])).values(),
     );
   }, [clubs]);
+
+  const activeSeasonMembershipClubIds = useMemo(() => {
+    return new Set(
+      memberships
+        .filter((membership) => {
+          const sameLeague = !clubForm.league || String(membership.league) === clubForm.league;
+          const sameSeason = !clubForm.season || String(membership.season ?? "") === clubForm.season;
+
+          return sameLeague && sameSeason && membership.status !== "WITHDRAWN";
+        })
+        .map((membership) => String(membership.club)),
+    );
+  }, [clubForm.league, clubForm.season, memberships]);
+
+  const selectedClubNames = useMemo(() => {
+    const selected = new Set(selectedClubIds);
+
+    return clubOptions
+      .filter((club) => selected.has(club.id))
+      .map((club) => club.name)
+      .join(", ");
+  }, [clubOptions, selectedClubIds]);
+
+  function toggleClubSelection(clubId: string) {
+    setSelectedClubIds((current) =>
+      current.includes(clubId) ? current.filter((item) => item !== clubId) : [...current, clubId],
+    );
+  }
+
+  function selectAllClubs() {
+    setSelectedClubIds(clubOptions.map((club) => club.id));
+  }
+
+  function clearSelectedClubs() {
+    setSelectedClubIds([]);
+  }
 
   function applyDefaults(
     nextLeagues: UnionAdminLeagueOption[],
@@ -301,16 +338,20 @@ export default function UnionAdminManagementWorkflow({ workspaceSlug, workspaceL
     event.preventDefault();
 
     void handleSubmit(async () => {
-      const membership = await createUnionAdminLeagueClubMembership({
+      if (selectedClubIds.length === 0) {
+        throw new Error("Select at least one club to add to the season.");
+      }
+
+      const result = await bulkAddUnionAdminLeagueClubMemberships({
         workspace: workspaceSlug,
         league: toNumber(clubForm.league),
-        season: clubForm.season ? toNumber(clubForm.season) : undefined,
-        club: clubForm.club,
+        season: toNumber(clubForm.season),
+        club_ids: selectedClubIds,
         status: clubForm.status,
         notes: clubForm.notes.trim(),
       });
 
-      return `${membership.club_name} added to ${membership.league_name}.`;
+      return `${result.created} club entries created and ${result.updated} updated.`;
     }, "fixtures");
   }
 
@@ -560,8 +601,8 @@ export default function UnionAdminManagementWorkflow({ workspaceSlug, workspaceL
 
         {mode === "club" ? (
           <form className={styles.card} onSubmit={submitClub}>
-            <h4>Add or update club entry</h4>
-            <p>Add a club to a specific league and season, or update its status.</p>
+            <h4>Bulk add clubs to season</h4>
+            <p>Select multiple clubs and attach them to the selected league season in one action.</p>
 
             <div className={styles.formGrid}>
               <label>
@@ -583,6 +624,7 @@ export default function UnionAdminManagementWorkflow({ workspaceSlug, workspaceL
               <label>
                 Season
                 <select
+                  required
                   value={clubForm.season}
                   onChange={(event) => setClubForm((current) => ({ ...current, season: event.target.value }))}
                 >
@@ -597,21 +639,38 @@ export default function UnionAdminManagementWorkflow({ workspaceSlug, workspaceL
                 </select>
               </label>
 
-              <label>
-                Club
-                <select
-                  required
-                  value={clubForm.club}
-                  onChange={(event) => setClubForm((current) => ({ ...current, club: event.target.value }))}
-                >
-                  <option value="">Select club</option>
+              <fieldset className={`${styles.fullWidth} ${styles.checkboxFieldset}`}>
+                <legend>Clubs</legend>
+
+                <div className={styles.selectionActions}>
+                  <button className={styles.secondaryButton} type="button" onClick={selectAllClubs}>
+                    Select all
+                  </button>
+                  <button className={styles.secondaryButton} type="button" onClick={clearSelectedClubs}>
+                    Clear
+                  </button>
+                </div>
+
+                <div className={styles.checkboxGrid}>
                   {clubOptions.map((club) => (
-                    <option key={club.id} value={club.id}>
-                      {club.name}
-                    </option>
+                    <label className={styles.checkboxOption} key={club.id}>
+                      <input
+                        checked={selectedClubIds.includes(club.id)}
+                        type="checkbox"
+                        onChange={() => toggleClubSelection(club.id)}
+                      />
+                      <span>
+                        <strong>{club.name}</strong>
+                        {activeSeasonMembershipClubIds.has(club.id) ? <small>Already attached to this season</small> : null}
+                      </span>
+                    </label>
                   ))}
-                </select>
-              </label>
+                </div>
+
+                <small className={styles.helperText}>
+                  {selectedClubIds.length} selected{selectedClubNames ? `: ${selectedClubNames}` : ""}
+                </small>
+              </fieldset>
 
               <label>
                 Status
@@ -643,7 +702,7 @@ export default function UnionAdminManagementWorkflow({ workspaceSlug, workspaceL
 
               <div className={styles.actions}>
                 <button className={styles.primaryButton} type="submit" disabled={isSaving}>
-                  {isSaving ? "Saving..." : "Add / Update Club"}
+                  {isSaving ? "Saving..." : "Bulk Add Clubs"}
                 </button>
                 <button className={styles.secondaryButton} type="button" onClick={() => setMode("fixtures")}>
                   Next: Generate Fixtures

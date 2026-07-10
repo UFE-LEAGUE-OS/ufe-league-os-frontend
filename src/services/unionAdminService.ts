@@ -488,6 +488,22 @@ export interface CreateUnionAdminLeagueClubPayload {
   notes?: string;
 }
 
+export interface BulkAddUnionAdminLeagueClubPayload {
+  workspace: string;
+  league: number;
+  season: number;
+  club_ids: Array<string | number>;
+  status?: UnionAdminClubMembershipStatus;
+  notes?: string;
+}
+
+export interface BulkAddUnionAdminLeagueClubResult {
+  created: number;
+  updated: number;
+  missing_club_ids: number[];
+  results: UnionAdminLeagueClubMembership[];
+}
+
 export interface UpdateUnionAdminLeagueClubPayload {
   workspace: string;
   status?: UnionAdminClubMembershipStatus;
@@ -583,6 +599,17 @@ export async function createUnionAdminLeagueClubMembership(
 ): Promise<UnionAdminLeagueClubMembership> {
   const response = await apiClient.post<UnionAdminLeagueClubMembership>(
     "/dashboards/union-admin/league-clubs/",
+    payload,
+  );
+
+  return response.data;
+}
+
+export async function bulkAddUnionAdminLeagueClubMemberships(
+  payload: BulkAddUnionAdminLeagueClubPayload,
+): Promise<BulkAddUnionAdminLeagueClubResult> {
+  const response = await apiClient.post<BulkAddUnionAdminLeagueClubResult>(
+    "/dashboards/union-admin/league-clubs/bulk-add/",
     payload,
   );
 
