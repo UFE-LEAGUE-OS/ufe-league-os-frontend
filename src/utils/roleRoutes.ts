@@ -63,7 +63,7 @@ export function getDefaultDashboardRoute(role: unknown) {
 
   switch (normalizedRole) {
     case 'SUPER_ADMIN':
-      return '/super-admin/super-admin';
+      return '/super-admin';
     case 'UNION_ADMIN':
       return '/dashboard/union-admin';
     case 'CLUB_ADMIN':
