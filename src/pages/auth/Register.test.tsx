@@ -50,7 +50,7 @@ vi.mock('react-router-dom', async () => {
 
 function renderRegisterPage() {
     return render(
-        <MemoryRouter>
+        <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
             <Register />
         </MemoryRouter>,
     )
@@ -142,7 +142,7 @@ describe('Register page', () => {
         const user = userEvent.setup()
 
         render(
-            <MemoryRouter initialEntries={['/', '/register']} initialIndex={1}>
+            <MemoryRouter initialEntries={['/', '/register']} initialIndex={1} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
                 <Register />
             </MemoryRouter>,
         )

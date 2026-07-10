@@ -58,7 +58,7 @@ describe('ForgotPassword page', () => {
     const timeoutSpy = vi.spyOn(window, 'setTimeout')
 
     const { container } = render(
-      <MemoryRouter>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <ForgotPassword />
       </MemoryRouter>,
     )
