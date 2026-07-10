@@ -16,6 +16,7 @@ import {
     VERIFY_EMAIL_ROUTE,
     type AuthFlowState,
 } from '../../utils/authFlow.js';
+import { getDefaultDashboardRoute } from '../../utils/roleRoutes.js';
 import BackButton from '../../components/BackButton.js';
 
 import '../../styles/pages/auth/login.css';
@@ -33,6 +34,8 @@ type LoginResult = {
     is_new_user?: boolean;
     user?: {
         email?: unknown;
+        role?: unknown;
+        roles?: unknown;
         frontend_dashboard_route?: unknown;
         dashboard_route?: unknown;
     };
@@ -111,6 +114,19 @@ function safeDashboardRoute(value: unknown) {
 }
 
 function resolveDashboardRoute(result: LoginResult) {
+    // Prefer the frontend's own role-based routing table over whatever the
+    // backend says, since backend-provided dashboard paths can drift out of
+    // sync with the routes actually registered in the frontend router.
+    const role = result.user?.role ?? result.user?.roles;
+
+    if (role) {
+        const roleBasedRoute = getDefaultDashboardRoute(role);
+
+        if (roleBasedRoute) {
+            return roleBasedRoute;
+        }
+    }
+
     return (
         safeDashboardRoute(result.user?.frontend_dashboard_route) ||
         safeDashboardRoute(result.frontend_dashboard_route) ||
