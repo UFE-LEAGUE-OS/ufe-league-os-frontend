@@ -71,8 +71,6 @@ const verificationRequiredResponse = {
   },
 }
 
-const originalWindowLocation = window.location
-
 describe('Login page', () => {
   beforeEach(() => {
     apiClientPostMock.mockClear();

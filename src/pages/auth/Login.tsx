@@ -10,7 +10,7 @@ import EmojiEventsOutlinedIcon from '@mui/icons-material/EmojiEventsOutlined';
 import EventNoteOutlinedIcon from '@mui/icons-material/EventNoteOutlined';
 import { GlassCard, PageShell } from '../../components/site/LeagueUI.js';
 import { useAuth } from '../../hooks/useAuth.js';
-import { apiClient } from '../../services/apiClient.js';
+import apiClient from '../../services/apiClient.js';
 import {
     getSafeAuthRedirect,
     VERIFY_EMAIL_ROUTE,
