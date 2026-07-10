@@ -10,10 +10,10 @@ const navigateMock = vi.hoisted(() => vi.fn())
 const loginMock = vi.hoisted(() => vi.fn())
 
 vi.mock('@react-oauth/google', () => ({
-    GoogleOAuthProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-    GoogleLogin: ({ onSuccess }: { onSuccess?: () => void }) => (
-        <button type="button" onClick={onSuccess}>Google Login</button>
-    ),
+  GoogleOAuthProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  GoogleLogin: ({ login_uri }: { login_uri?: string }) => (
+    <button type="button" onClick={() => { if (login_uri) window.location.href = login_uri; }}>Google Login</button>
+  ),
 }))
 
 vi.mock('react-router-dom', async () => {

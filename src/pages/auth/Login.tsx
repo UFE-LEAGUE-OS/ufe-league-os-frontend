@@ -224,12 +224,6 @@ export default function Login() {
         }
     };
 
-    const handleGoogleLogin = () => {
-        // Redirect to the backend endpoint that initiates the Google OAuth2 flow.
-        // This endpoint will then redirect the user to Google's authentication page.
-        window.location.href = `${apiBaseUrl}/google/login/?redirect_uri=${window.location.origin}/google-callback`;
-    };
-
     return (
         <PageShell className="auth-page login-page">
             <div className="login-back-wrap">
@@ -362,7 +356,8 @@ export default function Login() {
 
                             <div style={{ display: 'flex', justifyContent: 'center' }}>
                                 <GoogleLogin
-                                    onSuccess={handleGoogleLogin}
+                                    ux_mode="redirect"
+                                    login_uri={`${apiBaseUrl}/google/login/?redirect_uri=${window.location.origin}/google-callback`}
                   onError={() => {
                     clearError('general');
                     setGoogleLoginMessage('Google sign-in failed. Please try again.');
