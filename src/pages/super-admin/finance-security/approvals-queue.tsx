@@ -10,8 +10,8 @@ import {
   YAxis,
 } from 'recharts';
 
-import '../../styles/pages/SuperAdminFinance/SuperAdminFinance.css';
-import '../../styles/pages/SuperAdminFinance/ApprovalsQueue.css';
+import '../../../styles/pages/super-admin/finance-security/SuperAdminFinance.css';
+import '../../../styles/pages/super-admin/finance-security/ApprovalsQueue.css';
 
 const approvalsByType = [
   { type: 'Refunds', value: 45 },

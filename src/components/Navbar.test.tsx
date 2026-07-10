@@ -6,7 +6,7 @@ import Navbar from './Navbar'
 
 function renderNavbar(initialPath = '/') {
   return render(
-    <MemoryRouter initialEntries={[initialPath]}>
+    <MemoryRouter initialEntries={[initialPath]} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <Navbar />
     </MemoryRouter>,
   )

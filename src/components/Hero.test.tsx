@@ -6,7 +6,7 @@ import Hero from './Hero'
 
 function renderHero() {
   return render(
-    <MemoryRouter>
+    <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <Hero />
     </MemoryRouter>,
   )

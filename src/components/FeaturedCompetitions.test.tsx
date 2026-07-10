@@ -6,7 +6,7 @@ import FeaturedCompetitions from './FeaturedCompetitions'
 describe('FeaturedCompetitions', () => {
   it('lists featured competitions with a link to the full competition view', () => {
     render(
-      <BrowserRouter>
+      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <FeaturedCompetitions />
       </BrowserRouter>
     )

@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import axios from "axios";
 import "../styles/pages/SuperAdminDashboard.css";
 import "../components/SuperAdminSideBar.css";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
@@ -9,15 +10,10 @@ import {
     Users,
     ShieldCheck,
     Wallet,
-    TrendingUp,
-    TrendingDown,
     UserPlus,
     Trophy,
     Landmark,
     FileWarning,
-    Server,
-    Database,
-    Radio,
     Flag,
     Building2,
     Layers,
@@ -34,41 +30,265 @@ import SuperAdminTopBar from "../components/SuperAdminTopBar";
 
 
 
-const STATS = [
-    { label: "Leagues",           value: "24",      delta: "+3",           trend: "up",   icon: Flag,           accent: "green" },
-    { label: "Clubs",             value: "168",     delta: "+12",          trend: "up",   icon: Building2,      accent: "amber" },
-    { label: "Total Users",       value: "1,240",   delta: "+4.2%",        trend: "up",   icon: Users,          accent: "green" },
-    { label: "Revenue",           value: "$32,500", delta: "+1.8%",        trend: "up",   icon: Landmark,       accent: "amber" },
-    { label: "Active Matches",    value: "18",      delta: "LIVE",         trend: "live", icon: Trophy,         accent: "green" },
-    { label: "Open Reports",      value: "06",      delta: "-2 today",     trend: "down", icon: FileWarning,    accent: "red" },
-    { label: "Pending Standards", value: "03",      delta: "Needs review", trend: "down", icon: ClipboardCheck, accent: "red" },
-];
 
-const ACTIVITY = [
-    { text: "New user registered",        meta: "Kato W. · Owner",   time: "2m ago",  tone: "green" },
-    { text: "Finance report generated",   meta: "Q3 settlement",     time: "18m ago", tone: "amber" },
-    { text: "Match fixture updated",      meta: "KCCA FC vs URA FC", time: "41m ago", tone: "green" },
-    { text: "Admin logged in",            meta: "Merab Apio",        time: "1h ago",  tone: "muted" },
-    { text: "Dispute flagged for review", meta: "Case #0092",        time: "3h ago",  tone: "red" },
-];
 
-const SYSTEM_HEALTH = [
-    { label: "API Uptime",  value: 99, icon: Server },
-    { label: "Server Load", value: 42, icon: Radio },
-    { label: "Database",    value: 87, icon: Database },
-];
+interface Activity {
+    text: string;
+    meta: string;
+    time: string;
+    tone: string;
+}
+interface StatusResponse {
+    status: "Active" | "Draft" | "Archived";
+}
 
-const GOVERNANCE_PIPELINE = [
-    { key: "variants", label: "Sport Variants",      detail: "24 active",    sub: "Football, Basketball, Rugby",      icon: Layers,         path: "/sports-variants",                  alert: false },
-    { key: "formats",  label: "Competition Formats", detail: "12 templates", sub: "League, knockout, groups",          icon: GitBranch,      path: "/super-admin/competition-formats",  alert: false },
-    { key: "rules",    label: "Rules & Standards",   detail: "15 published", sub: "Eligibility, conduct, discipline",  icon: BookOpen,       path: "/super-admin/rules",                alert: false },
-    { key: "publish",  label: "Publish Standards",   detail: "3 pending",    sub: "Awaiting your approval",            icon: ClipboardCheck, path: "/super-admin/publish-standards",    alert: true  },
-];
+interface ActivityResponse {
+    text: string;
+    meta: string;
+    time: string;
+    tone: string;
+}
 
 export default function SuperAdminDashboard() {
+    
     const navigate = useNavigate();
     const location = useLocation();
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [activities, setActivities] = useState<Activity[]>([]);
+    
+    const [dashboardStats, setDashboardStats] = useState({
+    leagues: 0,
+    clubs: 0,
+    users: 0,
+    revenue: 0,
+    active_matches: 0,
+    open_reports: 0,
+    pending_standards: 0,
+});
+
+const [governanceStats, setGovernanceStats] = useState<{
+    sport_variants: {
+        total: number;
+        active: number;
+    };
+    competition_formats: {
+        total: number;
+        active: number;
+    };
+    rules: {
+        total: number;
+        active: number;
+    };
+}>({
+    sport_variants: {
+        total: 0,
+        active: 0,
+    },
+    competition_formats: {
+        total: 0,
+        active: 0,
+    },
+    rules: {
+        total: 0,
+        active: 0,
+    },
+});
+
+const GOVERNANCE_PIPELINE = [
+    { key: "variants", label: "Sport Variants",      detail: `${governanceStats.sport_variants.active} active`, sub:`${governanceStats.sport_variants.total} total variants`, icon: Layers, path: "/sports-variants", alert: false, },
+    { key: "formats",  label: "Competition Formats", detail: `${governanceStats.competition_formats.active} active`, sub: `${governanceStats.competition_formats.total} total formats`, icon: GitBranch,      path: "/super-admin/competition-formats",  alert: false },
+    { key: "rules",    label: "Rules & Standards",    detail: `${governanceStats.rules.active} active`, sub: `${governanceStats.rules.total} total rules`,  icon: BookOpen,       path: "/super-admin/rules",                alert: false },
+    { key: "publish",  label: "Publish Standards",   detail: "3 pending",    sub: "Awaiting your approval",            icon: ClipboardCheck, path: "/super-admin/publish-standards",    alert: true  },
+];
+
+
+useEffect(() => {
+
+    // Dashboard statistics
+    axios
+        .get("/api/dashboard/stats/")
+        .then((response) => {
+
+            console.log(
+                "DASHBOARD STATS:",
+                response.data
+            );
+
+            setDashboardStats(response.data);
+
+        })
+        .catch((error) => {
+
+            console.error(
+                "Dashboard stats error:",
+                error
+            );
+
+        });
+
+
+
+    // Recent activity
+    axios
+        .get("/api/dashboard/activity/")
+        .then((response) => {
+
+            console.log(
+                "ACTIVITY:",
+                response.data
+            );
+
+
+            const activityData: ActivityResponse[] = Array.isArray(response.data)
+                ? response.data
+                : response.data.results || response.data.activities || [];
+
+
+            setActivities(activityData);
+
+        })
+        .catch((error) => {
+
+            console.error(
+                "Activity error:",
+                error
+            );
+
+        });
+
+
+
+    // Governance statistics
+    Promise.all([
+
+        axios.get("/api/governance/sport-variants/"),
+
+        axios.get("/api/governance/competition-formats/"),
+
+        axios.get("/api/governance/rules/")
+
+    ])
+
+    .then(([variants, formats, rules]) => {
+
+
+        const variantData: StatusResponse[] = variants.data;
+
+        const formatData: StatusResponse[] = formats.data;
+
+        const ruleData: StatusResponse[] = rules.data;
+
+
+
+        setGovernanceStats({
+
+            sport_variants: {
+
+                total: variantData.length,
+
+                active:
+                    variantData.filter(
+                        (item: StatusResponse) =>
+                            item.status === "Active"
+                    ).length,
+
+            },
+
+
+            competition_formats: {
+
+                total: formatData.length,
+
+                active:
+                    formatData.filter(
+                        (item: StatusResponse) =>
+                            item.status === "Active"
+                    ).length,
+
+            },
+
+
+            rules: {
+
+                total: ruleData.length,
+
+                active:
+                    ruleData.filter(
+                        (item: StatusResponse) =>
+                            item.status === "Active"
+                    ).length,
+
+            }
+
+        });
+
+
+    })
+
+    .catch((error)=>{
+
+        console.error(
+            "Governance stats error:",
+            error
+        );
+
+    });
+
+
+
+}, []);
+
+
+const STATS = [
+    {
+        label: "Leagues",
+        value: dashboardStats.leagues,
+        icon: Flag,
+        accent: "green"
+    },
+
+    {
+        label: "Clubs",
+        value: dashboardStats.clubs,
+        icon: Building2,
+        accent: "amber"
+    },
+
+    {
+        label: "Total Users",
+        value: dashboardStats.users,
+        icon: Users,
+        accent: "green"
+    },
+
+    {
+        label: "Revenue",
+        value: `$${dashboardStats.revenue}`,
+        icon: Landmark,
+        accent: "amber"
+    },
+
+    {
+        label: "Active Matches",
+        value: dashboardStats.active_matches,
+        icon: Trophy,
+        accent: "green"
+    },
+
+    {
+        label: "Open Reports",
+        value: dashboardStats.open_reports,
+        icon: FileWarning,
+        accent: "red"
+    },
+
+    {
+        label: "Pending Standards",
+        value: dashboardStats.pending_standards,
+        icon: ClipboardCheck,
+        accent: "red"
+    },
+];
 
     // Show <Outlet> content for any sub-route; show dashboard home only at /super-admin exactly
     const isHome = location.pathname === "/super-admin" || location.pathname === "/super-admin/";
@@ -97,34 +317,38 @@ export default function SuperAdminDashboard() {
                         <>
                             <div className="dashboard-header">
                                 <div>
-                                    <h1>Welcome back, Merab</h1>
+                                    <h1>Welcome back, Admin</h1>
                                     <p>Here's what's happening across League OS today.</p>
                                 </div>
                             </div>
 
                             {/* STAT TILES */}
                             <section className="stat-grid">
-                                {STATS.map((stat) => {
-                                    const Icon = stat.icon;
-                                    return (
-                                        <div className={`stat-tile accent-${stat.accent}`} key={stat.label}>
-                                            <div className="stat-tile-top">
-                                                <span className="stat-icon"><Icon size={18} /></span>
-                                                {stat.trend === "live" ? (
-                                                    <span className="trend live"><span className="pulse" /> LIVE</span>
-                                                ) : (
-                                                    <span className={`trend ${stat.trend}`}>
-                                                        {stat.trend === "up" ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
-                                                        {stat.delta}
-                                                    </span>
-                                                )}
-                                            </div>
-                                            <span className="stat-value">{stat.value}</span>
-                                            <span className="stat-label">{stat.label}</span>
-                                        </div>
-                                    );
-                                })}
-                            </section>
+    {STATS.map((stat) => {
+        const Icon = stat.icon;
+
+        return (
+            <div
+                className={`stat-tile accent-${stat.accent}`}
+                key={stat.label}
+            >
+                <div className="stat-tile-top">
+                    <span className="stat-icon">
+                        <Icon size={18} />
+                    </span>
+                </div>
+
+                <span className="stat-value">
+                    {stat.value}
+                </span>
+
+                <span className="stat-label">
+                    {stat.label}
+                </span>
+            </div>
+        );
+    })}
+</section>
 
                             {/* GOVERNANCE PIPELINE */}
                             <section className="panel governance-panel">
@@ -192,7 +416,7 @@ export default function SuperAdminDashboard() {
                                         <button className="link-btn">View all</button>
                                     </div>
                                     <ul className="activity-list">
-                                        {ACTIVITY.map((item) => (
+                                        {activities.map((item) => (
                                             <li key={item.text}>
                                                 <span className={`activity-dot tone-${item.tone}`} />
                                                 <div className="activity-body">
@@ -205,24 +429,80 @@ export default function SuperAdminDashboard() {
                                     </ul>
                                 </section>
 
-                                <section className="panel health">
-                                    <h3>System Health</h3>
-                                    {SYSTEM_HEALTH.map((h) => {
-                                        const Icon = h.icon;
-                                        return (
-                                            <div className="health-row" key={h.label}>
-                                                <div className="health-label">
-                                                    <Icon size={15} />
-                                                    <span>{h.label}</span>
-                                                    <strong>{h.value}%</strong>
-                                                </div>
-                                                <div className="health-bar">
-                                                    <div className="health-bar-fill" style={{ width: `${h.value}%` }} />
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </section>
+                             <section className="panel health">
+    <h3>Admin Overview</h3>
+
+    {/* USER MANAGEMENT */}
+    <div className="health-row">
+        <div className="health-label">
+            <Users size={15} />
+            <div>
+                <span>User Management</span>
+                <small>1,240 users</small>
+            </div>
+        </div>
+
+        <strong>18 pending</strong>
+    </div>
+
+
+    {/* FINANCE */}
+    <div className="health-row">
+        <div className="health-label">
+            <Wallet size={15} />
+            <div>
+                <span>Finance</span>
+                <small>UGX 32M revenue</small>
+            </div>
+        </div>
+
+        <strong>12 transactions</strong>
+    </div>
+
+
+    {/* AUDIT LOGS */}
+    <div className="health-row">
+        <div className="health-label">
+            <ShieldCheck size={15} />
+            <div>
+                <span>Audit Logs</span>
+                <small>45 actions today</small>
+            </div>
+        </div>
+
+        <strong>3 alerts</strong>
+    </div>
+
+
+    {/* ACTION BUTTONS */}
+    <div className="admin-overview-actions">
+
+        <button
+            className="link-btn"
+            onClick={() => navigate("/super-admin/users-management")}
+        >
+            Manage Users
+        </button>
+
+
+        <button
+            className="link-btn"
+            onClick={() => navigate("/super-admin/finance")}
+        >
+            View Finance
+        </button>
+
+
+        <button
+            className="link-btn"
+            onClick={() => navigate("/super-admin/audit-logs")}
+        >
+            View Logs
+        </button>
+
+    </div>
+
+</section>
                             </div>
                         </>
                     )}

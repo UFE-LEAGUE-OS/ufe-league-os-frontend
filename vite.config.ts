@@ -15,7 +15,7 @@ const rtgAliases = {
 
 export default defineConfig({
   root: projectRoot,
-  base: process.env.VITE_BASE_PATH ?? './',
+  base: process.env.VITE_BASE_PATH ?? '/',
   plugins: [react()],
   resolve: {
     alias: rtgAliases,

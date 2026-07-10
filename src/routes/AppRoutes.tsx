@@ -98,13 +98,22 @@ import RoleAssignment from '../pages/admin/RoleAssignment';
 import AuditLog from '../pages/admin/AuditLog';
 import SessionManagement from '../pages/admin/SessionManagement';
 import ImpersonateUser from '../pages/admin/ImpersonateUser';
-import PaymentsAuditPage from '../pages/super-admin/payments-audit';
-import TransactionTrailPage from '../pages/super-admin/transaction-trail';
-import ApprovalsQueuePage from '../pages/super-admin/approvals-queue';
-import ChargebacksRefundsPage from '../pages/super-admin/chargebacks-refunds';
-import DataAccessLogPage from '../pages/super-admin/data-access-log';
-import SecurityEventsPage from '../pages/super-admin/security-events';
+import PaymentsAuditPage from '../pages/super-admin/finance-security/payments-audit';
+import TransactionTrailPage from '../pages/super-admin/finance-security/transaction-trail';
+import ApprovalsQueuePage from '../pages/super-admin/finance-security/approvals-queue';
+import ChargebacksRefundsPage from '../pages/super-admin/finance-security/chargebacks-refunds';
+import DataAccessLogPage from '../pages/super-admin/finance-security/data-access-log';
+import SecurityEventsPage from '../pages/super-admin/finance-security/security-events';
 import SuperAdminProfilePage from '../pages/super-admin/SuperAdminProfilePage';
+import AnnouncementsBannersPage from '../pages/super-admin/content-platform-operations/AnnouncementsBannersPage';
+import NotificationTemplatesPage from '../pages/super-admin/content-platform-operations/NotificationTemplatesPage';
+import PublicContentEditor from '../pages/super-admin/content-platform-operations/PublicContentEditor';
+import Broadcasts from '../pages/super-admin/content-platform-operations/Broadcasts';
+import SupportSettings from '../pages/super-admin/content-platform-operations/SupportSettings';
+import HelpCenter from '../pages/super-admin/content-platform-operations/HelpCenter';
+import FeatureFlags from '../pages/super-admin/content-platform-operations/FeatureFlags';
+import SystemMessages from '../pages/super-admin/content-platform-operations/SystemMessages';
+import BulkOperations from '../pages/super-admin/content-platform-operations/BulkOperations';
 
 // Sponsor pages
 import SponsorshipHub from '../pages/sponsor/SponsorshipHub';
@@ -148,7 +157,12 @@ function roleProtectedPage(page: ReactNode, allowedRoles: string[], redirectTo?:
 
 export default function AppRoutes() {
     return (
-        <Router>
+        <Router
+            future={{
+                v7_startTransition: true,
+                v7_relativeSplatPath: true,
+            }}
+        >
             <AuthRequiredGate />
 
             <Routes>
@@ -269,7 +283,7 @@ export default function AppRoutes() {
                 <Route path="/payments" element={<Payments />} />
 
                 {/* Super Admin routes */}
-                <Route path="/dashboard/super-admin" element={roleProtectedPage(<SuperAdminDashboard />, ['SUPER_ADMIN'])}>
+                <Route path="/super-admin" element={roleProtectedPage(<SuperAdminDashboard />, ['SUPER_ADMIN'])}>
                     <Route index element={<SuperAdminHome />} />
                     <Route path="dashboard" element={<SuperAdminHome />} />
 
@@ -304,6 +318,17 @@ export default function AppRoutes() {
                     <Route path="fantasy-config/price-structure" element={<PriceStructureGovernance />} />
                     <Route path="fantasy-config/eligibility-roster" element={<EligibilityRosterRules />} />
                     <Route path="fantasy-config/publish-changes" element={<PublishChangesWorkflow />} />
+
+                    {/* Content & Platform Operations */}
+                    <Route path="public-content" element={<PublicContentEditor />} />
+                    <Route path="announcements-banners" element={<AnnouncementsBannersPage />} />
+                    <Route path="notification-templates" element={<NotificationTemplatesPage />} />
+                    <Route path="broadcasts" element={<Broadcasts />} />
+                    <Route path="support-settings" element={<SupportSettings />} />
+                    <Route path="help-center" element={<HelpCenter />} />
+                    <Route path="feature-flags" element={<FeatureFlags />} />
+                    <Route path="system-messages" element={<SystemMessages />} />
+                    <Route path="bulk-operations" element={<BulkOperations />} />
                 </Route>
             </Routes>
         </Router>

@@ -10,9 +10,9 @@ import {
   YAxis,
 } from 'recharts';
 
-import '../../styles/pages/SuperAdminFinance/SuperAdminFinance.css';
-import '../../styles/pages/SuperAdminFinance/TransactionTrail.css';
-import FilterDropdown from '../../components/FilterDropdown';
+import '../../../styles/pages/super-admin/finance-security/SuperAdminFinance.css';
+import '../../../styles/pages/super-admin/finance-security/TransactionTrail.css';
+import FilterDropdown from '../../../components/FilterDropdown';
 
 const trailTrend = [
   { name: 'Jan', payment: 420, refunds: 48 },

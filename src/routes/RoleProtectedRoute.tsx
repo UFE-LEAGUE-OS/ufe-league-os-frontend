@@ -3,7 +3,11 @@ import type { ReactNode } from 'react';
 import { useAuthStore } from '../store/authStore.js';
 import { getToken } from '../utils/tokenManager.js';
 import { LOGIN_ROUTE } from '../utils/authFlow.js';
-import { getDefaultDashboardRoute, normalizeRole } from '../utils/roleRoutes.js';
+import {
+  getDefaultDashboardRoute,
+  getNormalizedRoles,
+  userHasAnyRole,
+} from '../utils/roleRoutes.js';
 
 interface RoleProtectedRouteProps {
   children: ReactNode;
@@ -33,9 +37,9 @@ export default function RoleProtectedRoute({
     );
   }
 
-  const userRole = normalizeRole(user?.role);
+  const userRoles = getNormalizedRoles(user);
 
-  if (!userRole) {
+  if (userRoles.length === 0) {
     return (
       <Navigate
         to={LOGIN_ROUTE}
@@ -48,10 +52,8 @@ export default function RoleProtectedRoute({
     );
   }
 
-  const normalizedAllowedRoles = allowedRoles.map(normalizeRole);
-
-  if (!normalizedAllowedRoles.includes(userRole)) {
-    return <Navigate to={redirectTo ?? getDefaultDashboardRoute(userRole)} replace />;
+  if (!userHasAnyRole(user, allowedRoles)) {
+    return <Navigate to={redirectTo ?? getDefaultDashboardRoute(user)} replace />;
   }
 
   return children;
