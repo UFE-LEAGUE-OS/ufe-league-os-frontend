@@ -1,40 +1,140 @@
+/* --- Self-Hosted Fonts --- */
+
+/*
+  Shentox font setup.
+
+  Required files:
+  public/fonts/shentox-regular.woff2
+  public/fonts/shentox-bold-italic.woff2
+*/
+
+@font-face {
+    font-display: swap;
+    font-family: "Shentox";
+    font-style: normal;
+    font-weight: 400;
+    src: url("/fonts/shentox-regular.woff2") format("woff2");
+}
+
+@font-face {
+    font-display: swap;
+    font-family: "Shentox";
+    font-style: italic;
+    font-weight: 700;
+    src: url("/fonts/shentox-bold-italic.woff2") format("woff2");
+}
+
+@font-face {
+    font-display: swap;
+    font-family: "Shentox";
+    font-style: italic;
+    font-weight: 800;
+    src: url("/fonts/shentox-bold-italic.woff2") format("woff2");
+}
+
 :root {
-  color-scheme: dark;
-  font-family: 'Inter', sans-serif;
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background: #050711;
-  color: rgba(239, 243, 255, 0.9);
+    --font-heading: "Shentox", Impact, sans-serif;
+    --font-subhead: var(--font-heading);
+    --font-display: var(--font-heading);
+    --font-body: "Shentox", Arial, sans-serif;
+
+    color-scheme: dark;
+    font-family: var(--font-body);
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background: #050711;
+    color: rgba(239, 243, 255, 0.9);
 }
 
 * {
-  box-sizing: border-box;
+    box-sizing: border-box;
 }
 
 html,
 body,
 #root {
-  min-height: 100%;
-  margin: 0;
+    font-size: 16px;
+    min-height: 100%;
+    margin: 0;
 }
 
 body {
-  min-height: 100svh;
-  background: #050711;
+    min-height: 100svh;
+    font-family: var(--font-body);
+    font-weight: 400;
+    font-style: normal;
+    background: #050711;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-style: italic;
+    line-height: 1.1;
+}
+
+h1,
+h2 {
+    font-size: clamp(2.5rem, 5vw, 4rem);
+}
+
+h3,
+h4,
+h5,
+h6 {
+    font-size: clamp(1.25rem, 3vw, 1.75rem);
+}
+
+p,
+li,
+label,
+input,
+select,
+textarea,
+button,
+small,
+a,
+span,
+td,
+th {
+    font-family: var(--font-body);
+    font-weight: 400;
+    font-style: normal;
+}
+
+.container {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+img,
+video,
+picture,
+svg {
+    display: block;
+    max-width: 100%;
 }
 
 button,
-input {
-  font: inherit;
+input,
+select,
+textarea {
+    font: inherit;
 }
 
 a {
-  color: inherit;
+    color: inherit;
 }
 
 ::selection {
-  background: rgba(142, 84, 255, 0.35);
-  color: #fff;
+    background: rgba(142, 84, 255, 0.35);
+    color: #fff;
 }

@@ -18,6 +18,13 @@ export interface TicketApi {
   ticket_type_name: string;
   match_id: number;
   match_label: string;
+  match_date?: string | null;
+  venue?: string;
+  competition_name?: string;
+  home_club_name?: string;
+  away_club_name?: string;
+  home_club_logo_url?: string;
+  away_club_logo_url?: string;
   owner: number;
   status: TicketStatus;
   issued_at?: string | null;

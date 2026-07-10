@@ -18,6 +18,13 @@ import {
     type AuthFlowState,
 } from '../../utils/authFlow.js';
 import BackButton from '../../components/BackButton.js';
+import { getMyUnionWorkspaces } from '../../services/unionAdminService';
+import {
+    canRoleAccessRedirect,
+    getDefaultDashboardRoute,
+    getNormalizedRoles,
+    normalizeRole,
+} from '../../utils/roleRoutes.js';
 
 import '../../styles/pages/auth/login.css';
 
@@ -33,6 +40,7 @@ type LoginResult = {
     requires_email_verification?: boolean;
     user?: {
         email?: unknown;
+        role?: unknown;
         frontend_dashboard_route?: unknown;
         dashboard_route?: unknown;
     };
@@ -120,6 +128,48 @@ function resolveDashboardRoute(result: LoginResult) {
     );
 }
 
+async function resolvePostLoginRoute(result: LoginResult, postLoginRedirect?: string | null) {
+    const backendRoute = resolveDashboardRoute(result);
+    const userRoles = getNormalizedRoles(result.user);
+    const userRole = normalizeRole(result.user?.role);
+    const hasRole = (role: string) => userRoles.includes(role);
+
+    if (postLoginRedirect && canRoleAccessRedirect(result.user ?? userRole, postLoginRedirect)) {
+        return postLoginRedirect;
+    }
+
+    if (hasRole('SUPER_ADMIN')) {
+        return getDefaultDashboardRoute(result.user);
+    }
+
+    if (
+        hasRole('UNION_ADMIN') &&
+        (backendRoute === '/dashboard' || backendRoute === '/dashboard/fan')
+    ) {
+        return '/dashboard/union-admin';
+    }
+
+    if (backendRoute !== '/dashboard' && backendRoute !== '/dashboard/fan') {
+        return backendRoute;
+    }
+
+    try {
+        const workspaces = await getMyUnionWorkspaces();
+
+        if (workspaces.length > 0) {
+            return '/dashboard/union-admin';
+        }
+    } catch {
+        // Keep the normal dashboard route if workspace lookup fails.
+    }
+
+    if (hasRole('FAN') || userRole === 'FAN') {
+        return '/dashboard/fan';
+    }
+
+    return getDefaultDashboardRoute(result.user ?? (userRole || 'FAN'));
+}
+
 function getUserEmail(value: unknown) {
     return typeof value === 'string' && value.includes('@') ? value : undefined;
 }
@@ -194,13 +244,15 @@ export default function Login() {
                             getUserEmail(result.user?.email) ??
                             getUserEmail(identifier.trim()),
                         message: 'Please verify your email address before continuing.',
-                        postLoginRedirect: postLoginRedirect ?? resolveDashboardRoute(result),
+                        postLoginRedirect: await resolvePostLoginRoute(result, postLoginRedirect),
                     },
                 });
                 return;
             }
 
-            navigate(postLoginRedirect ?? resolveDashboardRoute(result), { replace: true });
+            const redirectRoute = await resolvePostLoginRoute(result, postLoginRedirect);
+
+            navigate(redirectRoute, { replace: true });
         } catch (error) {
             const data = (error as ApiError).response?.data;
 
@@ -246,13 +298,15 @@ export default function Login() {
                     state: {
                         email: getUserEmail(result.user?.email),
                         message: 'Please verify your email address before continuing.',
-                        postLoginRedirect: postLoginRedirect ?? resolveDashboardRoute(result),
+                        postLoginRedirect: await resolvePostLoginRoute(result, postLoginRedirect),
                     },
                 });
                 return;
             }
 
-            navigate(postLoginRedirect ?? resolveDashboardRoute(result), { replace: true });
+            const redirectRoute = await resolvePostLoginRoute(result, postLoginRedirect);
+
+            navigate(redirectRoute, { replace: true });
         } catch (error) {
       const apiMessage = firstMessage((error as ApiError).response?.data?.detail);
       setGoogleLoginMessage(

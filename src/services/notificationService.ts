@@ -92,3 +92,49 @@ export async function markAllNotificationsRead(): Promise<{
     unread_count: response.data.unread_count,
   };
 }
+
+
+export interface NotificationPreference {
+  id: number;
+  user: number;
+  event_type: string;
+  event_label: string;
+  email_enabled: boolean;
+  push_enabled: boolean;
+  sms_enabled: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface NotificationPreferencesResponse {
+  count: number;
+  preferences: NotificationPreference[];
+}
+
+export interface NotificationPreferenceUpdatePayload {
+  event_type: string;
+  email_enabled?: boolean;
+  push_enabled?: boolean;
+  sms_enabled?: boolean;
+}
+
+export async function getNotificationPreferences(): Promise<NotificationPreference[]> {
+  const response = await apiClient.get<NotificationPreferencesResponse>(
+    '/accounts/notification-preferences/me/',
+  );
+
+  return response.data.preferences ?? [];
+}
+
+export async function updateNotificationPreferences(
+  preferences: NotificationPreferenceUpdatePayload[],
+): Promise<NotificationPreference[]> {
+  const response = await apiClient.patch<{
+    updated: NotificationPreference[];
+    errors?: unknown[];
+  }>('/accounts/notification-preferences/me/', {
+    preferences,
+  });
+
+  return response.data.updated ?? [];
+}

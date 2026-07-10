@@ -1,0 +1,198 @@
+/* ============================================================
+   SecurityEvents.css — styles unique to SecurityEventsPage
+   ============================================================ */
+
+.alert-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+@media (max-width: 1200px) {
+    .alert-stats-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
+    .alert-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+.alert-stat-card {
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(148, 163, 184, 0.12);
+    border-top: 3px solid var(--purple);
+    border-radius: 14px;
+    padding: 16px 18px;
+    box-shadow: 0 10px 30px rgba(11, 18, 37, 0.08);
+}
+
+.alert-stat-card.red { border-top-color: var(--red); }
+.alert-stat-card.orange { border-top-color: var(--orange); }
+.alert-stat-card.amber { border-top-color: var(--amber); }
+.alert-stat-card.green { border-top-color: var(--green); }
+.alert-stat-card.purple { border-top-color: var(--purple); }
+.alert-stat-card.blue { border-top-color: var(--blue); }
+
+.alert-stat-card.red .alert-stat-label svg { color: var(--red); }
+.alert-stat-card.orange .alert-stat-label svg { color: var(--orange); }
+.alert-stat-card.amber .alert-stat-label svg { color: var(--amber); }
+.alert-stat-card.green .alert-stat-label svg { color: var(--green); }
+.alert-stat-card.purple .alert-stat-label svg { color: var(--purple); }
+.alert-stat-card.blue .alert-stat-label svg { color: var(--blue); }
+
+.alert-stat-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+}
+
+.alert-stat-value {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1;
+    margin-bottom: 8px;
+}
+
+.alert-stat-delta {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.alert-stat-delta.good {
+    color: #4ADE80;
+}
+
+.alert-stat-delta.bad {
+    color: #F87171;
+}
+
+.threat-overview-grid {
+    display: grid;
+    grid-template-columns: 1.15fr 1fr 1.2fr;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+@media (max-width: 1100px) {
+    .threat-overview-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.threat-overview-grid .chart-header {
+    margin-bottom: 12px;
+}
+
+.threat-overview-grid .chart-header h2 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin: 0;
+}
+
+.threat-overview-grid .donut-with-legend {
+    gap: 16px;
+}
+
+.threat-overview-grid .donut-svg {
+    flex: 0 0 150px;
+}
+
+.live-feed-card {
+    display: flex;
+    flex-direction: column;
+}
+
+.live-feed-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+}
+
+.live-feed-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+}
+
+.live-feed-row:last-child {
+    border-bottom: none;
+}
+
+.live-feed-time {
+    flex: 0 0 62px;
+    font-size: 12px;
+    color: var(--muted);
+    white-space: nowrap;
+}
+
+.live-feed-main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.live-feed-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.live-feed-detail {
+    font-size: 12px;
+    color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.feed-badge {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.feed-critical {
+    color: #FCA5A5;
+    background: rgba(239, 68, 68, 0.18);
+}
+
+.feed-high {
+    color: #FDBA74;
+    background: rgba(249, 115, 22, 0.16);
+}
+
+.feed-low {
+    color: #93C5FD;
+    background: rgba(56, 189, 248, 0.16);
+}
+
+.view-all-btn {
+    width: 100%;
+    margin-top: 12px;
+}

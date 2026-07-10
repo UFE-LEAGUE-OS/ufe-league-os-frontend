@@ -18,9 +18,16 @@ export interface InitializeMembershipCheckoutResponse {
   checkout_url: string;
 }
 
-export async function initializeMembershipCheckout(payload: {
-  demo_plan_code: string;
-}): Promise<InitializeMembershipCheckoutResponse> {
+export interface InitializeMembershipCheckoutPayload {
+  plan?: number;
+  subscription?: number;
+  demo_plan_code?: string;
+  tier_id?: string;
+}
+
+export async function initializeMembershipCheckout(
+  payload: InitializeMembershipCheckoutPayload,
+): Promise<InitializeMembershipCheckoutResponse> {
   const response = await apiClient.post<InitializeMembershipCheckoutResponse>(
     '/memberships/initiate-payment/',
     payload,

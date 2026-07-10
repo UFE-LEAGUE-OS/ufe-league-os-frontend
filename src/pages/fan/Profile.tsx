@@ -1,68 +1,99 @@
 import {
     Bell,
+    Camera,
+    CheckCircle2,
     ChevronRight,
     CreditCard,
     Heart,
     HelpCircle,
     Lock,
+    Mail,
     MapPin,
     PenLine,
+    Phone,
+    Save,
     ShieldCheck,
+    Trash2,
     Trophy,
     User,
-    Users,
 } from "lucide-react";
+import type { ChangeEvent, FormEvent } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import type { BackendProfile } from "../../data/currentUser";
 import { useCurrentUser } from "../../hooks/useCurrentUser";
+import { removeAvatar, updateProfile, uploadAvatar } from "../../services/authService.js";
 import styles from "./ProfileOverviewPage.module.css";
+
+const PROFILE_UPDATED_EVENT = "leagueos:profile-updated";
+
+function notifyProfileShellUpdated() {
+    window.dispatchEvent(new Event(PROFILE_UPDATED_EVENT));
+}
+
+type EditableField =
+    | "firstName"
+    | "lastName"
+    | "username"
+    | "phone"
+    | "location"
+    | "dateOfBirth"
+    | "gender"
+    | "favoriteSport"
+    | "bio";
+
+interface ProfileFormState {
+    firstName: string;
+    lastName: string;
+    username: string;
+    email: string;
+    phone: string;
+    location: string;
+    dateOfBirth: string;
+    gender: string;
+    favoriteSport: string;
+    bio: string;
+}
 
 const profileActions = [
     {
-        title: "Edit Profile",
-        description: "Update your personal information, profile picture, and account details.",
-        href: "/profile/edit",
-        icon: User,
-        tone: "purple",
-    },
-    {
         title: "Profile & Interests",
-        description:
-            "Manage the sports, clubs, leagues and competitions that shape your fan experience.",
+        description: "Manage sports, clubs, leagues and competitions that shape your fan experience.",
         href: "/profile/interests",
         icon: Heart,
         tone: "purple",
     },
     {
         title: "My Clubs",
-        description: "Manage your favorite clubs, view memberships, and club notifications.",
+        description: "Manage followed clubs, memberships and club notification preferences.",
         href: "/profile/clubs",
         icon: ShieldCheck,
         tone: "orange",
     },
     {
-        title: "Payments & Receipts",
-        description: "View club membership payments, ticket receipts, refunds and checkout history.",
+        title: "Payments",
+        description: "View membership payments, ticket receipts, refunds and checkout history.",
         href: "/profile/payments",
         icon: CreditCard,
         tone: "green",
     },
     {
         title: "Notifications",
-        description: "Customize what you want to hear about and how you want to be notified.",
+        description: "Choose what you want to hear about and how you want to be notified.",
         href: "/profile/notifications",
         icon: Bell,
         tone: "blue",
     },
     {
         title: "Privacy & Security",
-        description: "Control your privacy settings, security preferences, and connected accounts.",
+        description: "Control account security, privacy settings and connected access.",
         href: "/profile/privacy",
         icon: Lock,
         tone: "yellow",
     },
     {
         title: "Help & Support",
-        description: "Get help, browse FAQs, or contact our support team anytime.",
+        description: "Get help, browse FAQs or contact the League OS support team.",
         href: "/profile/support",
         icon: HelpCircle,
         tone: "cyan",
@@ -102,12 +133,6 @@ const recentActivity = [
 
 const quickActions = [
     {
-        title: "Edit Profile",
-        description: "Update your personal information",
-        href: "/profile/edit",
-        icon: PenLine,
-    },
-    {
         title: "Manage Alerts",
         description: "Customize your notifications",
         href: "/profile/notifications",
@@ -121,103 +146,452 @@ const quickActions = [
     },
 ];
 
-const interests = [
-    {
-        label: "Rugby",
-        image: "/assets/sports/rugby-promo.png",
-    },
-    {
-        label: "Football",
-        image: "/assets/sports/football-promo.png",
-    },
-    {
-        label: "Basketball",
-        image: "/assets/sports/basketball-promo.png",
-    },
-    {
-        label: "KCCA FC",
-        image: "/assets/clubs/kcca-fc.png",
-    },
-    {
-        label: "SC Villa",
-        image: "/assets/clubs/sc-villa.png",
-    },
-];
+function cleanValue(value: unknown, fallback = "") {
+    return typeof value === "string" && value.trim() ? value.trim() : fallback;
+}
+
+function createInitialFormState(
+    profile: BackendProfile | null | undefined,
+    currentUser?: ReturnType<typeof useCurrentUser>["currentUser"],
+): ProfileFormState {
+    const nameParts = currentUser?.name ? currentUser.name.split(" ") : [];
+    const currentEmail =
+        currentUser?.email && currentUser.email !== "No email available"
+            ? currentUser.email
+            : "";
+    const email = cleanValue(profile?.email, currentEmail);
+
+    const firstName = cleanValue(profile?.first_name, nameParts[0] ?? "");
+    const lastName = cleanValue(
+        profile?.last_name,
+        nameParts.slice(1).join(" ") || "",
+    );
+
+    const username =
+        cleanValue(profile?.username) ||
+        (email.includes("@") ? email.split("@")[0] ?? "" : "");
+
+    const currentPhone =
+        currentUser?.phoneNumber && currentUser.phoneNumber !== "No phone number added"
+            ? currentUser.phoneNumber
+            : "";
+
+    return {
+        firstName,
+        lastName,
+        username,
+        email,
+        phone: cleanValue(profile?.phone_number, currentPhone),
+        location: cleanValue(profile?.location, currentUser?.location ?? ""),
+        dateOfBirth: cleanValue(profile?.date_of_birth),
+        gender: cleanValue(profile?.gender),
+        favoriteSport: cleanValue(
+            profile?.favourite_sport || profile?.favorite_sport,
+            currentUser?.favoriteSport ?? "",
+        ),
+        bio: cleanValue(profile?.bio),
+    };
+}
 
 function ProfileOverviewPage() {
-    const { currentUser } = useCurrentUser();
+    const { currentUser, profile, isLoading, refreshProfile } = useCurrentUser();
+    const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+    const [formData, setFormData] = useState<ProfileFormState>(() =>
+        createInitialFormState(profile, currentUser),
+    );
+    const [editableFields, setEditableFields] = useState<Record<EditableField, boolean>>({
+        firstName: false,
+        lastName: false,
+        username: false,
+        phone: false,
+        location: false,
+        dateOfBirth: false,
+        gender: false,
+        favoriteSport: false,
+        bio: false,
+    });
+    const [statusMessage, setStatusMessage] = useState("");
+    const [isSaving, setIsSaving] = useState(false);
+    const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+
+    useEffect(() => {
+        setFormData(createInitialFormState(profile, currentUser));
+    }, [currentUser, profile]);
+
+    function toggleEditableField(field: EditableField) {
+        setEditableFields((currentFields) => ({
+            ...currentFields,
+            [field]: !currentFields[field],
+        }));
+    }
+
+    function updateField<Key extends keyof ProfileFormState>(
+        field: Key,
+        value: ProfileFormState[Key],
+    ) {
+        setFormData((currentData) => ({
+            ...currentData,
+            [field]: value,
+        }));
+
+        if (statusMessage) {
+            setStatusMessage("");
+        }
+    }
+
+    async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+        event.preventDefault();
+
+        setIsSaving(true);
+        setStatusMessage("");
+
+        try {
+            await updateProfile({
+                first_name: formData.firstName,
+                last_name: formData.lastName,
+                username: formData.username,
+                phone_number: formData.phone,
+                location: formData.location,
+                date_of_birth: formData.dateOfBirth || null,
+                gender: formData.gender,
+                favourite_sport: formData.favoriteSport,
+                bio: formData.bio,
+            });
+
+            await refreshProfile();
+            notifyProfileShellUpdated();
+
+            setEditableFields({
+                firstName: false,
+                lastName: false,
+                username: false,
+                phone: false,
+                location: false,
+                dateOfBirth: false,
+                gender: false,
+                favoriteSport: false,
+                bio: false,
+            });
+
+            setStatusMessage("Profile changes saved successfully.");
+        } catch {
+            setStatusMessage("We could not save your profile changes. Please try again.");
+        } finally {
+            setIsSaving(false);
+        }
+    }
+
+    async function handleAvatarChange(event: ChangeEvent<HTMLInputElement>) {
+        const file = event.target.files?.[0];
+
+        if (!file) {
+            return;
+        }
+
+        if (!file.type.startsWith("image/")) {
+            setStatusMessage("Please upload a valid image file.");
+            event.target.value = "";
+            return;
+        }
+
+        if (file.size > 2 * 1024 * 1024) {
+            setStatusMessage("Avatar file size must not exceed 2MB.");
+            event.target.value = "";
+            return;
+        }
+
+        setIsUploadingAvatar(true);
+        setStatusMessage("");
+
+        try {
+            await uploadAvatar(file);
+            await refreshProfile();
+            notifyProfileShellUpdated();
+            setStatusMessage("Profile photo updated successfully.");
+        } catch {
+            setStatusMessage("We could not upload your profile photo. Please try again.");
+        } finally {
+            setIsUploadingAvatar(false);
+            event.target.value = "";
+        }
+    }
+
+    async function handleRemoveAvatar() {
+        setIsUploadingAvatar(true);
+        setStatusMessage("");
+
+        try {
+            await removeAvatar();
+            await refreshProfile();
+            notifyProfileShellUpdated();
+            setStatusMessage("Profile photo removed successfully.");
+        } catch {
+            setStatusMessage("We could not remove your profile photo. Please try again.");
+        } finally {
+            setIsUploadingAvatar(false);
+        }
+    }
+
+    function renderTextInput(
+        field: EditableField,
+        label: string,
+        value: string,
+        type = "text",
+    ) {
+        const isEditable = editableFields[field];
+
+        return (
+            <label className={styles.profileField}>
+                <span>{label}</span>
+
+                <div className={`${styles.profileInputRow} ${isEditable ? styles.editingField : ""}`}>
+                    <input
+                        type={type}
+                        value={value}
+                        disabled={!isEditable}
+                        onChange={(event) => updateField(field, event.target.value)}
+                    />
+
+                    <button
+                        type="button"
+                        aria-label={`Edit ${label}`}
+                        onClick={() => toggleEditableField(field)}
+                    >
+                        <PenLine size={16} strokeWidth={2.4} />
+                    </button>
+                </div>
+            </label>
+        );
+    }
+
+    function renderSelectInput(
+        field: EditableField,
+        label: string,
+        value: string,
+        options: string[],
+    ) {
+        const isEditable = editableFields[field];
+
+        return (
+            <label className={styles.profileField}>
+                <span>{label}</span>
+
+                <div className={`${styles.profileInputRow} ${isEditable ? styles.editingField : ""}`}>
+                    <select
+                        value={value}
+                        disabled={!isEditable}
+                        onChange={(event) => updateField(field, event.target.value)}
+                    >
+                        {options.map((option) => (
+                            <option key={option}>{option}</option>
+                        ))}
+                    </select>
+
+                    <button
+                        type="button"
+                        aria-label={`Edit ${label}`}
+                        onClick={() => toggleEditableField(field)}
+                    >
+                        <PenLine size={16} strokeWidth={2.4} />
+                    </button>
+                </div>
+            </label>
+        );
+    }
+
     return (
         <section className={styles.page}>
             <header className={styles.pageHeader}>
-                <h1>Profile, Settings &amp; Support</h1>
-                <p>Manage your account, preferences, and get the most out of League OS.</p>
+                <h1>Profile</h1>
+                <p>View and update your fan profile, account preferences and support options.</p>
             </header>
 
             <div className={styles.layoutGrid}>
                 <div className={styles.mainColumn}>
-                    <section className={styles.profileHero}>
-                        <div className={styles.profileIdentity}>
+                    <form className={styles.profileEditCard} onSubmit={handleSubmit}>
+                        <div className={styles.profileEditHeader}>
                             <div className={styles.avatarWrap}>
-                                <span>{currentUser.avatarInitials}</span>
+                                <span>
+                                    {currentUser.avatarUrl ? (
+                                        <img src={currentUser.avatarUrl} alt="Profile avatar" />
+                                    ) : (
+                                        currentUser.avatarInitials
+                                    )}
+                                </span>
 
-                                <button type="button" aria-label="Change profile photo">
-                                    <PenLine size={15} strokeWidth={2.4} />
+                                <button
+                                    type="button"
+                                    aria-label="Upload profile photo"
+                                    onClick={() => fileInputRef.current?.click()}
+                                    disabled={isUploadingAvatar}
+                                >
+                                    <Camera size={15} strokeWidth={2.4} />
                                 </button>
                             </div>
 
-                            <div>
+                            <div className={styles.profileTitleBlock}>
                                 <h2>
                                     {currentUser.name}
                                     <ShieldCheck size={23} strokeWidth={2.4} aria-hidden="true" />
                                 </h2>
 
-                                <p>{currentUser.email}</p>
+                                <p>{currentUser.membership}</p>
 
                                 <div className={styles.profileMeta}>
+                                    <span>
+                                        <Trophy size={16} strokeWidth={2.2} />
+                                        Member since {currentUser.memberSince}
+                                    </span>
+
                                     <span>
                                         <MapPin size={16} strokeWidth={2.2} />
                                         {currentUser.location}
                                     </span>
-
-                                    <span>
-                                        <Trophy size={16} strokeWidth={2.2} />
-                                        {currentUser.favoriteSport}
-                                    </span>
-
-                                    <span>
-                                        <Users size={16} strokeWidth={2.2} />
-                                        Member since May 2024
-                                    </span>
                                 </div>
+
+                                <div className={styles.avatarActions}>
+                                    <button
+                                        type="button"
+                                        onClick={() => fileInputRef.current?.click()}
+                                        disabled={isUploadingAvatar}
+                                    >
+                                        {isUploadingAvatar ? "Uploading..." : "Upload Avatar"}
+                                    </button>
+
+                                    {currentUser.avatarUrl ? (
+                                        <button
+                                            type="button"
+                                            onClick={handleRemoveAvatar}
+                                            disabled={isUploadingAvatar}
+                                        >
+                                            <Trash2 size={15} strokeWidth={2.4} />
+                                            Remove
+                                        </button>
+                                    ) : null}
+                                </div>
+
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    accept="image/png,image/jpeg,image/webp,image/gif"
+                                    className={styles.fileInput}
+                                    onChange={handleAvatarChange}
+                                />
                             </div>
                         </div>
 
-                        <div className={styles.membershipBadge}>
-                            <span>
-                                <Trophy size={26} strokeWidth={2.2} />
-                            </span>
-
-                            <div>
-                                <strong>{currentUser.membership}</strong>
-                                <p>Renews on 12 May 2025</p>
+                        {statusMessage ? (
+                            <div className={styles.profileStatusMessage} role="status">
+                                <CheckCircle2 size={18} strokeWidth={2.4} />
+                                {statusMessage}
                             </div>
+                        ) : null}
 
-                            <Link to="/dashboard/memberships">Manage Club Membership →</Link>
+                        <div className={styles.profileFormGrid}>
+                            {renderTextInput("firstName", "First Name", formData.firstName)}
+                            {renderTextInput("lastName", "Last Name", formData.lastName)}
+                            {renderTextInput("username", "Username", formData.username)}
+
+                            <label className={styles.profileField}>
+                                <span>Email Address</span>
+
+                                <div className={`${styles.profileInputRow} ${styles.iconInputRow} ${styles.lockedField}`}>
+                                    <Mail size={18} strokeWidth={2.2} aria-hidden="true" />
+                                    <input value={formData.email} disabled readOnly />
+
+                                </div>
+                            </label>
+
+                            <label className={styles.profileField}>
+                                <span>Phone Number</span>
+
+                                <div
+                                    className={`${styles.profileInputRow} ${styles.iconInputRow} ${
+                                        editableFields.phone ? styles.editingField : ""
+                                    }`}
+                                >
+                                    <Phone size={18} strokeWidth={2.2} aria-hidden="true" />
+                                    <input
+                                        type="tel"
+                                        value={formData.phone}
+                                        disabled={!editableFields.phone}
+                                        onChange={(event) => updateField("phone", event.target.value)}
+                                    />
+                                    <button
+                                        type="button"
+                                        aria-label="Edit phone number"
+                                        onClick={() => toggleEditableField("phone")}
+                                    >
+                                        <PenLine size={16} strokeWidth={2.4} />
+                                    </button>
+                                </div>
+                            </label>
+
+                            {renderTextInput("location", "Location", formData.location)}
+                            {renderTextInput("dateOfBirth", "Date of Birth", formData.dateOfBirth, "date")}
+                            {renderSelectInput("gender", "Gender", formData.gender, [
+                                "Male",
+                                "Female",
+                                "Prefer not to say",
+                            ])}
+                            {renderSelectInput("favoriteSport", "Favourite Sport", formData.favoriteSport, [
+                                "Rugby",
+                                "Football",
+                                "Basketball",
+                                "All Sports",
+                            ])}
                         </div>
-                    </section>
 
-                    <section className={styles.actionGrid} aria-label="Profile actions">
+                        <label className={`${styles.profileField} ${styles.bioField}`}>
+                            <span>Bio / About</span>
+
+                            <div
+                                className={`${styles.profileTextareaRow} ${
+                                    editableFields.bio ? styles.editingField : ""
+                                }`}
+                            >
+                                <textarea
+                                    rows={4}
+                                    value={formData.bio}
+                                    disabled={!editableFields.bio}
+                                    maxLength={220}
+                                    onChange={(event) => updateField("bio", event.target.value)}
+                                />
+
+                                <button
+                                    type="button"
+                                    aria-label="Edit bio"
+                                    onClick={() => toggleEditableField("bio")}
+                                >
+                                    <PenLine size={16} strokeWidth={2.4} />
+                                </button>
+
+                                <small>{formData.bio.length}/220</small>
+                            </div>
+                        </label>
+
+                        <div className={styles.profileFormActions}>
+
+                            <button type="submit" disabled={isSaving || isLoading}>
+                                <Save size={18} strokeWidth={2.4} />
+                                {isSaving ? "Saving..." : "Save Changes"}
+                            </button>
+                        </div>
+                    </form>
+
+                    <section className={styles.compactActionGrid} aria-label="Profile actions">
                         {profileActions.map((action) => {
                             const Icon = action.icon;
 
                             return (
                                 <Link
                                     to={action.href}
-                                    className={`${styles.actionCard} ${styles[action.tone]}`}
+                                    className={`${styles.compactActionCard} ${styles[action.tone]}`}
                                     key={action.title}
                                 >
                                     <span className={styles.actionIcon}>
-                                        <Icon size={34} strokeWidth={2.1} aria-hidden="true" />
+                                        <Icon size={24} strokeWidth={2.2} aria-hidden="true" />
                                     </span>
 
                                     <div>
@@ -225,36 +599,10 @@ function ProfileOverviewPage() {
                                         <p>{action.description}</p>
                                     </div>
 
-                                    <ChevronRight size={22} strokeWidth={2.4} aria-hidden="true" />
+                                    <ChevronRight size={20} strokeWidth={2.4} aria-hidden="true" />
                                 </Link>
                             );
                         })}
-                    </section>
-
-                    <section className={styles.interestsPanel}>
-                        <div className={styles.panelHeader}>
-                            <div>
-                                <h2>
-                                    <Heart size={24} strokeWidth={2.4} aria-hidden="true" />
-                                    Your Interests
-                                </h2>
-                                <p>We tailor your experience based on what you love.</p>
-                            </div>
-
-                            <Link to="/profile/interests">Manage Interests</Link>
-                        </div>
-
-                        <div className={styles.interestList}>
-                            {interests.map((interest) => (
-                                <span className={styles.interestChip} key={interest.label}>
-                                    <img src={interest.image} alt="" aria-hidden="true" />
-                                    {interest.label}
-                                    <strong>✓</strong>
-                                </span>
-                            ))}
-
-                            <span className={styles.moreChip}>+ 3 more</span>
-                        </div>
                     </section>
                 </div>
 
@@ -319,7 +667,7 @@ function ProfileOverviewPage() {
 
                         <div>
                             <h2>Need Help?</h2>
-                            <p>Our support team is here for you 24/7.</p>
+                            <p>Our support team is here for you.</p>
                         </div>
 
                         <Link to="/profile/support">Contact Support →</Link>

@@ -1,7 +1,7 @@
 .featured-clubs {
   background-color: transparent;
   padding: 16px 56px 24px;
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-body);
 }
 
 .clubs-row {
@@ -40,21 +40,21 @@
 }
 
 .club-name {
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: 13px;
+  font-family: var(--font-heading);
+  font-size: 16px;
   font-weight: 600;
   color: #ffffff;
   margin: 0 0 4px;
 }
 
 .club-type {
-  font-size: 11px;
+  font-size: 14px;
   color: #9CA3AF;
   margin: 0;
 }
 
 .club-tagline {
-  font-size: 11px;
+  font-size: 14px;
   color: #6B7280;
   font-style: italic;
   margin: 0 0 12px;
@@ -69,7 +69,7 @@
   border-radius: 5px;
   padding: 8px 0;
   font-weight: 700;
-  font-size: 12px;
+  font-size: 14px;
   cursor: pointer;
 }
 
@@ -129,3 +129,29 @@
   letter-spacing: 1.5px;
 }
 
+@media (max-width: 1280px) {
+  .featured-clubs {
+    padding: 16px 24px 24px;
+  }
+
+  .clubs-row {
+    gap: 10px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .featured-clubs .club-card {
+    min-width: 160px;
+  }
+}
+
+@media (max-width: 768px) {
+  .featured-clubs {
+    padding: 16px 16px 24px;
+  }
+
+  .featured-clubs .club-card {
+    min-width: 140px;
+  }
+}

@@ -51,22 +51,18 @@
 .page {
   position: relative;
   z-index: 1;
-  width: min(1460px, calc(100% - 48px));
-  margin: 0 auto;
-  padding: 22px 0 54px;
-  box-sizing: border-box;
 }
 
 .topbar {
   position: relative;
   z-index: 2;
-  width: min(1460px, calc(100% - 48px));
-  margin: 0 auto;
   display: flex;
+  flex-wrap: nowrap;
   align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  padding: 18px 0 6px;
+  justify-content: space-between; /* Pushes logo and actions to the ends */
+  gap: 1rem;
+  width: 100%;
+  padding: 1rem 1.5rem; /* Add consistent padding inside the nav */
 }
 
 .topbar-compact {
@@ -449,7 +445,7 @@
 .section-title h2 {
   margin: 0;
   color: #fff;
-  font-family: 'League Spartan', sans-serif;
+  font-family: var(--font-heading);
   font-size: clamp(2rem, 4vw, 3.4rem);
   line-height: 0.95;
   letter-spacing: 0.03em;
@@ -478,7 +474,7 @@
 .verify-card h1 {
   margin: 0;
   color: #fff;
-  font-family: 'League Spartan', sans-serif;
+  font-family: var(--font-heading);
   font-size: clamp(3.5rem, 7vw, 6.9rem);
   line-height: 0.9;
   letter-spacing: 0.025em;
@@ -515,7 +511,7 @@
 .stat-card strong {
   display: block;
   color: #fff;
-  font-family: 'League Spartan', sans-serif;
+  font-family: var(--font-heading);
   font-size: 2.6rem;
   line-height: 1;
   margin-bottom: 10px;
@@ -893,84 +889,6 @@
   color: #75f0a3;
 }
 
-@media (max-width: 1180px) {
-  .topbar {
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-
-  .topbar-actions {
-    width: 100%;
-    justify-content: center;
-  }
-
-  .auth-card {
-    margin-left: 0;
-    width: 100%;
-  }
-
-  .register-header {
-    min-height: auto;
-    height: auto;
-    padding: 12px 14px;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 14px;
-  }
-
-  .register-nav {
-    justify-content: flex-start;
-  }
-
-  .register-actions {
-    align-self: stretch;
-    justify-content: flex-start;
-  }
-}
-
-@media (max-width: 860px) {
-  .page,
-  .topbar {
-    width: min(100% - 20px, 1460px);
-  }
-
-  .topnav {
-    gap: 10px;
-  }
-
-  .hero-copy h1,
-  .auth-story h1,
-  .verify-card h1 {
-    font-size: clamp(3rem, 12vw, 5rem);
-  }
-
-  .hero-scoreboard {
-    grid-template-columns: 1fr;
-  }
-
-  .hero-divider {
-    min-width: 0;
-    padding: 8px 0;
-  }
-
-  .field-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .register-nav {
-    gap: 12px;
-    padding-inline: 4px;
-    overflow-x: auto;
-    overflow-y: hidden;
-    padding-bottom: 0;
-    width: 100%;
-    justify-content: flex-start;
-  }
-
-  .register-brand .league-logo-image-wordmark {
-    width: 156px;
-  }
-}
 .topbar {
   position: sticky;
   top: 0;
@@ -1077,30 +995,6 @@
   font-size: 1rem;
 }
 
-@media (max-width: 980px) {
-  .topbar {
-    align-items: flex-start;
-    flex-wrap: wrap;
-  }
-
-  .topnav {
-    order: 3;
-    width: 100%;
-    justify-content: flex-start;
-    overflow-x: auto;
-    padding-bottom: 4px;
-  }
-
-  .topbar-actions {
-    margin-left: auto;
-  }
-
-  .topbar-user-name,
-  .topbar-logout-button {
-    display: none;
-  }
-}
-
 .topbar-auth-actions {
   display: inline-flex;
   align-items: center;
@@ -1141,7 +1035,7 @@
   place-items: center;
   background: #8135fa;
   color: #ffffff;
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 900;
   line-height: 1;
   box-shadow: 0 0 0 2px #00030d;
@@ -1213,15 +1107,90 @@
   font-size: 1.05rem;
 }
 
-@media (max-width: 980px) {
+/* --- RESPONSIVE STYLES --- */
+
+/* Mobile-first: Base styles are for mobile (< 768px) */
+
+.topbar {
+  /* On mobile, use slightly less horizontal padding */
+  padding: 1rem;
+}
+
+.topnav {
+  order: 0; /* Keep nav on the same line */
+  justify-content: flex-start;
+  min-width: 0; /* Prevent flex item from overflowing its container */
+  overflow-x: auto; /* Enable horizontal scrolling */
+  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+  scrollbar-width: none; /* Hide scrollbar for Firefox */
+}
+
+.topnav::-webkit-scrollbar {
+  display: none; /* Hide scrollbar for Chrome, Safari, and Opera */
+}
+
+.topbar-actions,
+.topbar-auth-actions {
+  /* No longer needed with justify-content: space-between */
+}
+
+.topbar-user-name,
+.topbar-logout-button {
+  display: none; /* Hide for a more compact user chip */
+}
+
+.topbar-profile-copy,
+.topbar-profile-chevron {
+  display: none;
+}
+
+.topbar-profile-chip {
+  padding: 4px;
+  border-radius: 999px;
+}
+
+.field-grid {
+  grid-template-columns: 1fr;
+}
+
+.hero-copy h1,
+.auth-story h1,
+.verify-card h1 {
+  font-size: clamp(2.8rem, 10vw, 4rem);
+}
+
+.footer-content {
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 1.5rem;
+}
+
+/* Tablet screens (e.g., iPads) */
+@media (min-width: 769px) {
   .topbar-profile-copy,
   .topbar-profile-chevron {
-    display: none;
+    display: grid; /* Show profile details */
   }
 
   .topbar-profile-chip {
-    min-height: 44px;
-    padding: 4px;
-    border-radius: 999px;
+    padding: 6px 12px 6px 8px; /* Restore original padding */
+    border-radius: 14px;
+  }
+}
+
+/* Large laptop/desktop screens */
+@media (min-width: 1024px) {
+  .topnav {
+    order: 0; /* Reset order */
+    width: auto;
+    justify-content: center; /* Center the links on desktop */
+    flex: 1; /* Allow nav to fill space on desktop */
+    overflow-x: visible; /* Disable scrolling on large screens */
+  }
+
+  .topbar-user-name,
+  .topbar-logout-button {
+    display: inline-flex; /* Show full user chip and logout button */
   }
 }

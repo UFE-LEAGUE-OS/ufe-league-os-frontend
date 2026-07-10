@@ -1,22 +1,28 @@
 import {
     Bell,
+    Building2,
     ChevronDown,
     ChevronDownIcon,
+    LayoutDashboard,
+    LogOut,
     Search,
+    User,
     X,
 } from "lucide-react";
 import type { FormEvent } from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import leagueLogo from "../../assets/logos/league-os-horizontal.png";
+import { useAuth } from "../../hooks/useAuth.js";
 import { useCurrentUser } from "../../hooks/useCurrentUser";
-import { getUnreadNotificationCount } from "../../services/notificationService";
+import { getMyUnionWorkspaces } from "../../services/unionAdminService";
 import styles from "./LoggedInHeader.module.css";
 
 const navItems = [
     { label: "Sport", href: "/" },
     { label: "Leagues", href: "/" },
     { label: "Clubs", href: "/clubs" },
+    { label: "Unions", href: "/unions" },
     { label: "Competitions", href: "/" },
     { label: "News", href: "/" },
     { label: "Club Memberships", href: "/memberships" },
@@ -115,54 +121,14 @@ const searchableItems = [
 
 function LoggedInHeader() {
     const { currentUser } = useCurrentUser();
+    const { logout } = useAuth();
     const navigate = useNavigate();
+    const userMenuRef = useRef<HTMLDivElement>(null);
 
     const [isSearchOpen, setIsSearchOpen] = useState(false);
+    const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
-    const [unreadNotifications, setUnreadNotifications] = useState(0);
-
-    useEffect(() => {
-        let isMounted = true;
-
-        async function loadUnreadNotifications() {
-            try {
-                const count = await getUnreadNotificationCount();
-
-                if (isMounted) {
-                    setUnreadNotifications(count);
-                }
-            } catch {
-                if (isMounted) {
-                    setUnreadNotifications(0);
-                }
-            }
-        }
-
-        void loadUnreadNotifications();
-
-        function handleNotificationsUpdated() {
-            void loadUnreadNotifications();
-        }
-
-        window.addEventListener(
-            "leagueos:notifications-updated",
-            handleNotificationsUpdated,
-        );
-
-        const intervalId = window.setInterval(() => {
-            void loadUnreadNotifications();
-        }, 60000);
-
-        return () => {
-            isMounted = false;
-            window.clearInterval(intervalId);
-            window.removeEventListener(
-                "leagueos:notifications-updated",
-                handleNotificationsUpdated,
-            );
-        };
-    }, []);
-
+    const [unionWorkspaceCount, setUnionWorkspaceCount] = useState(0);
     const normalizedQuery = searchQuery.trim().toLowerCase();
 
     const filteredSearchResults = useMemo(() => {
@@ -178,6 +144,61 @@ function LoggedInHeader() {
             })
             .slice(0, 8);
     }, [normalizedQuery]);
+
+    useEffect(() => {
+        let isMounted = true;
+
+        async function loadUnionWorkspaceCount() {
+            try {
+                const workspaces = await getMyUnionWorkspaces();
+
+                if (isMounted) {
+                    setUnionWorkspaceCount(workspaces.length);
+                }
+            } catch {
+                if (isMounted) {
+                    setUnionWorkspaceCount(0);
+                }
+            }
+        }
+
+        void loadUnionWorkspaceCount();
+
+        return () => {
+            isMounted = false;
+        };
+    }, []);
+
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (
+                userMenuRef.current &&
+                !userMenuRef.current.contains(event.target as Node)
+            ) {
+                setIsUserMenuOpen(false);
+            }
+        }
+
+        document.addEventListener("mousedown", handleClickOutside);
+
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
+
+    function handleLogout() {
+        setIsUserMenuOpen(false);
+        logout();
+
+        navigate("/login", {
+            replace: true,
+            state: {
+                message: "You have been logged out.",
+            },
+        });
+    }
+
+
 
     function closeSearch() {
         setIsSearchOpen(false);
@@ -228,28 +249,83 @@ function LoggedInHeader() {
                 <Link
                     to="/profile/notifications"
                     className={styles.notificationButton}
-                    aria-label={
-                        unreadNotifications > 0
-                            ? `${unreadNotifications} unread notifications`
-                            : "Notifications"
-                    }
+                    aria-label="Notifications"
+                    title="Notifications"
                 >
                     <Bell size={25} strokeWidth={2.2} />
-                    {unreadNotifications > 0 ? (
-                        <span>{unreadNotifications > 99 ? "99+" : unreadNotifications}</span>
-                    ) : null}
                 </Link>
 
-                <button type="button" className={styles.userButton}>
-                    <span className={styles.avatar}>{currentUser.avatarInitials}</span>
+                <div className={styles.userMenu} ref={userMenuRef}>
+                    <button
+                        type="button"
+                        className={styles.userButton}
+                        aria-haspopup="menu"
+                        aria-expanded={isUserMenuOpen}
+                        onClick={() => setIsUserMenuOpen((currentValue) => !currentValue)}
+                    >
+                        <span className={styles.avatar}>
+                            {currentUser.avatarUrl ? (
+                                <img src={currentUser.avatarUrl} alt="" aria-hidden="true" />
+                            ) : (
+                                currentUser.avatarInitials
+                            )}
+                        </span>
 
-                    <span className={styles.userText}>
-                        <strong>{currentUser.name}</strong>
-                        <small>View Profile</small>
-                    </span>
+                        <span className={styles.userText}>
+                            <strong>{currentUser.name}</strong>
+                            <small>View Profile</small>
+                        </span>
 
-                    <ChevronDown size={18} strokeWidth={2.5} aria-hidden="true" />
-                </button>
+                        <ChevronDown size={18} strokeWidth={2.5} aria-hidden="true" />
+                    </button>
+
+                    {isUserMenuOpen ? (
+                        <div className={styles.userDropdown} role="menu">
+                            <button
+                                type="button"
+                                role="menuitem"
+                                onClick={() => {
+                                    setIsUserMenuOpen(false);
+                                    navigate("/dashboard/fan");
+                                }}
+                            >
+                                <LayoutDashboard size={16} strokeWidth={2.4} />
+                                Dashboard
+                            </button>
+
+                            {unionWorkspaceCount > 0 ? (
+                                <button
+                                    type="button"
+                                    role="menuitem"
+                                    onClick={() => {
+                                        setIsUserMenuOpen(false);
+                                        navigate("/dashboard/union-admin");
+                                    }}
+                                >
+                                    <Building2 size={16} strokeWidth={2.4} />
+                                    Union Workspace
+                                </button>
+                            ) : null}
+
+                            <button
+                                type="button"
+                                role="menuitem"
+                                onClick={() => {
+                                    setIsUserMenuOpen(false);
+                                    navigate("/profile");
+                                }}
+                            >
+                                <User size={16} strokeWidth={2.4} />
+                                View Profile
+                            </button>
+
+                            <button type="button" role="menuitem" onClick={handleLogout}>
+                                <LogOut size={16} strokeWidth={2.4} />
+                                Log Out
+                            </button>
+                        </div>
+                    ) : null}
+                </div>
             </div>
 
             {isSearchOpen ? (

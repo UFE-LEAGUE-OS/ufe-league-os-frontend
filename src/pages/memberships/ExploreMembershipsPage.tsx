@@ -1,5 +1,7 @@
 import {
     CalendarDays,
+    ChevronLeft,
+    ChevronRight,
     CheckCircle2,
     Crown,
     Heart,
@@ -11,226 +13,179 @@ import {
     Users,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { useBackendClubs } from "../../hooks/useBackendClubs";
+import {
+    getMembershipCatalog,
+    type MembershipCatalogPlan,
+    type MembershipClubCatalog,
+    type MembershipTone,
+} from "../../services/membershipService";
 import styles from "./ExploreMembershipsPage.module.css";
-import Footer from '../../components/Footer';
-
-interface MembershipPlan {
-    id: string;
-    clubName: string;
-    slug: string;
-    sport: "Rugby" | "Football" | "Basketball";
-    tier: string;
-    price: string;
-    billing: string;
-    logo: string;
-    description: string;
-    memberCount: string;
-    popular: boolean;
-    tone: "purple" | "orange" | "blue" | "green";
-    benefits: string[];
-}
 
 interface SummaryCard {
     label: string;
     value: string;
     detail: string;
     icon: LucideIcon;
-    tone: "purple" | "orange" | "blue" | "green";
+    tone: MembershipTone;
 }
 
-const summaryCards: SummaryCard[] = [
-    {
-        label: "Club Memberships",
-        value: "24",
-        detail: "Across rugby, football and basketball",
-        icon: Crown,
-        tone: "purple",
-    },
-    {
-        label: "Active Clubs",
-        value: "16",
-        detail: "With supporter membership tiers",
-        icon: ShieldCheck,
-        tone: "orange",
-    },
-    {
-        label: "Fan Benefits",
-        value: "80+",
-        detail: "Tickets, rewards and events",
-        icon: Star,
-        tone: "blue",
-    },
-    {
-        label: "My Memberships",
-        value: "2",
-        detail: "KCB KOBS and SC Villa",
-        icon: Users,
-        tone: "green",
-    },
-];
+function getSportFilters(catalog: MembershipClubCatalog[]) {
+    const sports = Array.from(
+        new Set(catalog.map((item) => item.sportLabel).filter(Boolean)),
+    ).sort();
 
-const membershipPlans: MembershipPlan[] = [
-    {
-        id: "kobs-gold",
-        clubName: "KCB KOBS",
-        slug: "kobs",
-        sport: "Rugby",
-        tier: "Gold Member",
-        price: "UGX 120,000",
-        billing: "per season",
-        logo: "/assets/clubs/kobs.jpg",
-        description:
-            "Premium supporter membership for KCB KOBS fans who want priority access and club benefits.",
-        memberCount: "1,240 members",
-        popular: true,
-        tone: "purple",
-        benefits: [
-            "10% ticket discount",
-            "Priority derby tickets",
-            "Digital membership card",
-            "Member-only club events",
-        ],
-    },
-    {
-        id: "villa-silver",
-        clubName: "SC Villa",
-        slug: "sc-villa",
-        sport: "Football",
-        tier: "Silver Member",
-        price: "UGX 80,000",
-        billing: "per season",
-        logo: "/assets/clubs/sc-villa.png",
-        description:
-            "Support SC Villa and unlock matchday benefits, club news and supporter rewards.",
-        memberCount: "3,840 members",
-        popular: true,
-        tone: "blue",
-        benefits: [
-            "Matchday ticket discount",
-            "Digital membership card",
-            "Club news alerts",
-            "Fan event access",
-        ],
-    },
-    {
-        id: "oilers-courtside",
-        clubName: "City Oilers",
-        slug: "city-oilers",
-        sport: "Basketball",
-        tier: "Courtside Member",
-        price: "UGX 150,000",
-        billing: "per season",
-        logo: "/assets/clubs/city-oilers.png",
-        description:
-            "Basketball membership for fans who want closer access to City Oilers matchday experiences.",
-        memberCount: "780 members",
-        popular: false,
-        tone: "orange",
-        benefits: [
-            "Priority NBL tickets",
-            "Courtside event access",
-            "Club merchandise offers",
-            "Member reward points",
-        ],
-    },
-    {
-        id: "vipers-fan",
-        clubName: "Vipers SC",
-        slug: "vipers-sc",
-        sport: "Football",
-        tier: "Fan Member",
-        price: "UGX 60,000",
-        billing: "per season",
-        logo: "/assets/clubs/vipers-sc.png",
-        description:
-            "Entry supporter membership for Vipers fans who want official club updates and benefits.",
-        memberCount: "2,910 members",
-        popular: false,
-        tone: "green",
-        benefits: [
-            "Club alerts",
-            "Ticket reminders",
-            "Digital fan card",
-            "Sponsor offers",
-        ],
-    },
-    {
-        id: "pirates-bronze",
-        clubName: "Black Pirates",
-        slug: "black-pirates",
-        sport: "Rugby",
-        tier: "Bronze Member",
-        price: "UGX 50,000",
-        billing: "per season",
-        logo: "/assets/clubs/black-pirates.png",
-        description:
-            "Starter club membership for Black Pirates supporters following rugby fixtures and benefits.",
-        memberCount: "940 members",
-        popular: false,
-        tone: "purple",
-        benefits: [
-            "Digital member card",
-            "Fixture alerts",
-            "Club news",
-            "Ticket reminders",
-        ],
-    },
-    {
-        id: "kcca-family",
-        clubName: "KCCA FC",
-        slug: "kcca-fc",
-        sport: "Football",
-        tier: "Family Member",
-        price: "UGX 100,000",
-        billing: "per season",
-        logo: "/assets/clubs/kcca-fc.png",
-        description:
-            "Family-focused club membership for KCCA FC supporters attending matches together.",
-        memberCount: "2,150 members",
-        popular: false,
-        tone: "blue",
-        benefits: [
-            "Family ticket offers",
-            "Club news",
-            "Digital cards",
-            "Match reminders",
-        ],
-    },
-];
+    return ["All", ...sports];
+}
 
-const sportFilters = ["All", "Rugby", "Football", "Basketball"];
+function countUniqueBenefits(plans: MembershipCatalogPlan[]) {
+    return new Set(plans.flatMap((plan) => plan.benefits)).size;
+}
+
+function getInitials(name: string) {
+    return name
+        .split(" ")
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join("") || "LO";
+}
+
+function buildSummaryCards(
+    catalog: MembershipClubCatalog[],
+    plans: MembershipCatalogPlan[],
+): SummaryCard[] {
+    return [
+        {
+            label: "Club Memberships",
+            value: String(plans.length),
+            detail: "Active backend membership plans",
+            icon: Crown,
+            tone: "purple",
+        },
+        {
+            label: "Active Clubs",
+            value: String(catalog.length),
+            detail: "Clubs with visible membership tiers",
+            icon: ShieldCheck,
+            tone: "orange",
+        },
+        {
+            label: "Fan Benefits",
+            value: String(countUniqueBenefits(plans)),
+            detail: "Unique benefits from backend plans",
+            icon: Star,
+            tone: "blue",
+        },
+        {
+            label: "My Memberships",
+            value: "Open",
+            detail: "View your backend membership card data",
+            icon: Users,
+            tone: "green",
+        },
+    ];
+}
 
 function ExploreMembershipsPage() {
+    const [catalog, setCatalog] = useState<MembershipClubCatalog[]>([]);
     const [selectedSport, setSelectedSport] = useState("All");
     const [searchQuery, setSearchQuery] = useState("");
-    const { clubs: backendClubs, isLoading: clubsLoading, errorMessage: clubsErrorMessage } = useBackendClubs();
+    const [clubsPerPage, setClubsPerPage] = useState(6);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [isLoading, setIsLoading] = useState(true);
+    const [errorMessage, setErrorMessage] = useState("");
+
+    useEffect(() => {
+        let active = true;
+
+        async function loadMemberships() {
+            setIsLoading(true);
+            setErrorMessage("");
+
+            try {
+                const data = await getMembershipCatalog();
+
+                if (!active) return;
+
+                setCatalog(data);
+            } catch {
+                if (!active) return;
+
+                setErrorMessage(
+                    "Could not load backend membership plans. Please try again or contact support.",
+                );
+            } finally {
+                if (active) {
+                    setIsLoading(false);
+                }
+            }
+        }
+
+        void loadMemberships();
+
+        return () => {
+            active = false;
+        };
+    }, []);
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [clubsPerPage, searchQuery, selectedSport]);
 
     const normalizedSearchQuery = searchQuery.trim().toLowerCase();
 
-    const membershipPlansWithBackendNames = useMemo(() => {
-        return membershipPlans.map((plan) => {
-            const backendClub = backendClubs.find((club) => club.slug === plan.slug);
+    const allPlans = useMemo(
+        () => catalog.flatMap((club) => club.plans),
+        [catalog],
+    );
 
-            return backendClub ? { ...plan, clubName: backendClub.name } : plan;
-        });
-    }, [backendClubs]);
+    const sportFilters = useMemo(() => getSportFilters(catalog), [catalog]);
 
-    const filteredPlans = useMemo(() => {
-        return membershipPlansWithBackendNames.filter((plan) => {
+    const summaryCards = useMemo(
+        () => buildSummaryCards(catalog, allPlans),
+        [allPlans, catalog],
+    );
+
+    const filteredClubs = useMemo(() => {
+        return catalog.filter((club) => {
             const matchesSport =
-                selectedSport === "All" || plan.sport === selectedSport;
+                selectedSport === "All" || club.sportLabel === selectedSport;
 
-            const searchableText = `${plan.clubName} ${plan.sport} ${plan.tier} ${plan.description}`;
+            const searchableText = [
+                club.clubName,
+                club.shortName,
+                club.sportLabel,
+                club.description,
+                club.plans.map((plan) => `${plan.name} ${plan.tier} ${plan.description}`).join(" "),
+            ]
+                .filter(Boolean)
+                .join(" ")
+                .toLowerCase();
+
             const matchesSearch =
                 !normalizedSearchQuery ||
-                searchableText.toLowerCase().includes(normalizedSearchQuery);
+                searchableText.includes(normalizedSearchQuery);
 
             return matchesSport && matchesSearch;
         });
-    }, [membershipPlansWithBackendNames, normalizedSearchQuery, selectedSport]);
+    }, [catalog, normalizedSearchQuery, selectedSport]);
+
+    const totalPages = Math.max(1, Math.ceil(filteredClubs.length / clubsPerPage));
+    const safeCurrentPage = Math.min(currentPage, totalPages);
+    const firstVisibleClubNumber = filteredClubs.length
+        ? (safeCurrentPage - 1) * clubsPerPage + 1
+        : 0;
+    const lastVisibleClubNumber = Math.min(
+        safeCurrentPage * clubsPerPage,
+        filteredClubs.length,
+    );
+
+    const paginatedClubs = useMemo(() => {
+        const startIndex = (safeCurrentPage - 1) * clubsPerPage;
+        return filteredClubs.slice(startIndex, startIndex + clubsPerPage);
+    }, [clubsPerPage, filteredClubs, safeCurrentPage]);
 
     return (
         <section className={styles.page}>
@@ -266,9 +221,10 @@ function ExploreMembershipsPage() {
             </section>
 
             <p className={styles.backendNotice}>
-                {clubsLoading
-                    ? "Syncing clubs from the League OS backend..."
-                    : clubsErrorMessage || `${backendClubs.length} clubs loaded from the backend club directory.`}
+                {isLoading
+                    ? "Loading membership plans from the League OS backend..."
+                    : errorMessage ||
+                    `${allPlans.length} backend membership plans across ${catalog.length} clubs.`}
             </p>
 
             <section className={styles.summaryGrid} aria-label="Membership summary">
@@ -320,64 +276,211 @@ function ExploreMembershipsPage() {
                         </div>
                     </section>
 
-                    <section className={styles.membershipGrid}>
-                        {filteredPlans.map((plan) => (
-                            <article
-                                className={`${styles.membershipCard} ${styles[plan.tone]}`}
-                                key={plan.id}
-                            >
-                                {plan.popular ? (
-                                    <span className={styles.popularBadge}>
-                                        <Star size={14} strokeWidth={2.7} aria-hidden="true" />
-                                        Popular
-                                    </span>
-                                ) : null}
-
-                                <div className={styles.clubHeader}>
-                                    <img src={plan.logo} alt="" aria-hidden="true" />
-
-                                    <div>
-                                        <h2>{plan.clubName}</h2>
-                                        <p>{plan.sport} Club</p>
-                                    </div>
-                                </div>
-
+                    {isLoading ? (
+                        <section className={styles.membershipGrid}>
+                            <article className={`${styles.membershipCard} ${styles.purple}`}>
                                 <div className={styles.tierBlock}>
                                     <Crown size={30} strokeWidth={2.2} aria-hidden="true" />
-
                                     <div>
-                                        <strong>{plan.tier}</strong>
-                                        <p>
-                                            {plan.price} <span>{plan.billing}</span>
-                                        </p>
-                                        <small>{plan.memberCount}</small>
+                                        <strong>Loading backend memberships</strong>
+                                        <p>Please wait while League OS loads membership plans.</p>
                                     </div>
                                 </div>
+                            </article>
+                        </section>
+                    ) : null}
 
-                                <p className={styles.description}>{plan.description}</p>
-
-                                <div className={styles.benefitList}>
-                                    {plan.benefits.map((benefit) => (
-                                        <span key={benefit}>
-                                            <CheckCircle2
-                                                size={15}
-                                                strokeWidth={2.6}
-                                                aria-hidden="true"
-                                            />
-                                            {benefit}
-                                        </span>
-                                    ))}
-                                </div>
-
-                                <div className={styles.cardActions}>
-                                    <Link to={`/memberships/${plan.slug}`}>View Details</Link>
-                                    <Link to={`/memberships/${plan.slug}`}>Join Club</Link>
+                    {!isLoading && errorMessage ? (
+                        <section className={styles.membershipGrid}>
+                            <article className={`${styles.membershipCard} ${styles.orange}`}>
+                                <div className={styles.tierBlock}>
+                                    <ShieldCheck size={30} strokeWidth={2.2} aria-hidden="true" />
+                                    <div>
+                                        <strong>Backend memberships unavailable</strong>
+                                        <p>{errorMessage}</p>
+                                    </div>
                                 </div>
                             </article>
-                        ))}
-                    </section>
-                  <Footer />
-      </main>
+                        </section>
+                    ) : null}
+
+                    {!isLoading && !errorMessage ? (
+                        <section className={styles.membershipGrid}>
+                            {paginatedClubs.map((club) => {
+                                const featuredPlan =
+                                    club.plans.find((plan) => plan.popular) || club.plans[0];
+                                const startingPlan = club.plans[0];
+                                const visibleBenefits = Array.from(
+                                    new Set(club.plans.flatMap((plan) => plan.benefits)),
+                                ).slice(0, 4);
+
+                                return (
+                                    <article
+                                        className={`${styles.membershipCard} ${styles[club.tone]}`}
+                                        key={club.clubId}
+                                    >
+                                        <span className={styles.popularBadge}>
+                                            <Star size={14} strokeWidth={2.7} aria-hidden="true" />
+                                            {club.tierCountLabel}
+                                        </span>
+
+                                        <div className={styles.clubHeader}>
+                                            <div className={styles.clubAvatar}>
+                                                {club.logoUrl ? (
+                                                    <img
+                                                        src={club.logoUrl}
+                                                        alt=""
+                                                        aria-hidden="true"
+                                                        onError={(event) => {
+                                                            event.currentTarget.style.display = "none";
+                                                        }}
+                                                    />
+                                                ) : null}
+                                                <span aria-hidden="true">
+                                                    {getInitials(club.shortName || club.clubName)}
+                                                </span>
+                                            </div>
+
+                                            <div>
+                                                <h2>{club.clubName}</h2>
+                                                <p>{club.sportLabel} Club</p>
+                                            </div>
+                                        </div>
+
+                                        <div className={styles.tierBlock}>
+                                            <Crown size={30} strokeWidth={2.2} aria-hidden="true" />
+
+                                            <div>
+                                                <strong>
+                                                    From {startingPlan?.priceLabel || "backend pricing"}
+                                                </strong>
+                                                <p>
+                                                    {club.tierCountLabel} <span>available</span>
+                                                </p>
+                                                {featuredPlan ? (
+                                                    <small>Popular tier: {featuredPlan.name}</small>
+                                                ) : null}
+                                            </div>
+                                        </div>
+
+                                        <p className={styles.description}>{club.description}</p>
+
+                                        <div className={styles.tierPreviewList}>
+                                            {club.plans.map((plan) => (
+                                                <span key={plan.id}>
+                                                    {plan.tier || plan.name} · {plan.priceLabel}
+                                                </span>
+                                            ))}
+                                        </div>
+
+                                        <div className={styles.benefitList}>
+                                            {visibleBenefits.length > 0 ? (
+                                                visibleBenefits.map((benefit) => (
+                                                    <span key={benefit}>
+                                                        <CheckCircle2
+                                                            size={15}
+                                                            strokeWidth={2.6}
+                                                            aria-hidden="true"
+                                                        />
+                                                        {benefit}
+                                                    </span>
+                                                ))
+                                            ) : (
+                                                <span>
+                                                    <CheckCircle2
+                                                        size={15}
+                                                        strokeWidth={2.6}
+                                                        aria-hidden="true"
+                                                    />
+                                                    Backend benefits pending for this club
+                                                </span>
+                                            )}
+                                        </div>
+
+                                        <div className={styles.cardActions}>
+                                            <Link
+                                                to={`/memberships/${club.clubSlug}${featuredPlan ? `?plan=${featuredPlan.id}` : ""}`}
+                                            >
+                                                View Club Tiers
+                                            </Link>
+                                            {featuredPlan ? (
+                                                <Link
+                                                    to={`/memberships/${club.clubSlug}/checkout?plan=${featuredPlan.id}`}
+                                                >
+                                                    Join Club
+                                                </Link>
+                                            ) : null}
+                                        </div>
+                                    </article>
+                                );
+                            })}
+                        </section>
+                    ) : null}
+
+                    {!isLoading && !errorMessage && filteredClubs.length > 0 ? (
+                        <section className={styles.paginationPanel} aria-label="Membership pagination">
+                            <div>
+                                <strong>Showing clubs {firstVisibleClubNumber}-{lastVisibleClubNumber}</strong>
+                                <span>of {filteredClubs.length} backend clubs</span>
+                            </div>
+
+                            <label className={styles.perPageControl}>
+                                Clubs per page
+                                <select
+                                    value={clubsPerPage}
+                                    onChange={(event) => setClubsPerPage(Number(event.target.value))}
+                                >
+                                    <option value={6}>6</option>
+                                    <option value={9}>9</option>
+                                    <option value={12}>12</option>
+                                    <option value={30}>30</option>
+                                </select>
+                            </label>
+
+                            <div className={styles.paginationButtons}>
+                                <button
+                                    type="button"
+                                    onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+                                    disabled={safeCurrentPage === 1}
+                                    aria-label="Previous membership clubs page"
+                                >
+                                    <ChevronLeft size={18} strokeWidth={2.5} aria-hidden="true" />
+                                    Previous
+                                </button>
+
+                                <span>
+                                    Page {safeCurrentPage} of {totalPages}
+                                </span>
+
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        setCurrentPage((page) => Math.min(totalPages, page + 1))
+                                    }
+                                    disabled={safeCurrentPage === totalPages}
+                                    aria-label="Next membership clubs page"
+                                >
+                                    Next
+                                    <ChevronRight size={18} strokeWidth={2.5} aria-hidden="true" />
+                                </button>
+                            </div>
+                        </section>
+                    ) : null}
+
+                    {!isLoading && !errorMessage && filteredClubs.length === 0 ? (
+                        <section className={styles.membershipGrid}>
+                            <article className={`${styles.membershipCard} ${styles.blue}`}>
+                                <div className={styles.tierBlock}>
+                                    <Search size={30} strokeWidth={2.2} aria-hidden="true" />
+                                    <div>
+                                        <strong>No backend membership clubs found</strong>
+                                        <p>Try another sport filter or search term.</p>
+                                    </div>
+                                </div>
+                            </article>
+                        </section>
+                    ) : null}
+                </main>
 
                 <aside className={styles.sideColumn}>
                     <section className={styles.panel}>
@@ -397,7 +500,7 @@ function ExploreMembershipsPage() {
                                 <strong>1</strong>
                                 <div>
                                     <h3>Choose a club</h3>
-                                    <p>Select a club and membership tier.</p>
+                                    <p>Select a club and membership tier from the backend.</p>
                                 </div>
                             </article>
 
@@ -427,17 +530,18 @@ function ExploreMembershipsPage() {
 
                             <div>
                                 <h2>Membership Benefits</h2>
-                                <p>Benefits differ by club and tier.</p>
+                                <p>Benefits are loaded from each backend membership tier.</p>
                             </div>
                         </div>
 
                         <div className={styles.benefitSummary}>
-                            <span>Ticket discounts</span>
-                            <span>Priority match access</span>
-                            <span>Digital membership cards</span>
-                            <span>Club event access</span>
-                            <span>Reward points</span>
-                            <span>Sponsor offers</span>
+                            {Array.from(
+                                new Set(allPlans.flatMap((plan) => plan.benefits)),
+                            )
+                                .slice(0, 6)
+                                .map((benefit) => (
+                                    <span key={benefit}>{benefit}</span>
+                                ))}
                         </div>
                     </section>
 
