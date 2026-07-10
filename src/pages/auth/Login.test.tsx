@@ -1,9 +1,8 @@
-import React from 'react'
 import { MemoryRouter } from 'react-router-dom'
 import { GoogleOAuthProvider } from '@react-oauth/google'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi, afterEach } from 'vitest'
 import Login from './Login'
 import { useAuthStore } from '../../store/authStore.js'
 
@@ -11,12 +10,10 @@ const navigateMock = vi.hoisted(() => vi.fn())
 const loginMock = vi.hoisted(() => vi.fn())
 
 vi.mock('@react-oauth/google', () => ({
-  GoogleOAuthProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-  GoogleLogin: ({ onSuccess }: { onSuccess?: (response: { credential?: string }) => void }) => (
-    <button type="button" onClick={() => onSuccess?.({ credential: 'test-credential' })}>
-      Google Login
-    </button>
-  ),
+    GoogleOAuthProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+    GoogleLogin: ({ onSuccess }: { onSuccess?: () => void }) => (
+        <button type="button" onClick={onSuccess}>Google Login</button>
+    ),
 }))
 
 vi.mock('react-router-dom', async () => {
@@ -34,15 +31,6 @@ vi.mock('../../services/unionAdminService', () => ({
 vi.mock('../../services/authService.js', () => ({
   login: loginMock,
 }))
-
-const axiosPostMock = vi.hoisted(() => vi.fn())
-
-vi.mock('axios', async () => {
-  const actual = await vi.importActual('axios')
-  return {
-    default: { ...actual, post: axiosPostMock },
-  }
-})
 
 function renderLogin(initialEntries?: { pathname: string; state?: object }[]) {
   return render(
@@ -80,11 +68,20 @@ const verificationRequiredResponse = {
   },
 }
 
+const originalWindowLocation = window.location
+
 describe('Login page', () => {
   beforeEach(() => {
+    // Mock window.location
+    Object.defineProperty(window, 'location', {
+        configurable: true,
+        enumerable: true,
+        value: new URL(window.location.href),
+    });
+    vi.spyOn(window.location, 'href', 'set');
+
     navigateMock.mockClear()
     loginMock.mockReset()
-    axiosPostMock.mockReset()
     useAuthStore.setState({
       user: null,
       accessToken: null,
@@ -92,6 +89,15 @@ describe('Login page', () => {
       requiresEmailVerification: false,
     })
   })
+
+  afterEach(() => {
+    // Restore window.location
+    Object.defineProperty(window, 'location', {
+        configurable: true,
+        enumerable: true,
+        value: originalWindowLocation,
+    });
+  });
 
   it('renders the sign-in form and toggles password visibility', async () => {
     const user = userEvent.setup()
@@ -244,50 +250,14 @@ describe('Login page', () => {
     })
   })
 
-  it('handles Google Sign-In success and navigation to personalization for a new user', async () => {
+  it('redirects to the backend for Google Sign-In', async () => {
     const user = userEvent.setup()
-
-    axiosPostMock.mockResolvedValueOnce({
-      data: {
-        access: 'google-access-token',
-        refresh: 'google-refresh-token',
-        requires_email_verification: false,
-        is_new_user: true,
-        user: {
-          email: 'new.google.user@example.com',
-        },
-      },
-    })
+    const hrefSpy = vi.spyOn(window.location, 'href', 'set');
 
     renderLogin()
 
     await user.click(screen.getByRole('button', { name: /google login/i }))
 
-    await waitFor(() => {
-      expect(axiosPostMock).toHaveBeenCalledWith(expect.stringContaining('/google/'), { token: 'test-credential' })
-      expect(navigateMock).toHaveBeenCalledWith('/personalize', { replace: true })
-    })
-  })
-
-  it('shows an error message when Google Sign-In fails on the backend', async () => {
-    const user = userEvent.setup()
-
-    axiosPostMock.mockRejectedValueOnce({
-      response: {
-        data: {
-          detail: 'Invalid token or user not found.',
-        },
-      },
-    })
-
-    renderLogin()
-
-    await user.click(screen.getByRole('button', { name: /google login/i }))
-
-    await waitFor(() => {
-      expect(axiosPostMock).toHaveBeenCalledWith(expect.stringContaining('/google/'), { token: 'test-credential' })
-    })
-
-    expect(await screen.findByText(/invalid token or user not found/i)).toBeInTheDocument()
+    expect(hrefSpy).toHaveBeenCalledWith(expect.stringContaining('/google/login/'));
   })
 })
