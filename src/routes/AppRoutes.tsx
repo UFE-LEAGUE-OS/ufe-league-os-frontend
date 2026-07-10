@@ -176,9 +176,6 @@ export default function AppRoutes() {
                 <Route path="/fan/mvp-voting" element={<MVPVotingPage />} />
                 <Route path="/join-fantasy" element={<JoinFantasy />} />
                 <Route path="/sports-variants" element={<SuperVariants />} />
-                <Route path="/super-admin/rules" element={<RulesAndStandards />} />
-                <Route path="/super-admin/competition-formats" element={<CompetitionConfigurator />} />
-                <Route path="/super-admin/publish-standards" element={<PublishStandards />} />
 
                 <Route path="/dashboard" element={protectedPage(<Navigate to="/dashboard/fan" replace />)} />
 
@@ -279,13 +276,18 @@ export default function AppRoutes() {
                 <Route path="/sponsor/campaigns/new/budget" element={<CampaignBudget />} />
                 <Route path="/sponsor/campaigns/new/review" element={<CampaignReview />} />
                 <Route path="/sponsor/campaigns/new/launch" element={<CampaignLaunch />} />
-             
+
                 <Route path="/payments" element={<Payments />} />
 
-                {/* Super Admin routes */}
+                {/* Super Admin routes — everything under /super-admin requires the SUPER_ADMIN role */}
                 <Route path="/super-admin" element={roleProtectedPage(<SuperAdminDashboard />, ['SUPER_ADMIN'])}>
                     <Route index element={<SuperAdminHome />} />
                     <Route path="dashboard" element={<SuperAdminHome />} />
+
+                    {/* Rules & Formats */}
+                    <Route path="rules" element={<RulesAndStandards />} />
+                    <Route path="competition-formats" element={<CompetitionConfigurator />} />
+                    <Route path="publish-standards" element={<PublishStandards />} />
 
                     {/* User Management */}
                     <Route path="users-management" element={<UserManagement />} />
