@@ -568,6 +568,29 @@ export interface GenerateUnionAdminFixturesPayload {
   rest_weeks?: string[];
 }
 
+export interface RescheduleUnionAdminFixturePayload {
+  workspace: string;
+  scheduled_date?: string;
+  kickoff_time?: string;
+  match_date?: string;
+  venue?: string;
+  pitch?: string;
+  status?: string;
+  round?: string;
+  reason?: string;
+}
+
+export interface RescheduleUnionAdminFixtureResult {
+  previous: {
+    match_date: string;
+    venue: string;
+    round: string;
+    status: string;
+  };
+  updated: UnionAdminGeneratedFixture;
+  reason: string;
+}
+
 export async function getUnionAdminManagementLeagues(
   workspaceSlug: string,
 ): Promise<UnionAdminLeagueOption[]> {
@@ -700,6 +723,18 @@ export async function generateUnionAdminFixtures(
 ): Promise<UnionAdminFixtureGenerationResult> {
   const response = await apiClient.post<UnionAdminFixtureGenerationResult>(
     "/dashboards/union-admin/generate-fixtures/",
+    payload,
+  );
+
+  return response.data;
+}
+
+export async function rescheduleUnionAdminFixture(
+  fixtureId: number,
+  payload: RescheduleUnionAdminFixturePayload,
+): Promise<RescheduleUnionAdminFixtureResult> {
+  const response = await apiClient.patch<RescheduleUnionAdminFixtureResult>(
+    `/dashboards/union-admin/fixtures/${fixtureId}/reschedule/`,
     payload,
   );
 

@@ -369,3 +369,45 @@
     grid-template-columns: 1fr;
   }
 }
+
+
+.reschedulePanel {
+  border: 1px solid rgba(249, 115, 22, 0.24);
+  border-radius: 22px;
+  background: rgba(12, 16, 36, 0.84);
+  margin-top: 1rem;
+  padding: 1rem;
+}
+
+.panelHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.panelHeader strong,
+.panelHeader span {
+  display: block;
+}
+
+.panelHeader strong {
+  color: #ffffff;
+  font-size: 1rem;
+}
+
+.panelHeader span {
+  color: #cbd5e1;
+  margin-top: 0.2rem;
+}
+
+.fixturePreview button {
+  margin-top: 0.65rem;
+}
+
+@media (max-width: 720px) {
+  .panelHeader {
+    flex-direction: column;
+  }
+}

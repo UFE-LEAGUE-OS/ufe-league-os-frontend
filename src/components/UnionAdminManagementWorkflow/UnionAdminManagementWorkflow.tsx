@@ -11,6 +11,7 @@ import {
   getUnionAdminManagementSeasons,
   promoteRelegateUnionAdminClub,
   removeUnionAdminLeagueClubMembership,
+  rescheduleUnionAdminFixture,
   updateUnionAdminLeagueClubMembership,
   type UnionAdminClubMembershipStatus,
   type UnionAdminCompetitionRecord,
@@ -55,6 +56,8 @@ const matchDayOptions: FixtureMatchDay[] = [
   "SUNDAY",
 ];
 
+const fixtureStatusOptions = ["SCHEDULED", "POSTPONED", "CANCELLED", "ABANDONED"];
+
 function getErrorMessage(error: unknown) {
   const maybeError = error as {
     response?: {
@@ -96,9 +99,27 @@ function toNumber(value: string) {
 
 function splitMultiValueInput(value: string) {
   return value
-    .split(/[\n,]+/)
+    .replaceAll(String.fromCharCode(13), ",")
+    .replaceAll(String.fromCharCode(10), ",")
+    .split(",")
     .map((item) => item.trim())
     .filter(Boolean);
+}
+
+function dateInputFromIso(value: string) {
+  if (!value) {
+    return todayIsoDate();
+  }
+
+  return new Date(value).toISOString().slice(0, 10);
+}
+
+function timeInputFromIso(value: string) {
+  if (!value) {
+    return "10:00";
+  }
+
+  return new Date(value).toTimeString().slice(0, 5);
 }
 
 function leagueLabel(league: UnionAdminLeagueOption) {
@@ -120,6 +141,16 @@ export default function UnionAdminManagementWorkflow({ workspaceSlug, workspaceL
   const [competitions, setCompetitions] = useState<UnionAdminCompetitionRecord[]>([]);
   const [memberships, setMemberships] = useState<UnionAdminLeagueClubMembership[]>([]);
   const [generatedFixtures, setGeneratedFixtures] = useState<UnionAdminGeneratedFixture[]>([]);
+  const [selectedFixture, setSelectedFixture] = useState<UnionAdminGeneratedFixture | null>(null);
+  const [rescheduleForm, setRescheduleForm] = useState({
+    scheduledDate: todayIsoDate(),
+    kickoffTime: "10:00",
+    venue: "Venue TBC",
+    pitch: "Main Pitch",
+    status: "SCHEDULED",
+    round: "",
+    reason: "",
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
@@ -397,6 +428,47 @@ export default function UnionAdminManagementWorkflow({ workspaceSlug, workspaceL
 
       return `${result.target.club_name} marked as ${result.target.status_display}.`;
     });
+  }
+
+  function startReschedule(fixture: UnionAdminGeneratedFixture) {
+    setSelectedFixture(fixture);
+    setRescheduleForm({
+      scheduledDate: dateInputFromIso(fixture.match_date),
+      kickoffTime: timeInputFromIso(fixture.match_date),
+      venue: fixture.venue || fixtureForm.venue || "Venue TBC",
+      pitch: "Main Pitch",
+      status: fixture.status || "SCHEDULED",
+      round: fixture.round || "",
+      reason: "",
+    });
+  }
+
+  function submitFixtureReschedule(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (!selectedFixture) {
+      return;
+    }
+
+    void handleSubmit(async () => {
+      const result = await rescheduleUnionAdminFixture(selectedFixture.id, {
+        workspace: workspaceSlug,
+        scheduled_date: rescheduleForm.scheduledDate,
+        kickoff_time: rescheduleForm.kickoffTime,
+        venue: rescheduleForm.venue.trim(),
+        pitch: rescheduleForm.pitch.trim(),
+        status: rescheduleForm.status,
+        round: rescheduleForm.round.trim(),
+        reason: rescheduleForm.reason.trim(),
+      });
+
+      setGeneratedFixtures((current) =>
+        current.map((fixture) => (fixture.id === selectedFixture.id ? result.updated : fixture)),
+      );
+      setSelectedFixture(result.updated);
+
+      return `${result.updated.home_club_name} vs ${result.updated.away_club_name} rescheduled.`;
+    }, "fixtures");
   }
 
   function toggleFixtureMatchDay(day: FixtureMatchDay) {
@@ -1079,9 +1151,106 @@ export default function UnionAdminManagementWorkflow({ workspaceSlug, workspaceL
                     <span>
                       {fixture.round} • {new Date(fixture.match_date).toLocaleString()} • {fixture.venue}
                     </span>
+                    <button className={styles.secondaryButton} type="button" onClick={() => startReschedule(fixture)}>
+                      Reschedule
+                    </button>
                   </div>
                 ))}
               </div>
+            ) : null}
+
+            {selectedFixture ? (
+              <form className={styles.reschedulePanel} onSubmit={submitFixtureReschedule}>
+                <div className={styles.panelHeader}>
+                  <div>
+                    <strong>Reschedule fixture</strong>
+                    <span>
+                      {selectedFixture.home_club_name} vs {selectedFixture.away_club_name}
+                    </span>
+                  </div>
+                  <button className={styles.secondaryButton} type="button" onClick={() => setSelectedFixture(null)}>
+                    Close
+                  </button>
+                </div>
+
+                <div className={styles.formGrid}>
+                  <label>
+                    New date
+                    <input
+                      type="date"
+                      value={rescheduleForm.scheduledDate}
+                      onChange={(event) =>
+                        setRescheduleForm((current) => ({ ...current, scheduledDate: event.target.value }))
+                      }
+                    />
+                  </label>
+
+                  <label>
+                    New kickoff time
+                    <input
+                      type="time"
+                      value={rescheduleForm.kickoffTime}
+                      onChange={(event) =>
+                        setRescheduleForm((current) => ({ ...current, kickoffTime: event.target.value }))
+                      }
+                    />
+                  </label>
+
+                  <label>
+                    Venue
+                    <input
+                      value={rescheduleForm.venue}
+                      onChange={(event) => setRescheduleForm((current) => ({ ...current, venue: event.target.value }))}
+                    />
+                  </label>
+
+                  <label>
+                    Pitch / court / field
+                    <input
+                      value={rescheduleForm.pitch}
+                      onChange={(event) => setRescheduleForm((current) => ({ ...current, pitch: event.target.value }))}
+                    />
+                  </label>
+
+                  <label>
+                    Round
+                    <input
+                      value={rescheduleForm.round}
+                      onChange={(event) => setRescheduleForm((current) => ({ ...current, round: event.target.value }))}
+                    />
+                  </label>
+
+                  <label>
+                    Status
+                    <select
+                      value={rescheduleForm.status}
+                      onChange={(event) => setRescheduleForm((current) => ({ ...current, status: event.target.value }))}
+                    >
+                      {fixtureStatusOptions.map((status) => (
+                        <option key={status} value={status}>
+                          {status}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+
+                  <label className={styles.fullWidth}>
+                    Reason for change
+                    <textarea
+                      required
+                      value={rescheduleForm.reason}
+                      onChange={(event) => setRescheduleForm((current) => ({ ...current, reason: event.target.value }))}
+                      placeholder="Moved because of Easter weekend, public holiday, venue conflict, or club engagement."
+                    />
+                  </label>
+
+                  <div className={styles.actions}>
+                    <button className={styles.primaryButton} type="submit" disabled={isSaving}>
+                      {isSaving ? "Saving..." : "Save Reschedule"}
+                    </button>
+                  </div>
+                </div>
+              </form>
             ) : null}
           </form>
         ) : null}
