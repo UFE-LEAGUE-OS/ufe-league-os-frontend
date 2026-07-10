@@ -38,6 +38,8 @@ import {
 } from "../../services/unionAdminService";
 import AuthenticatedFooter from "../../components/AuthenticatedFooter/AuthenticatedFooter";
 import MobileUnionNavigation from "../../components/MobileUnionNavigation/MobileUnionNavigation";
+import UnionAdminManagementWorkflow from "../../components/UnionAdminManagementWorkflow/UnionAdminManagementWorkflow";
+import UnionAdminClubsPanel from "../../components/UnionAdminClubsPanel/UnionAdminClubsPanel";
 import logoHorizontal from "../../assets/logos/league-os-horizontal.png";
 import styles from "./UnionAdminDashboard.module.css";
 
@@ -1013,11 +1015,6 @@ export default function UnionAdminDashboard() {
             .includes(searchQuery.toLowerCase()),
     );
 
-    const filteredClubs = workspaceClubs.filter((club) =>
-        `${club.name} ${club.category} ${club.compliance}`
-            .toLowerCase()
-            .includes(searchQuery.toLowerCase()),
-    );
 
     const statsByTab: Record<TabKey, StatCard[]> = {
         overview: [
@@ -1523,13 +1520,25 @@ export default function UnionAdminDashboard() {
                     description="A backend-connected view of league, cup and tournament records, with fixture readiness, club entries and competition actions."
                     actions={
                         <>
-                            <button className={styles.primaryButton} type="button">
+                            <button
+                                className={styles.primaryButton}
+                                type="button"
+                                onClick={() =>
+                                    document
+                                        .getElementById("union-admin-management-workflow")
+                                        ?.scrollIntoView({ behavior: "smooth", block: "start" })
+                                }
+                            >
                                 Create Competition
                             </button>
                             <button
                                 className={styles.secondaryButton}
                                 type="button"
-                                onClick={() => setCompetitionView("fixtures")}
+                                onClick={() =>
+                                    document
+                                        .getElementById("union-admin-management-workflow")
+                                        ?.scrollIntoView({ behavior: "smooth", block: "start" })
+                                }
                             >
                                 Generate Fixtures
                             </button>
@@ -1538,6 +1547,15 @@ export default function UnionAdminDashboard() {
                 />
 
                 {operationsError ? <div className={styles.alertBanner}>{operationsError}</div> : null}
+
+                <UnionAdminManagementWorkflow
+                    workspaceSlug={activeWorkspace.slug}
+                    workspaceLabel={activeWorkspace.name}
+                    clubs={workspaceClubs.map((club) => ({
+                        id: String(club.id),
+                        name: club.name,
+                    }))}
+                />
 
                 <div className={styles.competitionCommandGrid}>
                     <article>
@@ -2009,45 +2027,11 @@ export default function UnionAdminDashboard() {
 
         return (
             <section className={styles.panelLarge}>
-                <SectionHeader
-                    eyebrow="Club directory"
-                    title="Clubs and teams"
-                    description="Review club profiles, teams, compliance, club admins and competition eligibility."
-                    actions={<button className={styles.primaryButton} type="button">Add Club</button>}
-                />
-                <div className={styles.searchBar}>
-                    <Search size={18} />
-                    <input
-                        value={searchQuery}
-                        onChange={(event) => setSearchQuery(event.target.value)}
-                        placeholder="Search clubs, categories or compliance status"
-                    />
-                </div>
-                <DataTable
-                    columns={[
-                        {
-                            key: "name",
-                            label: "Club / Team",
-                            render: (club) => (
-                                <button
-                                    className={styles.inlineLink}
-                                    type="button"
-                                    onClick={() => {
-                                        setSelectedClubId(club.id);
-                                        setClubView("detail");
-                                    }}
-                                >
-                                    {club.name}
-                                </button>
-                            ),
-                        },
-                        { key: "category", label: "Category", render: (club) => club.category },
-                        { key: "teams", label: "Teams", render: (club) => club.teams },
-                        { key: "players", label: "Players", render: (club) => club.players },
-                        { key: "admin", label: "Admin", render: (club) => club.admin },
-                        { key: "compliance", label: "Compliance", render: (club) => <StatusPill label={club.compliance} /> },
-                    ]}
-                    data={filteredClubs}
+                <UnionAdminClubsPanel
+                    workspaceSlug={activeWorkspace.slug}
+                    workspaceLabel={activeWorkspace.name}
+                    sport={activeWorkspace.sport}
+                    fallbackClubs={workspaceClubs}
                 />
             </section>
         );
@@ -3108,6 +3092,15 @@ export default function UnionAdminDashboard() {
                 {workspaceError ? <div className={styles.alertBanner}>{workspaceError}</div> : null}
                 {workspaceDataError ? <div className={styles.alertBanner}>{workspaceDataError}</div> : null}
                 {operationsError ? <div className={styles.alertBanner}>{operationsError}</div> : null}
+
+                <UnionAdminManagementWorkflow
+                    workspaceSlug={activeWorkspace.slug}
+                    workspaceLabel={activeWorkspace.name}
+                    clubs={workspaceClubs.map((club) => ({
+                        id: String(club.id),
+                        name: club.name,
+                    }))}
+                />
 
                 <StatGrid stats={activeStats} loading={isLoadingOverview} />
 

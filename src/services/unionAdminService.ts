@@ -353,3 +353,392 @@ export async function getUnionOperationsDashboard(
   return response.data;
 }
 
+
+
+
+
+// UNION ADMIN MANAGEMENT API START
+
+type UnionAdminListResponse<T> = {
+  count: number;
+  results: T[];
+};
+
+export interface UnionAdminLeagueOption {
+  id: number;
+  name: string;
+  slug: string;
+  union: number | null;
+  union_name: string | null;
+  sport: string;
+  description: string;
+  logo_url: string | null;
+  is_active: boolean;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
+export interface UnionAdminSeasonRecord {
+  id: number;
+  league: number;
+  league_name: string;
+  name: string;
+  slug: string;
+  start_date: string | null;
+  end_date: string | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UnionAdminCompetitionRecord {
+  id: number;
+  league: number;
+  league_name: string;
+  name: string;
+  slug: string;
+  season: string;
+  season_id: number | null;
+  season_name: string | null;
+  is_active: boolean;
+  start_date: string | null;
+  end_date: string | null;
+  matches_count: number;
+  clubs_count: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export type UnionAdminClubMembershipStatus =
+  | "ACTIVE"
+  | "PROMOTED"
+  | "RELEGATED"
+  | "WITHDRAWN"
+  | "INVITED"
+  | "SUSPENDED";
+
+export interface UnionAdminLeagueClubMembership {
+  id: number;
+  league: number;
+  league_name: string;
+  league_slug: string;
+  club: number;
+  club_name: string;
+  club_slug: string;
+  club_short_name: string;
+  season: number | null;
+  season_name: string | null;
+  status: UnionAdminClubMembershipStatus;
+  status_display: string;
+  promoted_from_league: number | null;
+  promoted_from_league_name: string | null;
+  relegated_to_league: number | null;
+  relegated_to_league_name: string | null;
+  notes: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UnionAdminGeneratedFixture {
+  id: number;
+  competition: number;
+  competition_name: string;
+  home_club: number;
+  home_club_name: string;
+  away_club: number;
+  away_club_name: string;
+  status: string;
+  match_date: string;
+  venue: string;
+  round: string;
+}
+
+export interface UnionAdminFixtureGenerationResult {
+  competition: UnionAdminCompetitionRecord;
+  created_count: number;
+  fixtures: UnionAdminGeneratedFixture[];
+}
+
+export interface CreateUnionAdminSeasonPayload {
+  workspace: string;
+  league: number;
+  name: string;
+  start_date?: string;
+  end_date?: string;
+  is_active?: boolean;
+}
+
+export interface CreateUnionAdminCompetitionPayload {
+  workspace: string;
+  league: number;
+  name: string;
+  season?: number;
+  season_label?: string;
+  start_date?: string;
+  end_date?: string;
+  is_active?: boolean;
+}
+
+export interface CreateUnionAdminLeagueClubPayload {
+  workspace: string;
+  league: number;
+  club: string | number;
+  season?: number;
+  status?: UnionAdminClubMembershipStatus;
+  notes?: string;
+}
+
+export interface UpdateUnionAdminLeagueClubPayload {
+  workspace: string;
+  status?: UnionAdminClubMembershipStatus;
+  notes?: string;
+}
+
+export interface PromoteRelegateUnionAdminClubPayload {
+  workspace: string;
+  club: string | number;
+  from_league: number;
+  to_league: number;
+  season?: number;
+  target_season?: number;
+  movement: "PROMOTED" | "RELEGATED";
+  notes?: string;
+}
+
+export interface GenerateUnionAdminFixturesPayload {
+  workspace: string;
+  competition: number;
+  start_date?: string;
+  kickoff_time?: string;
+  interval_days?: number;
+  home_and_away?: boolean;
+  clear_existing?: boolean;
+  venue?: string;
+}
+
+export async function getUnionAdminManagementLeagues(
+  workspaceSlug: string,
+): Promise<UnionAdminLeagueOption[]> {
+  const response = await apiClient.get<UnionAdminListResponse<UnionAdminLeagueOption>>(
+    `/dashboards/union-admin/leagues/?workspace=${encodeURIComponent(workspaceSlug)}`,
+  );
+
+  return response.data.results ?? [];
+}
+
+export async function getUnionAdminManagementSeasons(
+  workspaceSlug: string,
+): Promise<UnionAdminSeasonRecord[]> {
+  const response = await apiClient.get<UnionAdminListResponse<UnionAdminSeasonRecord>>(
+    `/dashboards/union-admin/seasons/?workspace=${encodeURIComponent(workspaceSlug)}`,
+  );
+
+  return response.data.results ?? [];
+}
+
+export async function createUnionAdminSeason(
+  payload: CreateUnionAdminSeasonPayload,
+): Promise<UnionAdminSeasonRecord> {
+  const response = await apiClient.post<UnionAdminSeasonRecord>(
+    "/dashboards/union-admin/seasons/",
+    payload,
+  );
+
+  return response.data;
+}
+
+export async function getUnionAdminManagementCompetitions(
+  workspaceSlug: string,
+): Promise<UnionAdminCompetitionRecord[]> {
+  const response = await apiClient.get<UnionAdminListResponse<UnionAdminCompetitionRecord>>(
+    `/dashboards/union-admin/competitions/?workspace=${encodeURIComponent(workspaceSlug)}`,
+  );
+
+  return response.data.results ?? [];
+}
+
+export async function createUnionAdminCompetition(
+  payload: CreateUnionAdminCompetitionPayload,
+): Promise<UnionAdminCompetitionRecord> {
+  const response = await apiClient.post<UnionAdminCompetitionRecord>(
+    "/dashboards/union-admin/competitions/",
+    payload,
+  );
+
+  return response.data;
+}
+
+export async function getUnionAdminLeagueClubMemberships(
+  workspaceSlug: string,
+): Promise<UnionAdminLeagueClubMembership[]> {
+  const response = await apiClient.get<UnionAdminListResponse<UnionAdminLeagueClubMembership>>(
+    `/dashboards/union-admin/league-clubs/?workspace=${encodeURIComponent(workspaceSlug)}`,
+  );
+
+  return response.data.results ?? [];
+}
+
+export async function createUnionAdminLeagueClubMembership(
+  payload: CreateUnionAdminLeagueClubPayload,
+): Promise<UnionAdminLeagueClubMembership> {
+  const response = await apiClient.post<UnionAdminLeagueClubMembership>(
+    "/dashboards/union-admin/league-clubs/",
+    payload,
+  );
+
+  return response.data;
+}
+
+export async function updateUnionAdminLeagueClubMembership(
+  membershipId: number,
+  payload: UpdateUnionAdminLeagueClubPayload,
+): Promise<UnionAdminLeagueClubMembership> {
+  const response = await apiClient.patch<UnionAdminLeagueClubMembership>(
+    `/dashboards/union-admin/league-clubs/${membershipId}/`,
+    payload,
+  );
+
+  return response.data;
+}
+
+export async function removeUnionAdminLeagueClubMembership(
+  membershipId: number,
+  workspaceSlug: string,
+): Promise<UnionAdminLeagueClubMembership> {
+  const response = await apiClient.delete<UnionAdminLeagueClubMembership>(
+    `/dashboards/union-admin/league-clubs/${membershipId}/`,
+    {
+      data: {
+        workspace: workspaceSlug,
+        notes: "Removed from league by union admin.",
+      },
+    },
+  );
+
+  return response.data;
+}
+
+export async function promoteRelegateUnionAdminClub(
+  payload: PromoteRelegateUnionAdminClubPayload,
+): Promise<{
+  source: UnionAdminLeagueClubMembership;
+  target: UnionAdminLeagueClubMembership;
+}> {
+  const response = await apiClient.post<{
+    source: UnionAdminLeagueClubMembership;
+    target: UnionAdminLeagueClubMembership;
+  }>("/dashboards/union-admin/promote-relegate/", payload);
+
+  return response.data;
+}
+
+export async function generateUnionAdminFixtures(
+  payload: GenerateUnionAdminFixturesPayload,
+): Promise<UnionAdminFixtureGenerationResult> {
+  const response = await apiClient.post<UnionAdminFixtureGenerationResult>(
+    "/dashboards/union-admin/generate-fixtures/",
+    payload,
+  );
+
+  return response.data;
+}
+
+// UNION ADMIN MANAGEMENT API END
+
+// UNION ADMIN CLUBS API START
+
+export interface UnionAdminClubMembershipSummary {
+  id: number;
+  league: number;
+  league_name: string;
+  season: number | null;
+  season_name: string | null;
+  status: string;
+  status_display: string;
+  promoted_from_league_name: string | null;
+  relegated_to_league_name: string | null;
+  notes: string;
+}
+
+export interface UnionAdminClubRecord {
+  id: number;
+  name: string;
+  slug: string;
+  short_name: string;
+  sport: string;
+  sport_display: string;
+  logo_url: string | null;
+  banner_url: string | null;
+  primary_color: string;
+  secondary_color: string;
+  admin: number | null;
+  admin_name: string;
+  admin_email: string;
+  teams: number;
+  players: number;
+  compliance: string;
+  memberships: UnionAdminClubMembershipSummary[];
+  created_at: string;
+}
+
+export interface UpsertUnionAdminClubPayload {
+  workspace: string;
+  name?: string;
+  short_name?: string;
+  sport?: string;
+  primary_color?: string;
+  secondary_color?: string;
+  admin_email?: string;
+}
+
+export async function getUnionAdminClubs(
+  workspaceSlug: string,
+  query = "",
+): Promise<UnionAdminClubRecord[]> {
+  const params = new URLSearchParams({ workspace: workspaceSlug });
+
+  if (query.trim()) {
+    params.set("q", query.trim());
+  }
+
+  const response = await apiClient.get<UnionAdminListResponse<UnionAdminClubRecord>>(
+    `/dashboards/union-admin/clubs/?${params.toString()}`,
+  );
+
+  return response.data.results ?? [];
+}
+
+export async function createUnionAdminClub(
+  payload: UpsertUnionAdminClubPayload,
+): Promise<UnionAdminClubRecord> {
+  const response = await apiClient.post<UnionAdminClubRecord>(
+    "/dashboards/union-admin/clubs/",
+    payload,
+  );
+
+  return response.data;
+}
+
+export async function updateUnionAdminClub(
+  clubId: number,
+  payload: UpsertUnionAdminClubPayload,
+): Promise<UnionAdminClubRecord> {
+  const response = await apiClient.patch<UnionAdminClubRecord>(
+    `/dashboards/union-admin/clubs/${clubId}/`,
+    payload,
+  );
+
+  return response.data;
+}
+
+export async function deleteUnionAdminClub(
+  clubId: number,
+  workspaceSlug: string,
+): Promise<void> {
+  await apiClient.delete(`/dashboards/union-admin/clubs/${clubId}/`, {
+    data: { workspace: workspaceSlug },
+  });
+}
+
+// UNION ADMIN CLUBS API END
+
