@@ -1,7 +1,6 @@
 import { useState, type ChangeEvent, type FormEvent, type ReactNode } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { GoogleLogin, type CredentialResponse } from '@react-oauth/google';
-import axios from 'axios';
+import { GoogleLogin } from '@react-oauth/google';
 import PersonOutlinedIcon from '@mui/icons-material/PersonOutlined';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
@@ -225,45 +224,10 @@ export default function Login() {
         }
     };
 
-    const handleGoogleSuccess = async (credentialResponse: CredentialResponse) => {
-        const credential = credentialResponse.credential;
-
-        if (!credential) {
-            setGoogleLoginMessage('Google sign-in failed: no credential received.');
-            return;
-        }
-
-        try {
-            const response = await axios.post(
-                `${apiBaseUrl}/google/`,
-                { token: credential }
-            );
-
-            const result = response.data as LoginResult;
-
-            if (result.requires_email_verification) {
-                navigate(VERIFY_EMAIL_ROUTE, {
-                    replace: true,
-                    state: {
-                        email: getUserEmail(result.user?.email),
-                        message: 'Please verify your email address before continuing.',
-                        postLoginRedirect: postLoginRedirect ?? resolveDashboardRoute(result),
-                    },
-                });
-                return;
-            }
-
-            if (result.is_new_user) {
-                navigate('/personalize', { replace: true });
-            } else {
-                navigate(postLoginRedirect ?? resolveDashboardRoute(result), { replace: true });
-            }
-        } catch (error) {
-      const apiMessage = firstMessage((error as ApiError).response?.data?.detail);
-      setGoogleLoginMessage(
-        apiMessage || 'Google sign-in could not be completed. Please try again.',
-      );
-        }
+    const handleGoogleLogin = () => {
+        // Redirect to the backend endpoint that initiates the Google OAuth2 flow.
+        // This endpoint will then redirect the user to Google's authentication page.
+        window.location.href = `${apiBaseUrl}/google/login/?redirect_uri=${window.location.origin}/google-callback`;
     };
 
     return (
@@ -398,7 +362,7 @@ export default function Login() {
 
                             <div style={{ display: 'flex', justifyContent: 'center' }}>
                                 <GoogleLogin
-                                    onSuccess={handleGoogleSuccess}
+                                    onSuccess={handleGoogleLogin}
                   onError={() => {
                     clearError('general');
                     setGoogleLoginMessage('Google sign-in failed. Please try again.');
