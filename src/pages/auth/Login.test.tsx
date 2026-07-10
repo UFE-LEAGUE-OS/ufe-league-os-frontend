@@ -3,6 +3,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { GoogleOAuthProvider } from '@react-oauth/google'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import axios from 'axios'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import Login from './Login'
 import { useAuthStore } from '../../store/authStore.js'
@@ -12,7 +13,17 @@ const loginMock = vi.hoisted(() => vi.fn())
 
 vi.mock('@react-oauth/google', () => ({
   GoogleOAuthProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-  GoogleLogin: () => <div data-testid="google-login" />,
+  GoogleLogin: ({ onSuccess }: { onSuccess?: (response: { credential?: string }) => void }) => (
+    <button type="button" onClick={() => onSuccess?.({ credential: 'test-credential' })}>
+      Google Login
+    </button>
+  ),
+}))
+
+vi.mock('axios', () => ({
+  default: {
+    post: vi.fn(),
+  },
 }))
 
 vi.mock('react-router-dom', async () => {

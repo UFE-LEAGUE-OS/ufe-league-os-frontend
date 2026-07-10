@@ -11,6 +11,7 @@ import EmojiEventsOutlinedIcon from '@mui/icons-material/EmojiEventsOutlined';
 import EventNoteOutlinedIcon from '@mui/icons-material/EventNoteOutlined';
 import { GlassCard, PageShell } from '../../components/site/LeagueUI.js';
 import { useAuth } from '../../hooks/useAuth.js';
+import { apiBaseUrl } from '../../services/apiClient.js';
 import {
     getSafeAuthRedirect,
     VERIFY_EMAIL_ROUTE,
@@ -101,16 +102,16 @@ function getLoginErrorMessage(error: unknown) {
         return 'Please verify your email before logging in.';
     }
 
-    return (
-        firstMessage(data?.detail) ||
-        firstMessage(data?.error) ||
-        firstMessage(data?.message) ||
-        firstMessage(data?.non_field_errors) ||
-        firstMessage(data?.identifier) ||
-        firstMessage(data?.email) ||
-        firstMessage(data?.password) ||
-        'Login failed. Please check your phone number or email and password.'
-    );
+  return (
+    firstMessage(data?.detail) ||
+    firstMessage(data?.error) ||
+    firstMessage(data?.message) ||
+    firstMessage(data?.non_field_errors) ||
+    firstMessage(data?.identifier) ||
+    firstMessage(data?.email) ||
+    firstMessage(data?.password) ||
+    'Login failed. Please check your phone number or email and password.'
+  );
 }
 
 function safeDashboardRoute(value: unknown) {
@@ -188,8 +189,6 @@ export default function Login() {
     const locationState = location.state as AuthFlowState | null;
     const locationMessage = locationState?.message ?? '';
     const postLoginRedirect = getSafeAuthRedirect(locationState?.postLoginRedirect);
-
-    const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
     const clearError = (field: keyof LoginErrors) => {
         setErrors((current) => ({
@@ -287,8 +286,8 @@ export default function Login() {
 
         try {
             const response = await axios.post(
-                `${apiBaseUrl}/api/accounts/google/`,
-                { credential }
+                `${apiBaseUrl}/google/`,
+                { token: credential }
             );
 
             const result = response.data as LoginResult;
@@ -309,9 +308,10 @@ export default function Login() {
 
             navigate(redirectRoute, { replace: true });
         } catch (error) {
-            setErrors({
-                general: getLoginErrorMessage(error),
-            });
+      const apiMessage = firstMessage((error as ApiError).response?.data?.detail);
+      setGoogleLoginMessage(
+        apiMessage || 'Google sign-in could not be completed. Please try again.',
+      );
         }
     };
 
@@ -448,7 +448,10 @@ export default function Login() {
                             <div style={{ display: 'flex', justifyContent: 'center' }}>
                                 <GoogleLogin
                                     onSuccess={handleGoogleSuccess}
-                                    onError={() => setGoogleLoginMessage('Google sign-in failed.')}
+                  onError={() => {
+                    clearError('general');
+                    setGoogleLoginMessage('Google sign-in failed. Please try again.');
+                  }}
                                 />
                             </div>
 
