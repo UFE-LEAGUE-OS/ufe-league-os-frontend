@@ -256,10 +256,30 @@ describe('Login page', () => {
 
     renderLogin()
 
-    await user.click(screen.getByRole('button', { name: /google login/i }))
+    await user.click(screen.getByRole('button', { name: /google login/i }));
 
     await waitFor(() => {
       expect(navigateMock).toHaveBeenCalledWith('/personalize', { replace: true })
     })
   })
+
+  it('shows an error message when Google Sign-In fails', async () => {
+    const user = userEvent.setup();
+    apiClientPostMock.mockRejectedValueOnce({
+      response: { data: { detail: 'Invalid Google token.' } },
+    });
+
+    renderLogin();
+
+    await user.click(screen.getByRole('button', { name: /google login/i }));
+
+    await waitFor(() => {
+      expect(apiClientPostMock).toHaveBeenCalledWith('/accounts/google/', {
+        token: 'test-credential',
+      });
+    });
+
+    expect(await screen.findByText(/invalid google token/i)).toBeInTheDocument();
+    expect(navigateMock).not.toHaveBeenCalled();
+  });
 })
