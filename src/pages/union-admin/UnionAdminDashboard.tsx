@@ -3093,15 +3093,6 @@ export default function UnionAdminDashboard() {
                 {workspaceDataError ? <div className={styles.alertBanner}>{workspaceDataError}</div> : null}
                 {operationsError ? <div className={styles.alertBanner}>{operationsError}</div> : null}
 
-                <UnionAdminManagementWorkflow
-                    workspaceSlug={activeWorkspace.slug}
-                    workspaceLabel={activeWorkspace.name}
-                    clubs={workspaceClubs.map((club) => ({
-                        id: String(club.id),
-                        name: club.name,
-                    }))}
-                />
-
                 <StatGrid stats={activeStats} loading={isLoadingOverview} />
 
                 {renderActiveTab()}
