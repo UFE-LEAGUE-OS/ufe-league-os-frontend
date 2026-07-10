@@ -32,7 +32,7 @@ vi.mock('../../services/authService.js', () => ({
   login: loginMock,
 }))
 
-const axiosPostMock = vi.fn()
+const axiosPostMock = vi.hoisted(() => vi.fn())
 
 vi.mock('axios', async () => {
   const actual = await vi.importActual('axios')
