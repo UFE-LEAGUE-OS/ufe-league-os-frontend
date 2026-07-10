@@ -20,6 +20,14 @@ vi.mock('@react-oauth/google', () => ({
   ),
 }))
 
+vi.mock('axios', () => ({
+  default: {
+    create: vi.fn(() => ({
+      post: vi.fn(),
+    })),
+    post: vi.fn(),
+  },
+}))
 
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom')
