@@ -453,9 +453,36 @@ export interface UnionAdminGeneratedFixture {
   round: string;
 }
 
+export interface UnionAdminFixtureVenuePayload {
+  name: string;
+  pitches: string[];
+}
+
+export interface UnionAdminFixtureBye {
+  round: string;
+  club: number;
+  club_name: string;
+}
+
+export interface UnionAdminFixtureScheduleRules {
+  start_date: string;
+  match_days: string[];
+  interval_days: number;
+  first_kickoff_time: string;
+  time_slots: string[];
+  match_duration_minutes: number;
+  turnaround_minutes: number;
+  max_games_per_day: number;
+  venues: UnionAdminFixtureVenuePayload[];
+  excluded_dates: string[];
+  home_and_away: boolean;
+}
+
 export interface UnionAdminFixtureGenerationResult {
   competition: UnionAdminCompetitionRecord;
   created_count: number;
+  schedule_rules?: UnionAdminFixtureScheduleRules;
+  byes?: UnionAdminFixtureBye[];
   fixtures: UnionAdminGeneratedFixture[];
 }
 
@@ -526,10 +553,19 @@ export interface GenerateUnionAdminFixturesPayload {
   competition: number;
   start_date?: string;
   kickoff_time?: string;
+  first_kickoff_time?: string;
+  time_slots?: string[];
+  match_days?: string[];
   interval_days?: number;
+  match_duration_minutes?: number;
+  turnaround_minutes?: number;
+  max_games_per_day?: number;
   home_and_away?: boolean;
   clear_existing?: boolean;
   venue?: string;
+  venues?: UnionAdminFixtureVenuePayload[];
+  excluded_dates?: string[];
+  rest_weeks?: string[];
 }
 
 export async function getUnionAdminManagementLeagues(

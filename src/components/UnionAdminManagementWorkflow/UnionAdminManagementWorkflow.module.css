@@ -318,3 +318,54 @@
     grid-template-columns: 1fr;
   }
 }
+
+
+.dayToggleGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+.dayToggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid rgba(196, 181, 253, 0.14);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.07);
+  padding: 0.65rem;
+  color: #ede9fe;
+  font-weight: 800;
+}
+
+.dayToggle input {
+  width: auto;
+  accent-color: #f97316;
+}
+
+.fixtureSummary {
+  border: 1px solid rgba(249, 115, 22, 0.24);
+  border-radius: 18px;
+  background: rgba(249, 115, 22, 0.1);
+  padding: 0.85rem;
+}
+
+.fixtureSummary strong,
+.fixtureSummary span {
+  display: block;
+}
+
+.fixtureSummary strong {
+  color: #ffffff;
+  margin-bottom: 0.25rem;
+}
+
+.fixtureSummary span {
+  color: #fed7aa;
+}
+
+@media (max-width: 720px) {
+  .dayToggleGrid {
+    grid-template-columns: 1fr;
+  }
+}

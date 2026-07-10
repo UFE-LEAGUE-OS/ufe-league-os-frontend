@@ -23,6 +23,8 @@ import styles from "./UnionAdminManagementWorkflow.module.css";
 
 type WorkflowMode = "competition" | "season" | "club" | "movement" | "fixtures";
 
+type FixtureMatchDay = "MONDAY" | "TUESDAY" | "WEDNESDAY" | "THURSDAY" | "FRIDAY" | "SATURDAY" | "SUNDAY";
+
 type ClubOption = {
   id: string;
   name: string;
@@ -41,6 +43,16 @@ const statusOptions: UnionAdminClubMembershipStatus[] = [
   "WITHDRAWN",
   "INVITED",
   "SUSPENDED",
+];
+
+const matchDayOptions: FixtureMatchDay[] = [
+  "MONDAY",
+  "TUESDAY",
+  "WEDNESDAY",
+  "THURSDAY",
+  "FRIDAY",
+  "SATURDAY",
+  "SUNDAY",
 ];
 
 function getErrorMessage(error: unknown) {
@@ -80,6 +92,13 @@ function toNumber(value: string) {
   }
 
   return numberValue;
+}
+
+function splitMultiValueInput(value: string) {
+  return value
+    .split(/[\n,]+/)
+    .map((item) => item.trim())
+    .filter(Boolean);
 }
 
 function leagueLabel(league: UnionAdminLeagueOption) {
@@ -144,11 +163,17 @@ export default function UnionAdminManagementWorkflow({ workspaceSlug, workspaceL
   const [fixtureForm, setFixtureForm] = useState({
     competition: "",
     startDate: todayIsoDate(),
-    kickoffTime: "16:00",
+    firstKickoffTime: "10:00",
     intervalDays: "7",
+    matchDurationMinutes: "80",
+    turnaroundMinutes: "20",
+    maxGamesPerDay: "6",
+    matchDays: ["SATURDAY"] as FixtureMatchDay[],
     homeAndAway: true,
     clearExisting: false,
     venue: "Venue TBC",
+    pitches: "Main Pitch",
+    excludedDates: "",
   });
 
   const clubOptions = useMemo(() => {
@@ -374,19 +399,47 @@ export default function UnionAdminManagementWorkflow({ workspaceSlug, workspaceL
     });
   }
 
+  function toggleFixtureMatchDay(day: FixtureMatchDay) {
+    setFixtureForm((current) => {
+      const nextDays = current.matchDays.includes(day)
+        ? current.matchDays.filter((item) => item !== day)
+        : [...current.matchDays, day];
+
+      return {
+        ...current,
+        matchDays: nextDays.length > 0 ? nextDays : [day],
+      };
+    });
+  }
+
   function submitFixtures(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     void handleSubmit(async () => {
+      const pitches = splitMultiValueInput(fixtureForm.pitches);
+      const excludedDates = splitMultiValueInput(fixtureForm.excludedDates);
+
       const result = await generateUnionAdminFixtures({
         workspace: workspaceSlug,
         competition: toNumber(fixtureForm.competition),
         start_date: fixtureForm.startDate,
-        kickoff_time: fixtureForm.kickoffTime,
+        first_kickoff_time: fixtureForm.firstKickoffTime,
+        kickoff_time: fixtureForm.firstKickoffTime,
+        match_days: fixtureForm.matchDays,
         interval_days: toNumber(fixtureForm.intervalDays),
+        match_duration_minutes: toNumber(fixtureForm.matchDurationMinutes),
+        turnaround_minutes: toNumber(fixtureForm.turnaroundMinutes),
+        max_games_per_day: toNumber(fixtureForm.maxGamesPerDay),
         home_and_away: fixtureForm.homeAndAway,
         clear_existing: fixtureForm.clearExisting,
         venue: fixtureForm.venue.trim(),
+        venues: [
+          {
+            name: fixtureForm.venue.trim() || "Venue TBC",
+            pitches: pitches.length > 0 ? pitches : ["Main Pitch"],
+          },
+        ],
+        excluded_dates: excludedDates,
       });
 
       setGeneratedFixtures(result.fixtures ?? []);
@@ -837,7 +890,9 @@ export default function UnionAdminManagementWorkflow({ workspaceSlug, workspaceL
         {mode === "fixtures" ? (
           <form className={styles.card} onSubmit={submitFixtures}>
             <h4>Generate fixtures</h4>
-            <p>Generate backend round-robin fixtures from the clubs attached to the competition league and season.</p>
+            <p>
+              Generate fixtures using match days, kickoff rules, match duration, venue capacity, pitches and rest dates.
+            </p>
 
             <div className={styles.formGrid}>
               <label className={styles.fullWidth}>
@@ -870,12 +925,12 @@ export default function UnionAdminManagementWorkflow({ workspaceSlug, workspaceL
               </label>
 
               <label>
-                Kickoff time
+                First kickoff time
                 <input
                   type="time"
-                  value={fixtureForm.kickoffTime}
+                  value={fixtureForm.firstKickoffTime}
                   onChange={(event) =>
-                    setFixtureForm((current) => ({ ...current, kickoffTime: event.target.value }))
+                    setFixtureForm((current) => ({ ...current, firstKickoffTime: event.target.value }))
                   }
                 />
               </label>
@@ -893,11 +948,85 @@ export default function UnionAdminManagementWorkflow({ workspaceSlug, workspaceL
               </label>
 
               <label>
+                Match duration minutes
+                <input
+                  min="1"
+                  type="number"
+                  value={fixtureForm.matchDurationMinutes}
+                  onChange={(event) =>
+                    setFixtureForm((current) => ({ ...current, matchDurationMinutes: event.target.value }))
+                  }
+                />
+              </label>
+
+              <label>
+                Turnaround minutes
+                <input
+                  min="0"
+                  type="number"
+                  value={fixtureForm.turnaroundMinutes}
+                  onChange={(event) =>
+                    setFixtureForm((current) => ({ ...current, turnaroundMinutes: event.target.value }))
+                  }
+                />
+              </label>
+
+              <label>
+                Max games per day
+                <input
+                  min="1"
+                  type="number"
+                  value={fixtureForm.maxGamesPerDay}
+                  onChange={(event) =>
+                    setFixtureForm((current) => ({ ...current, maxGamesPerDay: event.target.value }))
+                  }
+                />
+              </label>
+
+              <fieldset className={`${styles.fullWidth} ${styles.checkboxFieldset}`}>
+                <legend>Allowed match days</legend>
+                <div className={styles.dayToggleGrid}>
+                  {matchDayOptions.map((day) => (
+                    <label className={styles.dayToggle} key={day}>
+                      <input
+                        checked={fixtureForm.matchDays.includes(day)}
+                        type="checkbox"
+                        onChange={() => toggleFixtureMatchDay(day)}
+                      />
+                      <span>{day}</span>
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+
+              <label>
                 Venue
                 <input
                   value={fixtureForm.venue}
                   onChange={(event) => setFixtureForm((current) => ({ ...current, venue: event.target.value }))}
+                  placeholder="Kyadondo Rugby Club"
                 />
+              </label>
+
+              <label>
+                Pitches / courts / fields
+                <input
+                  value={fixtureForm.pitches}
+                  onChange={(event) => setFixtureForm((current) => ({ ...current, pitches: event.target.value }))}
+                  placeholder="Main Pitch, Pitch B"
+                />
+              </label>
+
+              <label className={styles.fullWidth}>
+                Excluded dates / rest weeks
+                <textarea
+                  value={fixtureForm.excludedDates}
+                  onChange={(event) =>
+                    setFixtureForm((current) => ({ ...current, excludedDates: event.target.value }))
+                  }
+                  placeholder={"2026-04-05\n2026-04-12"}
+                />
+                <small className={styles.helperText}>Use one date per line or comma-separated dates.</small>
               </label>
 
               <label>
@@ -926,6 +1055,13 @@ export default function UnionAdminManagementWorkflow({ workspaceSlug, workspaceL
                 </select>
               </label>
 
+              <div className={`${styles.fullWidth} ${styles.fixtureSummary}`}>
+                <strong>Schedule rule preview</strong>
+                <span>
+                  {fixtureForm.matchDays.join(", ")} • every {fixtureForm.intervalDays} day(s) • first kickoff {fixtureForm.firstKickoffTime} • {fixtureForm.matchDurationMinutes} min match + {fixtureForm.turnaroundMinutes} min turnaround
+                </span>
+              </div>
+
               <div className={styles.actions}>
                 <button className={styles.primaryButton} type="submit" disabled={isSaving}>
                   {isSaving ? "Generating..." : "Generate Fixtures"}
@@ -941,7 +1077,7 @@ export default function UnionAdminManagementWorkflow({ workspaceSlug, workspaceL
                       {fixture.home_club_name} vs {fixture.away_club_name}
                     </strong>
                     <span>
-                      {fixture.round} • {fixture.match_date} • {fixture.venue}
+                      {fixture.round} • {new Date(fixture.match_date).toLocaleString()} • {fixture.venue}
                     </span>
                   </div>
                 ))}
