@@ -38,6 +38,7 @@ import {
 } from "../../services/unionAdminService";
 import AuthenticatedFooter from "../../components/AuthenticatedFooter/AuthenticatedFooter";
 import MobileUnionNavigation from "../../components/MobileUnionNavigation/MobileUnionNavigation";
+import UnionAdminManagementWorkflow from "../../components/UnionAdminManagementWorkflow/UnionAdminManagementWorkflow";
 import logoHorizontal from "../../assets/logos/league-os-horizontal.png";
 import styles from "./UnionAdminDashboard.module.css";
 
@@ -1523,13 +1524,25 @@ export default function UnionAdminDashboard() {
                     description="A backend-connected view of league, cup and tournament records, with fixture readiness, club entries and competition actions."
                     actions={
                         <>
-                            <button className={styles.primaryButton} type="button">
+                            <button
+                                className={styles.primaryButton}
+                                type="button"
+                                onClick={() =>
+                                    document
+                                        .getElementById("union-admin-management-workflow")
+                                        ?.scrollIntoView({ behavior: "smooth", block: "start" })
+                                }
+                            >
                                 Create Competition
                             </button>
                             <button
                                 className={styles.secondaryButton}
                                 type="button"
-                                onClick={() => setCompetitionView("fixtures")}
+                                onClick={() =>
+                                    document
+                                        .getElementById("union-admin-management-workflow")
+                                        ?.scrollIntoView({ behavior: "smooth", block: "start" })
+                                }
                             >
                                 Generate Fixtures
                             </button>
@@ -1538,6 +1551,15 @@ export default function UnionAdminDashboard() {
                 />
 
                 {operationsError ? <div className={styles.alertBanner}>{operationsError}</div> : null}
+
+                <UnionAdminManagementWorkflow
+                    workspaceSlug={activeWorkspace.slug}
+                    workspaceLabel={activeWorkspace.name}
+                    clubs={workspaceClubs.map((club) => ({
+                        id: String(club.id),
+                        name: club.name,
+                    }))}
+                />
 
                 <div className={styles.competitionCommandGrid}>
                     <article>
@@ -3108,6 +3130,15 @@ export default function UnionAdminDashboard() {
                 {workspaceError ? <div className={styles.alertBanner}>{workspaceError}</div> : null}
                 {workspaceDataError ? <div className={styles.alertBanner}>{workspaceDataError}</div> : null}
                 {operationsError ? <div className={styles.alertBanner}>{operationsError}</div> : null}
+
+                <UnionAdminManagementWorkflow
+                    workspaceSlug={activeWorkspace.slug}
+                    workspaceLabel={activeWorkspace.name}
+                    clubs={workspaceClubs.map((club) => ({
+                        id: String(club.id),
+                        name: club.name,
+                    }))}
+                />
 
                 <StatGrid stats={activeStats} loading={isLoadingOverview} />
 
