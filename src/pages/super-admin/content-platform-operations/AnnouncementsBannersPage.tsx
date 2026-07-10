@@ -83,6 +83,42 @@ const INITIAL_BANNERS: Banner[] = [
     start: 'Apr 20, 2024',
     end: 'Apr 27, 2024',
   },
+  {
+    id: 'b5',
+    title: 'Mobile App Now Live',
+    message: 'Download League OS on iOS and Android today.',
+    placement: 'Dashboard Top',
+    status: 'Active',
+    start: 'May 10, 2024',
+    end: 'Jun 10, 2024',
+  },
+  {
+    id: 'b6',
+    title: 'Referee Certification Drive',
+    message: 'Sign up for the new certification program.',
+    placement: 'Union Portal',
+    status: 'Scheduled',
+    start: 'Jun 20, 2024',
+    end: 'Jul 5, 2024',
+  },
+  {
+    id: 'b7',
+    title: 'Sponsor Spotlight: Airtel',
+    message: 'Explore this season\'s title sponsor benefits.',
+    placement: 'Homepage Hero',
+    status: 'Active',
+    start: 'May 1, 2024',
+    end: 'May 31, 2024',
+  },
+  {
+    id: 'b8',
+    title: 'Ticket Refund Policy Update',
+    message: 'Review the updated refund and exchange terms.',
+    placement: 'Fantasy Hub',
+    status: 'Draft',
+    start: '—',
+    end: '—',
+  },
 ];
 
 function statusBadge(status: Announcement['status']) {
@@ -252,7 +288,7 @@ export default function AnnouncementsBannersPage() {
       )}
 
       {activeTab === 'Banners' && (
-        <div className="split-layout split-2">
+        <div className="banners-stacked-layout">
           <div className="table-card">
             <table className="data-table">
               <thead>
