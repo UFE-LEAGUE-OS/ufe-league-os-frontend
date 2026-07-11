@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import FilterDropdown from '../../../components/FilterDropdown';
 import '../../../styles/pages/super-admin/content-platform-operations/SuperAdminOpsShared.css';
 import '../../../styles/pages/super-admin/content-platform-operations/SuperAdminContent.css';
 
@@ -168,21 +169,19 @@ export default function SupportSettings() {
               <div className="field-row">
                 <div className="field-group">
                   <label>Timezone</label>
-                  <select className="page-select" value={timezone} onChange={(e) => setTimezone(e.target.value)}>
-                    <option>UTC+00:00</option>
-                    <option>UTC+01:00</option>
-                    <option>UTC+03:00</option>
-                    <option>UTC-05:00</option>
-                  </select>
+                  <FilterDropdown
+                    value={timezone}
+                    options={['UTC+00:00', 'UTC+01:00', 'UTC+03:00', 'UTC-05:00']}
+                    onChange={setTimezone}
+                  />
                 </div>
                 <div className="field-group">
                   <label>Default Language</label>
-                  <select className="page-select" value={language} onChange={(e) => setLanguage(e.target.value)}>
-                    <option>English</option>
-                    <option>French</option>
-                    <option>Swahili</option>
-                    <option>Luganda</option>
-                  </select>
+                  <FilterDropdown
+                    value={language}
+                    options={['English', 'French', 'Swahili', 'Luganda']}
+                    onChange={setLanguage}
+                  />
                 </div>
               </div>
 
@@ -228,16 +227,11 @@ export default function SupportSettings() {
             <div className="field-row">
               <div className="field-group">
                 <label>Default Priority</label>
-                <select
-                  className="page-select"
+                <FilterDropdown
                   value={defaultPriority}
-                  onChange={(e) => setDefaultPriority(e.target.value)}
-                >
-                  <option>Low</option>
-                  <option>Normal</option>
-                  <option>High</option>
-                  <option>Urgent</option>
-                </select>
+                  options={['Low', 'Normal', 'High', 'Urgent']}
+                  onChange={setDefaultPriority}
+                />
               </div>
               <div className="field-group">
                 <label>Ticket ID Prefix</label>

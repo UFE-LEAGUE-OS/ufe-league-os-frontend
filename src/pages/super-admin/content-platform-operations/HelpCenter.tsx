@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
-import { Search, Plus, Bold, Italic, Underline, Link2, Image as ImageIcon, List, Quote, Code, Trash2 } from 'lucide-react';
+import { Search, Plus, Bold, Italic, Underline, Link2, Image as ImageIcon, List, Quote, Code, Trash2, Pencil, X } from 'lucide-react';
+import FilterDropdown from '../../../components/FilterDropdown';
 import '../../../styles/pages/super-admin/content-platform-operations/SuperAdminOpsShared.css';
 import '../../../styles/pages/super-admin/content-platform-operations/SuperAdminContent.css';
 
@@ -35,6 +36,7 @@ const CATEGORIES: Category[] = [
 ];
 
 const ARTICLES: Article[] = [
+  // Getting Started
   {
     id: 'create-account',
     title: 'How to Create an Account',
@@ -46,6 +48,28 @@ const ARTICLES: Article[] = [
     updatedAt: 'May 13, 2024 10:15 AM',
   },
   {
+    id: 'navigating-the-app',
+    title: 'Navigating the App for the First Time',
+    slug: 'navigating-the-app',
+    categoryId: 'getting-started',
+    status: 'Published',
+    content: `Once you're logged in, use the bottom navigation to move between Home, Fixtures, Fantasy, Tickets, and Profile. Tap any club or player to see more details.`,
+    updatedBy: 'Merab Apio',
+    updatedAt: 'May 12, 2024 8:00 AM',
+  },
+  {
+    id: 'choosing-favorite-teams',
+    title: 'Choosing Your Favorite Teams',
+    slug: 'choosing-favorite-teams',
+    categoryId: 'getting-started',
+    status: 'Published',
+    content: `Go to Profile > Interests and select the clubs and leagues you follow. This personalizes your feed and match notifications.`,
+    updatedBy: 'Merab Apio',
+    updatedAt: 'May 11, 2024 11:00 AM',
+  },
+
+  // Account & Profile
+  {
     id: 'reset-password',
     title: 'How to Reset Your Password',
     slug: 'how-to-reset-password',
@@ -54,16 +78,6 @@ const ARTICLES: Article[] = [
     content: `To reset your password:\n1. Go to the login page and click "Forgot password?"\n2. Enter your email address.\n3. Check your inbox for a reset link.\n4. Choose a new password.`,
     updatedBy: 'Merab Apio',
     updatedAt: 'May 11, 2024 3:40 PM',
-  },
-  {
-    id: 'understanding-dashboard',
-    title: 'Understanding Your Dashboard',
-    slug: 'understanding-your-dashboard',
-    categoryId: 'features',
-    status: 'Published',
-    content: `Your dashboard gives you a quick overview of your fixtures, tickets, memberships, and fantasy teams in one place.`,
-    updatedBy: 'Merab Apio',
-    updatedAt: 'May 10, 2024 9:05 AM',
   },
   {
     id: 'managing-notifications',
@@ -76,6 +90,28 @@ const ARTICLES: Article[] = [
     updatedAt: 'May 9, 2024 1:20 PM',
   },
   {
+    id: 'updating-profile-info',
+    title: 'Updating Your Profile Information',
+    slug: 'updating-profile-info',
+    categoryId: 'account-profile',
+    status: 'Published',
+    content: `Go to Profile > Edit to update your name, photo, phone number, and email address at any time.`,
+    updatedBy: 'Merab Apio',
+    updatedAt: 'May 7, 2024 4:15 PM',
+  },
+  {
+    id: 'deleting-your-account',
+    title: 'Deleting Your Account',
+    slug: 'deleting-your-account',
+    categoryId: 'account-profile',
+    status: 'Published',
+    content: `To permanently delete your account, go to Profile > Privacy > Delete Account. This action cannot be undone and removes all your data.`,
+    updatedBy: 'Merab Apio',
+    updatedAt: 'May 4, 2024 9:30 AM',
+  },
+
+  // Billing & Payments
+  {
     id: 'how-billing-works',
     title: 'How Billing Works',
     slug: 'how-billing-works',
@@ -84,6 +120,164 @@ const ARTICLES: Article[] = [
     content: `Memberships and tickets are billed at checkout using Mobile Money, bank transfer, or card. Refunds are processed within 5-7 business days.`,
     updatedBy: 'Merab Apio',
     updatedAt: 'May 6, 2024 11:50 AM',
+  },
+  {
+    id: 'accepted-payment-methods',
+    title: 'Accepted Payment Methods',
+    slug: 'accepted-payment-methods',
+    categoryId: 'billing-payments',
+    status: 'Published',
+    content: `We accept MTN Mobile Money, Airtel Money, Visa, Mastercard, and direct bank transfer for all memberships and ticket purchases.`,
+    updatedBy: 'Merab Apio',
+    updatedAt: 'May 5, 2024 2:10 PM',
+  },
+  {
+    id: 'requesting-a-refund',
+    title: 'Requesting a Refund',
+    slug: 'requesting-a-refund',
+    categoryId: 'billing-payments',
+    status: 'Published',
+    content: `Refund requests can be submitted from Dashboard > Tickets > Order Details > Request Refund. Approved refunds are returned to your original payment method within 5-7 business days.`,
+    updatedBy: 'Merab Apio',
+    updatedAt: 'May 3, 2024 10:00 AM',
+  },
+
+  // Features
+  {
+    id: 'understanding-dashboard',
+    title: 'Understanding Your Dashboard',
+    slug: 'understanding-your-dashboard',
+    categoryId: 'features',
+    status: 'Published',
+    content: `Your dashboard gives you a quick overview of your fixtures, tickets, memberships, and fantasy teams in one place.`,
+    updatedBy: 'Merab Apio',
+    updatedAt: 'May 10, 2024 9:05 AM',
+  },
+  {
+    id: 'download-a-ticket',
+    title: 'Download a Ticket',
+    slug: 'download-a-ticket',
+    categoryId: 'features',
+    status: 'Published',
+    content: `Open Dashboard > Tickets, select your order, and tap Download to save a PDF copy or add it to your mobile wallet.`,
+    updatedBy: 'Merab Apio',
+    updatedAt: 'May 8, 2024 3:00 PM',
+  },
+  {
+    id: 'using-fantasy-leagues',
+    title: 'Using Fantasy Leagues',
+    slug: 'using-fantasy-leagues',
+    categoryId: 'features',
+    status: 'Published',
+    content: `Create or join a fantasy league from the Fantasy tab, build your squad within budget, and track your ranking each gameweek.`,
+    updatedBy: 'Merab Apio',
+    updatedAt: 'May 7, 2024 1:45 PM',
+  },
+  {
+    id: 'live-match-stats',
+    title: 'Following Live Match Stats',
+    slug: 'live-match-stats',
+    categoryId: 'features',
+    status: 'Draft',
+    content: `Tap any live fixture to see real-time score updates, lineups, and key match events as they happen.`,
+    updatedBy: 'Merab Apio',
+    updatedAt: 'May 6, 2024 9:20 AM',
+  },
+
+  // Privacy & Security
+  {
+    id: 'two-factor-authentication',
+    title: 'Setting Up Two-Factor Authentication',
+    slug: 'two-factor-authentication',
+    categoryId: 'privacy-security',
+    status: 'Published',
+    content: `Enable two-factor authentication from Profile > Privacy > Security to add an extra layer of protection to your account using SMS or an authenticator app.`,
+    updatedBy: 'Merab Apio',
+    updatedAt: 'May 12, 2024 5:30 PM',
+  },
+  {
+    id: 'who-can-see-my-profile',
+    title: 'Who Can See My Profile',
+    slug: 'who-can-see-my-profile',
+    categoryId: 'privacy-security',
+    status: 'Published',
+    content: `By default, your profile is visible to other fans on the platform. You can restrict visibility to followers only from Profile > Privacy > Visibility.`,
+    updatedBy: 'Merab Apio',
+    updatedAt: 'May 9, 2024 2:00 PM',
+  },
+  {
+    id: 'recognizing-phishing-attempts',
+    title: 'Recognizing Phishing Attempts',
+    slug: 'recognizing-phishing-attempts',
+    categoryId: 'privacy-security',
+    status: 'Published',
+    content: `We will never ask for your password by email or SMS. If a message asks you to "verify" your account via a link, don't click it — report it to support instead.`,
+    updatedBy: 'Merab Apio',
+    updatedAt: 'May 5, 2024 8:40 AM',
+  },
+
+  // Troubleshooting
+  {
+    id: 'app-not-loading',
+    title: 'App Not Loading or Crashing',
+    slug: 'app-not-loading',
+    categoryId: 'troubleshooting',
+    status: 'Published',
+    content: `Try closing and reopening the app, checking your internet connection, and updating to the latest version. If the issue persists, clear the app cache from your device settings.`,
+    updatedBy: 'Merab Apio',
+    updatedAt: 'May 11, 2024 7:15 AM',
+  },
+  {
+    id: 'payment-not-going-through',
+    title: 'Payment Not Going Through',
+    slug: 'payment-not-going-through',
+    categoryId: 'troubleshooting',
+    status: 'Published',
+    content: `Confirm your payment details are correct and that you have sufficient balance. Mobile Money payments can take up to 2 minutes to confirm — avoid retrying immediately.`,
+    updatedBy: 'Merab Apio',
+    updatedAt: 'May 8, 2024 12:30 PM',
+  },
+  {
+    id: 'not-receiving-notifications',
+    title: 'Not Receiving Notifications',
+    slug: 'not-receiving-notifications',
+    categoryId: 'troubleshooting',
+    status: 'Draft',
+    content: `Check that notifications are enabled both in the app (Profile > Notifications) and in your device's system settings for this app.`,
+    updatedBy: 'Merab Apio',
+    updatedAt: 'May 4, 2024 6:50 PM',
+  },
+
+  // General
+  {
+    id: 'contacting-support',
+    title: 'Contacting Support',
+    slug: 'contacting-support',
+    categoryId: 'general',
+    status: 'Published',
+    content: `You can reach our support team via live chat, email at support@leagueos.com, or by submitting a ticket from Profile > Support.`,
+    updatedBy: 'Merab Apio',
+    updatedAt: 'May 10, 2024 4:00 PM',
+  },
+  {
+    id: 'supported-devices',
+    title: 'Supported Devices and Browsers',
+    slug: 'supported-devices',
+    categoryId: 'general',
+    status: 'Published',
+    content: `LeagueOS works on iOS 14+, Android 9+, and modern browsers including Chrome, Safari, Edge, and Firefox.`,
+    updatedBy: 'Merab Apio',
+    updatedAt: 'May 6, 2024 10:10 AM',
+  },
+  {
+    id: 'accessibility-features',
+    title: 'Accessibility Features',
+    slug: 'accessibility-features',
+    categoryId: 'general',
+    status: 'Draft',
+    content: `LeagueOS supports screen readers, adjustable text size, and high-contrast mode. Enable these from your device's accessibility settings.`,
+    updatedBy: 'Merab Apio',
+    updatedAt: 'May 3, 2024 3:25 PM',
   },
 ];
 
@@ -103,6 +297,54 @@ function formatNow() {
   });
 }
 
+function slugify(value: string) {
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+}
+
+function genId(prefix: string) {
+  return `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+}
+
+function Modal({
+  title,
+  onClose,
+  children,
+}: {
+  title: string;
+  onClose: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        background: 'rgba(0, 0, 0, 0.55)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 100,
+        padding: 20,
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="panel-card"
+        style={{ width: '100%', maxWidth: 560, maxHeight: '90vh', overflowY: 'auto' }}
+      >
+        <div className="panel-card-header">
+          <h3>{title}</h3>
+          <button className="icon-btn" onClick={onClose} aria-label="Close">
+            <X size={15} />
+          </button>
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+}
+
 export default function HelpCenter() {
   const [tab, setTab] = useState<TopTab>('Articles');
 
@@ -112,9 +354,18 @@ export default function HelpCenter() {
   const [activeCategoryId, setActiveCategoryId] = useState<string>('all');
   const [search, setSearch] = useState('');
   const [activeArticleId, setActiveArticleId] = useState<string>(ARTICLES[0].id);
-  const [newCategoryName, setNewCategoryName] = useState('');
 
   const [toast, setToast] = useState<string | null>(null);
+
+  // ---- Add Category (+ first article) modal ----
+  const [categoryModalOpen, setCategoryModalOpen] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [newCategoryArticleTitle, setNewCategoryArticleTitle] = useState('');
+  const [newCategoryArticleContent, setNewCategoryArticleContent] = useState('');
+
+  // ---- Edit Category (rename) modal ----
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [editCategoryName, setEditCategoryName] = useState('');
 
   // Editable draft for the active article
   const activeArticle = useMemo(
@@ -148,22 +399,102 @@ export default function HelpCenter() {
   }
 
   function handleSaveArticle() {
+    if (!draft.title.trim()) {
+      showToast('Title is required');
+      return;
+    }
     const updated: Article = {
       ...draft,
       updatedBy: 'Merab Apio',
       updatedAt: formatNow(),
     };
     setArticles((prev) => prev.map((a) => (a.id === updated.id ? updated : a)));
-    showToast('Changes saved');
+    showToast('Changes saved — article is in the selected category');
   }
 
-  function handleAddCategory() {
-    const name = newCategoryName.trim();
-    if (!name) return;
-    const id = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-    setCategories((prev) => [...prev, { id, name }]);
+  function handleNewArticle() {
+    const id = genId('article');
+    const categoryId = activeCategoryId === 'all' ? categories[0]?.id ?? 'general' : activeCategoryId;
+    const newArticle: Article = {
+      id,
+      title: 'Untitled Article',
+      slug: 'untitled-article',
+      categoryId,
+      status: 'Draft',
+      content: '',
+      updatedBy: 'Merab Apio',
+      updatedAt: formatNow(),
+    };
+    setArticles((prev) => [newArticle, ...prev]);
+    setActiveArticleId(id);
+    showToast('New article created — remember to save it');
+  }
+
+  // ---- Add Category + first article ----
+
+  function openCategoryModal() {
     setNewCategoryName('');
-    showToast('Category added');
+    setNewCategoryArticleTitle('');
+    setNewCategoryArticleContent('');
+    setCategoryModalOpen(true);
+  }
+
+  function handleCreateCategoryWithArticle() {
+    const name = newCategoryName.trim();
+    if (!name) {
+      showToast('Category name is required');
+      return;
+    }
+    const categoryId = slugify(name) || genId('cat');
+    if (categories.some((c) => c.id === categoryId)) {
+      showToast('A category with this name already exists');
+      return;
+    }
+
+    setCategories((prev) => [...prev, { id: categoryId, name }]);
+
+    const articleTitle = newCategoryArticleTitle.trim();
+    let newArticleId: string | null = null;
+
+    if (articleTitle) {
+      newArticleId = genId('article');
+      const newArticle: Article = {
+        id: newArticleId,
+        title: articleTitle,
+        slug: slugify(articleTitle),
+        categoryId,
+        status: 'Draft',
+        content: newCategoryArticleContent,
+        updatedBy: 'Merab Apio',
+        updatedAt: formatNow(),
+      };
+      setArticles((prev) => [newArticle, ...prev]);
+    }
+
+    setActiveCategoryId(categoryId);
+    if (newArticleId) setActiveArticleId(newArticleId);
+    setCategoryModalOpen(false);
+    setTab('Articles');
+    showToast(articleTitle ? 'Category and article created' : 'Category created');
+  }
+
+  // ---- Edit / rename category ----
+
+  function openEditCategory(c: Category) {
+    setEditingCategory(c);
+    setEditCategoryName(c.name);
+  }
+
+  function handleSaveCategoryName() {
+    if (!editingCategory) return;
+    const name = editCategoryName.trim();
+    if (!name) {
+      showToast('Category name is required');
+      return;
+    }
+    setCategories((prev) => prev.map((c) => (c.id === editingCategory.id ? { ...c, name } : c)));
+    setEditingCategory(null);
+    showToast('Category updated');
   }
 
   function handleDeleteCategory(id: string) {
@@ -177,6 +508,9 @@ export default function HelpCenter() {
   const [showSearchWidget, setShowSearchWidget] = useState(true);
   const [defaultCategory, setDefaultCategory] = useState('getting-started');
   const [supportLinkVisible, setSupportLinkVisible] = useState(true);
+
+  const defaultCategoryLabel = categories.find((c) => c.id === defaultCategory)?.name ?? 'Select category';
+  const draftCategoryLabel = categories.find((c) => c.id === draft.categoryId)?.name ?? 'Select category';
 
   return (
     <main className="super-admin-page content-child">
@@ -199,26 +533,15 @@ export default function HelpCenter() {
             </span>
           )}
           {tab === 'Articles' && (
-            <button
-              className="button-primary"
-              onClick={() => {
-                const id = `article-${Date.now()}`;
-                const newArticle: Article = {
-                  id,
-                  title: 'Untitled Article',
-                  slug: 'untitled-article',
-                  categoryId: activeCategoryId === 'all' ? categories[0]?.id ?? 'general' : activeCategoryId,
-                  status: 'Draft',
-                  content: '',
-                  updatedBy: 'Merab Apio',
-                  updatedAt: formatNow(),
-                };
-                setArticles((prev) => [newArticle, ...prev]);
-                setActiveArticleId(id);
-              }}
-            >
+            <button className="button-primary" onClick={handleNewArticle}>
               <Plus size={15} style={{ marginRight: 6 }} />
               New Article
+            </button>
+          )}
+          {tab === 'Categories' && (
+            <button className="button-primary" onClick={openCategoryModal}>
+              <Plus size={15} style={{ marginRight: 6 }} />
+              New Category
             </button>
           )}
         </div>
@@ -268,7 +591,7 @@ export default function HelpCenter() {
                 type="button"
                 className="link-inline"
                 style={{ marginTop: 8, padding: '8px 14px', textAlign: 'left' }}
-                onClick={() => setTab('Categories')}
+                onClick={openCategoryModal}
               >
                 + Add Category
               </button>
@@ -340,15 +663,24 @@ export default function HelpCenter() {
                 </div>
                 <div className="field-group">
                   <label>Status</label>
-                  <select
-                    className="page-select"
+                  <FilterDropdown
                     value={draft.status}
-                    onChange={(e) => updateDraft('status', e.target.value as ArticleStatus)}
-                  >
-                    <option value="Published">Published</option>
-                    <option value="Draft">Draft</option>
-                  </select>
+                    options={['Published', 'Draft']}
+                    onChange={(v) => updateDraft('status', v as ArticleStatus)}
+                  />
                 </div>
+              </div>
+
+              <div className="field-group">
+                <label>Category</label>
+                <FilterDropdown
+                  value={draftCategoryLabel}
+                  options={categories.map((c) => c.name)}
+                  onChange={(name) => {
+                    const category = categories.find((c) => c.name === name);
+                    if (category) updateDraft('categoryId', category.id);
+                  }}
+                />
               </div>
 
               <div className="field-group">
@@ -389,25 +721,12 @@ export default function HelpCenter() {
 
       {tab === 'Categories' && (
         <div className="content-editor-panel">
-          <h3>Manage Categories</h3>
-
-          <div className="field-row">
-            <div className="field-group" style={{ gridColumn: '1 / -1' }}>
-              <label>Add New Category</label>
-              <div style={{ display: 'flex', gap: 10 }}>
-                <input
-                  value={newCategoryName}
-                  onChange={(e) => setNewCategoryName(e.target.value)}
-                  placeholder="e.g. Fantasy Leagues"
-                  onKeyDown={(e) => e.key === 'Enter' && handleAddCategory()}
-                  style={{ flex: 1 }}
-                />
-                <button className="button-primary" onClick={handleAddCategory}>
-                  <Plus size={15} style={{ marginRight: 6 }} />
-                  Add
-                </button>
-              </div>
-            </div>
+          <div className="panel-card-header">
+            <h3>Manage Categories</h3>
+            <button className="button-primary" onClick={openCategoryModal}>
+              <Plus size={15} style={{ marginRight: 6 }} />
+              Add Category
+            </button>
           </div>
 
           <div className="table-card">
@@ -416,7 +735,7 @@ export default function HelpCenter() {
                 <tr>
                   <th>Category</th>
                   <th>Articles</th>
-                  <th style={{ width: 60 }}></th>
+                  <th style={{ width: 90 }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -425,13 +744,22 @@ export default function HelpCenter() {
                     <td>{c.name}</td>
                     <td className="cell-muted">{categoryCount(c.id)}</td>
                     <td>
-                      <button
-                        className="icon-btn"
-                        onClick={() => handleDeleteCategory(c.id)}
-                        aria-label="Delete category"
-                      >
-                        <Trash2 size={13} />
-                      </button>
+                      <div style={{ display: 'flex', gap: 6 }}>
+                        <button
+                          className="icon-btn"
+                          onClick={() => openEditCategory(c)}
+                          aria-label="Edit category"
+                        >
+                          <Pencil size={13} />
+                        </button>
+                        <button
+                          className="icon-btn"
+                          onClick={() => handleDeleteCategory(c.id)}
+                          aria-label="Delete category"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -448,15 +776,14 @@ export default function HelpCenter() {
 
             <div className="field-group">
               <label>Default Category</label>
-              <select
-                className="page-select"
-                value={defaultCategory}
-                onChange={(e) => setDefaultCategory(e.target.value)}
-              >
-                {categories.map((c) => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-              </select>
+              <FilterDropdown
+                value={defaultCategoryLabel}
+                options={categories.map((c) => c.name)}
+                onChange={(name) => {
+                  const category = categories.find((c) => c.name === name);
+                  if (category) setDefaultCategory(category.id);
+                }}
+              />
             </div>
 
             <div className="toggle-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -505,6 +832,75 @@ export default function HelpCenter() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Add Category + first article modal */}
+      {categoryModalOpen && (
+        <Modal title="New Category" onClose={() => setCategoryModalOpen(false)}>
+          <div className="field-group">
+            <label>Category Name</label>
+            <input
+              value={newCategoryName}
+              onChange={(e) => setNewCategoryName(e.target.value)}
+              placeholder="e.g. Fantasy Leagues"
+              autoFocus
+            />
+          </div>
+
+          <div className="content-section" style={{ borderTop: 'none', paddingTop: 0 }}>
+            <h3 style={{ fontSize: 13 }}>First Article (optional)</h3>
+            <p className="form-hint" style={{ margin: '-8px 0 4px' }}>
+              Give the category a starting article now, or skip and add one later.
+            </p>
+
+            <div className="field-group">
+              <label>Article Title</label>
+              <input
+                value={newCategoryArticleTitle}
+                onChange={(e) => setNewCategoryArticleTitle(e.target.value)}
+                placeholder="e.g. How to Join a Fantasy League"
+              />
+            </div>
+
+            <div className="field-group">
+              <label>Content</label>
+              <textarea
+                rows={4}
+                value={newCategoryArticleContent}
+                onChange={(e) => setNewCategoryArticleContent(e.target.value)}
+                placeholder="Write the article body..."
+              />
+            </div>
+          </div>
+
+          <div className="content-footer-actions" style={{ justifyContent: 'flex-end' }}>
+            <button className="button-secondary" onClick={() => setCategoryModalOpen(false)}>Cancel</button>
+            <button className="button-primary" onClick={handleCreateCategoryWithArticle}>
+              Create Category
+            </button>
+          </div>
+        </Modal>
+      )}
+
+      {/* Edit category modal */}
+      {editingCategory && (
+        <Modal title="Edit Category" onClose={() => setEditingCategory(null)}>
+          <div className="field-group">
+            <label>Category Name</label>
+            <input
+              value={editCategoryName}
+              onChange={(e) => setEditCategoryName(e.target.value)}
+              autoFocus
+            />
+          </div>
+
+          <div className="content-footer-actions" style={{ justifyContent: 'flex-end' }}>
+            <button className="button-secondary" onClick={() => setEditingCategory(null)}>Cancel</button>
+            <button className="button-primary" onClick={handleSaveCategoryName}>
+              Save Changes
+            </button>
+          </div>
+        </Modal>
       )}
     </main>
   );

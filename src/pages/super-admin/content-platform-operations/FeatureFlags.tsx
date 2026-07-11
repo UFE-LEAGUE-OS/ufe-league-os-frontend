@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Search, Plus } from 'lucide-react';
+import { Search, Plus, Pencil, Trash2, X } from 'lucide-react';
 import FilterDropdown from '../../../components/FilterDropdown';
 import '../../../styles/pages/super-admin/content-platform-operations/SuperAdminOpsShared.css';
 import '../../../styles/pages/super-admin/content-platform-operations/SuperAdminContent.css';
@@ -101,25 +101,91 @@ function formatToday() {
   return new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
+function slugifyKey(value: string) {
+  return value.toLowerCase().trim().replace(/[^a-z0-9]+/g, '_').replace(/(^_|_$)/g, '');
+}
+
+function genId() {
+  return `flag-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+}
+
+const EMPTY_ENVIRONMENTS: FeatureFlag['environments'] = {
+  Production: { enabled: false, rollout: 0 },
+  Staging: { enabled: false, rollout: 0 },
+  Development: { enabled: false, rollout: 0 },
+};
+
+type FlagDraft = {
+  name: string;
+  key: string;
+  description: string;
+  primaryEnvironment: Environment;
+  environments: FeatureFlag['environments'];
+};
+
+const EMPTY_DRAFT: FlagDraft = {
+  name: '',
+  key: '',
+  description: '',
+  primaryEnvironment: 'Development',
+  environments: EMPTY_ENVIRONMENTS,
+};
+
+function Modal({
+  title,
+  onClose,
+  children,
+}: {
+  title: string;
+  onClose: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        background: 'rgba(0, 0, 0, 0.55)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 100,
+        padding: 20,
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="panel-card"
+        style={{ width: '100%', maxWidth: 560, maxHeight: '90vh', overflowY: 'auto' }}
+      >
+        <div className="panel-card-header">
+          <h3>{title}</h3>
+          <button className="icon-btn" onClick={onClose} aria-label="Close">
+            <X size={15} />
+          </button>
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+}
+
 export default function FeatureFlags() {
   const [flags, setFlags] = useState<FeatureFlag[]>(INITIAL_FLAGS);
   const [statusFilter, setStatusFilter] = useState('All Status');
   const [envFilter, setEnvFilter] = useState('All Environments');
   const [search, setSearch] = useState('');
-  const [activeFlagId, setActiveFlagId] = useState<string>(INITIAL_FLAGS[0].id);
   const [toast, setToast] = useState<string | null>(null);
 
-  const activeFlag = useMemo(
-    () => flags.find((f) => f.id === activeFlagId) ?? flags[0],
-    [flags, activeFlagId]
-  );
+  const [modalMode, setModalMode] = useState<'new' | 'edit' | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [formDraft, setFormDraft] = useState<FlagDraft>(EMPTY_DRAFT);
 
-  const [draft, setDraft] = useState<FeatureFlag>(activeFlag);
-  if (draft.id !== activeFlag.id) {
-    setDraft(activeFlag);
+  function showToast(message: string) {
+    setToast(message);
+    setTimeout(() => setToast(null), 2200);
   }
-
-  const hasUnsavedChanges = JSON.stringify(draft.environments) !== JSON.stringify(activeFlag.environments);
 
   const filteredFlags = flags.filter((f) => {
     const status = overallStatus(f);
@@ -131,39 +197,94 @@ export default function FeatureFlags() {
     return matchesStatus && matchesEnv && matchesSearch;
   });
 
-  function updateEnvEnabled(env: Environment, enabled: boolean) {
-    setDraft((prev) => ({
+  function openNewFlagModal() {
+    setFormDraft(EMPTY_DRAFT);
+    setEditingId(null);
+    setModalMode('new');
+  }
+
+  function openEditFlagModal(flag: FeatureFlag) {
+    setFormDraft({
+      name: flag.name,
+      key: flag.key,
+      description: flag.description,
+      primaryEnvironment: flag.primaryEnvironment,
+      environments: flag.environments,
+    });
+    setEditingId(flag.id);
+    setModalMode('edit');
+  }
+
+  function closeModal() {
+    setModalMode(null);
+    setEditingId(null);
+  }
+
+  function updateFormField<K extends keyof FlagDraft>(field: K, value: FlagDraft[K]) {
+    setFormDraft((prev) => ({ ...prev, [field]: value }));
+  }
+
+  function updateFormEnv(env: Environment, patch: Partial<{ enabled: boolean; rollout: number }>) {
+    setFormDraft((prev) => ({
       ...prev,
       environments: {
         ...prev.environments,
-        [env]: { ...prev.environments[env], enabled, rollout: enabled ? prev.environments[env].rollout || 10 : 0 },
+        [env]: { ...prev.environments[env], ...patch },
       },
     }));
   }
 
-  function updateEnvRollout(env: Environment, rollout: number) {
-    setDraft((prev) => ({
+  function handleNameChange(name: string) {
+    setFormDraft((prev) => ({
       ...prev,
-      environments: {
-        ...prev.environments,
-        [env]: { ...prev.environments[env], rollout, enabled: rollout > 0 ? prev.environments[env].enabled : prev.environments[env].enabled },
-      },
+      name,
+      key: modalMode === 'new' ? slugifyKey(name) : prev.key,
     }));
   }
 
-  function showToast(message: string) {
-    setToast(message);
-    setTimeout(() => setToast(null), 2200);
+  function handleSaveFlag() {
+    if (!formDraft.name.trim()) {
+      showToast('Flag name is required');
+      return;
+    }
+    if (!formDraft.key.trim()) {
+      showToast('Flag key is required');
+      return;
+    }
+    if (modalMode === 'new' && flags.some((f) => f.key === formDraft.key)) {
+      showToast('A flag with this key already exists');
+      return;
+    }
+
+    const anyEnvEnabled = ENVIRONMENTS.some((env) => formDraft.environments[env].enabled);
+    // Pick the primary environment as whichever is enabled with the highest rollout, falling back to the selected one
+    const primaryEnvironment = anyEnvEnabled
+      ? ENVIRONMENTS.filter((env) => formDraft.environments[env].enabled).sort(
+          (a, b) => formDraft.environments[b].rollout - formDraft.environments[a].rollout
+        )[0]
+      : formDraft.primaryEnvironment;
+
+    const record: FeatureFlag = {
+      id: editingId ?? genId(),
+      name: formDraft.name.trim(),
+      key: formDraft.key.trim(),
+      description: formDraft.description.trim(),
+      primaryEnvironment,
+      environments: formDraft.environments,
+      updatedAt: formatToday(),
+    };
+
+    setFlags((prev) =>
+      editingId ? prev.map((f) => (f.id === editingId ? record : f)) : [record, ...prev]
+    );
+
+    showToast(editingId ? 'Flag updated' : 'Flag created');
+    closeModal();
   }
 
-  function handleSave() {
-    const updated: FeatureFlag = { ...draft, updatedAt: formatToday() };
-    setFlags((prev) => prev.map((f) => (f.id === updated.id ? updated : f)));
-    showToast('Changes saved');
-  }
-
-  function handleCancel() {
-    setDraft(activeFlag);
+  function handleDeleteFlag(id: string) {
+    setFlags((prev) => prev.filter((f) => f.id !== id));
+    showToast('Flag deleted');
   }
 
   return (
@@ -189,27 +310,7 @@ export default function FeatureFlags() {
               {toast}
             </span>
           )}
-          <button
-            className="button-primary"
-            onClick={() => {
-              const id = `flag-${Date.now()}`;
-              const newFlag: FeatureFlag = {
-                id,
-                name: 'New Flag',
-                key: 'new_flag',
-                primaryEnvironment: 'Development',
-                description: '',
-                updatedAt: formatToday(),
-                environments: {
-                  Production: { enabled: false, rollout: 0 },
-                  Staging: { enabled: false, rollout: 0 },
-                  Development: { enabled: false, rollout: 0 },
-                },
-              };
-              setFlags((prev) => [newFlag, ...prev]);
-              setActiveFlagId(id);
-            }}
-          >
+          <button className="button-primary" onClick={openNewFlagModal}>
             <Plus size={15} style={{ marginRight: 6 }} />
             New Flag
           </button>
@@ -237,7 +338,7 @@ export default function FeatureFlags() {
         </div>
       </div>
 
-      <div className="table-card" style={{ marginBottom: 24 }}>
+      <div className="table-card">
         <table className="data-table">
           <thead>
             <tr>
@@ -247,6 +348,7 @@ export default function FeatureFlags() {
               <th>Status</th>
               <th>Rollout</th>
               <th>Updated</th>
+              <th style={{ width: 80 }}>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -255,27 +357,30 @@ export default function FeatureFlags() {
               const rollout = f.environments[f.primaryEnvironment].rollout;
 
               return (
-                <tr
-                  key={f.id}
-                  onClick={() => setActiveFlagId(f.id)}
-                  style={{
-                    cursor: 'pointer',
-                    background: f.id === activeFlagId ? 'rgba(139, 92, 246, 0.08)' : undefined,
-                  }}
-                >
+                <tr key={f.id}>
                   <td><strong style={{ fontSize: 13 }}>{f.name}</strong></td>
                   <td className="cell-mono">{f.key}</td>
                   <td className="cell-muted">{f.primaryEnvironment}</td>
                   <td>{statusPill(status)}</td>
                   <td className="cell-muted">{rollout}%</td>
                   <td className="cell-muted">{f.updatedAt}</td>
+                  <td>
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <button className="icon-btn" onClick={() => openEditFlagModal(f)} aria-label="Edit flag">
+                        <Pencil size={13} />
+                      </button>
+                      <button className="icon-btn" onClick={() => handleDeleteFlag(f.id)} aria-label="Delete flag">
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
+                  </td>
                 </tr>
               );
             })}
 
             {filteredFlags.length === 0 && (
               <tr>
-                <td colSpan={6} className="cell-muted" style={{ textAlign: 'center', padding: '32px 0' }}>
+                <td colSpan={7} className="cell-muted" style={{ textAlign: 'center', padding: '32px 0' }}>
                   No flags match your filters.
                 </td>
               </tr>
@@ -284,35 +389,60 @@ export default function FeatureFlags() {
         </table>
       </div>
 
-      <div className="content-editor-panel">
-        <div className="field-group">
-          <label style={{ fontSize: 16, textTransform: 'none', letterSpacing: 0, color: 'var(--text)' }}>
-            <input
-              value={draft.name}
-              onChange={(e) => setDraft((prev) => ({ ...prev, name: e.target.value }))}
-              style={{ fontSize: 16, fontWeight: 600, background: 'transparent', border: 'none', padding: '4px 0' }}
-            />
-          </label>
-        </div>
-
-        <div className="field-row">
+      {/* New / Edit flag modal */}
+      {modalMode && (
+        <Modal title={modalMode === 'new' ? 'New Feature Flag' : 'Edit Feature Flag'} onClose={closeModal}>
           <div className="field-group">
-            <label>Key</label>
-            <span className="cell-mono" style={{ fontSize: 13 }}>{draft.key}</span>
+            <label>Flag Name</label>
+            <input
+              value={formDraft.name}
+              onChange={(e) => handleNameChange(e.target.value)}
+              placeholder="e.g. New Checkout Flow"
+              autoFocus
+            />
+          </div>
+
+          <div className="field-group">
+            <label>
+              Key
+              <span className="field-hint">Used in code — lowercase, underscores only</span>
+            </label>
+            <input
+              value={formDraft.key}
+              onChange={(e) => updateFormField('key', slugifyKey(e.target.value))}
+              placeholder="e.g. new_checkout_flow"
+              className="cell-mono"
+              disabled={modalMode === 'edit'}
+            />
+          </div>
+
+          <div className="field-group">
+            <label>Description</label>
+            <textarea
+              rows={2}
+              value={formDraft.description}
+              onChange={(e) => updateFormField('description', e.target.value)}
+              placeholder="What does this flag control?"
+            />
           </div>
 
           <div className="field-group">
             <label>Environments</label>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               {ENVIRONMENTS.map((env) => {
-                const state = draft.environments[env];
+                const state = formDraft.environments[env];
                 return (
                   <div key={env} className="env-row">
                     <label className="env-name">
                       <input
                         type="checkbox"
                         checked={state.enabled}
-                        onChange={(e) => updateEnvEnabled(env, e.target.checked)}
+                        onChange={(e) =>
+                          updateFormEnv(env, {
+                            enabled: e.target.checked,
+                            rollout: e.target.checked ? state.rollout || 10 : 0,
+                          })
+                        }
                       />
                       {env}
                     </label>
@@ -323,7 +453,7 @@ export default function FeatureFlags() {
                       max={100}
                       value={state.rollout}
                       disabled={!state.enabled}
-                      onChange={(e) => updateEnvRollout(env, Number(e.target.value))}
+                      onChange={(e) => updateFormEnv(env, { rollout: Number(e.target.value) })}
                     />
                     <span className="env-pct">{state.rollout}%</span>
                   </div>
@@ -331,31 +461,15 @@ export default function FeatureFlags() {
               })}
             </div>
           </div>
-        </div>
 
-        <div className="field-group">
-          <label>Description</label>
-          <textarea
-            rows={2}
-            value={draft.description}
-            onChange={(e) => setDraft((prev) => ({ ...prev, description: e.target.value }))}
-          />
-        </div>
-
-        <div className="content-footer-bar">
-          <span className="content-footer-meta">
-            Last updated by Merab Apio on {activeFlag.updatedAt}, 10:15 AM
-          </span>
-          <div className="content-footer-actions">
-            <button className="button-secondary" onClick={handleCancel} disabled={!hasUnsavedChanges}>
-              Cancel
-            </button>
-            <button className="button-primary" onClick={handleSave} disabled={!hasUnsavedChanges}>
-              Save Changes
+          <div className="content-footer-actions" style={{ justifyContent: 'flex-end' }}>
+            <button className="button-secondary" onClick={closeModal}>Cancel</button>
+            <button className="button-primary" onClick={handleSaveFlag}>
+              {modalMode === 'new' ? 'Create Flag' : 'Save Changes'}
             </button>
           </div>
-        </div>
-      </div>
+        </Modal>
+      )}
     </main>
   );
 }
