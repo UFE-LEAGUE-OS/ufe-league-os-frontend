@@ -1,7 +1,6 @@
 import { useState, type ChangeEvent, type FormEvent, type ReactNode } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { GoogleLogin, type CredentialResponse } from '@react-oauth/google';
-import axios from 'axios';
+import { GoogleLogin } from '@react-oauth/google';
 import PersonOutlinedIcon from '@mui/icons-material/PersonOutlined';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
@@ -11,19 +10,14 @@ import EmojiEventsOutlinedIcon from '@mui/icons-material/EmojiEventsOutlined';
 import EventNoteOutlinedIcon from '@mui/icons-material/EventNoteOutlined';
 import { GlassCard, PageShell } from '../../components/site/LeagueUI.js';
 import { useAuth } from '../../hooks/useAuth.js';
+import { apiBaseUrl } from '../../services/apiClient.js';
 import {
     getSafeAuthRedirect,
     VERIFY_EMAIL_ROUTE,
     type AuthFlowState,
 } from '../../utils/authFlow.js';
+import { getDefaultDashboardRoute } from '../../utils/roleRoutes.js';
 import BackButton from '../../components/BackButton.js';
-import { getMyUnionWorkspaces } from '../../services/unionAdminService';
-import {
-    canRoleAccessRedirect,
-    getDefaultDashboardRoute,
-    getNormalizedRoles,
-    normalizeRole,
-} from '../../utils/roleRoutes.js';
 
 import '../../styles/pages/auth/login.css';
 
@@ -37,9 +31,11 @@ type LoginResult = {
     frontend_dashboard_route?: unknown;
     dashboard_route?: unknown;
     requires_email_verification?: boolean;
+    is_new_user?: boolean;
     user?: {
         email?: unknown;
         role?: unknown;
+        roles?: unknown;
         frontend_dashboard_route?: unknown;
         dashboard_route?: unknown;
     };
@@ -101,16 +97,16 @@ function getLoginErrorMessage(error: unknown) {
         return 'Please verify your email before logging in.';
     }
 
-    return (
-        firstMessage(data?.detail) ||
-        firstMessage(data?.error) ||
-        firstMessage(data?.message) ||
-        firstMessage(data?.non_field_errors) ||
-        firstMessage(data?.identifier) ||
-        firstMessage(data?.email) ||
-        firstMessage(data?.password) ||
-        'Login failed. Please check your phone number or email and password.'
-    );
+  return (
+    firstMessage(data?.detail) ||
+    firstMessage(data?.error) ||
+    firstMessage(data?.message) ||
+    firstMessage(data?.non_field_errors) ||
+    firstMessage(data?.identifier) ||
+    firstMessage(data?.email) ||
+    firstMessage(data?.password) ||
+    'Login failed. Please check your phone number or email and password.'
+  );
 }
 
 function safeDashboardRoute(value: unknown) {
@@ -118,6 +114,19 @@ function safeDashboardRoute(value: unknown) {
 }
 
 function resolveDashboardRoute(result: LoginResult) {
+    // Prefer the frontend's own role-based routing table over whatever the
+    // backend says, since backend-provided dashboard paths can drift out of
+    // sync with the routes actually registered in the frontend router.
+    const role = result.user?.role ?? result.user?.roles;
+
+    if (role) {
+        const roleBasedRoute = getDefaultDashboardRoute(role);
+
+        if (roleBasedRoute) {
+            return roleBasedRoute;
+        }
+    }
+
     return (
         safeDashboardRoute(result.user?.frontend_dashboard_route) ||
         safeDashboardRoute(result.frontend_dashboard_route) ||
@@ -125,48 +134,6 @@ function resolveDashboardRoute(result: LoginResult) {
         safeDashboardRoute(result.dashboard_route) ||
         '/dashboard'
     );
-}
-
-async function resolvePostLoginRoute(result: LoginResult, postLoginRedirect?: string | null) {
-    const backendRoute = resolveDashboardRoute(result);
-    const userRoles = getNormalizedRoles(result.user);
-    const userRole = normalizeRole(result.user?.role);
-    const hasRole = (role: string) => userRoles.includes(role);
-
-    if (postLoginRedirect && canRoleAccessRedirect(result.user ?? userRole, postLoginRedirect)) {
-        return postLoginRedirect;
-    }
-
-    if (hasRole('SUPER_ADMIN')) {
-        return getDefaultDashboardRoute(result.user);
-    }
-
-    if (
-        hasRole('UNION_ADMIN') &&
-        (backendRoute === '/dashboard' || backendRoute === '/dashboard/fan')
-    ) {
-        return '/dashboard/union-admin';
-    }
-
-    if (backendRoute !== '/dashboard' && backendRoute !== '/dashboard/fan') {
-        return backendRoute;
-    }
-
-    try {
-        const workspaces = await getMyUnionWorkspaces();
-
-        if (workspaces.length > 0) {
-            return '/dashboard/union-admin';
-        }
-    } catch {
-        // Keep the normal dashboard route if workspace lookup fails.
-    }
-
-    if (hasRole('FAN') || userRole === 'FAN') {
-        return '/dashboard/fan';
-    }
-
-    return getDefaultDashboardRoute(result.user ?? (userRole || 'FAN'));
 }
 
 function getUserEmail(value: unknown) {
@@ -188,8 +155,6 @@ export default function Login() {
     const locationState = location.state as AuthFlowState | null;
     const locationMessage = locationState?.message ?? '';
     const postLoginRedirect = getSafeAuthRedirect(locationState?.postLoginRedirect);
-
-    const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
     const clearError = (field: keyof LoginErrors) => {
         setErrors((current) => ({
@@ -245,15 +210,13 @@ export default function Login() {
                             getUserEmail(result.user?.email) ??
                             getUserEmail(identifier.trim()),
                         message: 'Please verify your email address before continuing.',
-                        postLoginRedirect: await resolvePostLoginRoute(result, postLoginRedirect),
+                        postLoginRedirect: postLoginRedirect ?? resolveDashboardRoute(result),
                     },
                 });
                 return;
             }
 
-            const redirectRoute = await resolvePostLoginRoute(result, postLoginRedirect);
-
-            navigate(redirectRoute, { replace: true });
+            navigate(postLoginRedirect ?? resolveDashboardRoute(result), { replace: true });
         } catch (error) {
             const data = (error as ApiError).response?.data;
 
@@ -274,44 +237,6 @@ export default function Login() {
             });
         } finally {
             setIsSubmitting(false);
-        }
-    };
-
-    const handleGoogleSuccess = async (credentialResponse: CredentialResponse) => {
-        const credential = credentialResponse.credential;
-
-        if (!credential) {
-            setGoogleLoginMessage('Google sign-in failed: no credential received.');
-            return;
-        }
-
-        try {
-            const response = await axios.post(
-                `${apiBaseUrl}/api/accounts/google/`,
-                { credential }
-            );
-
-            const result = response.data as LoginResult;
-
-            if (result.requires_email_verification) {
-                navigate(VERIFY_EMAIL_ROUTE, {
-                    replace: true,
-                    state: {
-                        email: getUserEmail(result.user?.email),
-                        message: 'Please verify your email address before continuing.',
-                        postLoginRedirect: await resolvePostLoginRoute(result, postLoginRedirect),
-                    },
-                });
-                return;
-            }
-
-            const redirectRoute = await resolvePostLoginRoute(result, postLoginRedirect);
-
-            navigate(redirectRoute, { replace: true });
-        } catch (error) {
-            setErrors({
-                general: getLoginErrorMessage(error),
-            });
         }
     };
 
@@ -447,8 +372,13 @@ export default function Login() {
 
                             <div style={{ display: 'flex', justifyContent: 'center' }}>
                                 <GoogleLogin
-                                    onSuccess={handleGoogleSuccess}
-                                    onError={() => setGoogleLoginMessage('Google sign-in failed.')}
+                                    ux_mode="redirect"
+                                    login_uri={`${apiBaseUrl}/google/login/?redirect_uri=${window.location.origin}/google-callback`}
+                                    onSuccess={() => { /* This is not called in redirect mode */ }}
+                  onError={() => {
+                    clearError('general');
+                    setGoogleLoginMessage('Google sign-in failed. Please try again.');
+                  }}
                                 />
                             </div>
 

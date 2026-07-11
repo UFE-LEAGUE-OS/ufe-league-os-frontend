@@ -59,15 +59,13 @@ export default function GoogleCallback() {
   const navigate = useNavigate();
   const setAuth = useAuthStore((state) => state.setAuth);
   const clearAuth = useAuthStore((state) => state.clearAuth);
-  const [message] = useState(() => {
-    const result = parseCallbackHash();
-    return result.ok ? 'Completing Google sign-in...' : result.message;
-  });
+  const [message, setMessage] = useState('Completing Google sign-in...');
 
   useEffect(() => {
     const result = parseCallbackHash();
 
     if (!result.ok) {
+      setMessage(result.message);
       return;
     }
 
@@ -116,7 +114,7 @@ export default function GoogleCallback() {
               <h2>
                 Signing <span>you in</span>
               </h2>
-              <p>{message}</p>
+              <p className={message.includes('Completing') ? '' : 'auth-message auth-message-error'}>{message}</p>
               {!message.includes('Completing') ? (
                 <p className="login-footnote">
                   <Link to="/login">Return to login</Link>
