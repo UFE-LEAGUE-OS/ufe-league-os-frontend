@@ -40,6 +40,7 @@ import AuthenticatedFooter from "../../components/AuthenticatedFooter/Authentica
 import MobileUnionNavigation from "../../components/MobileUnionNavigation/MobileUnionNavigation";
 import UnionAdminManagementWorkflow from "../../components/UnionAdminManagementWorkflow/UnionAdminManagementWorkflow";
 import UnionAdminClubsPanel from "../../components/UnionAdminClubsPanel/UnionAdminClubsPanel";
+import UnionAdminRefereesPanel from "../../components/UnionAdminRefereesPanel/UnionAdminRefereesPanel";
 import logoHorizontal from "../../assets/logos/league-os-horizontal.png";
 import styles from "./UnionAdminDashboard.module.css";
 
@@ -2201,55 +2202,11 @@ export default function UnionAdminDashboard() {
 
     function renderReferees() {
         return (
-            <section className={styles.panelLarge}>
-                <SectionHeader
-                    eyebrow="Official management"
-                    title="Referees and match officials"
-                    description="The union creates and grades officials. Competitions can then assign them to matches."
-                    actions={<button className={styles.primaryButton} type="button">Create Official</button>}
-                />
-                <div className={styles.contentSplit}>
-                    <DataTable
-                        columns={[
-                            { key: "name", label: "Official", render: (item) => item.name },
-                            { key: "role", label: "Role", render: (item) => item.role },
-                            { key: "grade", label: "Certification", render: (item) => item.grade },
-                            { key: "competitions", label: "Pools", render: (item) => item.competitions },
-                            { key: "nextMatch", label: "Next Match", render: (item) => item.nextMatch },
-                            { key: "status", label: "Status", render: (item) => <StatusPill label={item.status} /> },
-                        ]}
-                        data={workspaceReferees}
-                    />
-                    <form className={styles.formPanel}>
-                        <h3>Create official account</h3>
-                        <label>
-                            Email
-                            <input placeholder="official@example.com" />
-                        </label>
-                        <label>
-                            Role type
-                            <select>
-                                <option>Centre Referee</option>
-                                <option>Assistant Referee</option>
-                                <option>Match Commissioner</option>
-                                <option>Assessor</option>
-                                <option>Scorer / Table Official</option>
-                            </select>
-                        </label>
-                        <label>
-                            Certification level
-                            <select>
-                                <option>Level 1</option>
-                                <option>Level 2</option>
-                                <option>Assessor</option>
-                            </select>
-                        </label>
-                        <button className={styles.primaryButton} type="button">
-                            Prepare Account
-                        </button>
-                    </form>
-                </div>
-            </section>
+            <UnionAdminRefereesPanel
+                workspaceSlug={activeWorkspace.slug}
+                workspaceName={activeWorkspace.name}
+                workspaceSport={activeWorkspace.sport}
+            />
         );
     }
 
@@ -3093,7 +3050,9 @@ export default function UnionAdminDashboard() {
                 {workspaceDataError ? <div className={styles.alertBanner}>{workspaceDataError}</div> : null}
                 {operationsError ? <div className={styles.alertBanner}>{operationsError}</div> : null}
 
-                <StatGrid stats={activeStats} loading={isLoadingOverview} />
+                {activeTab !== "referees" ? (
+                    <StatGrid stats={activeStats} loading={isLoadingOverview} />
+                ) : null}
 
                 {renderActiveTab()}
 
