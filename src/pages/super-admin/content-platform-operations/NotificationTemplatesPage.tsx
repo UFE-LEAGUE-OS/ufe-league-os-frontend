@@ -205,7 +205,7 @@ export default function NotificationTemplatesPage() {
     setToast(message);
   }
 
-  function commitDraft(field: 'id', markAsDraft: boolean) {
+  function commitDraft(markAsDraft: boolean) {
     const updated: Template = {
       ...current,
       isDraft: markAsDraft,
@@ -226,7 +226,7 @@ export default function NotificationTemplatesPage() {
   }
 
   function handleSaveDraft() {
-    commitDraft('id', true);
+    commitDraft(true);
     showToast('Saved as draft');
   }
 
@@ -235,7 +235,7 @@ export default function NotificationTemplatesPage() {
       showToast('Template name is required');
       return;
     }
-    commitDraft('id', false);
+    commitDraft(false);
     showToast('Template saved');
   }
 
