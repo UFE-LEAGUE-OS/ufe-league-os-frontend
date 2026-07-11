@@ -106,6 +106,7 @@ import DataAccessLogPage from '../pages/super-admin/finance-security/data-access
 import SecurityEventsPage from '../pages/super-admin/finance-security/security-events';
 import SuperAdminProfilePage from '../pages/super-admin/SuperAdminProfilePage';
 import AnnouncementsBannersPage from '../pages/super-admin/content-platform-operations/AnnouncementsBannersPage';
+import AnnouncementDetailPage from '../pages/super-admin/content-platform-operations/AnnouncementDetailPage';
 import NotificationTemplatesPage from '../pages/super-admin/content-platform-operations/NotificationTemplatesPage';
 import PublicContentEditor from '../pages/super-admin/content-platform-operations/PublicContentEditor';
 import Broadcasts from '../pages/super-admin/content-platform-operations/Broadcasts';
@@ -324,6 +325,7 @@ export default function AppRoutes() {
                     {/* Content & Platform Operations */}
                     <Route path="public-content" element={<PublicContentEditor />} />
                     <Route path="announcements-banners" element={<AnnouncementsBannersPage />} />
+                    <Route path="announcements/:id" element={<AnnouncementDetailPage />} />
                     <Route path="notification-templates" element={<NotificationTemplatesPage />} />
                     <Route path="broadcasts" element={<Broadcasts />} />
                     <Route path="support-settings" element={<SupportSettings />} />
