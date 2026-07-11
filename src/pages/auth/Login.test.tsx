@@ -10,8 +10,8 @@ const apiClientPostMock = vi.hoisted(() => vi.fn())
 const navigateMock = vi.hoisted(() => vi.fn())
 const loginMock = vi.hoisted(() => vi.fn())
 
-vi.mock('../../services/apiClient', () => ({
-  apiClient: {
+vi.mock('../../services/apiClient.js', () => ({
+  default: {
     post: apiClientPostMock,
   },
 }));
