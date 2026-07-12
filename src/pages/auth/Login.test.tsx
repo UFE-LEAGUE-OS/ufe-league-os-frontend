@@ -268,7 +268,7 @@ describe('Login page', () => {
     })
   })
 
-  it('shows an error message when Google Sign-In fails', async () => { // eslint-disable-line vitest/no-identical-title
+  it('shows an error message when Google Sign-In fails', async () => {
     const user = userEvent.setup()
     apiClientPostMock.mockRejectedValueOnce({
       response: { data: { detail: 'Invalid Google token.' } },
