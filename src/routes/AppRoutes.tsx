@@ -180,8 +180,34 @@ export default function AppRoutes() {
 
                 <Route path="/dashboard" element={protectedPage(<Navigate to="/dashboard/fan" replace />)} />
 
-                <Route path="/union-admin" element={protectedPage(<Navigate to="/dashboard/union-admin" replace />)} />
-                <Route path="/dashboard/union-admin" element={roleProtectedPage(<UnionAdminDashboard />, ['UNION_ADMIN'])} />
+                <Route
+                    path="/union-admin"
+                    element={protectedPage(<Navigate to="/dashboard/union-admin" replace />)}
+                />
+
+                <Route
+                    path="/dashboard/union-admin"
+                    element={roleProtectedPage(
+                        <UnionAdminDashboard />,
+                        ['UNION_ADMIN'],
+                    )}
+                />
+
+                <Route
+                    path="/dashboard/referee"
+                    element={roleProtectedPage(
+                        <UnionAdminDashboard />,
+                        ['REFEREE', 'MATCH_OFFICIAL'],
+                    )}
+                />
+
+                <Route
+                    path="/dashboard/match-official"
+                    element={roleProtectedPage(
+                        <UnionAdminDashboard />,
+                        ['REFEREE', 'MATCH_OFFICIAL'],
+                    )}
+                />
 
                 <Route element={protectedPage(<AuthenticatedLayout />)}>
                     <Route path="/dashboard/fan" element={<Dashboard />} />

@@ -117,7 +117,7 @@ function resolveDashboardRoute(result: LoginResult) {
     // Prefer the frontend's own role-based routing table over whatever the
     // backend says, since backend-provided dashboard paths can drift out of
     // sync with the routes actually registered in the frontend router.
-    const role = result.user?.role ?? result.user?.roles;
+    const role = result.user?.roles ?? result.user?.role;
 
     if (role) {
         const roleBasedRoute = getDefaultDashboardRoute(role);

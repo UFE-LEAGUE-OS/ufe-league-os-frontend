@@ -40,6 +40,7 @@ import AuthenticatedFooter from "../../components/AuthenticatedFooter/Authentica
 import MobileUnionNavigation from "../../components/MobileUnionNavigation/MobileUnionNavigation";
 import UnionAdminManagementWorkflow from "../../components/UnionAdminManagementWorkflow/UnionAdminManagementWorkflow";
 import UnionAdminClubsPanel from "../../components/UnionAdminClubsPanel/UnionAdminClubsPanel";
+import UnionAdminRefereesPanel from "../../components/UnionAdminRefereesPanel/UnionAdminRefereesPanel";
 import logoHorizontal from "../../assets/logos/league-os-horizontal.png";
 import styles from "./UnionAdminDashboard.module.css";
 
@@ -92,6 +93,14 @@ type StatCard = {
     icon: typeof BarChart3;
 };
 
+type PageHeaderContent = {
+    eyebrow: string;
+    title: string;
+    description: string;
+    publicPath: string;
+    publicLabel: string;
+};
+
 type TableColumn<T> = {
     key: string;
     label: string;
@@ -137,11 +146,13 @@ type RefereeRecord = {
 };
 
 type AppointmentRecord = {
+    id?: number;
     match: string;
     competition: string;
     date: string;
     venue: string;
     role: string;
+    status?: string;
     report: string;
 };
 
@@ -540,23 +551,185 @@ function isTicketingWorkspace(workspace: UnionWorkspaceOption) {
     return workspace.role === "TICKETING_OFFICER";
 }
 
-function getWorkspaceTitle(workspace: UnionWorkspaceOption) {
-    if (isMatchOfficialWorkspace(workspace)) return `${workspace.acronym} Match Official Workspace`;
-    if (isTicketingWorkspace(workspace)) return `${workspace.acronym} Ticketing Workspace`;
+function getPageHeaderContent(
+    activeTab: TabKey,
+    workspace: UnionWorkspaceOption,
+): PageHeaderContent {
+    const sport = workspace.sport || "sport";
+    const unionPage = {
+        publicPath: "/unions",
+        publicLabel: "View Union Page",
+    };
 
-    return `${workspace.acronym} Union Workspace`;
-}
-
-function getWorkspaceIntro(workspace: UnionWorkspaceOption) {
-    if (isMatchOfficialWorkspace(workspace)) {
-        return `Manage appointments, availability, reports, documents and allowances under ${workspace.name}.`;
+    switch (activeTab) {
+        case "overview":
+            return {
+                eyebrow: "Workspace overview",
+                title: isMatchOfficialWorkspace(workspace)
+                    ? `${workspace.acronym} Match Official Workspace`
+                    : isTicketingWorkspace(workspace)
+                      ? `${workspace.acronym} Ticketing Workspace`
+                      : `${workspace.acronym} Union Workspace`,
+                description: isMatchOfficialWorkspace(workspace)
+                    ? `Review your appointments, availability, reports and official records under ${workspace.name}.`
+                    : isTicketingWorkspace(workspace)
+                      ? `Review matchday scanning, entry logs and attendance activity under ${workspace.name}.`
+                      : `Monitor ${workspace.name}, review priority actions and move between the operational areas available to your role.`,
+                ...unionPage,
+            };
+        case "competitions":
+            return {
+                eyebrow: "Competition operations",
+                title: "Competition Management",
+                description: `Create and manage ${sport} competitions, seasons, participating clubs, fixtures and competition delivery under ${workspace.name}.`,
+                publicPath: "/competitions",
+                publicLabel: "View Competitions",
+            };
+        case "clubs":
+            return {
+                eyebrow: "Club governance",
+                title: "Club Management",
+                description: `Manage affiliated clubs, review their records and maintain the club structure governed by ${workspace.name}.`,
+                publicPath: "/clubs",
+                publicLabel: "View Clubs",
+            };
+        case "nationalTeams":
+            return {
+                eyebrow: "Representative teams",
+                title: "National Team Operations",
+                description: `Coordinate representative squads, player pools, team readiness and national-team activity for ${workspace.name}.`,
+                ...unionPage,
+            };
+        case "registrations":
+            return {
+                eyebrow: "Player governance",
+                title: "Registration & Eligibility",
+                description: `Review player registrations, eligibility decisions, transfers and approval queues across ${workspace.name}.`,
+                ...unionPage,
+            };
+        case "referees":
+            return {
+                eyebrow: "Official management",
+                title: "Referee Operations",
+                description: `Manage the ${sport} referees and match officials attached to ${workspace.name}, including roles, grades, status and competition pools.`,
+                ...unionPage,
+            };
+        case "appointments":
+            return {
+                eyebrow: "Match appointments",
+                title: "Appointment Control",
+                description: `Assign eligible officials to fixtures, monitor appointment responses and maintain complete matchday coverage.`,
+                ...unionPage,
+            };
+        case "availability":
+            return {
+                eyebrow: "Official readiness",
+                title: "Availability Management",
+                description: `Track official availability, restrictions and appointment readiness across upcoming ${sport} matchdays.`,
+                ...unionPage,
+            };
+        case "matchReports":
+            return {
+                eyebrow: "Post-match workflow",
+                title: "Matchday Reporting",
+                description: `Review submitted reports, follow up overdue records and maintain the official match documentation trail.`,
+                ...unionPage,
+            };
+        case "documents":
+            return {
+                eyebrow: "Official compliance",
+                title: "Documents & Certifications",
+                description: `Review certifications, identity records and compliance documents for officials registered under ${workspace.name}.`,
+                ...unionPage,
+            };
+        case "allowances":
+            return {
+                eyebrow: "Official payments",
+                title: "Allowances & Claims",
+                description: `Track match-official allowances, payment status and supporting records for completed appointments.`,
+                ...unionPage,
+            };
+        case "profile":
+            return {
+                eyebrow: "Personal workspace",
+                title: "Official Profile",
+                description: `Maintain your official profile, qualifications, preferences and contact information under ${workspace.name}.`,
+                ...unionPage,
+            };
+        case "ticketing":
+            return {
+                eyebrow: "Event access",
+                title: "Ticketing Operations",
+                description: `Manage ticket inventory, matchday sales and access-control activity for union-owned events.`,
+                publicPath: "/tickets",
+                publicLabel: "View Tickets",
+            };
+        case "scanner":
+            return {
+                eyebrow: "Matchday access",
+                title: "Ticket Scanner",
+                description: `Validate tickets securely and record entry decisions for the active ${workspace.name} event.`,
+                publicPath: "/tickets",
+                publicLabel: "View Tickets",
+            };
+        case "entryLogs":
+            return {
+                eyebrow: "Attendance control",
+                title: "Entry & Attendance Logs",
+                description: `Review scan activity, attendance records and entry exceptions across union-managed events.`,
+                publicPath: "/tickets",
+                publicLabel: "View Tickets",
+            };
+        case "finance":
+            return {
+                eyebrow: "Financial governance",
+                title: "Finance Oversight",
+                description: `Review collections, disbursements, reconciliations and audit-ready financial summaries for ${workspace.name}.`,
+                ...unionPage,
+            };
+        case "sponsors":
+            return {
+                eyebrow: "Commercial partnerships",
+                title: "Sponsorship Management",
+                description: `Manage sponsor relationships, agreements, benefits and payment activity connected to ${workspace.name}.`,
+                ...unionPage,
+            };
+        case "comms":
+            return {
+                eyebrow: "Union communications",
+                title: "Communications Centre",
+                description: `Prepare announcements, target workspace audiences and coordinate official communications from ${workspace.name}.`,
+                ...unionPage,
+            };
+        case "users":
+            return {
+                eyebrow: "Access administration",
+                title: "Users & Permissions",
+                description: `Manage workspace members, roles and permission coverage while preserving accountable access control.`,
+                ...unionPage,
+            };
+        case "audit":
+            return {
+                eyebrow: "Governance records",
+                title: "Audit Trail",
+                description: `Review administrative actions, approvals and governance events recorded across the ${workspace.name} workspace.`,
+                ...unionPage,
+            };
+        case "settings":
+            return {
+                eyebrow: "Workspace configuration",
+                title: "Workspace Settings",
+                description: `Configure the public profile, governance defaults and operational behaviour of ${workspace.name}.`,
+                ...unionPage,
+            };
+        default:
+            return {
+                eyebrow: "Live workspace access",
+                title: `${workspace.acronym} Union Workspace`,
+                description: `Manage ${workspace.name} through workspace-level access.`,
+                ...unionPage,
+            };
     }
-
-    if (isTicketingWorkspace(workspace)) {
-        return `Manage assigned matchday scanning, entry logs and attendance records under ${workspace.name}.`;
-    }
-
-    return `Manage ${workspace.name} through workspace-level access. Your view changes based on your role and permissions.`;
 }
 
 function getWorkspaceInitials(workspace: UnionWorkspaceOption) {
@@ -993,6 +1166,7 @@ export default function UnionAdminDashboard() {
     const workspacePlayerPositions = operationsData?.player_positions?.length
         ? operationsData.player_positions
         : getSportPositionGroups(activeWorkspace.sport);
+    const currentOfficial = operationsData?.current_official ?? null;
 
     const selectedCompetition =
         workspaceCompetitions.find((competition) => competition.id === selectedCompetitionId) ?? workspaceCompetitions[0];
@@ -1173,6 +1347,153 @@ export default function UnionAdminDashboard() {
     }
 
     function renderOverview() {
+        if (isMatchOfficialWorkspace(activeWorkspace)) {
+            const nextAppointment = workspaceAppointments[0] ?? null;
+
+            return (
+                <div className={styles.overviewLayout}>
+                    <section className={styles.panelLarge}>
+                        <SectionHeader
+                            eyebrow="My official workspace"
+                            title={`Welcome${
+                                currentOfficial?.name
+                                    ? `, ${currentOfficial.name}`
+                                    : ""
+                            }`}
+                            description={`Your ${activeWorkspace.name} workspace only shows your appointments, availability, reports, documents, allowances and official profile.`}
+                            actions={
+                                <button
+                                    className={styles.primaryButton}
+                                    type="button"
+                                    onClick={() => resetSearch("appointments")}
+                                >
+                                    View appointments
+                                </button>
+                            }
+                        />
+
+                        <div className={styles.approvalSummaryGrid}>
+                            <article>
+                                <span>Official role</span>
+                                <strong>
+                                    {currentOfficial?.role ?? "Not linked"}
+                                </strong>
+                                <small>
+                                    {currentOfficial?.grade ||
+                                        "Certification pending"}
+                                </small>
+                            </article>
+
+                            <article>
+                                <span>Federation</span>
+                                <strong>{activeWorkspace.acronym}</strong>
+                                <small>{activeWorkspace.sport}</small>
+                            </article>
+
+                            <article>
+                                <span>Status</span>
+                                <strong>
+                                    {currentOfficial?.status ?? "Pending"}
+                                </strong>
+                                <small>Appointment eligibility</small>
+                            </article>
+                        </div>
+
+                        <DataTable
+                            columns={[
+                                {
+                                    key: "match",
+                                    label: "Match",
+                                    render: (item) => item.match,
+                                },
+                                {
+                                    key: "competition",
+                                    label: "Competition",
+                                    render: (item) => item.competition,
+                                },
+                                {
+                                    key: "date",
+                                    label: "Date",
+                                    render: (item) => item.date,
+                                },
+                                {
+                                    key: "venue",
+                                    label: "Venue",
+                                    render: (item) => item.venue,
+                                },
+                                {
+                                    key: "role",
+                                    label: "Role",
+                                    render: (item) => item.role,
+                                },
+                                {
+                                    key: "status",
+                                    label: "Status",
+                                    render: (item) => (
+                                        <StatusPill
+                                            label={
+                                                item.status ?? "Assigned"
+                                            }
+                                        />
+                                    ),
+                                },
+                            ]}
+                            data={workspaceAppointments.slice(0, 5)}
+                            emptyLabel="No appointments have been assigned to your official profile yet."
+                        />
+                    </section>
+
+                    <aside className={styles.sidePanel}>
+                        <SectionHeader
+                            eyebrow="Next appointment"
+                            title={
+                                nextAppointment?.match ??
+                                "No upcoming match"
+                            }
+                            description={
+                                nextAppointment
+                                    ? `${nextAppointment.competition} • ${nextAppointment.date}`
+                                    : "Your federation will assign upcoming matches here."
+                            }
+                        />
+
+                        <div className={styles.leagueSnapshotGrid}>
+                            <div>
+                                <span>Venue</span>
+                                <strong>
+                                    {nextAppointment?.venue ?? "TBC"}
+                                </strong>
+                            </div>
+
+                            <div>
+                                <span>Role</span>
+                                <strong>
+                                    {nextAppointment?.role ??
+                                        currentOfficial?.role ??
+                                        "TBC"}
+                                </strong>
+                            </div>
+
+                            <div>
+                                <span>Status</span>
+                                <strong>
+                                    {nextAppointment?.status ??
+                                        "Awaiting assignment"}
+                                </strong>
+                            </div>
+
+                            <div>
+                                <span>Report</span>
+                                <strong>
+                                    {nextAppointment?.report ?? "Not due"}
+                                </strong>
+                            </div>
+                        </div>
+                    </aside>
+                </div>
+            );
+        }
+
         const activeCompetition = workspaceCompetitions[0];
         const activeLeagueName =
             activeCompetition?.name ?? `${activeWorkspace.acronym} active league`;
@@ -2201,55 +2522,11 @@ export default function UnionAdminDashboard() {
 
     function renderReferees() {
         return (
-            <section className={styles.panelLarge}>
-                <SectionHeader
-                    eyebrow="Official management"
-                    title="Referees and match officials"
-                    description="The union creates and grades officials. Competitions can then assign them to matches."
-                    actions={<button className={styles.primaryButton} type="button">Create Official</button>}
-                />
-                <div className={styles.contentSplit}>
-                    <DataTable
-                        columns={[
-                            { key: "name", label: "Official", render: (item) => item.name },
-                            { key: "role", label: "Role", render: (item) => item.role },
-                            { key: "grade", label: "Certification", render: (item) => item.grade },
-                            { key: "competitions", label: "Pools", render: (item) => item.competitions },
-                            { key: "nextMatch", label: "Next Match", render: (item) => item.nextMatch },
-                            { key: "status", label: "Status", render: (item) => <StatusPill label={item.status} /> },
-                        ]}
-                        data={workspaceReferees}
-                    />
-                    <form className={styles.formPanel}>
-                        <h3>Create official account</h3>
-                        <label>
-                            Email
-                            <input placeholder="official@example.com" />
-                        </label>
-                        <label>
-                            Role type
-                            <select>
-                                <option>Centre Referee</option>
-                                <option>Assistant Referee</option>
-                                <option>Match Commissioner</option>
-                                <option>Assessor</option>
-                                <option>Scorer / Table Official</option>
-                            </select>
-                        </label>
-                        <label>
-                            Certification level
-                            <select>
-                                <option>Level 1</option>
-                                <option>Level 2</option>
-                                <option>Assessor</option>
-                            </select>
-                        </label>
-                        <button className={styles.primaryButton} type="button">
-                            Prepare Account
-                        </button>
-                    </form>
-                </div>
-            </section>
+            <UnionAdminRefereesPanel
+                workspaceSlug={activeWorkspace.slug}
+                workspaceName={activeWorkspace.name}
+                workspaceSport={activeWorkspace.sport}
+            />
         );
     }
 
@@ -2274,12 +2551,40 @@ export default function UnionAdminDashboard() {
                         data={workspaceAppointments}
                     />
                     <aside className={styles.actionRail}>
-                        <h3>Next match assigned</h3>
-                        <p>KOBS vs Heathens</p>
-                        <p>Legends Rugby Grounds • Centre Referee • Report due after match</p>
+                        <h3>
+                            {isMatchOfficialWorkspace(activeWorkspace)
+                                ? "My next match"
+                                : "Next match assigned"}
+                        </h3>
+
+                        <p>
+                            {workspaceAppointments[0]?.match ??
+                                "No upcoming appointment"}
+                        </p>
+
+                        <p>
+                            {workspaceAppointments[0]
+                                ? `${workspaceAppointments[0].venue} • ${workspaceAppointments[0].role} • ${workspaceAppointments[0].report}`
+                                : "Appointments will appear after the federation assigns an official to a fixture."}
+                        </p>
+
                         <div className={styles.buttonColumn}>
-                            <button className={styles.primaryButton} type="button">Accept Appointment</button>
-                            <button className={styles.secondaryButton} type="button">Open Match Detail</button>
+                            {workspaceAppointments[0] ? (
+                                <button
+                                    className={styles.primaryButton}
+                                    type="button"
+                                >
+                                    {workspaceAppointments[0].status ??
+                                        "Assigned"}
+                                </button>
+                            ) : null}
+
+                            <button
+                                className={styles.secondaryButton}
+                                type="button"
+                            >
+                                Open Match Detail
+                            </button>
                         </div>
                     </aside>
                 </div>
@@ -3018,6 +3323,10 @@ export default function UnionAdminDashboard() {
     }
 
 
+    const ActivePageIcon =
+        tabs.find((tab) => tab.key === activeTab)?.icon ?? BarChart3;
+    const pageHeader = getPageHeaderContent(activeTab, activeWorkspace);
+
     return (
         <>
             <main className={styles.pageShell}>
@@ -3078,14 +3387,26 @@ export default function UnionAdminDashboard() {
 
             <section className={styles.contentArea}>
                 <header className={styles.heroHeader}>
-                    <div>
-                        <span className={styles.liveBadge}>Live Workspace Access</span>
-                        <h1>{getWorkspaceTitle(activeWorkspace)}</h1>
-                        <p>{getWorkspaceIntro(activeWorkspace)}</p>
+                    <div className={styles.heroIdentity}>
+                        <div className={styles.heroMetaRow}>
+                            <span className={styles.liveBadge}>
+                                <ActivePageIcon size={14} strokeWidth={2.4} aria-hidden="true" />
+                                {pageHeader.eyebrow}
+                            </span>
+                            <span className={styles.workspaceContext}>
+                                {activeWorkspace.acronym} · {activeWorkspace.sport} · {activeWorkspace.roleDisplay || formatRole(activeWorkspace.role)}
+                            </span>
+                        </div>
+                        <h1>{pageHeader.title}</h1>
+                        <p>{pageHeader.description}</p>
                     </div>
                     <div className={styles.headerActions}>
-                        <Link to="/unions">View Public Page</Link>
-                        <Link to="/dashboard/fan">Back to Fan Dashboard</Link>
+                        <Link className={styles.headerActionPrimary} to={pageHeader.publicPath}>
+                            {pageHeader.publicLabel}
+                        </Link>
+                        <Link className={styles.headerActionSecondary} to="/dashboard/fan">
+                            Back to Fan Dashboard
+                        </Link>
                     </div>
                 </header>
 
@@ -3093,7 +3414,9 @@ export default function UnionAdminDashboard() {
                 {workspaceDataError ? <div className={styles.alertBanner}>{workspaceDataError}</div> : null}
                 {operationsError ? <div className={styles.alertBanner}>{operationsError}</div> : null}
 
-                <StatGrid stats={activeStats} loading={isLoadingOverview} />
+                {activeTab !== "referees" ? (
+                    <StatGrid stats={activeStats} loading={isLoadingOverview} />
+                ) : null}
 
                 {renderActiveTab()}
 

@@ -314,12 +314,25 @@ export interface UnionOperationsReferee {
 }
 
 export interface UnionOperationsAppointment {
+  id?: number;
   match: string;
   competition: string;
   date: string;
   venue: string;
   role: string;
+  status?: string;
   report: string;
+}
+
+export interface UnionOperationsCurrentOfficial {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+  grade: string;
+  status: string;
+  competitions: string;
+  union: string;
 }
 
 export interface UnionOperationsPlayerPosition {
@@ -339,6 +352,7 @@ export interface UnionOperationsDashboard {
   national_teams: UnionOperationsNationalTeam[];
   registrations: UnionOperationsRegistration[];
   referees: UnionOperationsReferee[];
+  current_official?: UnionOperationsCurrentOfficial | null;
   appointments: UnionOperationsAppointment[];
   player_positions: UnionOperationsPlayerPosition[];
 }
@@ -840,3 +854,122 @@ export async function deleteUnionAdminClub(
 
 // UNION ADMIN CLUBS API END
 
+
+
+// UNION ADMIN REFEREES API START
+
+export type UnionAdminOfficialStatus =
+  | "AVAILABLE"
+  | "UNAVAILABLE"
+  | "SUSPENDED"
+  | "RETIRED";
+
+export interface UnionAdminOfficialRoleOption {
+  value: string;
+  label: string;
+}
+
+export interface UnionAdminOfficialNextMatch {
+  id: number;
+  label: string;
+  competition: string;
+  match_date: string;
+  venue: string;
+  role_type: string;
+  role_type_display: string;
+  status: string;
+  status_display: string;
+}
+
+export interface UnionAdminMatchOfficial {
+  id: number;
+  union: number;
+  user: number | null;
+  user_email?: string;
+  full_name: string;
+  email: string;
+  phone_number: string;
+  role_type: string;
+  role_type_display: string;
+  certification_level: string;
+  primary_sport: string;
+  competitions: string;
+  status: UnionAdminOfficialStatus;
+  status_display: string;
+  notes: string;
+  assignment_count: number;
+  next_match: UnionAdminOfficialNextMatch | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UnionAdminMatchOfficialsResponse {
+  count: number;
+  sport: string;
+  role_options: UnionAdminOfficialRoleOption[];
+  results: UnionAdminMatchOfficial[];
+}
+
+export interface UpsertUnionAdminMatchOfficialPayload {
+  workspace: string;
+  full_name?: string;
+  email?: string;
+  phone_number?: string;
+  role_type?: string;
+  certification_level?: string;
+  primary_sport?: string;
+  competitions?: string;
+  status?: UnionAdminOfficialStatus;
+  notes?: string;
+}
+
+export async function getUnionAdminMatchOfficials(
+  workspaceSlug: string,
+  query = "",
+): Promise<UnionAdminMatchOfficialsResponse> {
+  const params = new URLSearchParams({ workspace: workspaceSlug });
+
+  if (query.trim()) {
+    params.set("q", query.trim());
+  }
+
+  const response = await apiClient.get<UnionAdminMatchOfficialsResponse>(
+    `/dashboards/union-admin/referees/?${params.toString()}`,
+  );
+
+  return response.data;
+}
+
+export async function createUnionAdminMatchOfficial(
+  payload: UpsertUnionAdminMatchOfficialPayload,
+): Promise<UnionAdminMatchOfficial> {
+  const response = await apiClient.post<UnionAdminMatchOfficial>(
+    "/dashboards/union-admin/referees/",
+    payload,
+  );
+
+  return response.data;
+}
+
+export async function updateUnionAdminMatchOfficial(
+  officialId: number,
+  payload: UpsertUnionAdminMatchOfficialPayload,
+): Promise<UnionAdminMatchOfficial> {
+  const response = await apiClient.patch<UnionAdminMatchOfficial>(
+    `/dashboards/union-admin/referees/${officialId}/`,
+    payload,
+  );
+
+  return response.data;
+}
+
+export async function deleteUnionAdminMatchOfficial(
+  officialId: number,
+  workspaceSlug: string,
+): Promise<void> {
+  await apiClient.delete(`/dashboards/union-admin/referees/${officialId}/`, {
+    data: { workspace: workspaceSlug },
+  });
+}
+
+// UNION ADMIN REFEREES API END
