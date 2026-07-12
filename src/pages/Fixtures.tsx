@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { Button } from '../components/ui/button.js';
+import { Button } from '../components/ui/button';
 import fixturesImg from '../assets/fixtures.png';
 import heroBg from '../assets/stadium-bg.svg';
 import {
