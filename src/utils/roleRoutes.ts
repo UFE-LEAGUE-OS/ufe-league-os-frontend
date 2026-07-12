@@ -71,7 +71,7 @@ export function getDefaultDashboardRoute(role: unknown) {
     case 'LEAGUE_ADMIN':
       return '/dashboard/league-admin';
     case 'REFEREE':
-      return '/dashboard/referee';
+      return '/dashboard/union-admin';
     case 'TICKETING_OFFICER':
       return '/dashboard/ticketing-officer';
     case 'SPONSOR':

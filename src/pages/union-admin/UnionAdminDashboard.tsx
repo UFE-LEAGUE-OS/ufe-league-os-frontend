@@ -146,11 +146,13 @@ type RefereeRecord = {
 };
 
 type AppointmentRecord = {
+    id?: number;
     match: string;
     competition: string;
     date: string;
     venue: string;
     role: string;
+    status?: string;
     report: string;
 };
 
@@ -1164,6 +1166,7 @@ export default function UnionAdminDashboard() {
     const workspacePlayerPositions = operationsData?.player_positions?.length
         ? operationsData.player_positions
         : getSportPositionGroups(activeWorkspace.sport);
+    const currentOfficial = operationsData?.current_official ?? null;
 
     const selectedCompetition =
         workspaceCompetitions.find((competition) => competition.id === selectedCompetitionId) ?? workspaceCompetitions[0];
@@ -1344,6 +1347,153 @@ export default function UnionAdminDashboard() {
     }
 
     function renderOverview() {
+        if (isMatchOfficialWorkspace(activeWorkspace)) {
+            const nextAppointment = workspaceAppointments[0] ?? null;
+
+            return (
+                <div className={styles.overviewLayout}>
+                    <section className={styles.panelLarge}>
+                        <SectionHeader
+                            eyebrow="My official workspace"
+                            title={`Welcome${
+                                currentOfficial?.name
+                                    ? `, ${currentOfficial.name}`
+                                    : ""
+                            }`}
+                            description={`Your ${activeWorkspace.name} workspace only shows your appointments, availability, reports, documents, allowances and official profile.`}
+                            actions={
+                                <button
+                                    className={styles.primaryButton}
+                                    type="button"
+                                    onClick={() => resetSearch("appointments")}
+                                >
+                                    View appointments
+                                </button>
+                            }
+                        />
+
+                        <div className={styles.approvalSummaryGrid}>
+                            <article>
+                                <span>Official role</span>
+                                <strong>
+                                    {currentOfficial?.role ?? "Not linked"}
+                                </strong>
+                                <small>
+                                    {currentOfficial?.grade ||
+                                        "Certification pending"}
+                                </small>
+                            </article>
+
+                            <article>
+                                <span>Federation</span>
+                                <strong>{activeWorkspace.acronym}</strong>
+                                <small>{activeWorkspace.sport}</small>
+                            </article>
+
+                            <article>
+                                <span>Status</span>
+                                <strong>
+                                    {currentOfficial?.status ?? "Pending"}
+                                </strong>
+                                <small>Appointment eligibility</small>
+                            </article>
+                        </div>
+
+                        <DataTable
+                            columns={[
+                                {
+                                    key: "match",
+                                    label: "Match",
+                                    render: (item) => item.match,
+                                },
+                                {
+                                    key: "competition",
+                                    label: "Competition",
+                                    render: (item) => item.competition,
+                                },
+                                {
+                                    key: "date",
+                                    label: "Date",
+                                    render: (item) => item.date,
+                                },
+                                {
+                                    key: "venue",
+                                    label: "Venue",
+                                    render: (item) => item.venue,
+                                },
+                                {
+                                    key: "role",
+                                    label: "Role",
+                                    render: (item) => item.role,
+                                },
+                                {
+                                    key: "status",
+                                    label: "Status",
+                                    render: (item) => (
+                                        <StatusPill
+                                            label={
+                                                item.status ?? "Assigned"
+                                            }
+                                        />
+                                    ),
+                                },
+                            ]}
+                            data={workspaceAppointments.slice(0, 5)}
+                            emptyLabel="No appointments have been assigned to your official profile yet."
+                        />
+                    </section>
+
+                    <aside className={styles.sidePanel}>
+                        <SectionHeader
+                            eyebrow="Next appointment"
+                            title={
+                                nextAppointment?.match ??
+                                "No upcoming match"
+                            }
+                            description={
+                                nextAppointment
+                                    ? `${nextAppointment.competition} • ${nextAppointment.date}`
+                                    : "Your federation will assign upcoming matches here."
+                            }
+                        />
+
+                        <div className={styles.leagueSnapshotGrid}>
+                            <div>
+                                <span>Venue</span>
+                                <strong>
+                                    {nextAppointment?.venue ?? "TBC"}
+                                </strong>
+                            </div>
+
+                            <div>
+                                <span>Role</span>
+                                <strong>
+                                    {nextAppointment?.role ??
+                                        currentOfficial?.role ??
+                                        "TBC"}
+                                </strong>
+                            </div>
+
+                            <div>
+                                <span>Status</span>
+                                <strong>
+                                    {nextAppointment?.status ??
+                                        "Awaiting assignment"}
+                                </strong>
+                            </div>
+
+                            <div>
+                                <span>Report</span>
+                                <strong>
+                                    {nextAppointment?.report ?? "Not due"}
+                                </strong>
+                            </div>
+                        </div>
+                    </aside>
+                </div>
+            );
+        }
+
         const activeCompetition = workspaceCompetitions[0];
         const activeLeagueName =
             activeCompetition?.name ?? `${activeWorkspace.acronym} active league`;
@@ -2401,12 +2551,40 @@ export default function UnionAdminDashboard() {
                         data={workspaceAppointments}
                     />
                     <aside className={styles.actionRail}>
-                        <h3>Next match assigned</h3>
-                        <p>KOBS vs Heathens</p>
-                        <p>Legends Rugby Grounds • Centre Referee • Report due after match</p>
+                        <h3>
+                            {isMatchOfficialWorkspace(activeWorkspace)
+                                ? "My next match"
+                                : "Next match assigned"}
+                        </h3>
+
+                        <p>
+                            {workspaceAppointments[0]?.match ??
+                                "No upcoming appointment"}
+                        </p>
+
+                        <p>
+                            {workspaceAppointments[0]
+                                ? `${workspaceAppointments[0].venue} • ${workspaceAppointments[0].role} • ${workspaceAppointments[0].report}`
+                                : "Appointments will appear after the federation assigns an official to a fixture."}
+                        </p>
+
                         <div className={styles.buttonColumn}>
-                            <button className={styles.primaryButton} type="button">Accept Appointment</button>
-                            <button className={styles.secondaryButton} type="button">Open Match Detail</button>
+                            {workspaceAppointments[0] ? (
+                                <button
+                                    className={styles.primaryButton}
+                                    type="button"
+                                >
+                                    {workspaceAppointments[0].status ??
+                                        "Assigned"}
+                                </button>
+                            ) : null}
+
+                            <button
+                                className={styles.secondaryButton}
+                                type="button"
+                            >
+                                Open Match Detail
+                            </button>
                         </div>
                     </aside>
                 </div>
