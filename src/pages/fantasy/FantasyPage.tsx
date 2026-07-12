@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { User, CalendarDays, BarChart3, RefreshCw, Trophy, Banknote, Medal, Shirt, Ticket, Users, DollarSign, Clock, Gamepad2, CheckCircle2, Zap } from 'lucide-react';
 import styles from './FantasyPage.module.css';
 import uplLogo from '../../assets/star-times-upl.svg';
 import rugbyLogo from '../../assets/nile-rugby.svg';
@@ -93,20 +94,20 @@ const LEADERBOARD = [
 ];
 
 const HOW_IT_WORKS = [
-  { step: 1, icon: '👤', title: 'Pick Your Squad',     desc: 'Select players within your budget limit.' },
-  { step: 2, icon: '📅', title: 'Set Your Lineup',     desc: 'Choose your captain and starting lineup each gameweek.' },
-  { step: 3, icon: '📊', title: 'Earn Points',         desc: 'Players score points based on real match performance.' },
-  { step: 4, icon: '🔄', title: 'Make Transfers',      desc: 'Swap players before each gameweek deadline.' },
-  { step: 5, icon: '🏆', title: 'Win Prizes',          desc: 'Top managers each season win cash and exclusive rewards.' },
+  { step: 1, icon: <User size={24} />, title: 'Pick Your Squad',     desc: 'Select players within your budget limit.' },
+  { step: 2, icon: <CalendarDays size={24} />, title: 'Set Your Lineup',     desc: 'Choose your captain and starting lineup each gameweek.' },
+  { step: 3, icon: <BarChart3 size={24} />, title: 'Earn Points',         desc: 'Players score points based on real match performance.' },
+  { step: 4, icon: <RefreshCw size={24} />, title: 'Make Transfers',      desc: 'Swap players before each gameweek deadline.' },
+  { step: 5, icon: <Trophy size={24} />, title: 'Win Prizes',          desc: 'Top managers each season win cash and exclusive rewards.' },
 ];
 
 const PRIZES = [
-  { icon: '💵', place: '1st Place',    prize: 'UGX 500,000 Cash' },
-  { icon: '🥈', place: '2nd Place',    prize: 'UGX 200,000 Cash' },
-  { icon: '🥉', place: '3rd Place',    prize: 'UGX 100,000 Cash' },
-  { icon: '👕', place: 'Top 10',       prize: 'Exclusive League OS Jersey' },
-  { icon: '🎟️', place: 'Weekly Best', prize: 'Match Ticket + Merch Pack' },
-];
+  { icon: <Banknote size={24} />, place: '1st Place',    prize: 'UGX 500,000 Cash' },
+  { icon: <Medal size={24} />, place: '2nd Place',    prize: 'UGX 200,000 Cash' },
+  { icon: <Medal size={24} />, place: '3rd Place',    prize: 'UGX 100,000 Cash' },
+  { icon: <Shirt size={24} />, place: 'Top 10',       prize: 'Exclusive League OS Jersey' },
+  { icon: <Ticket size={24} />, place: 'Weekly Best', prize: 'Match Ticket + Merch Pack' },
+};
 
 const statusStyle: Record<string, { bg: string; color: string }> = {
   'LIVE':        { bg: 'rgba(34,197,94,0.15)',   color: '#22c55e' },
@@ -132,7 +133,7 @@ export default function FantasyPage() {
       {/* ── HERO ── */}
       <div className={styles.hero}>
         <div className={styles.heroContent}>
-          <div className={styles.heroBadge}>⚡ FANTASY LEAGUES</div>
+          <div className={styles.heroBadge}><Zap size={18} /> FANTASY LEAGUES</div>
           <h1>BUILD YOUR SQUAD.<br /><span>BEAT THE LEAGUE.</span></h1>
           <p>Create your ultimate fantasy team across Rugby, Football & Basketball.<br />Compete with fans across Uganda for glory, bragging rights and epic rewards.</p>
           <div className={styles.heroBtns}>
@@ -140,10 +141,10 @@ export default function FantasyPage() {
             <button className={styles.btnOutline} onClick={() => navigate('/fantasy/select')}>Explore Competitions</button>
           </div>
           <div className={styles.heroBadges}>
-            <span>🎮 3 SPORTS, 1 PLATFORM<br /><small>Rugby, Football, Basketball</small></span>
-            <span>👥 REAL FANS. REAL COMPETITION<br /><small>Compete with thousands</small></span>
-            <span>🏆 EPIC REWARDS<br /><small>Win prizes every week</small></span>
-            <span>✅ 100% FREE TO PLAY<br /><small>Join, play and win</small></span>
+            <span><Gamepad2 size={16} /> 3 SPORTS, 1 PLATFORM<br /><small>Rugby, Football, Basketball</small></span>
+            <span><Users size={16} /> REAL FANS. REAL COMPETITION<br /><small>Compete with thousands</small></span>
+            <span><Trophy size={16} /> EPIC REWARDS<br /><small>Win prizes every week</small></span>
+            <span><CheckCircle2 size={16} /> 100% FREE TO PLAY<br /><small>Join, play and win</small></span>
           </div>
         </div>
 
@@ -200,11 +201,11 @@ export default function FantasyPage() {
                           </span>
                         </div>
                       </div>
-                      <div className={styles.compMeta}>
-                        <span>👥 {c.teamsJoined.toLocaleString()} teams</span>
-                        <span>💰 {c.entryFee === 0 ? 'Free' : `UGX ${c.entryFee.toLocaleString()}`}</span>
-                        <span>⏰ {c.deadline}</span>
-                        <span>🏆 {c.prizePool}</span>
+                        <div className={styles.compMeta}>
+                        <span><Users size={14} /> {c.teamsJoined.toLocaleString()} teams</span>
+                        <span><DollarSign size={14} /> {c.entryFee === 0 ? 'Free' : `UGX ${c.entryFee.toLocaleString()}`}</span>
+                        <span><Clock size={14} /> {c.deadline}</span>
+                        <span><Trophy size={14} /> {c.prizePool}</span>
                       </div>
                       {c.status !== 'COMING SOON'
                         ? <button className={styles.compBtn} onClick={() => navigate(`/fantasy/select?sport=${c.id}`)}>Play Now →</button>
@@ -401,8 +402,8 @@ export default function FantasyPage() {
               </div>
               {LEADERBOARD.map((m) => (
                 <div key={m.rank} className={`${styles.leaderRow}${(m as typeof m & { isMe?: boolean }).isMe ? ` ${styles.leaderRowMe}` : ''}`}>
-                  <span className={styles.leaderRank}>
-                    {m.rank <= 3 ? ['🥇','🥈','🥉'][m.rank - 1] : m.rank}
+                   <span className={styles.leaderRank}>
+                    {m.rank <= 3 ? <Medal size={18} /> : m.rank}
                   </span>
                   <div className={styles.leaderAvatar}>{m.name[0]}</div>
                   <div className={styles.leaderInfo}>

@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore.js';
 import { getToken } from '../utils/tokenManager.js';
+import { Globe, Settings, FileText, Users } from 'lucide-react';
 import './Hero.css';
 import heroImage from '../assets/hero.png';
 
@@ -58,16 +59,16 @@ function Hero() {
       </div>
       <div className="hero-features">
         <div className="feature">
-          <span className="feature-icon">🌐</span> Live Scores & Stats
+          <span className="feature-icon"><Globe size={20} /></span> Live Scores & Stats
         </div>
         <div className="feature">
-          <span className="feature-icon">⚙️</span> Official Data
+          <span className="feature-icon"><Settings size={20} /></span> Official Data
         </div>
         <div className="feature">
-          <span className="feature-icon">📋</span> Exclusive Content
+          <span className="feature-icon"><FileText size={20} /></span> Exclusive Content
         </div>
         <div className="feature">
-          <span className="feature-icon">👥</span> Fan Engagement
+          <span className="feature-icon"><Users size={20} /></span> Fan Engagement
         </div>
       </div>
     </section>

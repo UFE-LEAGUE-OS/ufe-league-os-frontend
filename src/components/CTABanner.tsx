@@ -1,13 +1,14 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getToken } from '../utils/tokenManager.js';
+import { ShieldCheck, BarChart3, Trophy, Gamepad2 } from 'lucide-react';
 import './CTABanner.css';
 import ctaImage from '../assets/cta-banner.png';
 
 type FeatureAction = 'membership' | 'polls' | 'mvp' | 'quizzes';
 
 type Feature = {
-  icon: string;
+  icon: React.ReactNode;
   title: string;
   desc: string;
   action: FeatureAction;
@@ -15,10 +16,10 @@ type Feature = {
 };
 
 const features: Feature[] = [
-  { icon: '🛡️', title: 'Club Memberships', desc: 'Unlock exclusive content, early access, and official merch.', action: 'membership', route: '/memberships' },
-  { icon: '📊', title: 'Polls & Surveys', desc: 'Have your say on crucial club decisions and directions.', action: 'polls', route: '/fan/polls' },
-  { icon: '⭐', title: 'MVP Voting', desc: 'Vote for your match winners and players of the month.', action: 'mvp', route: '/fan/mvp-voting' },
-  { icon: '🎮', title: 'Quizzes & Games', desc: 'Test your sports knowledge and compete with others.', action: 'quizzes', route: '/fan/quizzes' },
+  { icon: <ShieldCheck size={24} />, title: 'Club Memberships', desc: 'Unlock exclusive content, early access, and official merch.', action: 'membership', route: '/memberships' },
+  { icon: <BarChart3 size={24} />, title: 'Polls & Surveys', desc: 'Have your say on crucial club decisions and directions.', action: 'polls', route: '/fan/polls' },
+  { icon: <Trophy size={24} />, title: 'MVP Voting', desc: 'Vote for your match winners and players of the month.', action: 'mvp', route: '/fan/mvp-voting' },
+  { icon: <Gamepad2 size={24} />, title: 'Quizzes & Games', desc: 'Test your sports knowledge and compete with others.', action: 'quizzes', route: '/fan/quizzes' },
 ];
 
 function isAuthenticated() {

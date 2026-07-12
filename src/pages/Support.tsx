@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import { Mail, Phone, MapPin, Rocket, User, Ticket, Trophy, Wrench, Lock } from 'lucide-react';
 import heroBg from '../assets/stadium-bg.svg';
 
 const faqItems = [
@@ -15,18 +16,18 @@ const faqItems = [
 ];
 
 const contactMethods = [
-  { title: '📧 Email Support', detail: 'support@leagueos.ug', desc: 'We respond within 24 hours' },
-  { title: '📞 Phone', detail: '+256 700 123 456', desc: 'Mon-Fri, 8:00 AM - 6:00 PM EAT' },
-  { title: '📍 Visit Us', detail: 'Plot 42, Lugogo Road', desc: 'Kampala, Uganda' },
+  { title: 'Email Support', detail: 'support@leagueos.ug', desc: 'We respond within 24 hours', Icon: Mail },
+  { title: 'Phone', detail: '+256 700 123 456', desc: 'Mon-Fri, 8:00 AM - 6:00 PM EAT', Icon: Phone },
+  { title: 'Visit Us', detail: 'Plot 42, Lugogo Road', desc: 'Kampala, Uganda', Icon: MapPin },
 ];
 
 const helpTopics = [
-  { title: 'Getting Started', desc: 'New to League OS? Learn the basics of navigating the platform.', link: '/support/getting-started', icon: '🚀' },
-  { title: 'Account & Billing', desc: 'Manage your account settings, subscriptions and payment methods.', link: '/support/account', icon: '👤' },
-  { title: 'Tickets & Events', desc: 'How to purchase, transfer and manage your match tickets.', link: '/support/tickets', icon: '🎫' },
-  { title: 'Fantasy Leagues', desc: 'Rules, scoring, and tips for dominating your fantasy league.', link: '/support/fantasy', icon: '🏆' },
-  { title: 'Technical Support', desc: 'Troubleshooting common issues with the platform.', link: '/support/technical', icon: '🔧' },
-  { title: 'Safety & Privacy', desc: 'Our commitment to keeping your data safe and secure.', link: '/support/privacy', icon: '🔒' },
+  { title: 'Getting Started', desc: 'New to League OS? Learn the basics of navigating the platform.', link: '/support/getting-started', Icon: Rocket },
+  { title: 'Account & Billing', desc: 'Manage your account settings, subscriptions and payment methods.', link: '/support/account', Icon: User },
+  { title: 'Tickets & Events', desc: 'How to purchase, transfer and manage your match tickets.', link: '/support/tickets', Icon: Ticket },
+  { title: 'Fantasy Leagues', desc: 'Rules, scoring, and tips for dominating your fantasy league.', link: '/support/fantasy', Icon: Trophy },
+  { title: 'Technical Support', desc: 'Troubleshooting common issues with the platform.', link: '/support/technical', Icon: Wrench },
+  { title: 'Safety & Privacy', desc: 'Our commitment to keeping your data safe and secure.', link: '/support/privacy', Icon: Lock },
 ];
 
 const quickLinks = [
@@ -92,12 +93,6 @@ function Support() {
             We're here to help you get the most out of League OS.
           </p>
         </div>
-        {/* Decorative elements */}
-        <div style={{ position: 'absolute', right: '5%', top: '50%', transform: 'translateY(-50%)', display: 'flex', gap: 16, opacity: 0.08 }}>
-          <span style={{ fontSize: '4rem' }}>⚽</span>
-          <span style={{ fontSize: '3.5rem' }}>🏀</span>
-          <span style={{ fontSize: '3rem' }}>🏉</span>
-        </div>
       </div>
 
       <main className="support-main" style={{ maxWidth: 1200, margin: '0 auto', padding: '32px 56px' }}>
@@ -110,7 +105,7 @@ function Support() {
                 <div style={{ background: '#12131F', borderRadius: 12, padding: 24, border: '1px solid #1F2937', transition: 'all 0.2s', cursor: 'pointer', height: '100%' }}
                      onMouseEnter={e => { e.currentTarget.style.borderColor = '#8135FA'; e.currentTarget.style.background = '#1a1f3a'; }}
                      onMouseLeave={e => { e.currentTarget.style.borderColor = '#1F2937'; e.currentTarget.style.background = '#12131F'; }}>
-                  <span style={{ fontSize: '1.5rem', marginBottom: 8, display: 'block' }}>{topic.icon}</span>
+                   <span style={{ fontSize: '1.5rem', marginBottom: 8, display: 'block', color: '#8135FA' }}><topic.Icon size={28} /></span>
                   <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1rem', fontWeight: 600, marginBottom: 8, color: '#fff' }}>{topic.title}</h3>
                   <p style={{ fontSize: '0.85rem', color: '#9CA3AF', lineHeight: 1.5, margin: 0 }}>{topic.desc}</p>
                 </div>
