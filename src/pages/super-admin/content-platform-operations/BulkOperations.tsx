@@ -1,8 +1,9 @@
-import { useState, useRef, type DragEvent } from 'react';
+import { useMemo, useState, useRef, type DragEvent } from 'react';
 import { Download, UploadCloud } from 'lucide-react';
 import FilterDropdown from '../../../components/FilterDropdown';
 import '../../../styles/pages/super-admin/content-platform-operations/SuperAdminOpsShared.css';
 import '../../../styles/pages/super-admin/content-platform-operations/SuperAdminContent.css';
+import SuperAdminBackButton from '../../../components/SuperAdminBackButton';
 
 const tabs = ['Users', 'Content', 'Notifications', 'Transactions'] as const;
 type Tab = typeof tabs[number];
@@ -31,7 +32,14 @@ const INITIAL_JOBS: Job[] = [
   { id: 'j3', name: 'Publish Articles', type: 'Content', status: 'Completed', records: 45, created: 'May 11, 2024' },
   { id: 'j4', name: 'Send Email (May Update)', type: 'Notifications', status: 'Completed', records: 24560, created: 'May 10, 2024' },
   { id: 'j5', name: 'Refund Failed Payments', type: 'Transactions', status: 'Failed', records: 32, created: 'May 9, 2024' },
+  { id: 'j6', name: 'Archive Old Content', type: 'Content', status: 'Completed', records: 312, created: 'May 8, 2024' },
+  { id: 'j7', name: 'Send Push Notification', type: 'Notifications', status: 'Processing', records: 8100, created: 'May 7, 2024' },
+  { id: 'j8', name: 'Export Transactions', type: 'Transactions', status: 'Completed', records: 5400, created: 'May 6, 2024' },
 ];
+
+const JOBS_PAGE_SIZE = 4;
+const DEFAULT_TYPE_FILTER = 'All Types';
+const DEFAULT_STATUS_FILTER = 'All Statuses';
 
 function statusBadge(status: JobStatus) {
   if (status === 'Completed') return <span className="badge badge-green">Completed</span>;
@@ -53,6 +61,9 @@ export default function BulkOperations() {
   const [dragActive, setDragActive] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [viewAll, setViewAll] = useState(false);
+
+  const [jobTypeFilter, setJobTypeFilter] = useState(DEFAULT_TYPE_FILTER);
+  const [jobStatusFilter, setJobStatusFilter] = useState(DEFAULT_STATUS_FILTER);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -117,11 +128,23 @@ export default function BulkOperations() {
     setPreviewChanges(false);
   }
 
-  const visibleJobs = viewAll ? jobs : jobs.slice(0, 5);
+  const filteredJobs = useMemo(
+    () =>
+      jobs.filter((job) => {
+        const matchesType = jobTypeFilter === DEFAULT_TYPE_FILTER || job.type === jobTypeFilter;
+        const matchesStatus = jobStatusFilter === DEFAULT_STATUS_FILTER || job.status === jobStatusFilter;
+        return matchesType && matchesStatus;
+      }),
+    [jobs, jobTypeFilter, jobStatusFilter],
+  );
+
+  const visibleJobs = viewAll ? filteredJobs : filteredJobs.slice(0, JOBS_PAGE_SIZE);
+  const hasMoreJobs = filteredJobs.length > JOBS_PAGE_SIZE;
 
   return (
     <main className="super-admin-page content-child">
       <section className="page-heading">
+        <SuperAdminBackButton />
         <div className="title-group">
           <h1>Bulk Operations</h1>
           <p className="panel-subtext" style={{ margin: '4px 0 0' }}>
@@ -226,61 +249,87 @@ export default function BulkOperations() {
       </div>
 
       <div style={{ marginTop: 28 }}>
-        <h3 style={{ margin: '0 0 12px', fontSize: 14, fontWeight: 600, color: 'var(--text)' }}>
-          Recent Jobs
-        </h3>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: 12,
+            marginBottom: 12,
+          }}
+        >
+          <h3 style={{ margin: 0, fontSize: 14, fontWeight: 600, color: 'var(--text)' }}>
+            Recent Jobs
+          </h3>
+
+          <div style={{ display: 'flex', gap: 10 }}>
+            <FilterDropdown
+              value={jobTypeFilter}
+              options={[DEFAULT_TYPE_FILTER, ...tabs]}
+              onChange={(v) => { setJobTypeFilter(v); setViewAll(false); }}
+            />
+            <FilterDropdown
+              value={jobStatusFilter}
+              options={[DEFAULT_STATUS_FILTER, 'Completed', 'Processing', 'Failed']}
+              onChange={(v) => { setJobStatusFilter(v); setViewAll(false); }}
+            />
+          </div>
+        </div>
 
         <div className="table-card">
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>Job Name</th>
-                <th>Type</th>
-                <th>Status</th>
-                <th>Records</th>
-                <th>Created</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {visibleJobs.map((job) => (
-                <tr key={job.id}>
-                  <td>{job.name}</td>
-                  <td className="cell-muted">{job.type}</td>
-                  <td>{statusBadge(job.status)}</td>
-                  <td className="cell-muted">{job.records.toLocaleString()}</td>
-                  <td className="cell-muted">{job.created}</td>
-                  <td>
-                    <button
-                      className="icon-btn"
-                      aria-label="Download job report"
-                      onClick={() => showToast(`Downloading report for "${job.name}"`)}
-                    >
-                      <Download size={13} />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-
-              {jobs.length === 0 && (
+          <div className="table-scroll">
+            <table className="data-table">
+              <thead>
                 <tr>
-                  <td colSpan={6} className="cell-muted" style={{ textAlign: 'center', padding: '32px 0' }}>
-                    No jobs yet.
-                  </td>
+                  <th>Job Name</th>
+                  <th>Type</th>
+                  <th>Status</th>
+                  <th>Records</th>
+                  <th>Created</th>
+                  <th>Actions</th>
                 </tr>
-              )}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {visibleJobs.map((job) => (
+                  <tr key={job.id}>
+                    <td>{job.name}</td>
+                    <td className="cell-muted">{job.type}</td>
+                    <td>{statusBadge(job.status)}</td>
+                    <td className="cell-muted">{job.records.toLocaleString()}</td>
+                    <td className="cell-muted">{job.created}</td>
+                    <td>
+                      <button
+                        className="icon-btn"
+                        aria-label="Download job report"
+                        onClick={() => showToast(`Downloading report for "${job.name}"`)}
+                      >
+                        <Download size={13} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+
+                {filteredJobs.length === 0 && (
+                  <tr>
+                    <td colSpan={6} className="cell-muted" style={{ textAlign: 'center', padding: '32px 0' }}>
+                      No jobs match your filters.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
 
           <div className="table-pagination">
             <span>All times shown in (UTC+00:00) UTC</span>
-            {jobs.length > 5 && (
+            {hasMoreJobs && (
               <button
                 className="button-secondary"
                 style={{ width: 'auto' }}
                 onClick={() => setViewAll((prev) => !prev)}
               >
-                {viewAll ? 'Show Less' : 'View All Jobs'}
+                {viewAll ? 'Show Less' : `View All Jobs (${filteredJobs.length})`}
               </button>
             )}
           </div>

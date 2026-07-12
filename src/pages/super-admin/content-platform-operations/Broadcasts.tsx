@@ -3,6 +3,7 @@ import { ImageIcon, Send, Pencil, Eye, X, Search } from 'lucide-react';
 import FilterDropdown from '../../../components/FilterDropdown';
 import '../../../styles/pages/super-admin/content-platform-operations/SuperAdminOpsShared.css';
 import '../../../styles/pages/super-admin/content-platform-operations/SuperAdminContent.css';
+import SuperAdminBackButton from '../../../components/SuperAdminBackButton';
 
 const channelTabs = ['Push', 'Email', 'SMS'] as const;
 type ChannelTab = typeof channelTabs[number];
@@ -24,6 +25,8 @@ const SEGMENT_SELECT_LABEL = 'Select segment...';
 const TITLE_LIMIT = 100;
 const MESSAGE_LIMIT_DEFAULT = 500;
 const SMS_LIMIT = 160;
+
+const HISTORY_PREVIEW_COUNT = 3;
 
 type ChannelDraft = {
   title: string;
@@ -217,6 +220,7 @@ export default function Broadcasts() {
 
   const [statusFilter, setStatusFilter] = useState('All Statuses');
   const [channelFilter, setChannelFilter] = useState('All Channels');
+  const [historyExpanded, setHistoryExpanded] = useState(false);
 
   // Audience modal state
   const [audienceModalOpen, setAudienceModalOpen] = useState(false);
@@ -344,6 +348,12 @@ export default function Broadcasts() {
     return matchesStatus && matchesChannel;
   });
 
+  const visibleBroadcasts = historyExpanded
+    ? filteredBroadcasts
+    : filteredBroadcasts.slice(0, HISTORY_PREVIEW_COUNT);
+
+  const hasMoreHistory = filteredBroadcasts.length > HISTORY_PREVIEW_COUNT;
+
   // ---------- Audience modal logic ----------
 
   function openAudienceModal() {
@@ -381,6 +391,7 @@ export default function Broadcasts() {
   return (
     <main className="super-admin-page content-child">
       <section className="page-heading">
+        <SuperAdminBackButton />
         <div className="title-group">
           <h1>{editingId ? 'Edit Broadcast' : 'New Broadcast'}</h1>
         </div>
@@ -627,20 +638,31 @@ export default function Broadcasts() {
 
       {/* ---------- Broadcast history ---------- */}
       <div style={{ marginTop: 32 }}>
-        <h3 style={{ margin: '0 0 12px', fontSize: 14, fontWeight: 600, color: 'var(--text)' }}>
-          Broadcast History
-        </h3>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 0 12px' }}>
+          <h3 style={{ margin: 0, fontSize: 14, fontWeight: 600, color: 'var(--text)' }}>
+            Broadcast History
+          </h3>
+          {hasMoreHistory && (
+            <button
+              type="button"
+              className="link-inline"
+              onClick={() => setHistoryExpanded((current) => !current)}
+            >
+              {historyExpanded ? 'Show Less' : `View All (${filteredBroadcasts.length})`}
+            </button>
+          )}
+        </div>
 
         <div className="ops-toolbar">
           <FilterDropdown
             value={statusFilter}
             options={['All Statuses', 'Draft', 'Queued', 'Sent']}
-            onChange={setStatusFilter}
+            onChange={(v) => { setStatusFilter(v); setHistoryExpanded(false); }}
           />
           <FilterDropdown
             value={channelFilter}
             options={['All Channels', 'Push', 'Email', 'SMS']}
-            onChange={setChannelFilter}
+            onChange={(v) => { setChannelFilter(v); setHistoryExpanded(false); }}
           />
         </div>
 
@@ -657,7 +679,7 @@ export default function Broadcasts() {
               </tr>
             </thead>
             <tbody>
-              {filteredBroadcasts.map((b) => (
+              {visibleBroadcasts.map((b) => (
                 <tr key={b.id}>
                   <td>
                     <strong style={{ display: 'block', fontSize: 13 }}>
@@ -700,6 +722,20 @@ export default function Broadcasts() {
               )}
             </tbody>
           </table>
+
+          {hasMoreHistory && (
+            <div className="table-pagination" style={{ justifyContent: 'center' }}>
+              <button
+                type="button"
+                className="link-inline"
+                onClick={() => setHistoryExpanded((current) => !current)}
+              >
+                {historyExpanded
+                  ? 'Show Less'
+                  : `View All ${filteredBroadcasts.length} Broadcasts`}
+              </button>
+            </div>
+          )}
         </div>
       </div>
 

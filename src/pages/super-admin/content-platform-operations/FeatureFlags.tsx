@@ -3,6 +3,7 @@ import { Search, Plus, Pencil, Trash2, X } from 'lucide-react';
 import FilterDropdown from '../../../components/FilterDropdown';
 import '../../../styles/pages/super-admin/content-platform-operations/SuperAdminOpsShared.css';
 import '../../../styles/pages/super-admin/content-platform-operations/SuperAdminContent.css';
+import SuperAdminBackButton from '../../../components/SuperAdminBackButton';
 
 type FlagStatus = 'On' | 'Off';
 type Environment = 'Production' | 'Staging' | 'Development';
@@ -290,6 +291,7 @@ export default function FeatureFlags() {
   return (
     <main className="super-admin-page content-child">
       <section className="page-heading">
+        <SuperAdminBackButton />
         <div className="title-group">
           <h1>Feature Flags</h1>
           <p className="panel-subtext" style={{ margin: '4px 0 0' }}>

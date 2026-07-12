@@ -15,9 +15,14 @@ import Navbar from '../../components/Navbar';
 import { register as registerAccount } from '../../services/authService.js';
 import {
   buildPhoneNumber,
+  firstNameLengthRange,
   mapRegisterApiErrors,
   nameMaxLength,
   normalizePhoneInput,
+  normalizeUsernameInput,
+  passwordLengthRange,
+  phoneDigitLengthRange,
+  usernameLengthRange,
   validateRegisterForm,
   type RegisterFormErrors,
   type RegisterFormValues,
@@ -59,6 +64,7 @@ const phoneCountries = [
 const initialFormValues: RegisterFormValues = {
   firstName: '',
   lastName: '',
+  username: '',
   countryCode: '+256',
   phoneNumber: '',
   email: '',
@@ -67,12 +73,36 @@ const initialFormValues: RegisterFormValues = {
   termsAccepted: false,
 };
 
+type FieldName = keyof RegisterFormValues;
+
 function FieldIcon({ children }: { children: ReactNode }) {
   return (
     <span className="field-icon-ghost" aria-hidden="true">
       {children}
     </span>
   );
+}
+
+// Wraps the label text and the required-marker together so they stay on
+// the same line as a single flex item, even inside a column-direction
+// flex label (otherwise the asterisk becomes its own flex item and
+// drops to a new line below the label text).
+function FieldLabel({ children, required = true }: { children: ReactNode; required?: boolean }) {
+  return (
+    <span className="field-label-text">
+      {children}
+      {required ? (
+        <span className="field-required-mark" aria-hidden="true"> *</span>
+      ) : null}
+    </span>
+  );
+}
+
+// Shows a small helper line under a field describing its constraints
+// (length, allowed characters, etc). Only rendered while that specific
+// field is focused, and never alongside an active error message.
+function FieldHint({ children }: { children: ReactNode }) {
+  return <span className="field-hint">{children}</span>;
 }
 
 function PasswordStrengthIndicator({
@@ -97,6 +127,7 @@ export default function Register() {
 
   const [formValues, setFormValues] = useState<RegisterFormValues>(initialFormValues);
   const [fieldErrors, setFieldErrors] = useState<RegisterFormErrors>({});
+  const [focusedField, setFocusedField] = useState<FieldName | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -107,6 +138,7 @@ export default function Register() {
   const isFormEmpty =
     !formValues.firstName.trim() &&
     !formValues.lastName.trim() &&
+    !formValues.username.trim() &&
     !formValues.phoneNumber.trim() &&
     !formValues.email.trim() &&
     !formValues.password &&
@@ -133,6 +165,10 @@ export default function Register() {
         delete nextErrors.phoneNumber;
       }
 
+      if (field === 'firstName' || field === 'lastName') {
+        delete nextErrors.username;
+      }
+
       return nextErrors;
     });
 
@@ -140,6 +176,10 @@ export default function Register() {
       void validatePassword(value);
     }
   };
+
+  const handleFocusField = (field: FieldName) => () => setFocusedField(field);
+  const handleBlurField = (field: FieldName) => () =>
+    setFocusedField((current) => (current === field ? null : current));
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -157,6 +197,7 @@ export default function Register() {
       const payload = {
         first_name: formValues.firstName.trim(),
         last_name: formValues.lastName.trim(),
+        username: formValues.username.trim(),
         phone_number: buildPhoneNumber(formValues.countryCode, formValues.phoneNumber),
         email: formValues.email.trim().toLowerCase(),
         password: formValues.password,
@@ -265,7 +306,7 @@ export default function Register() {
                   className={fieldErrors.firstName ? 'has-error' : undefined}
                   htmlFor="register-first-name"
                 >
-                  First name
+                  <FieldLabel>First name</FieldLabel>
                   <div className="field-shell">
                     <FieldIcon><PersonOutlinedIcon /></FieldIcon>
                     <input
@@ -277,14 +318,20 @@ export default function Register() {
                       maxLength={nameMaxLength}
                       value={formValues.firstName}
                       onChange={(event) => updateField('firstName', event.target.value)}
+                      onFocus={handleFocusField('firstName')}
+                      onBlur={handleBlurField('firstName')}
                       aria-invalid={Boolean(fieldErrors.firstName)}
-                      aria-describedby={fieldErrors.firstName ? 'register-first-name-error' : undefined}
+                      aria-describedby={fieldErrors.firstName ? 'register-first-name-error' : 'register-first-name-hint'}
                     />
                   </div>
                   {fieldErrors.firstName ? (
                     <span id="register-first-name-error" className="field-error" role="alert">
                       {fieldErrors.firstName}
                     </span>
+                  ) : focusedField === 'firstName' ? (
+                    <FieldHint>
+                      {firstNameLengthRange.min}–{firstNameLengthRange.max} characters
+                    </FieldHint>
                   ) : null}
                 </label>
 
@@ -292,7 +339,7 @@ export default function Register() {
                   className={fieldErrors.lastName ? 'has-error' : undefined}
                   htmlFor="register-last-name"
                 >
-                  Last name
+                  <FieldLabel required={false}>Last name</FieldLabel>
                   <div className="field-shell">
                     <FieldIcon><PersonOutlinedIcon /></FieldIcon>
                     <input
@@ -304,23 +351,60 @@ export default function Register() {
                       maxLength={nameMaxLength}
                       value={formValues.lastName}
                       onChange={(event) => updateField('lastName', event.target.value)}
+                      onFocus={handleFocusField('lastName')}
+                      onBlur={handleBlurField('lastName')}
                       aria-invalid={Boolean(fieldErrors.lastName)}
-                      aria-describedby={fieldErrors.lastName ? 'register-last-name-error' : undefined}
+                      aria-describedby={fieldErrors.lastName ? 'register-last-name-error' : 'register-last-name-hint'}
                     />
                   </div>
                   {fieldErrors.lastName ? (
                     <span id="register-last-name-error" className="field-error" role="alert">
                       {fieldErrors.lastName}
                     </span>
+                  ) : focusedField === 'lastName' ? (
+                    <FieldHint>Optional</FieldHint>
                   ) : null}
                 </label>
               </div>
 
               <label
+                className={fieldErrors.username ? 'has-error' : undefined}
+                htmlFor="register-username"
+              >
+                <FieldLabel>Username</FieldLabel>
+                <div className="field-shell">
+                  <FieldIcon><PersonOutlinedIcon /></FieldIcon>
+                  <input
+                    id="register-username"
+                    name="username"
+                    type="text"
+                    placeholder="Choose a username"
+                    autoComplete="username"
+                    maxLength={usernameLengthRange.max}
+                    value={formValues.username}
+                    onChange={(event) => updateField('username', normalizeUsernameInput(event.target.value))}
+                    onFocus={handleFocusField('username')}
+                    onBlur={handleBlurField('username')}
+                    aria-invalid={Boolean(fieldErrors.username)}
+                    aria-describedby={fieldErrors.username ? 'register-username-error' : 'register-username-hint'}
+                  />
+                </div>
+                {fieldErrors.username ? (
+                  <span id="register-username-error" className="field-error" role="alert">
+                    {fieldErrors.username}
+                  </span>
+                ) : focusedField === 'username' ? (
+                  <FieldHint>
+                    {usernameLengthRange.min}–{usernameLengthRange.max} characters — letters, numbers, dots, and underscores only
+                  </FieldHint>
+                ) : null}
+              </label>
+
+              <label
                 className={fieldErrors.phoneNumber ? 'has-error' : undefined}
                 htmlFor="register-phone-number"
               >
-                Phone number
+                <FieldLabel>Phone number</FieldLabel>
                 <div className="phone-input">
                   <select
                     className="phone-country"
@@ -348,14 +432,20 @@ export default function Register() {
                     autoComplete="tel-national"
                     value={formValues.phoneNumber}
                     onChange={(event) => updateField('phoneNumber', normalizePhoneInput(event.target.value))}
+                    onFocus={handleFocusField('phoneNumber')}
+                    onBlur={handleBlurField('phoneNumber')}
                     aria-invalid={Boolean(fieldErrors.phoneNumber)}
-                    aria-describedby={fieldErrors.phoneNumber ? 'register-phone-number-error' : undefined}
+                    aria-describedby={fieldErrors.phoneNumber ? 'register-phone-number-error' : 'register-phone-number-hint'}
                   />
                 </div>
                 {fieldErrors.phoneNumber ? (
                   <span id="register-phone-number-error" className="field-error" role="alert">
                     {fieldErrors.phoneNumber}
                   </span>
+                ) : focusedField === 'phoneNumber' ? (
+                  <FieldHint>
+                    {phoneDigitLengthRange.min}–{phoneDigitLengthRange.max} digits, without the country code
+                  </FieldHint>
                 ) : null}
               </label>
 
@@ -363,7 +453,7 @@ export default function Register() {
                 className={fieldErrors.email ? 'has-error' : undefined}
                 htmlFor="register-email"
               >
-                Email address
+                <FieldLabel>Email address</FieldLabel>
                 <div className="field-shell">
                   <FieldIcon><MailOutlinedIcon /></FieldIcon>
                   <input
@@ -389,7 +479,7 @@ export default function Register() {
                 className={fieldErrors.password ? 'has-error' : undefined}
                 htmlFor="register-password"
               >
-                Password
+                <FieldLabel>Password</FieldLabel>
                 <div className="password-field">
                   <FieldIcon><LockOutlinedIcon /></FieldIcon>
                   <input
@@ -400,8 +490,10 @@ export default function Register() {
                     autoComplete="new-password"
                     value={formValues.password}
                     onChange={(event) => updateField('password', event.target.value)}
+                    onFocus={handleFocusField('password')}
+                    onBlur={handleBlurField('password')}
                     aria-invalid={Boolean(fieldErrors.password)}
-                    aria-describedby={fieldErrors.password ? 'register-password-error' : undefined}
+                    aria-describedby={fieldErrors.password ? 'register-password-error' : 'register-password-hint'}
                   />
                   <button
                     type="button"
@@ -413,6 +505,11 @@ export default function Register() {
                     {showPassword ? <VisibilityOutlinedIcon /> : <VisibilityOffOutlinedIcon />}
                   </button>
                 </div>
+                {!fieldErrors.password && focusedField === 'password' ? (
+                  <FieldHint>
+                    {passwordLengthRange.min}–{passwordLengthRange.max} characters, with uppercase, lowercase, a number, and a special character
+                  </FieldHint>
+                ) : null}
                 <PasswordStrengthIndicator
                   status={validation.status}
                   message={validation.message}
@@ -429,7 +526,7 @@ export default function Register() {
                 className={fieldErrors.confirmPassword ? 'has-error' : undefined}
                 htmlFor="register-confirm-password"
               >
-                Confirm password
+                <FieldLabel>Confirm password</FieldLabel>
                 <div className="password-field">
                   <FieldIcon><LockOutlinedIcon /></FieldIcon>
                   <input
@@ -440,8 +537,10 @@ export default function Register() {
                     autoComplete="new-password"
                     value={formValues.confirmPassword}
                     onChange={(event) => updateField('confirmPassword', event.target.value)}
+                    onFocus={handleFocusField('confirmPassword')}
+                    onBlur={handleBlurField('confirmPassword')}
                     aria-invalid={Boolean(fieldErrors.confirmPassword)}
-                    aria-describedby={fieldErrors.confirmPassword ? 'register-confirm-password-error' : undefined}
+                    aria-describedby={fieldErrors.confirmPassword ? 'register-confirm-password-error' : 'register-confirm-password-hint'}
                   />
                   <button
                     type="button"
@@ -457,6 +556,8 @@ export default function Register() {
                   <span id="register-confirm-password-error" className="field-error" role="alert">
                     {fieldErrors.confirmPassword}
                   </span>
+                ) : focusedField === 'confirmPassword' ? (
+                  <FieldHint>Must match the password above</FieldHint>
                 ) : null}
               </label>
 

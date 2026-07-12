@@ -2,6 +2,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Megaphone } from 'lucide-react';
 import '../../../styles/pages/super-admin/content-platform-operations/SuperAdminOpsShared.css';
 import '../../../styles/pages/super-admin/content-platform-operations/SuperAdminContent.css';
+import SuperAdminBackButton from '../../../components/SuperAdminBackButton';
 
 // In a real app this would come from an API call keyed by :id.
 // Kept local here so the page renders standalone.

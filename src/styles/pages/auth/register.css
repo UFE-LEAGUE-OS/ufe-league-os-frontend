@@ -556,6 +556,10 @@
   font-size: 0.84rem;
 }
 
+.field-required-mark {
+  color: #F87171;
+}
+
 @media (max-width: 1180px) {
   .register-main {
     grid-template-columns: 1fr;

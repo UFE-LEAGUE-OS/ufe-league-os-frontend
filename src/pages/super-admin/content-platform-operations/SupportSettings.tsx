@@ -2,6 +2,7 @@ import { useState } from 'react';
 import FilterDropdown from '../../../components/FilterDropdown';
 import '../../../styles/pages/super-admin/content-platform-operations/SuperAdminOpsShared.css';
 import '../../../styles/pages/super-admin/content-platform-operations/SuperAdminContent.css';
+import SuperAdminBackButton from '../../../components/SuperAdminBackButton';
 
 const tabs = ['General', 'Ticket Settings', 'SLA & Escalations', 'Automation', 'Integrations'] as const;
 type Tab = typeof tabs[number];
@@ -107,6 +108,7 @@ export default function SupportSettings() {
   return (
     <main className="super-admin-page content-child">
       <section className="page-heading">
+        <SuperAdminBackButton />
         <div className="title-group">
           <h1>Support Settings</h1>
         </div>

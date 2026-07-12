@@ -1,8 +1,10 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Bold, Italic, Underline, List, AlignLeft, Plus, Check } from 'lucide-react';
+import { Bold, Italic, Underline, List, AlignLeft, Plus, Check, FileText } from 'lucide-react';
 import '../../../styles/pages/super-admin/content-platform-operations/SuperAdminContent.css';
 import '../../../styles/pages/super-admin/content-platform-operations/SuperAdminOpsShared.css';
 import '../../../styles/pages/super-admin/content-platform-operations/NotificationTemplatesPage.css';
+import SuperAdminBackButton from '../../../components/SuperAdminBackButton';
+
 
 const channelTabs = ['Push', 'Email', 'SMS', 'In-App'] as const;
 type ChannelTab = typeof channelTabs[number];
@@ -163,7 +165,8 @@ function genId() {
 export default function NotificationTemplatesPage() {
   const [templatesState, setTemplatesState] = useState<Record<ChannelTab, Template[]>>(INITIAL_TEMPLATES);
   const [channel, setChannel] = useState<ChannelTab>('Push');
-  const [activeTemplateId, setActiveTemplateId] = useState(INITIAL_TEMPLATES['Push'][0].id);
+  // null = no template selected, editor form is hidden
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
   const [listFilter, setListFilter] = useState<'all' | 'drafts'>('all');
 
   // Unsaved edits per template id, merged over the saved base when rendering
@@ -181,20 +184,30 @@ export default function NotificationTemplatesPage() {
   const draftCount = allTemplates.filter((t) => t.isDraft).length;
 
   const baseTemplate = useMemo(
-    () => allTemplates.find((t) => t.id === activeTemplateId) ?? allTemplates[0],
-    [allTemplates, activeTemplateId]
+    () => allTemplates.find((t) => t.id === selectedTemplateId) ?? null,
+    [allTemplates, selectedTemplateId]
   );
-  const edit = pendingEdits[baseTemplate.id] ?? {};
-  const current: Template = { ...baseTemplate, ...edit };
+  const edit = baseTemplate ? pendingEdits[baseTemplate.id] ?? {} : {};
+  const current: Template | null = baseTemplate ? { ...baseTemplate, ...edit } : null;
   const hasUnsavedChanges = Object.keys(edit).length > 0;
+  const isEditorOpen = current !== null;
 
   function switchChannel(next: ChannelTab) {
     setChannel(next);
     setListFilter('all');
-    setActiveTemplateId(templatesState[next][0]?.id ?? '');
+    setSelectedTemplateId(null);
+  }
+
+  function selectTemplate(id: string) {
+    setSelectedTemplateId(id);
+  }
+
+  function closeEditor() {
+    setSelectedTemplateId(null);
   }
 
   function updateField<K extends keyof Template>(field: K, value: Template[K]) {
+    if (!current) return;
     setPendingEdits((prev) => ({
       ...prev,
       [current.id]: { ...prev[current.id], [field]: value },
@@ -206,6 +219,8 @@ export default function NotificationTemplatesPage() {
   }
 
   function commitDraft(markAsDraft: boolean) {
+    if (!current) return;
+
     const updated: Template = {
       ...current,
       isDraft: markAsDraft,
@@ -226,17 +241,21 @@ export default function NotificationTemplatesPage() {
   }
 
   function handleSaveDraft() {
+    if (!current) return;
     commitDraft(true);
     showToast('Saved as draft');
+    closeEditor();
   }
 
   function handleSaveTemplate() {
+    if (!current) return;
     if (!current.name.trim()) {
       showToast('Template name is required');
       return;
     }
     commitDraft(false);
     showToast('Template saved');
+    closeEditor();
   }
 
   function handleNewTemplate() {
@@ -260,15 +279,15 @@ export default function NotificationTemplatesPage() {
     }));
 
     setListFilter('all');
-    setActiveTemplateId(id);
-    showToast('New template created — remember to save it');
+    setSelectedTemplateId(id);
   }
 
-  const smsCharCount = channel === 'SMS' ? current.body.length : null;
+  const smsCharCount = current && channel === 'SMS' ? current.body.length : null;
 
   return (
     <main className="super-admin-page content-child">
       <section className="page-heading">
+        <SuperAdminBackButton />
         <div className="title-group">
           <div className="breadcrumb">Content &amp; Platform &nbsp;›&nbsp; Notification Templates</div>
           <h1>Notification Templates</h1>
@@ -342,8 +361,8 @@ export default function NotificationTemplatesPage() {
                 <button
                   key={t.id}
                   type="button"
-                  className={`list-row ${current.id === t.id ? 'active' : ''}`}
-                  onClick={() => setActiveTemplateId(t.id)}
+                  className={`list-row ${selectedTemplateId === t.id ? 'active' : ''}`}
+                  onClick={() => selectTemplate(t.id)}
                 >
                   <span className="list-row-title">
                     {rowName}
@@ -390,121 +409,136 @@ export default function NotificationTemplatesPage() {
           </div>
         </div>
 
-        <div className="content-editor-panel template-editor">
-          <div className="field-row template-name-row">
+        {isEditorOpen && current ? (
+          <div className="content-editor-panel template-editor">
+            <div className="field-row template-name-row">
+              <div className="field-group">
+                <label>
+                  Template Name
+                  {current.isDraft && <span className="field-hint" style={{ color: '#FBBF24' }}> · Draft</span>}
+                </label>
+                <input
+                  value={current.name}
+                  onChange={(e) => updateField('name', e.target.value)}
+                />
+              </div>
+              <div className="template-editor-actions">
+                <button className="button-secondary" onClick={() => closeEditor()}>
+                  Cancel
+                </button>
+                <button className="button-secondary" onClick={handleSaveDraft}>
+                  Save Draft
+                </button>
+                <button className="button-primary" onClick={handleSaveTemplate}>
+                  Save Template
+                </button>
+              </div>
+            </div>
+
+            {(channel === 'Push' || channel === 'In-App') && (
+              <div className="field-group">
+                <label>Title</label>
+                <input
+                  value={current.title ?? ''}
+                  onChange={(e) => updateField('title', e.target.value)}
+                />
+              </div>
+            )}
+
+            {channel === 'Email' && (
+              <div className="field-group">
+                <label>Subject</label>
+                <input
+                  value={current.subject ?? ''}
+                  onChange={(e) => updateField('subject', e.target.value)}
+                />
+              </div>
+            )}
+
             <div className="field-group">
               <label>
-                Template Name
-                {current.isDraft && <span className="field-hint" style={{ color: '#FBBF24' }}> · Draft</span>}
+                Body
+                {channel === 'SMS' && (
+                  <span className="field-hint">
+                    {smsCharCount}/{SMS_CHAR_LIMIT} characters
+                    {smsCharCount !== null && smsCharCount > SMS_CHAR_LIMIT ? ' — over limit' : ''}
+                  </span>
+                )}
               </label>
-              <input
-                value={current.name}
-                onChange={(e) => updateField('name', e.target.value)}
-              />
-            </div>
-            <div className="template-editor-actions">
-              <button className="button-secondary" onClick={handleSaveDraft}>
-                Save Draft
-              </button>
-              <button className="button-primary" onClick={handleSaveTemplate}>
-                Save Template
-              </button>
-            </div>
-          </div>
 
-          {(channel === 'Push' || channel === 'In-App') && (
-            <div className="field-group">
-              <label>Title</label>
-              <input
-                value={current.title ?? ''}
-                onChange={(e) => updateField('title', e.target.value)}
-              />
-            </div>
-          )}
-
-          {channel === 'Email' && (
-            <div className="field-group">
-              <label>Subject</label>
-              <input
-                value={current.subject ?? ''}
-                onChange={(e) => updateField('subject', e.target.value)}
-              />
-            </div>
-          )}
-
-          <div className="field-group">
-            <label>
-              Body
-              {channel === 'SMS' && (
-                <span className="field-hint">
-                  {smsCharCount}/{SMS_CHAR_LIMIT} characters
-                  {smsCharCount !== null && smsCharCount > SMS_CHAR_LIMIT ? ' — over limit' : ''}
-                </span>
-              )}
-            </label>
-
-            {channel === 'Email' ? (
-              <div className="rich-textarea">
-                <div className="rich-toolbar">
-                  <button type="button"><Bold size={13} /></button>
-                  <button type="button"><Italic size={13} /></button>
-                  <button type="button"><Underline size={13} /></button>
-                  <button type="button"><List size={13} /></button>
-                  <button type="button"><AlignLeft size={13} /></button>
+              {channel === 'Email' ? (
+                <div className="rich-textarea">
+                  <div className="rich-toolbar">
+                    <button type="button"><Bold size={13} /></button>
+                    <button type="button"><Italic size={13} /></button>
+                    <button type="button"><Underline size={13} /></button>
+                    <button type="button"><List size={13} /></button>
+                    <button type="button"><AlignLeft size={13} /></button>
+                  </div>
+                  <textarea
+                    value={current.body}
+                    onChange={(e) => updateField('body', e.target.value)}
+                    rows={9}
+                  />
                 </div>
+              ) : (
                 <textarea
                   value={current.body}
                   onChange={(e) => updateField('body', e.target.value)}
-                  rows={9}
+                  rows={channel === 'SMS' ? 4 : 6}
+                  maxLength={channel === 'SMS' ? SMS_CHAR_LIMIT + 40 : undefined}
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.03)',
+                    border: '1px solid rgba(148, 163, 184, 0.16)',
+                    borderRadius: 12,
+                    padding: '12px 14px',
+                    color: 'var(--text)',
+                    fontSize: 13.5,
+                    outline: 'none',
+                    resize: 'vertical',
+                    width: '100%',
+                  }}
+                />
+              )}
+            </div>
+
+            {channel === 'In-App' && (
+              <div className="field-group">
+                <label>Call to Action Label</label>
+                <input
+                  value={current.cta ?? ''}
+                  onChange={(e) => updateField('cta', e.target.value)}
                 />
               </div>
-            ) : (
-              <textarea
-                value={current.body}
-                onChange={(e) => updateField('body', e.target.value)}
-                rows={channel === 'SMS' ? 4 : 6}
-                maxLength={channel === 'SMS' ? SMS_CHAR_LIMIT + 40 : undefined}
-                style={{
-                  background: 'rgba(255, 255, 255, 0.03)',
-                  border: '1px solid rgba(148, 163, 184, 0.16)',
-                  borderRadius: 12,
-                  padding: '12px 14px',
-                  color: 'var(--text)',
-                  fontSize: 13.5,
-                  outline: 'none',
-                  resize: 'vertical',
-                  width: '100%',
-                }}
-              />
             )}
-          </div>
 
-          {channel === 'In-App' && (
             <div className="field-group">
-              <label>Call to Action Label</label>
-              <input
-                value={current.cta ?? ''}
-                onChange={(e) => updateField('cta', e.target.value)}
-              />
+              <label>Available Variables</label>
+              <div className="tag-row">
+                {VARIABLES.map((v) => (
+                  <span key={v} className="tag-pill">{v}</span>
+                ))}
+              </div>
             </div>
-          )}
 
-          <div className="field-group">
-            <label>Available Variables</label>
-            <div className="tag-row">
-              {VARIABLES.map((v) => (
-                <span key={v} className="tag-pill">{v}</span>
-              ))}
-            </div>
+            <span className="content-footer-meta">
+              Last updated by {current.updatedBy} on {current.updatedAt}
+              {hasUnsavedChanges && (
+                <span style={{ color: '#F87171', marginLeft: 8 }}>· Unsaved changes</span>
+              )}
+            </span>
           </div>
-
-          <span className="content-footer-meta">
-            Last updated by {current.updatedBy} on {current.updatedAt}
-            {hasUnsavedChanges && (
-              <span style={{ color: '#F87171', marginLeft: 8 }}>· Unsaved changes</span>
-            )}
-          </span>
-        </div>
+        ) : (
+          <div
+            className="content-editor-panel"
+            style={{ alignItems: 'center', justifyContent: 'center', textAlign: 'center', minHeight: 320, gap: 12 }}
+          >
+            <FileText size={28} style={{ color: 'var(--muted)' }} />
+            <p className="panel-empty-hint" style={{ margin: 0 }}>
+              Select a template from the list to edit it, or create a new one.
+            </p>
+          </div>
+        )}
       </div>
     </main>
   );

@@ -489,6 +489,11 @@
   color: #ffb4b4;
 }
 
+.login-form .login-footnote-error {
+  color: #ffb4b4 !important;
+  text-transform: none;
+}
+
 .login-footnote a {
   color: #b691ff;
   text-decoration: none;

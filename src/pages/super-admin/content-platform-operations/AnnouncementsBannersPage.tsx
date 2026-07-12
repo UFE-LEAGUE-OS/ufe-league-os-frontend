@@ -16,6 +16,7 @@ import FilterDropdown from '../../../components/FilterDropdown';
 import '../../../styles/pages/super-admin/content-platform-operations/SuperAdminContent.css';
 import '../../../styles/pages/super-admin/content-platform-operations/SuperAdminOpsShared.css';
 import '../../../styles/pages/super-admin/content-platform-operations/AnnouncementsBannersPage.css';
+import SuperAdminBackButton from '../../../components/SuperAdminBackButton';
 
 const tabs = ['Announcements', 'Banners'] as const;
 type Tab = typeof tabs[number];
@@ -126,6 +127,9 @@ export default function AnnouncementsBannersPage() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<Tab>('Announcements');
   const [search, setSearch] = useState('');
+  const [typeFilter, setTypeFilter] = useState('All Types');
+  const [statusFilter, setStatusFilter] = useState('All Status');
+  const [audienceFilter, setAudienceFilter] = useState('All Audiences');
   const [toast, setToast] = useState<string | null>(null);
 
   const [announcements, setAnnouncements] = useState<Announcement[]>(INITIAL_ANNOUNCEMENTS);
@@ -151,9 +155,18 @@ export default function AnnouncementsBannersPage() {
 
   // ---------- Announcements ----------
 
-  const filteredAnnouncements = announcements.filter((a) =>
-    a.title.toLowerCase().includes(search.toLowerCase())
+  const announcementAudiences = useMemo(
+    () => Array.from(new Set(announcements.map((a) => a.audience))),
+    [announcements]
   );
+
+  const filteredAnnouncements = announcements.filter((a) => {
+    const matchesSearch = a.title.toLowerCase().includes(search.toLowerCase());
+    const matchesType = typeFilter === 'All Types' || a.type === typeFilter;
+    const matchesStatus = statusFilter === 'All Status' || a.status === statusFilter;
+    const matchesAudience = audienceFilter === 'All Audiences' || a.audience === audienceFilter;
+    return matchesSearch && matchesType && matchesStatus && matchesAudience;
+  });
 
   const featuredAnnouncement = useMemo(
     () => announcements.find((a) => a.status === 'Active') ?? announcements[0],
@@ -255,6 +268,7 @@ export default function AnnouncementsBannersPage() {
   return (
     <main className="super-admin-page content-child">
       <section className="page-heading">
+        <SuperAdminBackButton />
         <div className="title-group">
           <div className="breadcrumb">Content &amp; Platform &nbsp;›&nbsp; Announcements &amp; Banners</div>
           <h1>Announcements &amp; Banners</h1>
@@ -303,6 +317,21 @@ export default function AnnouncementsBannersPage() {
       {activeTab === 'Announcements' && (
         <>
           <div className="ops-toolbar">
+            <FilterDropdown
+              value={typeFilter}
+              options={['All Types', 'Alert', 'Info']}
+              onChange={setTypeFilter}
+            />
+            <FilterDropdown
+              value={statusFilter}
+              options={['All Status', 'Scheduled', 'Active', 'Expired']}
+              onChange={setStatusFilter}
+            />
+            <FilterDropdown
+              value={audienceFilter}
+              options={['All Audiences', ...announcementAudiences]}
+              onChange={setAudienceFilter}
+            />
             <div className="ops-search">
               <Search size={15} />
               <input
@@ -346,14 +375,14 @@ export default function AnnouncementsBannersPage() {
                 {filteredAnnouncements.length === 0 && (
                   <tr>
                     <td colSpan={7} className="cell-muted" style={{ textAlign: 'center', padding: '32px 0' }}>
-                      No announcements match your search.
+                      No announcements match your filters.
                     </td>
                   </tr>
                 )}
               </tbody>
             </table>
             <div className="table-pagination">
-              <span>Showing 1 to {filteredAnnouncements.length} of {filteredAnnouncements.length}</span>
+              <span>Showing {filteredAnnouncements.length === 0 ? 0 : 1} to {filteredAnnouncements.length} of {filteredAnnouncements.length}</span>
               <div className="pager">
                 <button disabled><ChevronLeft size={14} /></button>
                 <button className="current">1</button>
@@ -411,105 +440,105 @@ export default function AnnouncementsBannersPage() {
             </div>
           </div>
 
-          <div className="split-layout split-2">
-            <div className="table-card">
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>Banner</th>
-                    <th>Placement</th>
-                    <th>Status</th>
-                    <th>Start</th>
-                    <th>End</th>
-                    <th style={{ width: 130 }}>Actions</th>
+          {/* Table spans the full width, as the first (top) row */}
+          <div className="table-card" style={{ marginBottom: 20 }}>
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Banner</th>
+                  <th>Placement</th>
+                  <th>Status</th>
+                  <th>Start</th>
+                  <th>End</th>
+                  <th style={{ width: 130 }}>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredBanners.map((banner, index) => (
+                  <tr
+                    key={banner.id}
+                    onClick={() => setPreviewId(banner.id)}
+                    style={{
+                      cursor: 'pointer',
+                      background: banner.id === previewId ? 'rgba(139, 92, 246, 0.06)' : undefined,
+                    }}
+                  >
+                    <td>
+                      <strong style={{ display: 'block', fontSize: 13 }}>{banner.title}</strong>
+                      <span className="cell-muted" style={{ fontSize: 12 }}>{banner.message}</span>
+                    </td>
+                    <td className="cell-muted">{banner.placement}</td>
+                    <td>{bannerStatusBadge(banner.status)}</td>
+                    <td className="cell-muted">{banner.start}</td>
+                    <td className="cell-muted">{banner.end}</td>
+                    <td onClick={(e) => e.stopPropagation()}>
+                      <div style={{ display: 'flex', gap: 6 }}>
+                        <button
+                          className="icon-btn"
+                          disabled={index === 0}
+                          onClick={() => moveBanner(banner.id, 'up')}
+                          aria-label="Move up"
+                        >
+                          <ArrowUp size={13} />
+                        </button>
+                        <button
+                          className="icon-btn"
+                          disabled={index === filteredBanners.length - 1}
+                          onClick={() => moveBanner(banner.id, 'down')}
+                          aria-label="Move down"
+                        >
+                          <ArrowDown size={13} />
+                        </button>
+                        <button className="icon-btn" onClick={() => openEditBanner(banner)} aria-label="Edit banner">
+                          <Pencil size={13} />
+                        </button>
+                        <button
+                          className="icon-btn"
+                          onClick={() => removeBanner(banner.id)}
+                          aria-label="Delete banner"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {filteredBanners.map((banner, index) => (
-                    <tr
-                      key={banner.id}
-                      onClick={() => setPreviewId(banner.id)}
-                      style={{
-                        cursor: 'pointer',
-                        background: banner.id === previewId ? 'rgba(139, 92, 246, 0.06)' : undefined,
-                      }}
-                    >
-                      <td>
-                        <strong style={{ display: 'block', fontSize: 13 }}>{banner.title}</strong>
-                        <span className="cell-muted" style={{ fontSize: 12 }}>{banner.message}</span>
-                      </td>
-                      <td className="cell-muted">{banner.placement}</td>
-                      <td>{bannerStatusBadge(banner.status)}</td>
-                      <td className="cell-muted">{banner.start}</td>
-                      <td className="cell-muted">{banner.end}</td>
-                      <td onClick={(e) => e.stopPropagation()}>
-                        <div style={{ display: 'flex', gap: 6 }}>
-                          <button
-                            className="icon-btn"
-                            disabled={index === 0}
-                            onClick={() => moveBanner(banner.id, 'up')}
-                            aria-label="Move up"
-                          >
-                            <ArrowUp size={13} />
-                          </button>
-                          <button
-                            className="icon-btn"
-                            disabled={index === filteredBanners.length - 1}
-                            onClick={() => moveBanner(banner.id, 'down')}
-                            aria-label="Move down"
-                          >
-                            <ArrowDown size={13} />
-                          </button>
-                          <button className="icon-btn" onClick={() => openEditBanner(banner)} aria-label="Edit banner">
-                            <Pencil size={13} />
-                          </button>
-                          <button
-                            className="icon-btn"
-                            onClick={() => removeBanner(banner.id)}
-                            aria-label="Delete banner"
-                          >
-                            <Trash2 size={13} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                ))}
 
-                  {filteredBanners.length === 0 && (
-                    <tr>
-                      <td colSpan={6} className="cell-muted" style={{ textAlign: 'center', padding: '32px 0' }}>
-                        No banners match your filters.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+                {filteredBanners.length === 0 && (
+                  <tr>
+                    <td colSpan={6} className="cell-muted" style={{ textAlign: 'center', padding: '32px 0' }}>
+                      No banners match your filters.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Live Preview sits below the table, as the second row */}
+          <div className="panel-card banner-preview-card">
+            <div className="panel-card-header">
+              <h3>Live Preview</h3>
             </div>
 
-            <div className="panel-card banner-preview-card">
-              <div className="panel-card-header">
-                <h3>Live Preview</h3>
-              </div>
-
-              {previewBanner ? (
-                <>
-                  <div className="banner-preview">
-                    <span className="banner-preview-icon"><Megaphone size={18} /></span>
-                    <div>
-                      <strong>{previewBanner.title}</strong>
-                      <p>{previewBanner.message}</p>
-                    </div>
-                    <button className="link-inline banner-preview-cta">Learn more</button>
+            {previewBanner ? (
+              <>
+                <div className="banner-preview">
+                  <span className="banner-preview-icon"><Megaphone size={18} /></span>
+                  <div>
+                    <strong>{previewBanner.title}</strong>
+                    <p>{previewBanner.message}</p>
                   </div>
+                  <button className="link-inline banner-preview-cta">Learn more</button>
+                </div>
 
-                  <p className="panel-subtext">
-                    Placement: {previewBanner.placement} · {previewBanner.start} – {previewBanner.end}
-                  </p>
-                </>
-              ) : (
-                <p className="panel-empty-hint">Select a banner from the list to preview it here.</p>
-              )}
-            </div>
+                <p className="panel-subtext">
+                  Placement: {previewBanner.placement} · {previewBanner.start} – {previewBanner.end}
+                </p>
+              </>
+            ) : (
+              <p className="panel-empty-hint">Select a banner from the list to preview it here.</p>
+            )}
           </div>
         </>
       )}

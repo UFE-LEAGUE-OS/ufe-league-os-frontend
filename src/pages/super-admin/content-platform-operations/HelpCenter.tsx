@@ -3,6 +3,7 @@ import { Search, Plus, Bold, Italic, Underline, Link2, Image as ImageIcon, List,
 import FilterDropdown from '../../../components/FilterDropdown';
 import '../../../styles/pages/super-admin/content-platform-operations/SuperAdminOpsShared.css';
 import '../../../styles/pages/super-admin/content-platform-operations/SuperAdminContent.css';
+import SuperAdminBackButton from '../../../components/SuperAdminBackButton';
 
 const topTabs = ['Articles', 'Categories', 'Settings'] as const;
 type TopTab = typeof topTabs[number];
@@ -354,6 +355,7 @@ export default function HelpCenter() {
   const [activeCategoryId, setActiveCategoryId] = useState<string>('all');
   const [search, setSearch] = useState('');
   const [activeArticleId, setActiveArticleId] = useState<string>(ARTICLES[0].id);
+  const [showArticleEditor, setShowArticleEditor] = useState(false);
 
   const [toast, setToast] = useState<string | null>(null);
 
@@ -362,10 +364,12 @@ export default function HelpCenter() {
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newCategoryArticleTitle, setNewCategoryArticleTitle] = useState('');
   const [newCategoryArticleContent, setNewCategoryArticleContent] = useState('');
+  const [newCategoryNameError, setNewCategoryNameError] = useState<string | null>(null);
 
   // ---- Edit Category (rename) modal ----
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [editCategoryName, setEditCategoryName] = useState('');
+  const [editCategoryNameError, setEditCategoryNameError] = useState<string | null>(null);
 
   // Editable draft for the active article
   const activeArticle = useMemo(
@@ -398,6 +402,11 @@ export default function HelpCenter() {
     setTimeout(() => setToast(null), 2200);
   }
 
+  function selectArticle(id: string) {
+    setActiveArticleId(id);
+    setShowArticleEditor(true);
+  }
+
   function handleSaveArticle() {
     if (!draft.title.trim()) {
       showToast('Title is required');
@@ -410,6 +419,7 @@ export default function HelpCenter() {
     };
     setArticles((prev) => prev.map((a) => (a.id === updated.id ? updated : a)));
     showToast('Changes saved — article is in the selected category');
+    setShowArticleEditor(false);
   }
 
   function handleNewArticle() {
@@ -427,6 +437,7 @@ export default function HelpCenter() {
     };
     setArticles((prev) => [newArticle, ...prev]);
     setActiveArticleId(id);
+    setShowArticleEditor(true);
     showToast('New article created — remember to save it');
   }
 
@@ -436,21 +447,24 @@ export default function HelpCenter() {
     setNewCategoryName('');
     setNewCategoryArticleTitle('');
     setNewCategoryArticleContent('');
+    setNewCategoryNameError(null);
     setCategoryModalOpen(true);
   }
 
   function handleCreateCategoryWithArticle() {
     const name = newCategoryName.trim();
     if (!name) {
-      showToast('Category name is required');
-      return;
-    }
-    const categoryId = slugify(name) || genId('cat');
-    if (categories.some((c) => c.id === categoryId)) {
-      showToast('A category with this name already exists');
+      setNewCategoryNameError('Category name is required.');
       return;
     }
 
+    const categoryId = slugify(name) || genId('cat');
+    if (categories.some((c) => c.id === categoryId)) {
+      setNewCategoryNameError('A category with this name already exists.');
+      return;
+    }
+
+    setNewCategoryNameError(null);
     setCategories((prev) => [...prev, { id: categoryId, name }]);
 
     const articleTitle = newCategoryArticleTitle.trim();
@@ -472,7 +486,10 @@ export default function HelpCenter() {
     }
 
     setActiveCategoryId(categoryId);
-    if (newArticleId) setActiveArticleId(newArticleId);
+    if (newArticleId) {
+      setActiveArticleId(newArticleId);
+      setShowArticleEditor(true);
+    }
     setCategoryModalOpen(false);
     setTab('Articles');
     showToast(articleTitle ? 'Category and article created' : 'Category created');
@@ -483,15 +500,19 @@ export default function HelpCenter() {
   function openEditCategory(c: Category) {
     setEditingCategory(c);
     setEditCategoryName(c.name);
+    setEditCategoryNameError(null);
   }
 
   function handleSaveCategoryName() {
     if (!editingCategory) return;
     const name = editCategoryName.trim();
+
     if (!name) {
-      showToast('Category name is required');
+      setEditCategoryNameError('Category name is required.');
       return;
     }
+
+    setEditCategoryNameError(null);
     setCategories((prev) => prev.map((c) => (c.id === editingCategory.id ? { ...c, name } : c)));
     setEditingCategory(null);
     showToast('Category updated');
@@ -515,6 +536,7 @@ export default function HelpCenter() {
   return (
     <main className="super-admin-page content-child">
       <section className="page-heading">
+        <SuperAdminBackButton />
         <div className="title-group">
           <h1>Help Center</h1>
         </div>
@@ -619,8 +641,8 @@ export default function HelpCenter() {
                   <button
                     key={a.id}
                     type="button"
-                    className={`list-row ${activeArticleId === a.id ? 'active' : ''}`}
-                    onClick={() => setActiveArticleId(a.id)}
+                    className={`list-row ${showArticleEditor && activeArticleId === a.id ? 'active' : ''}`}
+                    onClick={() => selectArticle(a.id)}
                     style={{ justifyContent: 'space-between' }}
                   >
                     <span className="list-row-title">{a.title}</span>
@@ -636,85 +658,94 @@ export default function HelpCenter() {
               </div>
             </div>
 
-            <div className="content-editor-panel">
-              <div className="field-group">
-                <label style={{ fontSize: 16, textTransform: 'none', letterSpacing: 0, color: 'var(--text)' }}>
-                  <input
-                    value={draft.title}
-                    onChange={(e) => updateDraft('title', e.target.value)}
-                    style={{
-                      fontSize: 16,
-                      fontWeight: 600,
-                      background: 'transparent',
-                      border: 'none',
-                      padding: '4px 0',
+            {showArticleEditor ? (
+              <div className="content-editor-panel">
+                <div className="field-group">
+                  <label style={{ fontSize: 16, textTransform: 'none', letterSpacing: 0, color: 'var(--text)' }}>
+                    <input
+                      value={draft.title}
+                      onChange={(e) => updateDraft('title', e.target.value)}
+                      style={{
+                        fontSize: 16,
+                        fontWeight: 600,
+                        background: 'transparent',
+                        border: 'none',
+                        padding: '4px 0',
+                      }}
+                    />
+                  </label>
+                </div>
+
+                <div className="field-row">
+                  <div className="field-group">
+                    <label>Slug</label>
+                    <input
+                      value={draft.slug}
+                      onChange={(e) => updateDraft('slug', e.target.value)}
+                    />
+                  </div>
+                  <div className="field-group">
+                    <label>Status</label>
+                    <FilterDropdown
+                      value={draft.status}
+                      options={['Published', 'Draft']}
+                      onChange={(v) => updateDraft('status', v as ArticleStatus)}
+                    />
+                  </div>
+                </div>
+
+                <div className="field-group">
+                  <label>Category</label>
+                  <FilterDropdown
+                    value={draftCategoryLabel}
+                    options={categories.map((c) => c.name)}
+                    onChange={(name) => {
+                      const category = categories.find((c) => c.name === name);
+                      if (category) updateDraft('categoryId', category.id);
                     }}
                   />
-                </label>
-              </div>
-
-              <div className="field-row">
-                <div className="field-group">
-                  <label>Slug</label>
-                  <input
-                    value={draft.slug}
-                    onChange={(e) => updateDraft('slug', e.target.value)}
-                  />
                 </div>
+
                 <div className="field-group">
-                  <label>Status</label>
-                  <FilterDropdown
-                    value={draft.status}
-                    options={['Published', 'Draft']}
-                    onChange={(v) => updateDraft('status', v as ArticleStatus)}
-                  />
-                </div>
-              </div>
-
-              <div className="field-group">
-                <label>Category</label>
-                <FilterDropdown
-                  value={draftCategoryLabel}
-                  options={categories.map((c) => c.name)}
-                  onChange={(name) => {
-                    const category = categories.find((c) => c.name === name);
-                    if (category) updateDraft('categoryId', category.id);
-                  }}
-                />
-              </div>
-
-              <div className="field-group">
-                <label>Content</label>
-                <div className="rich-textarea">
-                  <div className="rich-toolbar">
-                    <button type="button"><Bold size={13} /></button>
-                    <button type="button"><Italic size={13} /></button>
-                    <button type="button"><Underline size={13} /></button>
-                    <button type="button"><Link2 size={13} /></button>
-                    <button type="button"><ImageIcon size={13} /></button>
-                    <button type="button"><List size={13} /></button>
-                    <button type="button"><Quote size={13} /></button>
-                    <button type="button"><Code size={13} /></button>
+                  <label>Content</label>
+                  <div className="rich-textarea">
+                    <div className="rich-toolbar">
+                      <button type="button"><Bold size={13} /></button>
+                      <button type="button"><Italic size={13} /></button>
+                      <button type="button"><Underline size={13} /></button>
+                      <button type="button"><Link2 size={13} /></button>
+                      <button type="button"><ImageIcon size={13} /></button>
+                      <button type="button"><List size={13} /></button>
+                      <button type="button"><Quote size={13} /></button>
+                      <button type="button"><Code size={13} /></button>
+                    </div>
+                    <textarea
+                      rows={10}
+                      value={draft.content}
+                      onChange={(e) => updateDraft('content', e.target.value)}
+                    />
                   </div>
-                  <textarea
-                    rows={10}
-                    value={draft.content}
-                    onChange={(e) => updateDraft('content', e.target.value)}
-                  />
                 </div>
-              </div>
 
-              <div className="content-footer-bar">
-                <span className="content-footer-meta">
-                  Last updated by {activeArticle.updatedBy} on {activeArticle.updatedAt}
-                </span>
-                <div className="content-footer-actions">
-                  <button className="button-primary" onClick={handleSaveArticle}>
-                    Save Changes
-                  </button>
+                <div className="content-footer-bar">
+                  <span className="content-footer-meta">
+                    Last updated by {activeArticle.updatedBy} on {activeArticle.updatedAt}
+                  </span>
+                  <div className="content-footer-actions">
+                    <button className="button-secondary" onClick={() => setShowArticleEditor(false)}>
+                      Cancel
+                    </button>
+                    <button className="button-primary" onClick={handleSaveArticle}>
+                      Save Changes
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
+            ) : (
+              <p className="panel-empty-hint" style={{ padding: '12px 2px' }}>
+                Select an article from the list, or click "New Article" to start editing.
+              </p>
+            )}
           </div>
         </div>
       )}
@@ -841,10 +872,20 @@ export default function HelpCenter() {
             <label>Category Name</label>
             <input
               value={newCategoryName}
-              onChange={(e) => setNewCategoryName(e.target.value)}
+              onChange={(e) => {
+                setNewCategoryName(e.target.value);
+                if (newCategoryNameError) setNewCategoryNameError(null);
+              }}
               placeholder="e.g. Fantasy Leagues"
               autoFocus
+              aria-invalid={Boolean(newCategoryNameError)}
+              aria-describedby={newCategoryNameError ? 'new-category-name-error' : undefined}
             />
+            {newCategoryNameError && (
+              <span id="new-category-name-error" className="field-error" role="alert">
+                {newCategoryNameError}
+              </span>
+            )}
           </div>
 
           <div className="content-section" style={{ borderTop: 'none', paddingTop: 0 }}>
@@ -889,9 +930,19 @@ export default function HelpCenter() {
             <label>Category Name</label>
             <input
               value={editCategoryName}
-              onChange={(e) => setEditCategoryName(e.target.value)}
+              onChange={(e) => {
+                setEditCategoryName(e.target.value);
+                if (editCategoryNameError) setEditCategoryNameError(null);
+              }}
               autoFocus
+              aria-invalid={Boolean(editCategoryNameError)}
+              aria-describedby={editCategoryNameError ? 'edit-category-name-error' : undefined}
             />
+            {editCategoryNameError && (
+              <span id="edit-category-name-error" className="field-error" role="alert">
+                {editCategoryNameError}
+              </span>
+            )}
           </div>
 
           <div className="content-footer-actions" style={{ justifyContent: 'flex-end' }}>
