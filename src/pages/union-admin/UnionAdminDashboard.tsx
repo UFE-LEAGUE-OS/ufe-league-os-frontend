@@ -41,6 +41,8 @@ import MobileUnionNavigation from "../../components/MobileUnionNavigation/Mobile
 import UnionAdminManagementWorkflow from "../../components/UnionAdminManagementWorkflow/UnionAdminManagementWorkflow";
 import UnionAdminClubsPanel from "../../components/UnionAdminClubsPanel/UnionAdminClubsPanel";
 import UnionAdminRefereesPanel from "../../components/UnionAdminRefereesPanel/UnionAdminRefereesPanel";
+import OfficialAppointmentsPanel from "../../components/OfficialAppointmentsPanel/OfficialAppointmentsPanel";
+import LeagueAdminScopesPanel from "../../components/LeagueAdminScopesPanel/LeagueAdminScopesPanel";
 import logoHorizontal from "../../assets/logos/league-os-horizontal.png";
 import styles from "./UnionAdminDashboard.module.css";
 
@@ -2532,63 +2534,11 @@ export default function UnionAdminDashboard() {
 
     function renderAppointments() {
         return (
-            <section className={styles.panelLarge}>
-                <SectionHeader
-                    eyebrow="Official appointments"
-                    title={isMatchOfficialWorkspace(activeWorkspace) ? "My appointments" : "Appointments"}
-                    description="Officials belong to the union but can be assigned to different competitions and matches."
-                />
-                <div className={styles.contentSplit}>
-                    <DataTable
-                        columns={[
-                            { key: "match", label: "Match", render: (item) => item.match },
-                            { key: "competition", label: "Competition", render: (item) => item.competition },
-                            { key: "date", label: "Date", render: (item) => item.date },
-                            { key: "venue", label: "Venue", render: (item) => item.venue },
-                            { key: "role", label: "Role", render: (item) => item.role },
-                            { key: "report", label: "Report", render: (item) => <StatusPill label={item.report} /> },
-                        ]}
-                        data={workspaceAppointments}
-                    />
-                    <aside className={styles.actionRail}>
-                        <h3>
-                            {isMatchOfficialWorkspace(activeWorkspace)
-                                ? "My next match"
-                                : "Next match assigned"}
-                        </h3>
-
-                        <p>
-                            {workspaceAppointments[0]?.match ??
-                                "No upcoming appointment"}
-                        </p>
-
-                        <p>
-                            {workspaceAppointments[0]
-                                ? `${workspaceAppointments[0].venue} • ${workspaceAppointments[0].role} • ${workspaceAppointments[0].report}`
-                                : "Appointments will appear after the federation assigns an official to a fixture."}
-                        </p>
-
-                        <div className={styles.buttonColumn}>
-                            {workspaceAppointments[0] ? (
-                                <button
-                                    className={styles.primaryButton}
-                                    type="button"
-                                >
-                                    {workspaceAppointments[0].status ??
-                                        "Assigned"}
-                                </button>
-                            ) : null}
-
-                            <button
-                                className={styles.secondaryButton}
-                                type="button"
-                            >
-                                Open Match Detail
-                            </button>
-                        </div>
-                    </aside>
-                </div>
-            </section>
+            <OfficialAppointmentsPanel
+                mode={isMatchOfficialWorkspace(activeWorkspace) ? "official" : "union"}
+                workspaceSlug={activeWorkspace.slug}
+                workspaceName={activeWorkspace.name}
+            />
         );
     }
 
@@ -3198,6 +3148,7 @@ export default function UnionAdminDashboard() {
             ];
 
         return (
+            <>
             <section className={styles.panelLarge}>
                 <SectionHeader
                     eyebrow="Users"
@@ -3227,6 +3178,10 @@ export default function UnionAdminDashboard() {
                     </aside>
                 </div>
             </section>
+            <section className={styles.panelLarge}>
+                <LeagueAdminScopesPanel workspaceSlug={activeWorkspace.slug} />
+            </section>
+            </>
         );
     }
 
