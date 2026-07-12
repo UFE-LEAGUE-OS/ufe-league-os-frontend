@@ -11,6 +11,12 @@
   gap: 48px;
 }
 
+.cta-content {
+  max-width: 400px;
+  align-self: flex-start;
+  padding-top: 0;
+}
+
 .cta-heading {
   font-family: var(--font-heading);
   font-size: 40px;
@@ -113,6 +119,8 @@
 
 .cta-content {
   max-width: 400px;
+  align-self: flex-start;
+  padding-top: 8px;
 }
 
 @media (max-width: 900px) {
