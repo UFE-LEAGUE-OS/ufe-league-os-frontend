@@ -85,14 +85,17 @@
   color: #8135FA;
 }
 
-.view-all-link {
-  color: #9CA3AF;
-  text-decoration: none;
+.fixtures-results .fixtures-col a.view-all-link,
+.fixtures-results .fixtures-col a.view-all-link:link,
+.fixtures-results .fixtures-col a.view-all-link:visited {
+  color: #9CA3AF !important;
+  text-decoration: none !important;
   transition: color 0.2s ease;
 }
 
-.view-all-link:hover {
-  color: #8135FA;
+.fixtures-results .fixtures-col a.view-all-link:hover,
+.fixtures-results .fixtures-col a.view-all-link:active {
+  color: #8135FA !important;
 }
 
 .fixtures-col {
