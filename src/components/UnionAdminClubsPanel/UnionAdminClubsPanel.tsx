@@ -1,4 +1,4 @@
-import { Search } from "lucide-react";
+import { Building2, RefreshCw, Search, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import type { FormEvent } from "react";
 import {
@@ -8,6 +8,7 @@ import {
   updateUnionAdminClub,
   type UnionAdminClubRecord,
 } from "../../services/unionAdminService";
+import SafeImage from "../SafeImage/SafeImage";
 import styles from "./UnionAdminClubsPanel.module.css";
 
 type Props = {
@@ -248,7 +249,12 @@ export default function UnionAdminClubsPanel({ workspaceSlug, workspaceLabel, sp
         </div>
 
         <div className={styles.actions}>
-          <button className={styles.secondaryButton} type="button" onClick={() => void refreshClubs()}>
+          <button
+            className={styles.secondaryButton}
+            type="button"
+            onClick={() => void refreshClubs()}
+          >
+            <RefreshCw size={16} aria-hidden="true" />
             {isLoading ? "Refreshing..." : "Refresh"}
           </button>
           <button
@@ -283,21 +289,38 @@ export default function UnionAdminClubsPanel({ workspaceSlug, workspaceLabel, sp
           <div className={styles.clubList}>
             {filteredClubs.map((club) => (
               <button
-                className={styles.clubRow}
+                className={`${styles.clubRow} ${
+                  selectedClub?.id === club.id
+                    ? styles.clubRowActive
+                    : ""
+                }`}
                 key={club.id}
                 type="button"
                 onClick={() => setSelectedClubId(club.id)}
               >
-                <span className={styles.logo}>
-                  {club.logo_url ? <img alt="" src={club.logo_url} /> : initials(club.name)}
-                </span>
-                <span>
+                <SafeImage
+                  alt={`${club.name} logo`}
+                  className={styles.logoImage}
+                  fallback={
+                    initials(club.name) || (
+                      <Building2 size={18} aria-hidden="true" />
+                    )
+                  }
+                  fallbackClassName={styles.logo}
+                  src={club.logo_url}
+                />
+
+                <span className={styles.clubIdentity}>
                   <strong>{club.name}</strong>
-                  <small>
-                    {club.sport_display} • {club.admin_name || "No club admin assigned"}
-                  </small>
+                  <small>{club.sport_display}</small>
+                  <span>
+                    {club.admin_name || "No club admin assigned"}
+                  </span>
                 </span>
-                <span className={styles.badge}>{club.compliance}</span>
+
+                <span className={styles.badge}>
+                  {club.compliance}
+                </span>
               </button>
             ))}
 
@@ -380,6 +403,7 @@ export default function UnionAdminClubsPanel({ workspaceSlug, workspaceLabel, sp
                     resetForm();
                   }}
                 >
+                  <X size={15} aria-hidden="true" />
                   Cancel
                 </button>
               </div>
@@ -387,9 +411,18 @@ export default function UnionAdminClubsPanel({ workspaceSlug, workspaceLabel, sp
           ) : selectedClub ? (
             <>
               <div className={styles.detailHeader}>
-                <span className={styles.logo}>
-                  {selectedClub.logo_url ? <img alt="" src={selectedClub.logo_url} /> : initials(selectedClub.name)}
-                </span>
+                <SafeImage
+                  alt={`${selectedClub.name} logo`}
+                  className={styles.logoImage}
+                  fallback={
+                    initials(selectedClub.name) || (
+                      <Building2 size={20} aria-hidden="true" />
+                    )
+                  }
+                  fallbackClassName={styles.logo}
+                  src={selectedClub.logo_url}
+                />
+
                 <div>
                   <strong>{selectedClub.name}</strong>
                   <span>{selectedClub.sport_display}</span>
