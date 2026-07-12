@@ -24,7 +24,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
     const variants = {
       default: {
-        background: '#8135FA',
+        background: '#f97316',
         color: '#fff',
       },
       outline: {
@@ -53,15 +53,39 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       },
     };
 
+    const hoverBackground = variant === 'default' ? '#fb923c' : undefined;
+
     const style = {
       ...baseStyles,
       ...variants[variant],
       ...sizes[size],
+      ...(hoverBackground && { transition: 'background 180ms ease, transform 180ms ease, box-shadow 180ms ease' }),
       ...(props.style || {}),
     };
 
     return (
-      <button ref={ref} style={style} className={className} {...props}>
+      <button
+        ref={ref}
+        style={style}
+        className={className}
+        {...props}
+        onMouseEnter={(e) => {
+          if (hoverBackground) {
+            e.currentTarget.style.background = hoverBackground;
+            e.currentTarget.style.transform = 'translateY(-1px)';
+            e.currentTarget.style.boxShadow = '0 10px 24px rgba(249, 115, 22, 0.4)';
+          }
+          if (props.onMouseEnter) props.onMouseEnter(e);
+        }}
+        onMouseLeave={(e) => {
+          if (hoverBackground && variant === 'default') {
+            e.currentTarget.style.background = '#f97316';
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 8px 24px rgba(249, 115, 22, 0.25)';
+          }
+          if (props.onMouseLeave) props.onMouseLeave(e);
+        }}
+      >
         {children}
       </button>
     );

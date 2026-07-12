@@ -212,7 +212,7 @@ function Results() {
                 overflow: "hidden",
             }}>
                 <div style={{ position: "relative", zIndex: 1, maxWidth: 1400, margin: "0 auto" }}>
-                    <Button variant="outline" className="mb-4" onClick={() => navigate("/")}>
+                    <Button className="mb-4" onClick={() => navigate("/")}>
                         <ArrowLeft className="mr-2 h-4 w-4" />
                         Back to Home
                     </Button>
