@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import { Button } from '@/components/ui/button';
 import fixturesImg from '../assets/fixtures.png';
 import heroBg from '../assets/stadium-bg.svg';
 import {
@@ -148,6 +150,7 @@ const styles = `
 `;
 
 function Fixtures() {
+  const navigate = useNavigate();
   const [fixtures, setFixtures] = useState<Fixture[]>([]);
   const [selectedCompetition, setSelectedCompetition] = useState('All');
   const [isLoadingFixtures, setIsLoadingFixtures] = useState(true);
@@ -228,15 +231,10 @@ function Fixtures() {
         overflow: 'hidden',
       }}>
         <div style={{ position: 'relative', zIndex: 1, maxWidth: 1400, margin: '0 auto' }}>
-          <Link to="/" style={{
-            display: 'inline-flex', alignItems: 'center', gap: 6,
-            color: '#9CA3AF', textDecoration: 'none', fontSize: '0.85rem',
-            fontWeight: 600, marginBottom: 16, transition: 'color 0.2s',
-          }}
-          onMouseEnter={e => e.currentTarget.style.color = '#fff'}
-          onMouseLeave={e => e.currentTarget.style.color = '#9CA3AF'}>
-            ← Back to Home
-          </Link>
+          <Button variant="outline" className="mb-4" onClick={() => navigate('/')}>
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Home
+          </Button>
           <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2.8rem', fontStyle: 'italic', fontWeight: 800, marginBottom: 8 }}>
             FIXTURES
           </h1>
