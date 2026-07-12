@@ -144,6 +144,8 @@ import CampaignLaunch from '../pages/sponsor/CampaignLaunch';
 
 import UnionAdminDashboard from '../pages/union-admin/UnionAdminDashboard';
 import LeagueAdminDashboard from '../pages/league-admin/LeagueAdminDashboard';
+import ClubAdminDashboard from '../pages/club-admin/ClubAdminDashboard';
+import TicketingOfficerDashboard from '../pages/ticketing-officer/TicketingOfficerDashboard';
 
 function protectedPage(page: ReactNode) {
     return <ProtectedRoute>{page}</ProtectedRoute>;
@@ -191,6 +193,22 @@ export default function AppRoutes() {
                     element={roleProtectedPage(
                         <LeagueAdminDashboard />,
                         ['LEAGUE_ADMIN'],
+                    )}
+                />
+
+                <Route
+                    path="/dashboard/club-admin"
+                    element={roleProtectedPage(
+                        <ClubAdminDashboard />,
+                        ['CLUB_ADMIN'],
+                    )}
+                />
+
+                <Route
+                    path="/dashboard/ticketing-officer"
+                    element={roleProtectedPage(
+                        <TicketingOfficerDashboard />,
+                        ['TICKETING_OFFICER'],
                     )}
                 />
 

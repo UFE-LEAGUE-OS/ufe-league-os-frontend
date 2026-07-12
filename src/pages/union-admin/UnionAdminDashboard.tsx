@@ -1070,7 +1070,7 @@ export default function UnionAdminDashboard() {
 
                 setOperationsData(null);
                 setOperationsError(
-                    "Workspace operations data could not be loaded. Showing safe preview records.",
+                    "Live workspace operations could not be loaded. Retry after confirming that the backend is available.",
                 );
             }
         }
@@ -1153,18 +1153,23 @@ export default function UnionAdminDashboard() {
     }
 
     const summary = getSummary(overview);
-    const workspaceCompetitions = operationsData?.competitions?.length
-        ? operationsData.competitions
-        : competitions;
-    const workspaceClubs = operationsData?.clubs?.length ? operationsData.clubs : clubs;
-    const workspaceNationalTeams = operationsData?.national_teams ?? [];
-    const workspaceRegistrations = operationsData?.registrations?.length
-        ? operationsData.registrations
-        : registrations;
-    const workspaceReferees = operationsData?.referees?.length ? operationsData.referees : referees;
-    const workspaceAppointments = operationsData?.appointments?.length
-        ? operationsData.appointments
-        : appointments;
+    const workspaceCompetitions =
+        operationsData?.competitions ??
+        (isApiBacked ? [] : competitions);
+    const workspaceClubs =
+        operationsData?.clubs ??
+        (isApiBacked ? [] : clubs);
+    const workspaceNationalTeams =
+        operationsData?.national_teams ?? [];
+    const workspaceRegistrations =
+        operationsData?.registrations ??
+        (isApiBacked ? [] : registrations);
+    const workspaceReferees =
+        operationsData?.referees ??
+        (isApiBacked ? [] : referees);
+    const workspaceAppointments =
+        operationsData?.appointments ??
+        (isApiBacked ? [] : appointments);
     const workspacePlayerPositions = operationsData?.player_positions?.length
         ? operationsData.player_positions
         : getSportPositionGroups(activeWorkspace.sport);
