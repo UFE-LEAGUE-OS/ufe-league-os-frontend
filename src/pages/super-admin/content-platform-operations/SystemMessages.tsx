@@ -20,10 +20,12 @@ import {
   HelpCircle,
   ChevronLeft,
   ChevronRight,
+  X,
 } from 'lucide-react';
 import FilterDropdown from '../../../components/FilterDropdown';
 import '../../../styles/pages/super-admin/content-platform-operations/SuperAdminOpsShared.css';
 import '../../../styles/pages/super-admin/content-platform-operations/SuperAdminContent.css';
+import SuperAdminBackButton from '../../../components/SuperAdminBackButton';
 
 const scopeTabs = ['All Messages', 'By Category', 'By Status', 'Scheduled', 'Archived'] as const;
 type ScopeTab = typeof scopeTabs[number];
@@ -62,6 +64,11 @@ const CATEGORY_COLOR: Record<Category, string> = {
   Promotion: '#F472B6',
   Alert: '#FB923C',
 };
+
+const DEFAULT_CATEGORY_FILTER = 'All Categories';
+const DEFAULT_STATUS_FILTER = 'All Statuses';
+const DEFAULT_PLATFORM_FILTER = 'All Platforms';
+const DEFAULT_TIME_FILTER = 'All Time';
 
 function statusBadge(status: Status) {
   if (status === 'Active') return <span className="badge badge-green">Active</span>;
@@ -220,10 +227,10 @@ export default function SystemMessages() {
   const [detailTab, setDetailTab] = useState<DetailTab>('Details');
 
   const [search, setSearch] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState('All Categories');
-  const [statusFilter, setStatusFilter] = useState('All Statuses');
-  const [platformFilter, setPlatformFilter] = useState('All Platforms');
-  const [timeFilter, setTimeFilter] = useState('All Time');
+  const [categoryFilter, setCategoryFilter] = useState(DEFAULT_CATEGORY_FILTER);
+  const [statusFilter, setStatusFilter] = useState(DEFAULT_STATUS_FILTER);
+  const [platformFilter, setPlatformFilter] = useState(DEFAULT_PLATFORM_FILTER);
+  const [timeFilter, setTimeFilter] = useState(DEFAULT_TIME_FILTER);
 
   const [page, setPage] = useState(1);
   const [activeId, setActiveId] = useState(ALL_MESSAGES[0].id);
@@ -254,16 +261,33 @@ export default function SystemMessages() {
     const matchesSearch =
       m.title.toLowerCase().includes(search.toLowerCase()) ||
       m.description.toLowerCase().includes(search.toLowerCase());
-    const matchesCategory = categoryFilter === 'All Categories' || m.category === categoryFilter;
-    const matchesStatus = statusFilter === 'All Statuses' || m.status === statusFilter;
+    const matchesCategory = categoryFilter === DEFAULT_CATEGORY_FILTER || m.category === categoryFilter;
+    const matchesStatus = statusFilter === DEFAULT_STATUS_FILTER || m.status === statusFilter;
     const matchesPlatform =
-      platformFilter === 'All Platforms' ||
+      platformFilter === DEFAULT_PLATFORM_FILTER ||
       (platformFilter === 'In-App' && m.platforms.inApp) ||
       (platformFilter === 'Push' && m.platforms.push) ||
       (platformFilter === 'Email' && m.platforms.email) ||
       (platformFilter === 'SMS' && m.platforms.sms);
     return matchesSearch && matchesCategory && matchesStatus && matchesPlatform;
   });
+
+  const hasActiveFilters =
+    search.trim() !== '' ||
+    categoryFilter !== DEFAULT_CATEGORY_FILTER ||
+    statusFilter !== DEFAULT_STATUS_FILTER ||
+    platformFilter !== DEFAULT_PLATFORM_FILTER ||
+    timeFilter !== DEFAULT_TIME_FILTER;
+
+  function clearFilters() {
+    setSearch('');
+    setCategoryFilter(DEFAULT_CATEGORY_FILTER);
+    setStatusFilter(DEFAULT_STATUS_FILTER);
+    setPlatformFilter(DEFAULT_PLATFORM_FILTER);
+    setTimeFilter(DEFAULT_TIME_FILTER);
+    setPage(1);
+    showToast('Filters cleared');
+  }
 
   const totalPages = Math.max(1, Math.ceil(filteredMessages.length / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
@@ -335,7 +359,7 @@ export default function SystemMessages() {
           <input
             placeholder="Search system messages..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
           />
         </div>
 
@@ -361,6 +385,7 @@ export default function SystemMessages() {
       </div>
 
       <section className="page-heading">
+        <SuperAdminBackButton />
         <div className="title-group">
           <h1>System Messages</h1>
           <p className="panel-subtext" style={{ margin: '4px 0 0' }}>
@@ -402,152 +427,156 @@ export default function SystemMessages() {
       <div className="ops-toolbar">
         <FilterDropdown
           value={categoryFilter}
-          options={['All Categories', 'Maintenance', 'Announcement', 'Security', 'Update', 'Promotion', 'Alert']}
+          options={[DEFAULT_CATEGORY_FILTER, 'Maintenance', 'Announcement', 'Security', 'Update', 'Promotion', 'Alert']}
           onChange={(v) => { setCategoryFilter(v); setPage(1); }}
         />
         <FilterDropdown
           value={statusFilter}
-          options={['All Statuses', 'Active', 'Scheduled', 'Expired', 'Draft']}
+          options={[DEFAULT_STATUS_FILTER, 'Active', 'Scheduled', 'Expired', 'Draft']}
           onChange={(v) => { setStatusFilter(v); setPage(1); }}
         />
         <FilterDropdown
           value={platformFilter}
-          options={['All Platforms', 'In-App', 'Push', 'Email', 'SMS']}
+          options={[DEFAULT_PLATFORM_FILTER, 'In-App', 'Push', 'Email', 'SMS']}
           onChange={(v) => { setPlatformFilter(v); setPage(1); }}
         />
         <FilterDropdown
           value={timeFilter}
-          options={['All Time', 'Today', 'This Week', 'This Month']}
-          onChange={setTimeFilter}
+          options={[DEFAULT_TIME_FILTER, 'Today', 'This Week', 'This Month']}
+          onChange={(v) => { setTimeFilter(v); setPage(1); }}
         />
         <button
           className="button-secondary"
-          style={{ width: 'auto', marginLeft: 'auto' }}
-          onClick={() => showToast('Advanced filters coming soon')}
+          style={{ width: 'auto', marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6 }}
+          onClick={clearFilters}
+          disabled={!hasActiveFilters}
         >
-          Filters
+          <X size={14} />
+          Clear Filters
         </button>
       </div>
 
       <div className="split-layout" style={{ gridTemplateColumns: '1fr 380px' }}>
         {/* Message list */}
         <div className="table-card">
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>Title</th>
-                <th>Category</th>
-                <th>Platforms</th>
-                <th>Status</th>
-                <th>Priority</th>
-                <th>Start Date</th>
-                <th>End Date</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {pageMessages.map((m) => (
-                <tr
-                  key={m.id}
-                  onClick={() => setActiveId(m.id)}
-                  style={{
-                    cursor: 'pointer',
-                    background: m.id === activeId ? 'rgba(139, 92, 246, 0.08)' : undefined,
-                  }}
-                >
-                  <td style={{ maxWidth: 220 }}>
-                    <strong style={{ display: 'block', fontSize: 13 }}>{m.title}</strong>
-                    <span
-                      className="cell-muted"
-                      style={{
-                        fontSize: 12,
-                        display: 'block',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
-                      {m.description}
-                    </span>
-                  </td>
-                  <td>
-                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12.5 }}>
-                      <span
-                        style={{
-                          width: 6,
-                          height: 6,
-                          borderRadius: '50%',
-                          background: CATEGORY_COLOR[m.category],
-                          flexShrink: 0,
-                        }}
-                      />
-                      {m.category}
-                    </span>
-                  </td>
-                  <td><PlatformIcons platforms={m.platforms} /></td>
-                  <td>{statusBadge(m.status)}</td>
-                  <td>{priorityBadge(m.priority)}</td>
-                  <td className="cell-muted" style={{ fontSize: 12.5 }}>
-                    {m.startDate}
-                    {m.startTime && <><br />{m.startTime}</>}
-                  </td>
-                  <td className="cell-muted" style={{ fontSize: 12.5 }}>
-                    {m.endDate}
-                    {m.endTime && <><br />{m.endTime}</>}
-                  </td>
-                  <td onClick={(e) => e.stopPropagation()} style={{ position: 'relative' }}>
-                    <button
-                      className="icon-btn"
-                      aria-label="More actions"
-                      onClick={() => setOpenMenuId((prev) => (prev === m.id ? null : m.id))}
-                    >
-                      <MoreVertical size={14} />
-                    </button>
-                    {openMenuId === m.id && (
-                      <div className="filter-dropdown-menu" style={{ top: 'calc(100% + 4px)' }}>
-                        <button
-                          className="filter-dropdown-option"
-                          onClick={() => { setActiveId(m.id); setOpenMenuId(null); }}
-                        >
-                          Edit
-                        </button>
-                        <button
-                          className="filter-dropdown-option"
-                          onClick={() => {
-                            setMessages((prev) => prev.map((x) =>
-                              x.id === m.id ? { ...x, status: x.status === 'Expired' ? 'Active' : 'Expired' } : x
-                            ));
-                            setOpenMenuId(null);
-                            showToast(m.status === 'Expired' ? 'Message restored' : 'Message archived');
-                          }}
-                        >
-                          {m.status === 'Expired' ? 'Restore' : 'Archive'}
-                        </button>
-                        <button
-                          className="filter-dropdown-option"
-                          onClick={() => {
-                            setMessages((prev) => prev.filter((x) => x.id !== m.id));
-                            setOpenMenuId(null);
-                            showToast('Message deleted');
-                          }}
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    )}
-                  </td>
-                </tr>
-              ))}
-
-              {pageMessages.length === 0 && (
+          <div className="table-scroll">
+            <table className="data-table">
+              <thead>
                 <tr>
-                  <td colSpan={8} className="cell-muted" style={{ textAlign: 'center', padding: '32px 0' }}>
-                    No messages match your filters.
-                  </td>
+                  <th>Title</th>
+                  <th>Category</th>
+                  <th>Platforms</th>
+                  <th>Status</th>
+                  <th>Priority</th>
+                  <th>Start Date</th>
+                  <th>End Date</th>
+                  <th></th>
                 </tr>
-              )}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {pageMessages.map((m) => (
+                  <tr
+                    key={m.id}
+                    onClick={() => setActiveId(m.id)}
+                    style={{
+                      cursor: 'pointer',
+                      background: m.id === activeId ? 'rgba(139, 92, 246, 0.08)' : undefined,
+                    }}
+                  >
+                    <td style={{ maxWidth: 220 }}>
+                      <strong style={{ display: 'block', fontSize: 13 }}>{m.title}</strong>
+                      <span
+                        className="cell-muted"
+                        style={{
+                          fontSize: 12,
+                          display: 'block',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        {m.description}
+                      </span>
+                    </td>
+                    <td>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12.5 }}>
+                        <span
+                          style={{
+                            width: 6,
+                            height: 6,
+                            borderRadius: '50%',
+                            background: CATEGORY_COLOR[m.category],
+                            flexShrink: 0,
+                          }}
+                        />
+                        {m.category}
+                      </span>
+                    </td>
+                    <td><PlatformIcons platforms={m.platforms} /></td>
+                    <td>{statusBadge(m.status)}</td>
+                    <td>{priorityBadge(m.priority)}</td>
+                    <td className="cell-muted" style={{ fontSize: 12.5 }}>
+                      {m.startDate}
+                      {m.startTime && <><br />{m.startTime}</>}
+                    </td>
+                    <td className="cell-muted" style={{ fontSize: 12.5 }}>
+                      {m.endDate}
+                      {m.endTime && <><br />{m.endTime}</>}
+                    </td>
+                    <td onClick={(e) => e.stopPropagation()} style={{ position: 'relative' }}>
+                      <button
+                        className="icon-btn"
+                        aria-label="More actions"
+                        onClick={() => setOpenMenuId((prev) => (prev === m.id ? null : m.id))}
+                      >
+                        <MoreVertical size={14} />
+                      </button>
+                      {openMenuId === m.id && (
+                        <div className="filter-dropdown-menu" style={{ top: 'calc(100% + 4px)' }}>
+                          <button
+                            className="filter-dropdown-option"
+                            onClick={() => { setActiveId(m.id); setOpenMenuId(null); }}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            className="filter-dropdown-option"
+                            onClick={() => {
+                              setMessages((prev) => prev.map((x) =>
+                                x.id === m.id ? { ...x, status: x.status === 'Expired' ? 'Active' : 'Expired' } : x
+                              ));
+                              setOpenMenuId(null);
+                              showToast(m.status === 'Expired' ? 'Message restored' : 'Message archived');
+                            }}
+                          >
+                            {m.status === 'Expired' ? 'Restore' : 'Archive'}
+                          </button>
+                          <button
+                            className="filter-dropdown-option"
+                            onClick={() => {
+                              setMessages((prev) => prev.filter((x) => x.id !== m.id));
+                              setOpenMenuId(null);
+                              showToast('Message deleted');
+                            }}
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+
+                {pageMessages.length === 0 && (
+                  <tr>
+                    <td colSpan={8} className="cell-muted" style={{ textAlign: 'center', padding: '32px 0' }}>
+                      No messages match your filters.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
 
           <div className="table-pagination">
             <span>

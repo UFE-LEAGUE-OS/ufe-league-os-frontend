@@ -105,7 +105,7 @@ function getLoginErrorMessage(error: unknown) {
     firstMessage(data?.identifier) ||
     firstMessage(data?.email) ||
     firstMessage(data?.password) ||
-    'Login failed. Please check your phone number or email and password.'
+    'Login failed. Please check your phone number, email, or username and password.'
   );
 }
 
@@ -178,7 +178,7 @@ export default function Login() {
         const nextErrors: LoginErrors = {};
 
         if (!identifier.trim()) {
-            nextErrors.identifier = 'Phone number or email is required.';
+            nextErrors.identifier = 'Phone number, email, or username is required.';
         }
 
         if (!password) {
@@ -338,14 +338,14 @@ export default function Login() {
                             ) : null}
 
                             <label>
-                                Phone Number or Email
+                                Phone Number, Email, or Username
                                 <div className="login-field-shell">
                                     <LoginFieldIcon>
                                         <PersonOutlinedIcon />
                                     </LoginFieldIcon>
                                     <input
                                         type="text"
-                                        placeholder="Enter phone number or email"
+                                        placeholder="Enter phone number, email, or username"
                                         autoComplete="username"
                                         value={identifier}
                                         onChange={handleIdentifierChange}

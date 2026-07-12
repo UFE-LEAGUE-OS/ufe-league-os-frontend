@@ -115,7 +115,7 @@ describe('Login page', () => {
     renderLogin()
 
     expect(screen.getByRole('heading', { name: /welcome back/i })).toBeInTheDocument()
-    expect(screen.getByPlaceholderText('Enter phone number or email')).toBeInTheDocument()
+    expect(screen.getByPlaceholderText('Enter phone number, email, or username')).toBeInTheDocument()
 
     const passwordInput = screen.getByPlaceholderText('Enter your password')
     const toggleButton = screen.getByRole('button', { name: /show password/i })
@@ -139,7 +139,7 @@ describe('Login page', () => {
 
     renderLogin([{ pathname: '/login', state: { postLoginRedirect: '/profile' } }])
 
-    await user.type(screen.getByPlaceholderText('Enter phone number or email'), 'fan@example.com')
+    await user.type(screen.getByPlaceholderText('Enter phone number, email, or username'), 'fan@example.com')
     await user.type(screen.getByPlaceholderText('Enter your password'), 'StrongPassword123')
     await user.click(screen.getByRole('button', { name: /^log in$/i }))
 
@@ -169,7 +169,7 @@ describe('Login page', () => {
 
     renderLogin()
 
-    await user.type(screen.getByPlaceholderText('Enter phone number or email'), 'fan@example.com')
+    await user.type(screen.getByPlaceholderText('Enter phone number, email, or username'), 'fan@example.com')
     await user.type(screen.getByPlaceholderText('Enter your password'), 'StrongPassword123')
     await user.click(screen.getByRole('button', { name: /^log in$/i }))
 
@@ -194,7 +194,7 @@ describe('Login page', () => {
 
     expect(loginMock).not.toHaveBeenCalled()
     expect(navigateMock).not.toHaveBeenCalled()
-    expect(screen.getByText(/phone number or email is required/i)).toBeInTheDocument()
+    expect(screen.getByText(/phone number, email, or username is required/i)).toBeInTheDocument()
     expect(screen.getByText(/password is required/i)).toBeInTheDocument()
   })
 
@@ -211,7 +211,7 @@ describe('Login page', () => {
 
     renderLogin()
 
-    await user.type(screen.getByPlaceholderText('Enter phone number or email'), 'wrong@example.com')
+    await user.type(screen.getByPlaceholderText('Enter phone number, email, or username'), 'wrong@example.com')
     await user.type(screen.getByPlaceholderText('Enter your password'), 'WrongPassword123')
     await user.click(screen.getByRole('button', { name: /^log in$/i }))
 
@@ -230,7 +230,7 @@ describe('Login page', () => {
 
     renderLogin()
 
-    await user.type(screen.getByPlaceholderText('Enter phone number or email'), 'fan@example.com')
+    await user.type(screen.getByPlaceholderText('Enter phone number, email, or username'), 'fan@example.com')
     await user.type(screen.getByPlaceholderText('Enter your password'), 'StrongPassword123')
     await user.click(screen.getByRole('button', { name: /^log in$/i }))
 
@@ -251,7 +251,7 @@ describe('Login page', () => {
 
     renderLogin([{ pathname: '/login', state: { postLoginRedirect: '/memberships' } }])
 
-    await user.type(screen.getByPlaceholderText('Enter phone number or email'), 'fan@example.com')
+    await user.type(screen.getByPlaceholderText('Enter phone number, email, or username'), 'fan@example.com')
     await user.type(screen.getByPlaceholderText('Enter your password'), 'StrongPassword123')
     await user.click(screen.getByRole('button', { name: /^log in$/i }))
 

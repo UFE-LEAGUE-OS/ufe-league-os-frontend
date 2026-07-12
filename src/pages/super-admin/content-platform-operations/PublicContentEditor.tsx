@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState } from 'react';
 import '../../../styles/pages/super-admin/content-platform-operations/SuperAdminContent.css';
 import FilterDropdown from '../../../components/FilterDropdown';
+import SuperAdminBackButton from '../../../components/SuperAdminBackButton';
 
 const tabs = ['Content', 'SEO', 'Navigation', 'Access'] as const;
 type Tab = typeof tabs[number];
@@ -192,6 +193,7 @@ export default function PublicContentEditorPage() {
   return (
     <main className="super-admin-page content-child">
       <section className="page-heading">
+        <SuperAdminBackButton />
         <div className="title-group">
           <div className="breadcrumb">Content & Platform &nbsp;›&nbsp; Public Content &nbsp;›&nbsp; {selectedPage}</div>
           <h1>

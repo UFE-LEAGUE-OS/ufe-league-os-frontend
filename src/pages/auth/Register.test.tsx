@@ -61,6 +61,7 @@ async function fillValidRegistrationForm() {
 
   await user.type(screen.getByLabelText(/first name/i), 'Amina')
   await user.type(screen.getByLabelText(/last name/i), 'Kizza')
+  await user.type(screen.getByLabelText(/username/i), 'aminakizza')
   await user.type(screen.getByPlaceholderText('7XX XXX XXX'), '0701234567')
   await user.type(screen.getByLabelText(/email address/i), 'AMINA.KIZZA@EXAMPLE.COM')
   await user.type(screen.getByPlaceholderText(/enter your password/i), 'StrongPass1!')
@@ -86,6 +87,7 @@ describe('register helpers', () => {
             validateRegisterForm({
                 firstName: '',
                 lastName: '',
+                username: '',
                 countryCode: '+256',
                 phoneNumber: '',
                 email: '',
@@ -96,6 +98,7 @@ describe('register helpers', () => {
         ).toMatchObject({
             firstName: 'First name is required.',
             lastName: 'Last name is required.',
+            username: 'Username is required.',
             phoneNumber: 'Phone number is required.',
             email: 'Email address is required.',
             password: 'Password is required.',
@@ -108,6 +111,7 @@ describe('register helpers', () => {
         const errors = validateRegisterForm({
             firstName: 'Zoë',
             lastName: 'A',
+            username: 'zoea123',
             countryCode: '+256',
             phoneNumber: '0701234567',
             email: 'zoe@example.com',
@@ -177,6 +181,7 @@ describe('Register page', () => {
 
         expect(screen.getByText('First name is required.')).toBeInTheDocument()
         expect(screen.getByText('Last name is required.')).toBeInTheDocument()
+        expect(screen.getByText('Username is required.')).toBeInTheDocument()
         expect(screen.getByText('Phone number is required.')).toBeInTheDocument()
         expect(screen.getByText('Email address is required.')).toBeInTheDocument()
         expect(screen.getByText('Password is required.')).toBeInTheDocument()
@@ -208,6 +213,7 @@ describe('Register page', () => {
                 expect(registerMock).toHaveBeenCalledWith({
                     first_name: 'Amina',
                     last_name: 'Kizza',
+                    username: 'aminakizza',
                     phone_number: '+256701234567',
                     email: 'amina.kizza@example.com',
                     password: 'StrongPass1!',
