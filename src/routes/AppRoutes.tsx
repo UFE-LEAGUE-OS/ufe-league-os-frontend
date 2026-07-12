@@ -143,6 +143,7 @@ import CampaignReview from '../pages/sponsor/CampaignReview';
 import CampaignLaunch from '../pages/sponsor/CampaignLaunch';
 
 import UnionAdminDashboard from '../pages/union-admin/UnionAdminDashboard';
+import LeagueAdminDashboard from '../pages/league-admin/LeagueAdminDashboard';
 
 function protectedPage(page: ReactNode) {
     return <ProtectedRoute>{page}</ProtectedRoute>;
@@ -183,6 +184,14 @@ export default function AppRoutes() {
                 <Route
                     path="/union-admin"
                     element={protectedPage(<Navigate to="/dashboard/union-admin" replace />)}
+                />
+
+                <Route
+                    path="/dashboard/league-admin"
+                    element={roleProtectedPage(
+                        <LeagueAdminDashboard />,
+                        ['LEAGUE_ADMIN'],
+                    )}
                 />
 
                 <Route
