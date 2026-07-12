@@ -98,3 +98,16 @@
 .cta-feature:hover h4 {
   color: #8135FA;
 }
+
+.cta-content {
+  max-width: 720px;
+  margin-left: auto;
+  padding-right: 64px;
+}
+
+@media (max-width: 900px) {
+  .cta-content {
+    margin-left: 0;
+    padding-right: 0;
+  }
+}
