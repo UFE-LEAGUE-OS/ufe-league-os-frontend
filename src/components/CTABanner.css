@@ -6,6 +6,9 @@
   padding: 48px 56px;
   font-family: var(--font-body);
   color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 48px;
 }
 
 .cta-heading {
@@ -18,6 +21,14 @@
 
 .cta-accent {
   color: #F97316;
+}
+
+.cta-right {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
 }
 
 .cta-features {
@@ -100,14 +111,21 @@
 }
 
 .cta-content {
-  max-width: 720px;
-  margin-left: auto;
-  padding-right: 64px;
+  max-width: 400px;
 }
 
 @media (max-width: 900px) {
-  .cta-content {
-    margin-left: 0;
-    padding-right: 0;
+  .cta-banner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .cta-right {
+    align-items: flex-start;
+    width: 100%;
+  }
+
+  .cta-features {
+    max-width: none;
   }
 }

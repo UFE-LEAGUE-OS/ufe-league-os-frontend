@@ -49,7 +49,8 @@ function CTABanner() {
         <h2 className="cta-heading">
           JOIN. ENGAGE. <span className="cta-accent">BE REWARDED.</span>
         </h2>
-
+      </div>
+      <div className="cta-right">
         <div className="cta-features">
           {features.map((f) => (
             <div
