@@ -45,43 +45,47 @@ function CTABanner() {
 
   return (
     <section className="cta-banner" style={{ backgroundImage: `url(${ctaImage})` }}>
-      <div className="cta-content">
-        <h2 className="cta-heading">
-          JOIN. ENGAGE. <span className="cta-accent">BE REWARDED.</span>
-        </h2>
-
-        <div className="cta-features">
-          {features.map((f) => (
-            <div
-              className="cta-feature"
-              key={f.title}
-              role="button"
-              tabIndex={0}
-              data-auth-action={f.action}
-              onClick={() => handleFeatureClick(f.route)}
-              onKeyDown={(e: React.KeyboardEvent) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  handleFeatureClick(f.route);
-                }
-              }}
-            >
-              <div className="cta-feature-icon">{f.icon}</div>
-              <div>
-                <h4>{f.title}</h4>
-                <p>{f.desc}</p>
+      <div className="cta-main">
+        <div className="cta-title-row">
+          <div className="cta-content">
+            <h2 className="cta-heading">
+              JOIN. ENGAGE. <span className="cta-accent">BE REWARDED.</span>
+            </h2>
+          </div>
+          <div className="cta-features">
+            {features.map((f) => (
+              <div
+                className="cta-feature"
+                key={f.title}
+                role="button"
+                tabIndex={0}
+                data-auth-action={f.action}
+                onClick={() => handleFeatureClick(f.route)}
+                onKeyDown={(e: React.KeyboardEvent) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleFeatureClick(f.route);
+                  }
+                }}
+              >
+                <div className="cta-feature-icon">{f.icon}</div>
+                <div>
+                  <h4>{f.title}</h4>
+                  <p>{f.desc}</p>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-
-        <button
-          className="explore-membership-btn"
-          data-auth-action="membership"
-          onClick={() => handleFeatureClick('/memberships')}
-        >
-          Explore Memberships →
-        </button>
+        <div className="cta-action">
+          <button
+            className="explore-membership-btn"
+            data-auth-action="membership"
+            onClick={() => handleFeatureClick('/memberships')}
+          >
+            Explore Memberships →
+          </button>
+        </div>
       </div>
     </section>
   );

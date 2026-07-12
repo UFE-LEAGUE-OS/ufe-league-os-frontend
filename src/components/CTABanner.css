@@ -6,6 +6,34 @@
   padding: 48px 56px;
   font-family: var(--font-body);
   color: #ffffff;
+  display: flex;
+  align-items: flex-start;
+  gap: 48px;
+}
+
+.cta-main {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.cta-title-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 48px;
+}
+
+.cta-row {
+  display: flex;
+  gap: 24px;
+}
+
+.cta-content {
+  max-width: 400px;
+  flex: 0 0 auto;
+  padding-top: 0;
 }
 
 .cta-heading {
@@ -13,7 +41,8 @@
   font-size: 40px;
   font-weight: 800;
   font-style: italic;
-  margin: 0 0 32px;
+  margin: 0;
+  line-height: 1.05;
 }
 
 .cta-accent {
@@ -25,7 +54,6 @@
   grid-template-columns: 1fr 1fr;
   gap: 24px;
   max-width: 700px;
-  margin-bottom: 32px;
 }
 
 .cta-feature {
@@ -60,6 +88,11 @@
   line-height: 1.4;
 }
 
+.cta-action {
+  display: flex;
+  justify-content: flex-end;
+}
+
 .explore-membership-btn {
   background-color: #8135FA;
   color: #ffffff;
@@ -69,9 +102,6 @@
   font-weight: 700;
   font-size: 14px;
   cursor: pointer;
-}
-/* Hover effects */
-.explore-membership-btn {
   transition: background-color 0.2s ease, transform 0.15s ease, font-size 0.2s ease;
 }
 
@@ -99,15 +129,23 @@
   color: #8135FA;
 }
 
-.cta-content {
-  max-width: 720px;
-  margin-left: auto;
-  padding-right: 64px;
-}
-
 @media (max-width: 900px) {
-  .cta-content {
-    margin-left: 0;
-    padding-right: 0;
+  .cta-banner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .cta-main {
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .cta-features {
+    max-width: none;
+  }
+
+  .cta-action {
+    width: 100%;
+    justify-content: flex-start;
   }
 }
