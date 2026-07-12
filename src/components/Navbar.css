@@ -185,8 +185,11 @@
 }
 
 .login-btn:hover,
+.login-btn:active,
 .profile-btn:hover,
-.navbar .signup-btn:hover {
+.profile-btn:active,
+.navbar .signup-btn:hover,
+.navbar .signup-btn:active {
   background: #f97316;
   transform: translateY(-1px);
   box-shadow: 0 10px 28px rgba(249, 115, 22, 0.45);
@@ -952,12 +955,16 @@
 }
 
 .navbar .auth-buttons .login-btn:hover,
+.navbar .auth-buttons .login-btn:active,
 .navbar .auth-buttons .login-btn:focus-visible,
 .navbar .auth-buttons .signup-btn:hover,
+.navbar .auth-buttons .signup-btn:active,
 .navbar .auth-buttons .signup-btn:focus-visible,
 .navbar .login-btn:hover,
+.navbar .login-btn:active,
 .navbar .login-btn:focus-visible,
 .navbar .signup-btn:hover,
+.navbar .signup-btn:active,
 .navbar .signup-btn:focus-visible {
   background: #f97316 !important;
   color: #ffffff !important;
