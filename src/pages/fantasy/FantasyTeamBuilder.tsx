@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Sparkles, Trash2, Wallet, Users, Shield, Check, X, CircleCheck, Plus, Star, Trophy } from 'lucide-react';
 import { SPORT_CONFIGS, PLAYERS } from './fantasyData';
 import type { Sport, Format, FantasyPlayer } from './fantasyData';
 import styles from './FantasyTeamBuilder.module.css';
@@ -186,15 +187,15 @@ export default function FantasyTeamBuilder() {
         </div>
         <div className={styles.topNavActions}>
           <div className={styles.competitionBadge}>
-            <span className={styles.compBadgeEmoji}>{cfg.emoji}</span>
+            <span className={styles.compBadgeEmoji}><Trophy size={16} /></span>
             <span>{cfg.formats.find(f => f.id === format)?.label ?? 'Rugby XV'}</span>
             <span className={styles.dropArrow}>▾</span>
           </div>
           <button className={styles.autoPickBtn} onClick={autoPick}>
-            ✦ Auto Pick
+            <Sparkles size={16} /> Auto Pick
           </button>
           <button className={styles.clearBtn} onClick={clearSquad}>
-            🗑 Clear Squad
+            <Trash2 size={16} /> Clear Squad
           </button>
         </div>
       </div>
@@ -202,10 +203,10 @@ export default function FantasyTeamBuilder() {
       {/* ── PAGE HEADER ── */}
       <div className={styles.pageHeader}>
         <div className={styles.leagueBadge}>
-          <div className={styles.leagueBadgeIcon}>{cfg.emoji}</div>
+          <div className={styles.leagueBadgeIcon}><Trophy size={32} /></div>
           <div>
             <h1>CREATE YOUR TEAM</h1>
-            <p>{league} · 2025/26 Season ⓘ</p>
+            <p>{league} · 2025/26 Season</p>
           </div>
         </div>
       </div>
@@ -231,7 +232,7 @@ export default function FantasyTeamBuilder() {
                       strokeDasharray={`${budgetPct} 100`} strokeLinecap="round"
                       transform="rotate(-90 20 20)" />
                   </svg>
-                  <span className={styles.ringLabel}>💰</span>
+                  <span className={styles.ringLabel}><Wallet size={20} /></span>
                 </div>
                 <div>
                   <div className={styles.budgetTotal}>{cfg.budget}</div>
@@ -250,7 +251,7 @@ export default function FantasyTeamBuilder() {
             <div className={styles.sideWidget}>
               <div className={styles.sideWidgetLabel}>SQUAD SIZE</div>
               <div className={styles.squadSizeDisplay}>
-                <span className={styles.squadSizeIcon}>👥</span>
+                <span className={styles.squadSizeIcon}><Users size={20} /></span>
                 <div className={styles.squadSizeCount}>
                   <strong>{filledSlots}</strong> / {totalSlots}
                 </div>
@@ -263,7 +264,7 @@ export default function FantasyTeamBuilder() {
             <div className={styles.sideWidget}>
               <div className={styles.sideWidgetLabel}>MAX PLAYERS PER CLUB</div>
               <div className={styles.clubLimit}>
-                <span className={styles.clubLimitIcon}>🛡</span>
+                <span className={styles.clubLimitIcon}><Shield size={20} /></span>
                 <div className={styles.clubLimitNum}>
                   <strong>3</strong>
                   <span>Max {maxClub}</span>
@@ -314,7 +315,7 @@ export default function FantasyTeamBuilder() {
                         >
                           {player ? (
                             <div className={styles.playerCard}>
-                              <button className={styles.removeX} onClick={e => { e.stopPropagation(); removePlayer(slot.slotId); }}>×</button>
+                              <button className={styles.removeX} onClick={e => { e.stopPropagation(); removePlayer(slot.slotId); }}><X size={14} /></button>
                               {captainId === player.id && <div className={styles.captainC}>C</div>}
                               <div className={styles.playerCardAvatar} style={{ background: color }}>
                                 {player.name.split(' ')[0][0]}{player.name.split(' ').slice(-1)[0][0]}
@@ -326,12 +327,12 @@ export default function FantasyTeamBuilder() {
                                 className={styles.setCaptainBtn}
                                 onClick={e => { e.stopPropagation(); setCaptainId(player.id); }}
                                 title="Set as captain"
-                              >★</button>
+                              ><Star size={14} /></button>
                             </div>
                           ) : (
                             <div className={styles.emptySlot} style={{ borderColor: color }}>
                               <span className={styles.emptySlotPos} style={{ color }}>{slot.pos}</span>
-                              <span className={styles.emptySlotPlus}>+</span>
+                              <span className={styles.emptySlotPlus}><Plus size={16} /></span>
                             </div>
                           )}
                         </div>
@@ -350,7 +351,7 @@ export default function FantasyTeamBuilder() {
               }}>
                 + Add Player
               </button>
-              <span className={styles.pitchHint}>Drag &amp; drop players to change positions</span>
+              <span className={styles.pitchHint}>Drag & drop players to change positions</span>
             </div>
           </div>
 
@@ -392,15 +393,15 @@ export default function FantasyTeamBuilder() {
               <div className={styles.sideWidgetLabel}>SQUAD VALIDATION</div>
               <div className={styles.validationList}>
                 <div className={`${styles.valItem} ${filledSlots === totalSlots ? styles.valOk : styles.valErr}`}>
-                  {filledSlots === totalSlots ? '✓' : '✗'} Exactly {totalSlots} players required
+                  {filledSlots === totalSlots ? <Check size={14} /> : <X size={14} />} Exactly {totalSlots} players required
                 </div>
                 <div className={`${styles.valItem} ${Object.values(clubCounts).every(c => c <= maxClub) ? styles.valOk : styles.valErr}`}>
-                  {Object.values(clubCounts).every(c => c <= maxClub) ? '✓' : '✗'} Max {maxClub} players per club
+                  {Object.values(clubCounts).every(c => c <= maxClub) ? <Check size={14} /> : <X size={14} />} Max {maxClub} players per club
                 </div>
                 <div className={`${styles.valItem} ${remaining >= 0 ? styles.valOk : styles.valErr}`}>
-                  {remaining >= 0 ? '✓' : '✗'} Within budget
+                  {remaining >= 0 ? <Check size={14} /> : <X size={14} />} Within budget
                 </div>
-                <div className={`${styles.valItem} ${styles.valOk}`}>✓ Valid {cfg.label} positions</div>
+                <div className={`${styles.valItem} ${styles.valOk}`}><CircleCheck size={14} /> Valid {cfg.label} positions</div>
               </div>
             </div>
 
@@ -426,7 +427,7 @@ export default function FantasyTeamBuilder() {
               <strong>Player Market</strong>
               {activePos && <span className={styles.marketPos}> — {activePos} position</span>}
             </div>
-            <button className={styles.marketClose} onClick={() => setActiveSlot(null)}>✕</button>
+            <button className={styles.marketClose} onClick={() => setActiveSlot(null)}><X size={16} /></button>
           </div>
           <div className={styles.marketControls}>
             <input
@@ -467,7 +468,7 @@ export default function FantasyTeamBuilder() {
                   <span className={styles.marketForm}>Form: {p.form}</span>
                 </div>
                 <div className={styles.marketPlayerCost}>{p.cost} CR</div>
-                <button className={styles.marketAddBtn}>+</button>
+                <button className={styles.marketAddBtn}><Plus size={14} /></button>
               </div>
             ))}
           </div>
