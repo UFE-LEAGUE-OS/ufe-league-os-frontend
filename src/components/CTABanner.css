@@ -7,7 +7,7 @@
   font-family: var(--font-body);
   color: #ffffff;
   display: flex;
-  align-items: baseline;
+  align-items: flex-start;
   gap: 48px;
 }
 
@@ -16,7 +16,7 @@
   font-size: 40px;
   font-weight: 800;
   font-style: italic;
-  margin: 0 0 6px;
+  margin: 0;
   line-height: 1.05;
 }
 
