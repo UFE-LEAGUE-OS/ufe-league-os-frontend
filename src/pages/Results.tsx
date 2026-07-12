@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 
-import { Button } from "../components/ui/button";
+import { Button } from "@/components/ui/button";
 import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
 import resultsImg from "../assets/results.png";

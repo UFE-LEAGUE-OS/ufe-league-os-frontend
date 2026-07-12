@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { Button } from '../components/ui/button';
+import { Button } from '@/components/ui/button';
 import fixturesImg from '../assets/fixtures.png';
 import heroBg from '../assets/stadium-bg.svg';
 import {
