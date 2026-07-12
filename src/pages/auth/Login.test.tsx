@@ -6,13 +6,20 @@ import { beforeEach, describe, expect, it, vi, afterEach } from 'vitest'
 import Login from './Login'
 import { useAuthStore } from '../../store/authStore.js'
 
+const apiClientPostMock = vi.hoisted(() => vi.fn())
 const navigateMock = vi.hoisted(() => vi.fn())
 const loginMock = vi.hoisted(() => vi.fn())
 
+vi.mock('../../services/apiClient.js', () => ({
+  default: {
+    post: apiClientPostMock,
+  },
+}));
+
 vi.mock('@react-oauth/google', () => ({
   GoogleOAuthProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-  GoogleLogin: ({ login_uri }: { login_uri?: string, onSuccess: () => void }) => (
-    <button type="button" onClick={() => { if (login_uri) window.location.href = login_uri; }}>Google Login</button>
+  GoogleLogin: ({ onSuccess }: { onSuccess: (res: { credential?: string }) => void }) => (
+    <button type="button" onClick={() => onSuccess({ credential: 'test-credential' })}>Google Login</button>
   ),
 }))
 
@@ -84,17 +91,9 @@ const verificationRequiredResponse = {
   },
 }
 
-const originalWindowLocation = window.location
-
 describe('Login page', () => {
   beforeEach(() => {
-    // Mock window.location
-    Object.defineProperty(window, 'location', {
-        configurable: true,
-        enumerable: true,
-        value: new URL(window.location.href),
-    });
-    vi.spyOn(window.location, 'href', 'set');
+    apiClientPostMock.mockClear();
 
     navigateMock.mockClear()
     loginMock.mockReset()
@@ -107,13 +106,8 @@ describe('Login page', () => {
   })
 
   afterEach(() => {
-    // Restore window.location
-    Object.defineProperty(window, 'location', {
-        configurable: true,
-        enumerable: true,
-        value: originalWindowLocation,
-    });
-  });
+    vi.restoreAllMocks();
+  })
 
   it('renders the sign-in form and toggles password visibility', async () => {
     const user = userEvent.setup()
@@ -266,14 +260,51 @@ describe('Login page', () => {
     })
   })
 
-  it('redirects to the backend for Google Sign-In', async () => {
+  it('handles Google Sign-In success and navigation for a new user', async () => {
     const user = userEvent.setup()
-    const hrefSpy = vi.spyOn(window.location, 'href', 'set');
+    apiClientPostMock.mockResolvedValueOnce({
+      data: {
+        access: 'google-access-token',
+        refresh: 'google-refresh-token',
+        requires_email_verification: false,
+        is_new_user: true,
+        user: {
+          email: 'new.google.user@example.com',
+        },
+      },
+    })
+
+    renderLogin()
+
+    await user.click(screen.getByRole('button', { name: /google login/i }));
+
+    await waitFor(() => {
+      expect(apiClientPostMock).toHaveBeenCalledWith('/accounts/google/', {
+        token: 'test-credential',
+      });
+    });
+    await waitFor(() => {
+      expect(navigateMock).toHaveBeenCalledWith('/personalize', { replace: true })
+    })
+  })
+
+  it('shows an error message when Google Sign-In fails', async () => {
+    const user = userEvent.setup()
+    apiClientPostMock.mockRejectedValueOnce({
+      response: { data: { detail: 'Invalid Google token.' } },
+    })
 
     renderLogin()
 
     await user.click(screen.getByRole('button', { name: /google login/i }))
 
-    expect(hrefSpy).toHaveBeenCalledWith(expect.stringContaining('/google/login/'));
+    await waitFor(() => {
+      expect(apiClientPostMock).toHaveBeenCalledWith('/accounts/google/', {
+        token: 'test-credential',
+      })
+    })
+
+    expect(await screen.findByText(/invalid google token/i)).toBeInTheDocument()
+    expect(navigateMock).not.toHaveBeenCalled()
   })
 })

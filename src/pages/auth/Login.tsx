@@ -1,6 +1,6 @@
 import { useState, type ChangeEvent, type FormEvent, type ReactNode } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { GoogleLogin } from '@react-oauth/google';
+import { GoogleLogin, type CredentialResponse } from '@react-oauth/google';
 import PersonOutlinedIcon from '@mui/icons-material/PersonOutlined';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
@@ -10,7 +10,7 @@ import EmojiEventsOutlinedIcon from '@mui/icons-material/EmojiEventsOutlined';
 import EventNoteOutlinedIcon from '@mui/icons-material/EventNoteOutlined';
 import { GlassCard, PageShell } from '../../components/site/LeagueUI.js';
 import { useAuth } from '../../hooks/useAuth.js';
-import { apiBaseUrl } from '../../services/apiClient.js';
+import apiClient from '../../services/apiClient.js';
 import {
     getSafeAuthRedirect,
     VERIFY_EMAIL_ROUTE,
@@ -240,6 +240,43 @@ export default function Login() {
         }
     };
 
+    const handleGoogleSuccess = async (credentialResponse: CredentialResponse) => {
+        if (!credentialResponse.credential) {
+            setGoogleLoginMessage('Google sign-in failed: no credential received.');
+            return;
+        }
+
+        try {
+            const { data: result } = await apiClient.post<LoginResult>(
+                `/accounts/google/`,
+                { token: credentialResponse.credential }
+            );
+
+            if (result.requires_email_verification) {
+                navigate(VERIFY_EMAIL_ROUTE, {
+                    replace: true,
+                    state: {
+                        email: getUserEmail(result.user?.email),
+                        message: 'Please verify your email address before continuing.',
+                        postLoginRedirect: postLoginRedirect ?? resolveDashboardRoute(result),
+                    },
+                });
+                return;
+            }
+
+            if (result.is_new_user) {
+                navigate('/personalize', { replace: true });
+            } else {
+                navigate(postLoginRedirect ?? resolveDashboardRoute(result), { replace: true });
+            }
+        } catch (error) {
+            const apiMessage = getLoginErrorMessage(error);
+            setGoogleLoginMessage(
+                apiMessage || 'Google sign-in could not be completed. Please try again.',
+            );
+        }
+    };
+
     return (
         <PageShell className="auth-page login-page">
             <div className="login-back-wrap">
@@ -372,9 +409,7 @@ export default function Login() {
 
                             <div style={{ display: 'flex', justifyContent: 'center' }}>
                                 <GoogleLogin
-                                    ux_mode="redirect"
-                                    login_uri={`${apiBaseUrl}/google/login/?redirect_uri=${window.location.origin}/google-callback`}
-                                    onSuccess={() => { /* This is not called in redirect mode */ }}
+                                    onSuccess={handleGoogleSuccess}
                   onError={() => {
                     clearError('general');
                     setGoogleLoginMessage('Google sign-in failed. Please try again.');
