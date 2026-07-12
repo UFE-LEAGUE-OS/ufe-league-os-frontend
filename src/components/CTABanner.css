@@ -11,9 +11,28 @@
   gap: 48px;
 }
 
+.cta-main {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.cta-title-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 48px;
+}
+
+.cta-row {
+  display: flex;
+  gap: 24px;
+}
+
 .cta-content {
   max-width: 400px;
-  align-self: flex-start;
+  flex: 0 0 auto;
   padding-top: 0;
 }
 
@@ -28,14 +47,6 @@
 
 .cta-accent {
   color: #F97316;
-}
-
-.cta-right {
-  flex: 1 1 auto;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
 }
 
 .cta-features {
@@ -78,6 +89,11 @@
   line-height: 1.4;
 }
 
+.cta-action {
+  display: flex;
+  justify-content: flex-end;
+}
+
 .explore-membership-btn {
   background-color: #8135FA;
   color: #ffffff;
@@ -87,9 +103,6 @@
   font-weight: 700;
   font-size: 14px;
   cursor: pointer;
-}
-/* Hover effects */
-.explore-membership-btn {
   transition: background-color 0.2s ease, transform 0.15s ease, font-size 0.2s ease;
 }
 
@@ -117,24 +130,23 @@
   color: #8135FA;
 }
 
-.cta-content {
-  max-width: 400px;
-  align-self: flex-start;
-  padding-top: 8px;
-}
-
 @media (max-width: 900px) {
   .cta-banner {
     flex-direction: column;
     align-items: flex-start;
   }
 
-  .cta-right {
-    align-items: flex-start;
-    width: 100%;
+  .cta-main {
+    flex-direction: column;
+    gap: 24px;
   }
 
   .cta-features {
     max-width: none;
+  }
+
+  .cta-action {
+    width: 100%;
+    justify-content: flex-start;
   }
 }

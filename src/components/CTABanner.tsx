@@ -43,16 +43,45 @@ function CTABanner() {
     // via the data-auth-action attribute on the element.
   };
 
+  const firstRow = features.slice(0, 2);
+  const secondRow = features.slice(2);
+
   return (
     <section className="cta-banner" style={{ backgroundImage: `url(${ctaImage})` }}>
-      <div className="cta-content">
-        <h2 className="cta-heading">
-          JOIN. ENGAGE. <span className="cta-accent">BE REWARDED.</span>
-        </h2>
-      </div>
-      <div className="cta-right">
-        <div className="cta-features">
-          {features.map((f) => (
+      <div className="cta-main">
+        <div className="cta-title-row">
+          <div className="cta-content">
+            <h2 className="cta-heading">
+              JOIN. ENGAGE. <span className="cta-accent">BE REWARDED.</span>
+            </h2>
+          </div>
+          <div className="cta-row">
+            {firstRow.map((f) => (
+              <div
+                className="cta-feature"
+                key={f.title}
+                role="button"
+                tabIndex={0}
+                data-auth-action={f.action}
+                onClick={() => handleFeatureClick(f.route)}
+                onKeyDown={(e: React.KeyboardEvent) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleFeatureClick(f.route);
+                  }
+                }}
+              >
+                <div className="cta-feature-icon">{f.icon}</div>
+                <div>
+                  <h4>{f.title}</h4>
+                  <p>{f.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="cta-row">
+          {secondRow.map((f) => (
             <div
               className="cta-feature"
               key={f.title}
@@ -75,7 +104,8 @@ function CTABanner() {
             </div>
           ))}
         </div>
-
+      </div>
+      <div className="cta-action">
         <button
           className="explore-membership-btn"
           data-auth-action="membership"
