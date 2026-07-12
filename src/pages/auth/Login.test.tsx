@@ -270,13 +270,18 @@ describe('Login page', () => {
 
   it('shows an error message when Google Sign-In fails', async () => {
     const user = userEvent.setup();
+  it('shows an error message when Google Sign-In fails', async () => { // eslint-disable-line vitest/no-identical-title
+    const user = userEvent.setup()
     apiClientPostMock.mockRejectedValueOnce({
       response: { data: { detail: 'Invalid Google token.' } },
     });
+    })
 
     renderLogin();
+    renderLogin()
 
     await user.click(screen.getByRole('button', { name: /google login/i }));
+    await user.click(screen.getByRole('button', { name: /google login/i }))
 
     await waitFor(() => {
       expect(apiClientPostMock).toHaveBeenCalledWith('/accounts/google/', {
@@ -286,8 +291,13 @@ describe('Login page', () => {
       expect(screen.getByText(/invalid google token/i)).toBeInTheDocument();
       expect(navigateMock).not.toHaveBeenCalled();
     });
+      })
+    })
 
     expect(await screen.findByText(/invalid google token/i)).toBeInTheDocument();
     expect(navigateMock).not.toHaveBeenCalled();
   });
+    expect(await screen.findByText(/invalid google token/i)).toBeInTheDocument()
+    expect(navigateMock).not.toHaveBeenCalled()
+  })
 })
