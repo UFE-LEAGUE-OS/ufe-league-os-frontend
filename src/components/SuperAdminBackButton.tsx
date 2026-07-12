@@ -1,6 +1,6 @@
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import '../styles/components/SuperAdminBackButton.css';
+import './SuperAdminBackButton.css';
 
 type SuperAdminBackButtonProps = {
   /** Optional destination path. If omitted, goes back one entry in history. */
