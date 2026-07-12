@@ -1,6 +1,6 @@
 export function normalizeRole(value: unknown) {
   return typeof value === 'string'
-    ? value.trim().toUpperCase().replace(/-/g, '_')
+    ? value.trim().toUpperCase().replace(/[\s-]+/g, '_')
     : '';
 }
 
@@ -51,6 +51,7 @@ function getPreferredDashboardRole(value: unknown) {
       'CLUB_ADMIN',
       'LEAGUE_ADMIN',
       'REFEREE',
+      'MATCH_OFFICIAL',
       'TICKETING_OFFICER',
       'SPONSOR',
       'FAN',
