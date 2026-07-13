@@ -21,7 +21,7 @@ import { getMyUnionWorkspaces } from '../../services/unionAdminService';
 import {
     canRoleAccessRedirect,
     getDefaultDashboardRoute,
-    normalizeRole,
+    getNormalizedRoles,
 } from '../../utils/roleRoutes.js';
 
 import '../../styles/pages/auth/login.css';
@@ -39,6 +39,7 @@ type LoginResult = {
     user?: {
         email?: unknown;
         role?: unknown;
+        roles?: unknown;
         frontend_dashboard_route?: unknown;
         dashboard_route?: unknown;
     };
@@ -126,28 +127,39 @@ function resolveDashboardRoute(result: LoginResult) {
     );
 }
 
-async function resolvePostLoginRoute(result: LoginResult, postLoginRedirect?: string | null) {
+async function resolvePostLoginRoute(
+    result: LoginResult,
+    postLoginRedirect?: string | null,
+) {
     const backendRoute = resolveDashboardRoute(result);
-    const userRole = normalizeRole(result.user?.role);
+    const userContext =
+        result.user ??
+        result.user?.roles ??
+        result.user?.role ??
+        'FAN';
 
-    if (postLoginRedirect && canRoleAccessRedirect(userRole, postLoginRedirect)) {
+    const userRoles = getNormalizedRoles(userContext);
+
+    if (
+        postLoginRedirect &&
+        canRoleAccessRedirect(userContext, postLoginRedirect)
+    ) {
         return postLoginRedirect;
     }
 
-    if (userRole === 'SUPER_ADMIN') {
-        return getDefaultDashboardRoute(userRole);
+    if (userRoles.includes('SUPER_ADMIN')) {
+        return getDefaultDashboardRoute(userContext);
     }
 
-    if (backendRoute === '/dashboard/fan' && userRole === 'FAN') {
+    if (userRoles.includes('UNION_ADMIN')) {
+        return '/dashboard/union-admin';
+    }
+
+    if (
+        backendRoute !== '/dashboard' &&
+        backendRoute !== '/dashboard/fan'
+    ) {
         return backendRoute;
-    }
-
-    if (backendRoute !== '/dashboard' && backendRoute !== '/dashboard/fan') {
-        return backendRoute;
-    }
-
-    if (userRole === 'FAN') {
-        return getDefaultDashboardRoute(userRole);
     }
 
     try {
@@ -157,10 +169,10 @@ async function resolvePostLoginRoute(result: LoginResult, postLoginRedirect?: st
             return '/dashboard/union-admin';
         }
     } catch {
-        // Keep the normal dashboard route if workspace lookup fails.
+        // Fall back to the effective role-based dashboard.
     }
 
-    return getDefaultDashboardRoute(userRole || 'FAN');
+    return getDefaultDashboardRoute(userContext);
 }
 
 function getUserEmail(value: unknown) {
