@@ -6,6 +6,7 @@ import {
   FiMapPin,
   FiChevronDown,
 } from 'react-icons/fi';
+import { useSponsorFormStore } from '../../store/sponsorFormStore';
 import '../../styles/pages/landing.css';
 import './CorporateSponsorSetup.css';
 
@@ -16,6 +17,8 @@ const steps = [
   { number: 4, label: 'Review' },
   { number: 5, label: 'Complete' },
 ];
+
+const currentStep = 1;
 
 const countries = [
   'Uganda', 'Kenya', 'Tanzania', 'Rwanda', 'Burundi',
@@ -28,27 +31,79 @@ const industries = [
   'Retail', 'Energy', 'Media & Entertainment', 'Other',
 ];
 
+const tinPattern = /^[0-9]{1,10}$/;
+const brnPattern = /^[a-zA-Z0-9]{1,14}$/;
+
+type FieldErrors = {
+  companyName?: boolean;
+  companyEmail?: boolean;
+  phone?: boolean;
+  city?: boolean;
+  industry?: boolean;
+  website?: boolean;
+  brn?: boolean;
+  tin?: boolean;
+};
+
 export default function CorporateSponsorSetup() {
   const navigate = useNavigate();
-  const [currentStep] = useState(1);
 
-  const [form, setForm] = useState({
-    companyName: '',
-    companyEmail: '',
-    phone: '',
-    altPhone: '',
-    country: 'Uganda',
-    city: '',
-    industry: '',
-    website: '',
-    brn: '',
-    tin: '',
-  });
+  const form = useSponsorFormStore((state) => state.corporate);
+  const updateCorporate = useSponsorFormStore((state) => state.updateCorporate);
+
+  const [errors, setErrors] = useState<FieldErrors>({});
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const clearError = (field: keyof FieldErrors) => {
+    setErrors((prev) => {
+      if (!prev[field]) return prev;
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
+  };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    updateCorporate({ [name]: value });
+    clearError(name as keyof FieldErrors);
+  };
+
+  const handleTinChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const digitsOnly = e.target.value.replace(/\D/g, '').slice(0, 10);
+    updateCorporate({ tin: digitsOnly });
+    clearError('tin');
+  };
+
+  const handleBrnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const alphaNumOnly = e.target.value.replace(/[^a-zA-Z0-9]/g, '').slice(0, 14);
+    updateCorporate({ brn: alphaNumOnly });
+    clearError('brn');
+  };
+
+  const handleNext = () => {
+    const nextErrors: FieldErrors = {};
+
+    if (!form.companyName.trim()) nextErrors.companyName = true;
+    if (!form.companyEmail.trim()) nextErrors.companyEmail = true;
+    if (!form.phone.trim()) nextErrors.phone = true;
+    if (!form.city.trim()) nextErrors.city = true;
+    if (!form.industry.trim()) nextErrors.industry = true;
+    if (!form.website.trim()) nextErrors.website = true;
+    if (!form.brn.trim() || !brnPattern.test(form.brn.trim())) nextErrors.brn = true;
+    if (!form.tin.trim() || !tinPattern.test(form.tin.trim())) nextErrors.tin = true;
+
+    if (Object.keys(nextErrors).length > 0) {
+      setErrors(nextErrors);
+      setErrorMessage('Please fill in all required fields correctly before continuing.');
+      return;
+    }
+
+    setErrors({});
+    setErrorMessage('');
+    navigate('/sponsor/corporatesetup/contact');
   };
 
   return (
@@ -106,9 +161,11 @@ export default function CorporateSponsorSetup() {
             {/* Company Name + Email */}
             <div className="css-field-row">
               <div className="css-field-group">
-                <label className="css-label">Company Name <span className="css-required">*</span></label>
+                <label className="css-label">
+                  Company Name {errors.companyName && <span className="css-required">*</span>}
+                </label>
                 <input
-                  className="css-input"
+                  className={`css-input ${errors.companyName ? 'css-input-error' : ''}`}
                   type="text"
                   name="companyName"
                   placeholder="Nile Breweries Limited"
@@ -117,11 +174,13 @@ export default function CorporateSponsorSetup() {
                 />
               </div>
               <div className="css-field-group">
-                <label className="css-label">Company Email <span className="css-required">*</span></label>
+                <label className="css-label">
+                  Company Email {errors.companyEmail && <span className="css-required">*</span>}
+                </label>
                 <div className="css-input-wrap">
                   <FiMail size={15} className="css-input-icon" />
                   <input
-                    className="css-input css-input-icon-pad"
+                    className={`css-input css-input-icon-pad ${errors.companyEmail ? 'css-input-error' : ''}`}
                     type="email"
                     name="companyEmail"
                     placeholder="partnerships@nilebreweries.co.ug"
@@ -135,8 +194,10 @@ export default function CorporateSponsorSetup() {
             {/* Phone + Alt Phone */}
             <div className="css-field-row">
               <div className="css-field-group">
-                <label className="css-label">Phone Number <span className="css-required">*</span></label>
-                <div className="css-phone-wrap">
+                <label className="css-label">
+                  Phone Number {errors.phone && <span className="css-required">*</span>}
+                </label>
+                <div className={`css-phone-wrap ${errors.phone ? 'css-input-error' : ''}`}>
                   <div className="css-phone-prefix">
                     <span className="css-flag">🇺🇬</span>
                     <span className="css-code">+256</span>
@@ -175,7 +236,7 @@ export default function CorporateSponsorSetup() {
             {/* Country + City */}
             <div className="css-field-row">
               <div className="css-field-group">
-                <label className="css-label">Country <span className="css-required">*</span></label>
+                <label className="css-label">Country</label>
                 <div className="css-select-wrap">
                   <select
                     className="css-input css-select"
@@ -191,11 +252,13 @@ export default function CorporateSponsorSetup() {
                 </div>
               </div>
               <div className="css-field-group">
-                <label className="css-label">City <span className="css-required">*</span></label>
+                <label className="css-label">
+                  City {errors.city && <span className="css-required">*</span>}
+                </label>
                 <div className="css-input-wrap">
                   <FiMapPin size={15} className="css-input-icon" />
                   <input
-                    className="css-input css-input-icon-pad"
+                    className={`css-input css-input-icon-pad ${errors.city ? 'css-input-error' : ''}`}
                     type="text"
                     name="city"
                     placeholder="Kampala"
@@ -209,15 +272,17 @@ export default function CorporateSponsorSetup() {
             {/* Industry + Website */}
             <div className="css-field-row">
               <div className="css-field-group">
-                <label className="css-label">Industry <span className="css-required">*</span></label>
+                <label className="css-label">
+                  Industry {errors.industry && <span className="css-required">*</span>}
+                </label>
                 <div className="css-select-wrap">
                   <select
-                    className="css-input css-select"
+                    className={`css-input css-select ${errors.industry ? 'css-input-error' : ''}`}
                     name="industry"
                     value={form.industry}
                     onChange={handleChange}
                   >
-                    <option value="">Beverage Manufacturing</option>
+                    <option value="">Select industry</option>
                     {industries.map((i) => (
                       <option key={i} value={i}>{i}</option>
                     ))}
@@ -226,11 +291,13 @@ export default function CorporateSponsorSetup() {
                 </div>
               </div>
               <div className="css-field-group">
-                <label className="css-label">Company Website <span className="css-required">*</span></label>
+                <label className="css-label">
+                  Company Website {errors.website && <span className="css-required">*</span>}
+                </label>
                 <div className="css-input-wrap">
                   <FiGlobe size={15} className="css-input-icon" />
                   <input
-                    className="css-input css-input-icon-pad"
+                    className={`css-input css-input-icon-pad ${errors.website ? 'css-input-error' : ''}`}
                     type="url"
                     name="website"
                     placeholder="https://www.nilebreweries.co.ug"
@@ -244,25 +311,32 @@ export default function CorporateSponsorSetup() {
             {/* BRN + TIN */}
             <div className="css-field-row">
               <div className="css-field-group">
-                <label className="css-label">BRN <span className="css-required">*</span></label>
+                <label className="css-label">
+                  BRN {errors.brn && <span className="css-required">*</span>}
+                </label>
                 <input
-                  className="css-input"
+                  className={`css-input ${errors.brn ? 'css-input-error' : ''}`}
                   type="text"
                   name="brn"
-                  placeholder="Enter BRN"
+                  placeholder="Enter BRN (max 14 characters, letters & numbers)"
                   value={form.brn}
-                  onChange={handleChange}
+                  onChange={handleBrnChange}
+                  maxLength={14}
                 />
               </div>
               <div className="css-field-group">
-                <label className="css-label">TIN Number <span className="css-required">*</span></label>
+                <label className="css-label">
+                  TIN Number {errors.tin && <span className="css-required">*</span>}
+                </label>
                 <input
-                  className="css-input"
+                  className={`css-input ${errors.tin ? 'css-input-error' : ''}`}
                   type="text"
+                  inputMode="numeric"
                   name="tin"
-                  placeholder="Enter TIN Number"
+                  placeholder="Enter TIN Number (max 10 digits)"
                   value={form.tin}
-                  onChange={handleChange}
+                  onChange={handleTinChange}
+                  maxLength={10}
                 />
               </div>
             </div>
@@ -276,10 +350,14 @@ export default function CorporateSponsorSetup() {
               </p>
             </div>
 
+            {errorMessage && (
+              <div className="css-error-banner">{errorMessage}</div>
+            )}
+
             {/* Next button */}
             <button
               className="css-next-btn"
-              onClick={() => navigate('/sponsor/corporatesetup/contact')}
+              onClick={handleNext}
             >
               Next: Contact Person →
             </button>

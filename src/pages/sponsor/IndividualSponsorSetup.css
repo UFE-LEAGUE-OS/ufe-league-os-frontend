@@ -400,3 +400,16 @@
 @media (max-width: 480px) {
   .iss-sports-grid { grid-template-columns: repeat(2, 1fr); }
 }
+.iss-error-banner {
+  background: rgba(220, 38, 38, 0.1);
+  border: 1px solid rgba(220, 38, 38, 0.3);
+  color: #DC2626;
+  border-radius: 10px;
+  padding: 14px 16px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.iss-input-error {
+  border-color: #DC2626 !important;
+}

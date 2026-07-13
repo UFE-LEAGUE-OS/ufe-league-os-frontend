@@ -141,6 +141,7 @@ import CampaignTargeting from '../pages/sponsor/CampaignTargeting';
 import CampaignBudget from '../pages/sponsor/CampaignBudget';
 import CampaignReview from '../pages/sponsor/CampaignReview';
 import CampaignLaunch from '../pages/sponsor/CampaignLaunch';
+import SponsorProfile from '../pages/sponsor/SponsorProfile';
 
 import UnionAdminDashboard from '../pages/union-admin/UnionAdminDashboard';
 import LeagueAdminDashboard from '../pages/league-admin/LeagueAdminDashboard';
@@ -330,6 +331,7 @@ export default function AppRoutes() {
                 <Route path="/sponsor/campaigns/new/budget" element={<CampaignBudget />} />
                 <Route path="/sponsor/campaigns/new/review" element={<CampaignReview />} />
                 <Route path="/sponsor/campaigns/new/launch" element={<CampaignLaunch />} />
+                <Route path="/sponsor/profile" element={<SponsorProfile />} />
 
                 <Route path="/payments" element={<Payments />} />
 

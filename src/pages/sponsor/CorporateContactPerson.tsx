@@ -8,6 +8,7 @@ import {
   FiChevronDown,
   FiLinkedin,
 } from 'react-icons/fi';
+import { useSponsorFormStore } from '../../store/sponsorFormStore';
 import '../../styles/pages/landing.css';
 import './CorporateContactPerson.css';
 
@@ -35,24 +36,58 @@ const roles = [
   'Other',
 ];
 
+type FieldErrors = {
+  firstName?: boolean;
+  lastName?: boolean;
+  email?: boolean;
+  phone?: boolean;
+  role?: boolean;
+};
+
 export default function CorporateContactPerson() {
   const navigate = useNavigate();
 
-  const [form, setForm] = useState({
-    title: '',
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    role: '',
-    linkedin: '',
-    isPrimary: true,
-  });
+  const form = useSponsorFormStore((state) => state.corporate);
+  const updateCorporate = useSponsorFormStore((state) => state.updateCorporate);
+
+  const [errors, setErrors] = useState<FieldErrors>({});
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const clearError = (field: keyof FieldErrors) => {
+    setErrors((prev) => {
+      if (!prev[field]) return prev;
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
+  };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    updateCorporate({ [`contact${name.charAt(0).toUpperCase()}${name.slice(1)}`]: value });
+    clearError(name as keyof FieldErrors);
+  };
+
+  const handleNext = () => {
+    const nextErrors: FieldErrors = {};
+
+    if (!form.contactFirstName.trim()) nextErrors.firstName = true;
+    if (!form.contactLastName.trim()) nextErrors.lastName = true;
+    if (!form.contactEmail.trim()) nextErrors.email = true;
+    if (!form.contactPhone.trim()) nextErrors.phone = true;
+    if (!form.contactRole.trim()) nextErrors.role = true;
+
+    if (Object.keys(nextErrors).length > 0) {
+      setErrors(nextErrors);
+      setErrorMessage('Please fill in all required fields before continuing.');
+      return;
+    }
+
+    setErrors({});
+    setErrorMessage('');
+    navigate('/sponsor/corporatesetup/verification');
   };
 
   return (
@@ -118,7 +153,7 @@ export default function CorporateContactPerson() {
                   <select
                     className="ccp-input ccp-select"
                     name="title"
-                    value={form.title}
+                    value={form.contactTitle}
                     onChange={handleChange}
                   >
                     <option value="">Select</option>
@@ -130,29 +165,33 @@ export default function CorporateContactPerson() {
                 </div>
               </div>
               <div className="ccp-field-group">
-                <label className="ccp-label">First Name <span className="ccp-required">*</span></label>
+                <label className="ccp-label">
+                  First Name {errors.firstName && <span className="ccp-required">*</span>}
+                </label>
                 <div className="ccp-input-wrap">
                   <FiUser size={15} className="ccp-input-icon" />
                   <input
-                    className="ccp-input ccp-input-icon-pad"
+                    className={`ccp-input ccp-input-icon-pad ${errors.firstName ? 'ccp-input-error' : ''}`}
                     type="text"
                     name="firstName"
                     placeholder="John"
-                    value={form.firstName}
+                    value={form.contactFirstName}
                     onChange={handleChange}
                   />
                 </div>
               </div>
               <div className="ccp-field-group">
-                <label className="ccp-label">Last Name <span className="ccp-required">*</span></label>
+                <label className="ccp-label">
+                  Last Name {errors.lastName && <span className="ccp-required">*</span>}
+                </label>
                 <div className="ccp-input-wrap">
                   <FiUser size={15} className="ccp-input-icon" />
                   <input
-                    className="ccp-input ccp-input-icon-pad"
+                    className={`ccp-input ccp-input-icon-pad ${errors.lastName ? 'ccp-input-error' : ''}`}
                     type="text"
                     name="lastName"
                     placeholder="Doe"
-                    value={form.lastName}
+                    value={form.contactLastName}
                     onChange={handleChange}
                   />
                 </div>
@@ -162,22 +201,26 @@ export default function CorporateContactPerson() {
             {/* Email + Phone */}
             <div className="ccp-field-row">
               <div className="ccp-field-group">
-                <label className="ccp-label">Email Address <span className="ccp-required">*</span></label>
+                <label className="ccp-label">
+                  Email Address {errors.email && <span className="ccp-required">*</span>}
+                </label>
                 <div className="ccp-input-wrap">
                   <FiMail size={15} className="ccp-input-icon" />
                   <input
-                    className="ccp-input ccp-input-icon-pad"
+                    className={`ccp-input ccp-input-icon-pad ${errors.email ? 'ccp-input-error' : ''}`}
                     type="email"
                     name="email"
                     placeholder="john.doe@company.com"
-                    value={form.email}
+                    value={form.contactEmail}
                     onChange={handleChange}
                   />
                 </div>
               </div>
               <div className="ccp-field-group">
-                <label className="ccp-label">Phone Number <span className="ccp-required">*</span></label>
-                <div className="ccp-phone-wrap">
+                <label className="ccp-label">
+                  Phone Number {errors.phone && <span className="ccp-required">*</span>}
+                </label>
+                <div className={`ccp-phone-wrap ${errors.phone ? 'ccp-input-error' : ''}`}>
                   <div className="ccp-phone-prefix">
                     <span className="ccp-flag">🇺🇬</span>
                     <span className="ccp-code">+256</span>
@@ -188,7 +231,7 @@ export default function CorporateContactPerson() {
                     type="tel"
                     name="phone"
                     placeholder="700 000 000"
-                    value={form.phone}
+                    value={form.contactPhone}
                     onChange={handleChange}
                   />
                 </div>
@@ -198,13 +241,15 @@ export default function CorporateContactPerson() {
             {/* Role + LinkedIn */}
             <div className="ccp-field-row">
               <div className="ccp-field-group">
-                <label className="ccp-label">Role / Position <span className="ccp-required">*</span></label>
+                <label className="ccp-label">
+                  Role / Position {errors.role && <span className="ccp-required">*</span>}
+                </label>
                 <div className="ccp-select-wrap">
                   <FiBriefcase size={15} className="ccp-select-icon-left" />
                   <select
-                    className="ccp-input ccp-select ccp-input-icon-pad"
+                    className={`ccp-input ccp-select ccp-input-icon-pad ${errors.role ? 'ccp-input-error' : ''}`}
                     name="role"
-                    value={form.role}
+                    value={form.contactRole}
                     onChange={handleChange}
                   >
                     <option value="">Select role</option>
@@ -224,7 +269,7 @@ export default function CorporateContactPerson() {
                     type="url"
                     name="linkedin"
                     placeholder="https://linkedin.com/in/johndoe"
-                    value={form.linkedin}
+                    value={form.contactLinkedin}
                     onChange={handleChange}
                   />
                 </div>
@@ -240,8 +285,8 @@ export default function CorporateContactPerson() {
                 </div>
               </div>
               <button
-                className={`ccp-toggle ${form.isPrimary ? 'ccp-toggle-on' : ''}`}
-                onClick={() => setForm({ ...form, isPrimary: !form.isPrimary })}
+                className={`ccp-toggle ${form.contactIsPrimary ? 'ccp-toggle-on' : ''}`}
+                onClick={() => updateCorporate({ contactIsPrimary: !form.contactIsPrimary })}
                 type="button"
               >
                 <span className="ccp-toggle-thumb" />
@@ -257,10 +302,14 @@ export default function CorporateContactPerson() {
               </p>
             </div>
 
+            {errorMessage && (
+              <div className="ccp-error-banner">{errorMessage}</div>
+            )}
+
             {/* Next button */}
             <button
               className="ccp-next-btn"
-              onClick={() => navigate('/sponsor/corporatesetup/verification')}
+              onClick={handleNext}
             >
               Next: Verification →
             </button>
@@ -300,7 +349,7 @@ export default function CorporateContactPerson() {
           </button>
           <button
             className="ccp-next-btn-bottom"
-            onClick={() => navigate('/sponsor/corporatesetup/verification')}
+            onClick={handleNext}
           >
             Next: Verification →
           </button>

@@ -10,6 +10,7 @@ import {
   FiGrid,
   FiHelpCircle,
   FiCheckCircle,
+  FiAlertCircle,
 } from 'react-icons/fi';
 import '../../styles/pages/landing.css';
 import './CorporateVerificationUpload.css';
@@ -31,6 +32,9 @@ const uploadDocs = [
     desc: "Upload your company's Certificate of Incorporation issued by the relevant authority.",
     formats: 'Accepted formats: PDF, JPG, PNG (Max. 10MB)',
     recommended: null,
+    acceptedTypes: ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'],
+    maxSizeMB: 10,
+    minDimensions: null,
   },
   {
     id: 'tin',
@@ -38,6 +42,9 @@ const uploadDocs = [
     desc: 'Upload a valid Tax Identification Number (TIN) document for your company.',
     formats: 'Accepted formats: PDF, JPG, PNG (Max. 10MB)',
     recommended: null,
+    acceptedTypes: ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'],
+    maxSizeMB: 10,
+    minDimensions: null,
   },
   {
     id: 'logo',
@@ -45,6 +52,9 @@ const uploadDocs = [
     desc: 'Upload your company logo in high resolution.',
     formats: 'Accepted formats: PNG, JPG, SVG (Max. 5MB)',
     recommended: 'Recommended: 512×512px or higher',
+    acceptedTypes: ['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml'],
+    maxSizeMB: 5,
+    minDimensions: { width: 512, height: 512 },
   },
 ];
 
@@ -71,6 +81,29 @@ const tips = [
   },
 ];
 
+function getImageDimensions(file: File): Promise<{ width: number; height: number } | null> {
+  if (!file.type.startsWith('image/') || file.type === 'image/svg+xml') {
+    return Promise.resolve(null);
+  }
+
+  return new Promise((resolve) => {
+    const img = new Image();
+    const objectUrl = URL.createObjectURL(file);
+
+    img.onload = () => {
+      resolve({ width: img.naturalWidth, height: img.naturalHeight });
+      URL.revokeObjectURL(objectUrl);
+    };
+
+    img.onerror = () => {
+      resolve(null);
+      URL.revokeObjectURL(objectUrl);
+    };
+
+    img.src = objectUrl;
+  });
+}
+
 export default function CorporateVerificationUpload() {
   const navigate = useNavigate();
   const [uploads, setUploads] = useState<Record<string, File | null>>({
@@ -78,18 +111,85 @@ export default function CorporateVerificationUpload() {
     tin: null,
     logo: null,
   });
+  const [fileErrors, setFileErrors] = useState<Record<string, string>>({});
+  const [errorMessage, setErrorMessage] = useState('');
 
   const inputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
+  async function validateAndSetFile(docId: string, file: File | null) {
+    if (!file) return;
+
+    const doc = uploadDocs.find((d) => d.id === docId);
+    if (!doc) return;
+
+    if (!doc.acceptedTypes.includes(file.type)) {
+      setFileErrors((prev) => ({
+        ...prev,
+        [docId]: `Unsupported file type. ${doc.formats}`,
+      }));
+      return;
+    }
+
+    const maxSizeBytes = doc.maxSizeMB * 1024 * 1024;
+    if (file.size > maxSizeBytes) {
+      setFileErrors((prev) => ({
+        ...prev,
+        [docId]: `File is too large. Maximum size is ${doc.maxSizeMB}MB.`,
+      }));
+      return;
+    }
+
+    if (doc.minDimensions) {
+      const dimensions = await getImageDimensions(file);
+      if (
+        dimensions &&
+        (dimensions.width < doc.minDimensions.width || dimensions.height < doc.minDimensions.height)
+      ) {
+        setFileErrors((prev) => ({
+          ...prev,
+          [docId]: `Image resolution is too low. Minimum size is ${doc.minDimensions!.width}×${doc.minDimensions!.height}px.`,
+        }));
+        return;
+      }
+    }
+
+    setFileErrors((prev) => {
+      const next = { ...prev };
+      delete next[docId];
+      return next;
+    });
+    setUploads((prev) => ({ ...prev, [docId]: file }));
+    setErrorMessage('');
+  }
+
   const handleFileChange = (id: string, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] ?? null;
-    setUploads((prev) => ({ ...prev, [id]: file }));
+    void validateAndSetFile(id, file);
   };
 
   const handleDrop = (id: string, e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     const file = e.dataTransfer.files?.[0] ?? null;
-    setUploads((prev) => ({ ...prev, [id]: file }));
+    void validateAndSetFile(id, file);
+  };
+
+  const handleNext = () => {
+    const missing = uploadDocs.filter((doc) => !uploads[doc.id]);
+
+    if (missing.length > 0) {
+      setErrorMessage(
+        `Please upload the following before continuing: ${missing.map((d) => d.title).join(', ')}.`
+      );
+      return;
+    }
+
+    if (Object.keys(fileErrors).length > 0) {
+      setErrorMessage('Please fix the file upload errors before continuing.');
+      return;
+    }
+
+    setErrorMessage('');
+    navigate('/sponsor/corporatesetup/review');
   };
 
   return (
@@ -154,10 +254,15 @@ export default function CorporateVerificationUpload() {
                   {doc.recommended && (
                     <p className="cvu-upload-formats">{doc.recommended}</p>
                   )}
+                  {fileErrors[doc.id] && (
+                    <p className="cvu-file-error">
+                      <FiAlertCircle size={13} /> {fileErrors[doc.id]}
+                    </p>
+                  )}
                 </div>
 
                 <div
-                  className="cvu-drop-zone"
+                  className={`cvu-drop-zone ${fileErrors[doc.id] ? 'cvu-drop-zone-error' : ''}`}
                   onDragOver={(e) => e.preventDefault()}
                   onDrop={(e) => handleDrop(doc.id, e)}
                   onClick={() => inputRefs.current[doc.id]?.click()}
@@ -165,6 +270,7 @@ export default function CorporateVerificationUpload() {
                   <input
                     type="file"
                     className="cvu-file-input"
+                    accept={doc.acceptedTypes.join(',')}
                     ref={(el) => { inputRefs.current[doc.id] = el; }}
                     onChange={(e) => handleFileChange(doc.id, e)}
                   />
@@ -232,6 +338,10 @@ export default function CorporateVerificationUpload() {
           </div>
         </div>
 
+        {errorMessage && (
+          <div className="cvu-error-banner">{errorMessage}</div>
+        )}
+
         {/* Bottom nav */}
         <div className="cvu-bottom-nav">
           <button
@@ -243,7 +353,7 @@ export default function CorporateVerificationUpload() {
           </button>
           <button
             className="cvu-next-btn"
-            onClick={() => navigate('/sponsor/corporatesetup/review')}
+            onClick={handleNext}
           >
             Next: Review
             <FiArrowRight size={15} />
