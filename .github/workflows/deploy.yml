@@ -29,10 +29,48 @@ jobs:
       - name: Prepare SSH key
         shell: bash
         run: |
+          set -Eeuo pipefail
+
           mkdir -p ~/.ssh
-          printf '%s' "${{ secrets.DROPLET_SSH_KEY_B64 }}" | base64 -d > ~/.ssh/league_os_deploy_key
+
+          printf '%s' "${{ secrets.DROPLET_SSH_KEY_B64 }}" \
+            | base64 -d \
+            > ~/.ssh/league_os_deploy_key
+
           chmod 600 ~/.ssh/league_os_deploy_key
-          ssh-keyscan -H "${{ secrets.DROPLET_HOST }}" >> ~/.ssh/known_hosts
+
+          touch ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+          host="${{ secrets.DROPLET_HOST }}"
+          keyscan_output="$(mktemp)"
+
+          cleanup() {
+            rm -f "$keyscan_output"
+          }
+
+          trap cleanup EXIT
+
+          for attempt in $(seq 1 6); do
+            echo "Scanning SSH host key... ($attempt/6)"
+
+            if timeout 15s ssh-keyscan \
+              -T 10 \
+              -H "$host" \
+              > "$keyscan_output" 2>/dev/null \
+              && [ -s "$keyscan_output" ]; then
+
+              cat "$keyscan_output" >> ~/.ssh/known_hosts
+              echo "SSH host key recorded."
+              exit 0
+            fi
+
+            echo "Host-key scan failed. Retrying..."
+            sleep $((attempt * 5))
+          done
+
+          echo "Unable to retrieve the Droplet SSH host key after 6 attempts."
+          exit 1
 
       - name: Run remote command
         shell: bash
@@ -48,6 +86,10 @@ jobs:
           ssh -i ~/.ssh/league_os_deploy_key \
             -o IdentitiesOnly=yes \
             -o StrictHostKeyChecking=yes \
+            -o ConnectTimeout=20 \
+            -o ConnectionAttempts=3 \
+            -o ServerAliveInterval=30 \
+            -o ServerAliveCountMax=20 \
             "${{ secrets.DROPLET_USER }}@${{ secrets.DROPLET_HOST }}" \
             "$REMOTE_COMMAND"
 
