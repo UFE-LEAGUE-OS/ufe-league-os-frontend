@@ -14,6 +14,16 @@ import {
   useMemo,
   useState,
 } from "react";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Legend,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 
 import AdminWorkspaceLayout, {
   type AdminWorkspaceNavItem,
@@ -257,6 +267,86 @@ export default function ClubAdminDashboard() {
                 <small>Tickets admitted at the gate</small>
               </article>
             </div>
+          </WorkspacePanel>
+        </div>
+
+        <div className={styles.gridTwo}>
+          <WorkspacePanel
+            eyebrow="Club activity"
+            title="Recent activity"
+            description="The latest updates across your club."
+          >
+            {data?.recent_activity?.length ? (
+              <div className={styles.scopeGrid}>
+                {data.recent_activity.map((activity) => (
+                  <article
+                    className={styles.scopeCard}
+                    key={activity.id}
+                  >
+                    <span>
+                      {formatWorkspaceDate(
+                        activity.timestamp,
+                      )}
+                    </span>
+                    <strong>{activity.title}</strong>
+                    <small>{activity.description}</small>
+                  </article>
+                ))}
+              </div>
+            ) : (
+              <WorkspaceEmpty
+                title="No recent activity"
+                description="Updates like new members, results, and payments will appear here."
+              />
+            )}
+          </WorkspacePanel>
+
+          <WorkspacePanel
+            eyebrow="Club finances"
+            title="Financial overview"
+            description="Income vs expense across recent months."
+          >
+            {data?.financial_overview?.length ? (
+              <div style={{ width: "100%", height: 260 }}>
+                <ResponsiveContainer>
+                  <BarChart data={data.financial_overview}>
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke="var(--border)"
+                    />
+                    <XAxis
+                      dataKey="month"
+                      stroke="var(--muted)"
+                    />
+                    <YAxis stroke="var(--muted)" />
+                    <Tooltip
+                      contentStyle={{
+                        background: "var(--card)",
+                        border:
+                          "1px solid var(--border)",
+                        color: "var(--text)",
+                      }}
+                    />
+                    <Legend />
+                    <Bar
+                      dataKey="income"
+                      fill="var(--green)"
+                      radius={[4, 4, 0, 0]}
+                    />
+                    <Bar
+                      dataKey="expense"
+                      fill="#ef4444"
+                      radius={[4, 4, 0, 0]}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <WorkspaceEmpty
+                title="No financial data"
+                description="Income and expense records will appear here once available."
+              />
+            )}
           </WorkspacePanel>
         </div>
 

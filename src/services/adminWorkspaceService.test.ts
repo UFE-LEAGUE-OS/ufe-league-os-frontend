@@ -83,6 +83,21 @@ describe("adminWorkspaceService", () => {
         recent_results: [],
         ticket_events: [],
         staff: [],
+        recent_activity: [
+          {
+            id: 1,
+            title: "New member registered",
+            description: "John Doe",
+            timestamp: "2026-07-10T10:00:00Z",
+          },
+        ],
+        financial_overview: [
+          {
+            month: "Jun",
+            income: 5000,
+            expense: 3200,
+          },
+        ],
       },
     });
 
@@ -92,6 +107,50 @@ describe("adminWorkspaceService", () => {
       "/dashboards/club-admin/workspace/",
     );
     expect(result.club.name).toBe("KOBS");
+    expect(result.recent_activity?.[0].title).toBe(
+      "New member registered",
+    );
+    expect(result.financial_overview?.[0].income).toBe(
+      5000,
+    );
+  });
+
+  it("loads a club admin workspace without activity or financial data", async () => {
+    mockedGet.mockResolvedValueOnce({
+      data: {
+        scope_type: "CLUB",
+        club: {
+          id: 2,
+          name: "Budo Eagles",
+          short_name: "Budo",
+          slug: "budo-eagles",
+          sport: "FOOTBALL",
+          sport_display: "Football",
+          logo_url: null,
+          primary_color: "",
+          secondary_color: "",
+        },
+        summary: {
+          competitions: 2,
+          upcoming_fixtures: 2,
+          completed_matches: 0,
+          club_users: 2,
+          ticket_types: 0,
+          tickets_sold: 0,
+          checked_in: 0,
+        },
+        league_memberships: [],
+        upcoming_fixtures: [],
+        recent_results: [],
+        ticket_events: [],
+        staff: [],
+      },
+    });
+
+    const result = await getClubAdminWorkspace();
+
+    expect(result.recent_activity).toBeUndefined();
+    expect(result.financial_overview).toBeUndefined();
   });
 
   it("loads a selected ticketing scope", async () => {
