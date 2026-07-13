@@ -380,3 +380,102 @@
   .spf-account-detail-grid { grid-template-columns: 1fr 1fr; }
   .spf-security-row { flex-direction: column; align-items: flex-start; gap: 8px; }
 }
+
+/* ── Avatar upload ───────────────────────────── */
+.spf-avatar-input {
+  display: none;
+}
+
+.spf-avatar-edit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ── Inline error/hint ───────────────────────── */
+.spf-inline-error {
+  font-size: 11px;
+  color: #DC2626;
+  margin: 4px 0 0;
+}
+
+.spf-inline-hint {
+  font-size: 11px;
+  color: #9CA3AF;
+  margin: 4px 0 0;
+}
+
+/* ── Username inline edit ────────────────────── */
+.spf-detail-editable {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.spf-detail-editable:hover {
+  color: #8135FA;
+}
+
+.spf-detail-edit-icon {
+  color: #6B7280;
+  flex-shrink: 0;
+}
+.spf-detail-editable:hover .spf-detail-edit-icon {
+  color: #8135FA;
+}
+
+.spf-username-edit {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.spf-username-input {
+  background: #0d0e1a;
+  border: 1px solid #1e2340;
+  border-radius: 8px;
+  padding: 7px 10px;
+  font-size: 13px;
+  font-family: 'Inter', sans-serif;
+  color: #ffffff;
+  outline: none;
+  width: 160px;
+  transition: border-color 0.2s;
+}
+.spf-username-input:focus { border-color: #8135FA; }
+.spf-username-input-error { border-color: #DC2626 !important; }
+
+.spf-username-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  border: 1px solid #1e2340;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: border-color 0.2s, background 0.2s, color 0.2s;
+}
+
+.spf-username-save {
+  color: #16a34a;
+}
+.spf-username-save:hover:not(:disabled) {
+  border-color: #16a34a;
+  background: rgba(22, 163, 74, 0.1);
+}
+
+.spf-username-cancel {
+  color: #DC2626;
+}
+.spf-username-cancel:hover:not(:disabled) {
+  border-color: #DC2626;
+  background: rgba(220, 38, 38, 0.1);
+}
+
+.spf-username-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

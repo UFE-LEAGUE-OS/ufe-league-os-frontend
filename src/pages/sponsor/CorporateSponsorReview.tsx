@@ -14,6 +14,7 @@ import { useAuthStore } from '../../store/authStore';
 import { useSponsorFormStore } from '../../store/sponsorFormStore';
 import { getToken } from '../../utils/tokenManager';
 import { becomeSponsor } from '../../services/sponsorshipService';
+import { updateProfile } from '../../services/authService.js';
 import '../../styles/pages/landing.css';
 import './CorporateSponsorReview.css';
 
@@ -98,7 +99,7 @@ export default function CorporateSponsorReview() {
 
     setIsSubmitting(true);
 
-    try {
+try {
       await becomeSponsor({
         sponsor_type: 'CORPORATE',
         name: form.companyName.trim(),
@@ -107,9 +108,15 @@ export default function CorporateSponsorReview() {
         tin: form.tin.trim(),
       });
 
+      try {
+        await updateProfile({ location: form.city.trim() });
+      } catch {
+        // Non-critical — sponsor account was created successfully either way.
+      }
+
       resetCorporate();
       navigate('/sponsor/corporatesetup/complete');
-  } catch (error) {
+    } catch (error) {
       const status = (error as { response?: { status?: number } })?.response?.status;
 
       if (status === 401) {

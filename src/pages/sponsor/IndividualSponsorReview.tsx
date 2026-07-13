@@ -13,6 +13,7 @@ import { useAuthStore } from '../../store/authStore';
 import { useSponsorFormStore } from '../../store/sponsorFormStore';
 import { getToken } from '../../utils/tokenManager';
 import { becomeSponsor } from '../../services/sponsorshipService';
+import { updateProfile } from '../../services/authService.js';
 import '../../styles/pages/landing.css';
 import './IndividualSponsorReview.css';
 
@@ -138,21 +139,15 @@ export default function IndividualSponsorReview() {
         registration_country: countryIsoCodes[form.country] ?? 'UG',
       });
 
+      try {
+        await updateProfile({ location: form.city.trim() });
+      } catch {
+        // Non-critical — sponsor account was created successfully either way.
+      }
+
       resetIndividual();
       navigate('/sponsor/individual/complete');
     } catch (error) {
-      const status = (error as { response?: { status?: number } })?.response?.status;
-
-      if (status === 401) {
-        navigate('/login', {
-          state: {
-            postLoginRedirect: '/sponsor/individual/review',
-            message: 'Your session has expired. Please log in again to continue.',
-          },
-        });
-        return;
-      }
-
       setErrorMessage(extractErrorMessage(error));
     } finally {
       setIsSubmitting(false);
