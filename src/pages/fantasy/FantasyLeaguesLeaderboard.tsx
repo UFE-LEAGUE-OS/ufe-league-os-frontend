@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Crown, Medal, Trophy, Users, Lock, User, Globe, Plus, DollarSign, ClipboardList, PartyPopper } from 'lucide-react';
-import { GiRugbyConversion, GiSoccerBall, MdSportsBasketball } from 'react-icons/gi';
+import { GiRugbyConversion, GiSoccerBall } from 'react-icons/gi';
+import { MdSportsBasketball } from 'react-icons/md';
 import styles from './FantasyLeaguesLeaderboard.module.css';
 
 /* ── Static data ── */
