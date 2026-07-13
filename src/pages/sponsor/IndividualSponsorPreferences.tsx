@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiArrowLeft, FiArrowRight, FiCheck } from 'react-icons/fi';
+import { useSponsorFormStore } from '../../store/sponsorFormStore';
 import '../../styles/pages/landing.css';
 import './IndividualSponsorPreferences.css';
 
@@ -38,23 +39,95 @@ const goals = [
   { id: 'business', label: 'Business Growth' },
 ];
 
+type FieldErrors = {
+  budget?: boolean;
+  types?: boolean;
+  goals?: boolean;
+  duration?: boolean;
+};
+
 export default function IndividualSponsorPreferences() {
   const navigate = useNavigate();
-  const [selectedBudget, setSelectedBudget] = useState('');
-  const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
-  const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
-  const [duration, setDuration] = useState('');
+
+  const form = useSponsorFormStore((state) => state.individual);
+  const updateIndividual = useSponsorFormStore((state) => state.updateIndividual);
+
+  const [errors, setErrors] = useState<FieldErrors>({});
+  const [errorMessage, setErrorMessage] = useState('');
 
   const toggleType = (id: string) => {
-    setSelectedTypes((prev) =>
-      prev.includes(id) ? prev.filter((t) => t !== id) : [...prev, id]
-    );
+    const current = form.sponsorshipTypes;
+    const next = current.includes(id)
+      ? current.filter((t) => t !== id)
+      : [...current, id];
+
+    updateIndividual({ sponsorshipTypes: next });
+
+    if (next.length > 0) {
+      setErrors((prev) => {
+        if (!prev.types) return prev;
+        const nextErrors = { ...prev };
+        delete nextErrors.types;
+        return nextErrors;
+      });
+    }
   };
 
   const toggleGoal = (id: string) => {
-    setSelectedGoals((prev) =>
-      prev.includes(id) ? prev.filter((g) => g !== id) : [...prev, id]
-    );
+    const current = form.goals;
+    const next = current.includes(id)
+      ? current.filter((g) => g !== id)
+      : [...current, id];
+
+    updateIndividual({ goals: next });
+
+    if (next.length > 0) {
+      setErrors((prev) => {
+        if (!prev.goals) return prev;
+        const nextErrors = { ...prev };
+        delete nextErrors.goals;
+        return nextErrors;
+      });
+    }
+  };
+
+  const selectBudget = (id: string) => {
+    updateIndividual({ preferredBudget: id });
+    setErrors((prev) => {
+      if (!prev.budget) return prev;
+      const nextErrors = { ...prev };
+      delete nextErrors.budget;
+      return nextErrors;
+    });
+  };
+
+  const selectDuration = (d: string) => {
+    updateIndividual({ duration: d });
+    setErrors((prev) => {
+      if (!prev.duration) return prev;
+      const nextErrors = { ...prev };
+      delete nextErrors.duration;
+      return nextErrors;
+    });
+  };
+
+  const handleNext = () => {
+    const nextErrors: FieldErrors = {};
+
+    if (!form.preferredBudget) nextErrors.budget = true;
+    if (form.sponsorshipTypes.length === 0) nextErrors.types = true;
+    if (form.goals.length === 0) nextErrors.goals = true;
+    if (!form.duration) nextErrors.duration = true;
+
+    if (Object.keys(nextErrors).length > 0) {
+      setErrors(nextErrors);
+      setErrorMessage('Please complete all required sections before continuing.');
+      return;
+    }
+
+    setErrors({});
+    setErrorMessage('');
+    navigate('/sponsor/individual/review');
   };
 
   return (
@@ -106,17 +179,17 @@ export default function IndividualSponsorPreferences() {
           {/* Budget */}
           <div className="isp-section">
             <label className="isp-section-label">
-              Annual Sponsorship Budget <span className="isp-required">*</span>
+              Annual Sponsorship Budget {errors.budget && <span className="isp-required">*</span>}
             </label>
             <div className="isp-budget-grid">
               {budgetRanges.map((b) => (
                 <div
                   key={b.id}
-                  className={`isp-budget-card ${selectedBudget === b.id ? 'isp-budget-selected' : ''}`}
-                  onClick={() => setSelectedBudget(b.id)}
+                  className={`isp-budget-card ${form.preferredBudget === b.id ? 'isp-budget-selected' : ''} ${errors.budget ? 'isp-card-error' : ''}`}
+                  onClick={() => selectBudget(b.id)}
                 >
-                  <div className={`isp-radio ${selectedBudget === b.id ? 'isp-radio-selected' : ''}`}>
-                    {selectedBudget === b.id && <FiCheck size={12} />}
+                  <div className={`isp-radio ${form.preferredBudget === b.id ? 'isp-radio-selected' : ''}`}>
+                    {form.preferredBudget === b.id && <FiCheck size={12} />}
                   </div>
                   <div>
                     <div className="isp-budget-label">{b.label}</div>
@@ -130,16 +203,16 @@ export default function IndividualSponsorPreferences() {
           {/* Sponsorship types */}
           <div className="isp-section">
             <label className="isp-section-label">
-              Type of Sponsorship <span className="isp-required">*</span>
+              Type of Sponsorship {errors.types && <span className="isp-required">*</span>}
             </label>
             <p className="isp-section-hint">Select all that apply.</p>
             <div className="isp-types-grid">
               {sponsorshipTypes.map((type) => {
-                const isSelected = selectedTypes.includes(type.id);
+                const isSelected = form.sponsorshipTypes.includes(type.id);
                 return (
                   <div
                     key={type.id}
-                    className={`isp-type-card ${isSelected ? 'isp-type-selected' : ''}`}
+                    className={`isp-type-card ${isSelected ? 'isp-type-selected' : ''} ${errors.types ? 'isp-card-error' : ''}`}
                     onClick={() => toggleType(type.id)}
                   >
                     <div className={`isp-checkbox ${isSelected ? 'isp-checkbox-checked' : ''}`}>
@@ -158,16 +231,16 @@ export default function IndividualSponsorPreferences() {
           {/* Goals */}
           <div className="isp-section">
             <label className="isp-section-label">
-              Sponsorship Goals <span className="isp-required">*</span>
+              Sponsorship Goals {errors.goals && <span className="isp-required">*</span>}
             </label>
             <p className="isp-section-hint">What do you hope to achieve?</p>
             <div className="isp-goals-grid">
               {goals.map((goal) => {
-                const isSelected = selectedGoals.includes(goal.id);
+                const isSelected = form.goals.includes(goal.id);
                 return (
                   <div
                     key={goal.id}
-                    className={`isp-goal-chip ${isSelected ? 'isp-goal-selected' : ''}`}
+                    className={`isp-goal-chip ${isSelected ? 'isp-goal-selected' : ''} ${errors.goals ? 'isp-card-error' : ''}`}
                     onClick={() => toggleGoal(goal.id)}
                   >
                     {isSelected && <FiCheck size={13} />}
@@ -181,17 +254,17 @@ export default function IndividualSponsorPreferences() {
           {/* Duration */}
           <div className="isp-section">
             <label className="isp-section-label">
-              Preferred Sponsorship Duration <span className="isp-required">*</span>
+              Preferred Sponsorship Duration {errors.duration && <span className="isp-required">*</span>}
             </label>
             <div className="isp-duration-grid">
               {['3 Months', '6 Months', '1 Year', '2+ Years'].map((d) => (
                 <div
                   key={d}
-                  className={`isp-duration-card ${duration === d ? 'isp-duration-selected' : ''}`}
-                  onClick={() => setDuration(d)}
+                  className={`isp-duration-card ${form.duration === d ? 'isp-duration-selected' : ''} ${errors.duration ? 'isp-card-error' : ''}`}
+                  onClick={() => selectDuration(d)}
                 >
-                  <div className={`isp-radio ${duration === d ? 'isp-radio-selected' : ''}`}>
-                    {duration === d && <FiCheck size={12} />}
+                  <div className={`isp-radio ${form.duration === d ? 'isp-radio-selected' : ''}`}>
+                    {form.duration === d && <FiCheck size={12} />}
                   </div>
                   {d}
                 </div>
@@ -199,6 +272,10 @@ export default function IndividualSponsorPreferences() {
             </div>
           </div>
         </div>
+
+        {errorMessage && (
+          <div className="isp-error-banner">{errorMessage}</div>
+        )}
 
         {/* Bottom nav */}
         <div className="isp-bottom-nav">
@@ -211,7 +288,7 @@ export default function IndividualSponsorPreferences() {
           </button>
           <button
             className="isp-next-btn"
-            onClick={() => navigate('/sponsor/individual/review')}
+            onClick={handleNext}
           >
             Next: Review <FiArrowRight size={15} />
           </button>

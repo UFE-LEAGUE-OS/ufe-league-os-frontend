@@ -403,3 +403,17 @@
   .isp-bottom-nav { flex-direction: column; }
   .isp-back-btn, .isp-next-btn { width: 100%; justify-content: center; }
 }
+.isp-error-banner {
+  background: rgba(220, 38, 38, 0.1);
+  border: 1px solid rgba(220, 38, 38, 0.3);
+  color: #DC2626;
+  border-radius: 10px;
+  padding: 14px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  margin-top: -8px;
+}
+
+.isp-card-error {
+  border-color: #DC2626 !important;
+}

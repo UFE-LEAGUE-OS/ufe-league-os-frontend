@@ -1,6 +1,6 @@
 // apiClent.ts
 import axios from 'axios';
-import { getToken } from '../utils/tokenManager.js';
+import { getToken, clearAuthStorage } from '../utils/tokenManager.js';
 
 const rawApiBaseUrl =
   import.meta.env.VITE_API_BASE_URL ||
@@ -34,7 +34,6 @@ const publicAuthPaths = [
 axiosInstance.interceptors.request.use((config) => {
   const accessToken = getToken();
   const requestUrl = String(config.url || '');
-
   const isPublicAuthRequest = publicAuthPaths.some((path) =>
     requestUrl.includes(path),
   );
@@ -49,5 +48,22 @@ axiosInstance.interceptors.request.use((config) => {
 
   return config;
 });
+
+axiosInstance.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const status = error?.response?.status;
+    const requestUrl = String(error?.config?.url || '');
+    const isPublicAuthRequest = publicAuthPaths.some((path) =>
+      requestUrl.includes(path),
+    );
+
+    if (status === 401 && !isPublicAuthRequest) {
+      clearAuthStorage();
+    }
+
+    return Promise.reject(error);
+  },
+);
 
 export default axiosInstance;

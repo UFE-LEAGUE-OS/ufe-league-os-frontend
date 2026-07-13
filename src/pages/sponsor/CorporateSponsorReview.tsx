@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   FiArrowLeft,
@@ -7,7 +8,12 @@ import {
   FiHome,
   FiUser,
   FiFileText,
+  FiAlertCircle,
 } from 'react-icons/fi';
+import { useAuthStore } from '../../store/authStore';
+import { useSponsorFormStore } from '../../store/sponsorFormStore';
+import { getToken } from '../../utils/tokenManager';
+import { becomeSponsor } from '../../services/sponsorshipService';
 import '../../styles/pages/landing.css';
 import './CorporateSponsorReview.css';
 
@@ -21,8 +27,106 @@ const steps = [
 
 const currentStep = 4;
 
+const countryDialCodes: Record<string, string> = {
+  Uganda: '+256',
+  Kenya: '+254',
+  Tanzania: '+255',
+  Rwanda: '+250',
+  Burundi: '+257',
+};
+
+const countryIsoCodes: Record<string, string> = {
+  Uganda: 'UG',
+  Kenya: 'KE',
+  Tanzania: 'TZ',
+  Rwanda: 'RW',
+  Burundi: 'BI',
+  'South Sudan': 'SS',
+  Ethiopia: 'ET',
+  Nigeria: 'NG',
+  Ghana: 'GH',
+};
+
+function extractErrorMessage(error: unknown): string {
+  const responseData = (error as { response?: { data?: unknown } })?.response?.data;
+
+  if (!responseData || typeof responseData !== 'object') {
+    return 'We could not submit your application right now. Please try again.';
+  }
+
+  const values = Object.values(responseData as Record<string, unknown>);
+  const messages = values.flatMap((value) =>
+    Array.isArray(value) ? value : [String(value)]
+  );
+
+  return messages.length > 0
+    ? messages.join(' ')
+    : 'We could not submit your application right now. Please try again.';
+}
+
 export default function CorporateSponsorReview() {
   const navigate = useNavigate();
+
+  const form = useSponsorFormStore((state) => state.corporate);
+  const resetCorporate = useSponsorFormStore((state) => state.resetCorporate);
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const isAuthenticated = Boolean(accessToken || getToken());
+
+  const [declarationChecked, setDeclarationChecked] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const dialCode = countryDialCodes[form.country] ?? '+256';
+
+  const handleSubmit = async () => {
+    setErrorMessage('');
+
+    if (!declarationChecked) {
+      setErrorMessage('Please confirm the declaration before submitting.');
+      return;
+    }
+
+    if (!isAuthenticated) {
+      navigate('/login', {
+        state: {
+          postLoginRedirect: '/sponsor/corporatesetup/review',
+          message: 'Please log in or create an account to submit your sponsorship application.',
+        },
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      await becomeSponsor({
+        sponsor_type: 'CORPORATE',
+        name: form.companyName.trim(),
+        registration_country: countryIsoCodes[form.country] ?? 'UG',
+        brn: form.brn.trim(),
+        tin: form.tin.trim(),
+      });
+
+      resetCorporate();
+      navigate('/sponsor/corporatesetup/complete');
+  } catch (error) {
+      const status = (error as { response?: { status?: number } })?.response?.status;
+
+      if (status === 401) {
+        navigate('/login', {
+          state: {
+            postLoginRedirect: '/sponsor/corporatesetup/review',
+            message: 'Your session has expired. Please log in again to continue.',
+          },
+        });
+        return;
+      }
+
+      setErrorMessage(extractErrorMessage(error));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="csr-page">
@@ -96,39 +200,39 @@ export default function CorporateSponsorReview() {
               <div className="csr-detail-grid">
                 <div className="csr-detail-row">
                   <span className="csr-detail-label">Company Name</span>
-                  <span className="csr-detail-val">Nile Breweries Limited</span>
+                  <span className="csr-detail-val">{form.companyName || '—'}</span>
                 </div>
                 <div className="csr-detail-row">
                   <span className="csr-detail-label">Company Email</span>
-                  <span className="csr-detail-val">partnerships@nilebreweries.co.ug</span>
+                  <span className="csr-detail-val">{form.companyEmail || '—'}</span>
                 </div>
                 <div className="csr-detail-row">
                   <span className="csr-detail-label">Phone Number</span>
-                  <span className="csr-detail-val">+256 312 320 500</span>
+                  <span className="csr-detail-val">{form.phone ? `${dialCode} ${form.phone}` : '—'}</span>
                 </div>
                 <div className="csr-detail-row">
                   <span className="csr-detail-label">Country</span>
-                  <span className="csr-detail-val">Uganda</span>
+                  <span className="csr-detail-val">{form.country || '—'}</span>
                 </div>
                 <div className="csr-detail-row">
                   <span className="csr-detail-label">City</span>
-                  <span className="csr-detail-val">Kampala</span>
+                  <span className="csr-detail-val">{form.city || '—'}</span>
                 </div>
                 <div className="csr-detail-row">
                   <span className="csr-detail-label">Industry</span>
-                  <span className="csr-detail-val">Beverage Manufacturing</span>
+                  <span className="csr-detail-val">{form.industry || '—'}</span>
                 </div>
                 <div className="csr-detail-row">
                   <span className="csr-detail-label">Website</span>
-                  <span className="csr-detail-val">https://www.nilebreweries.co.ug</span>
+                  <span className="csr-detail-val">{form.website || '—'}</span>
                 </div>
                 <div className="csr-detail-row">
                   <span className="csr-detail-label">BRN</span>
-                  <span className="csr-detail-val">—</span>
+                  <span className="csr-detail-val">{form.brn || '—'}</span>
                 </div>
                 <div className="csr-detail-row">
                   <span className="csr-detail-label">TIN Number</span>
-                  <span className="csr-detail-val">—</span>
+                  <span className="csr-detail-val">{form.tin || '—'}</span>
                 </div>
               </div>
             </div>
@@ -152,23 +256,29 @@ export default function CorporateSponsorReview() {
               <div className="csr-detail-grid">
                 <div className="csr-detail-row">
                   <span className="csr-detail-label">Full Name</span>
-                  <span className="csr-detail-val">John Doe</span>
+                  <span className="csr-detail-val">
+                    {[form.contactTitle, form.contactFirstName, form.contactLastName]
+                      .filter(Boolean)
+                      .join(' ') || '—'}
+                  </span>
                 </div>
                 <div className="csr-detail-row">
                   <span className="csr-detail-label">Email</span>
-                  <span className="csr-detail-val">john.doe@nilebreweries.co.ug</span>
+                  <span className="csr-detail-val">{form.contactEmail || '—'}</span>
                 </div>
                 <div className="csr-detail-row">
                   <span className="csr-detail-label">Phone</span>
-                  <span className="csr-detail-val">+256 700 000 000</span>
+                  <span className="csr-detail-val">{form.contactPhone ? `${dialCode} ${form.contactPhone}` : '—'}</span>
                 </div>
                 <div className="csr-detail-row">
                   <span className="csr-detail-label">Role</span>
-                  <span className="csr-detail-val">Chief Marketing Officer (CMO)</span>
+                  <span className="csr-detail-val">{form.contactRole || '—'}</span>
                 </div>
                 <div className="csr-detail-row">
                   <span className="csr-detail-label">Primary Contact</span>
-                  <span className="csr-detail-val csr-badge-yes">Yes</span>
+                  <span className={`csr-detail-val ${form.contactIsPrimary ? 'csr-badge-yes' : ''}`}>
+                    {form.contactIsPrimary ? 'Yes' : 'No'}
+                  </span>
                 </div>
               </div>
             </div>
@@ -211,13 +321,33 @@ export default function CorporateSponsorReview() {
             {/* Declaration */}
             <div className="csr-declaration">
               <div className="csr-declaration-check">
-                <input type="checkbox" id="declaration" className="csr-checkbox" />
+                <input
+                  type="checkbox"
+                  id="declaration"
+                  className="csr-checkbox"
+                  checked={declarationChecked}
+                  onChange={(e) => {
+                    setDeclarationChecked(e.target.checked);
+                    setErrorMessage('');
+                  }}
+                />
                 <label htmlFor="declaration" className="csr-declaration-label">
                   I confirm that all information provided is accurate and I am authorised
                   to submit this sponsorship application on behalf of the organisation.
                 </label>
               </div>
             </div>
+
+            {errorMessage && (
+              <div className="csr-declaration" style={{ borderColor: 'rgba(220, 38, 38, 0.3)' }}>
+                <div className="csr-declaration-check">
+                  <FiAlertCircle size={16} style={{ color: '#DC2626', flexShrink: 0, marginTop: 2 }} />
+                  <span className="csr-declaration-label" style={{ color: '#DC2626' }}>
+                    {errorMessage}
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Right summary panel */}
@@ -268,9 +398,10 @@ export default function CorporateSponsorReview() {
           </button>
           <button
             className="csr-submit-btn"
-            onClick={() => navigate('/sponsor/corporatesetup/complete')}
+            onClick={handleSubmit}
+            disabled={isSubmitting}
           >
-            Submit Application <FiArrowRight size={15} />
+            {isSubmitting ? 'Submitting...' : 'Submit Application'} <FiArrowRight size={15} />
           </button>
         </div>
       </main>

@@ -9,11 +9,14 @@ import {
   FiHelpCircle,
   FiZap,
   FiLayout,
+  FiUser,
 } from 'react-icons/fi';
+import logo from '../assets/logo.png';
 import './SponsorSidebar.css';
 
 const sidebarLinks = [
   { label: 'Dashboard', icon: FiGrid, route: '/sponsor/dashboard' },
+  { label: 'Profile', icon: FiUser, route: '/sponsor/profile' },
   { label: 'Sponsorship Hub', icon: FiLayout, route: '/sponsorhub' },
   { label: 'Packages', icon: FiTag, route: '/sponsor/packages' },
   { label: 'Campaigns', icon: FiBell, route: '/sponsor/campaigns' },
@@ -34,6 +37,10 @@ export default function SponsorSidebar() {
 
   return (
     <aside className="sp-sidebar">
+      <div className="sp-sidebar-logo" onClick={() => navigate('/')}>
+        <img src={logo} alt="League OS" className="sp-logo-img" />
+      </div>
+
       <nav className="sp-sidebar-nav">
         <ul className="sp-nav-list">
           {sidebarLinks.map((link) => {
@@ -50,9 +57,7 @@ export default function SponsorSidebar() {
             );
           })}
         </ul>
-
         <div className="sp-sidebar-divider" />
-
         <ul className="sp-nav-list">
           {bottomLinks.map((link) => {
             const Icon = link.icon;
@@ -69,7 +74,6 @@ export default function SponsorSidebar() {
           })}
         </ul>
       </nav>
-
       <div className="sp-sidebar-cta">
         <div className="sp-cta-icon-wrap">
           <FiZap size={20} className="sp-cta-icon" />

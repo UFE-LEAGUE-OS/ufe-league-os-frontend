@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   FiArrowLeft,
@@ -6,7 +7,12 @@ import {
   FiEdit2,
   FiUser,
   FiHeart,
+  FiAlertCircle,
 } from 'react-icons/fi';
+import { useAuthStore } from '../../store/authStore';
+import { useSponsorFormStore } from '../../store/sponsorFormStore';
+import { getToken } from '../../utils/tokenManager';
+import { becomeSponsor } from '../../services/sponsorshipService';
 import '../../styles/pages/landing.css';
 import './IndividualSponsorReview.css';
 
@@ -19,8 +25,139 @@ const steps = [
 
 const currentStep = 3;
 
+const countryDialCodes: Record<string, string> = {
+  Uganda: '+256',
+  Kenya: '+254',
+  Tanzania: '+255',
+  Rwanda: '+250',
+  Burundi: '+257',
+};
+
+const countryIsoCodes: Record<string, string> = {
+  Uganda: 'UG',
+  Kenya: 'KE',
+  Tanzania: 'TZ',
+  Rwanda: 'RW',
+  Burundi: 'BI',
+  'South Sudan': 'SS',
+  Ethiopia: 'ET',
+  Nigeria: 'NG',
+  Ghana: 'GH',
+};
+
+const sportLabels: Record<string, string> = {
+  football: 'Football',
+  rugby: 'Rugby',
+  basketball: 'Basketball',
+  'nile-rugby': 'Nile Special Rugby League',
+  kobs: 'KOBS RFC',
+  others: 'Other',
+};
+
+const budgetLabels: Record<string, string> = {
+  'under-1m': 'Under UGX 1M',
+  '1m-5m': 'UGX 1M – 5M',
+  '5m-20m': 'UGX 5M – 20M',
+  'above-20m': 'Above UGX 20M',
+};
+
+const typeLabels: Record<string, string> = {
+  club: 'Club Sponsorship',
+  league: 'League Sponsorship',
+  player: 'Player Sponsorship',
+  event: 'Event Sponsorship',
+  grassroots: 'Grassroots Development',
+  digital: 'Digital Campaigns',
+};
+
+const goalLabels: Record<string, string> = {
+  brand: 'Brand Visibility',
+  community: 'Community Impact',
+  networking: 'Networking',
+  passion: 'Passion for Sport',
+  recognition: 'Personal Recognition',
+  business: 'Business Growth',
+};
+
+function extractErrorMessage(error: unknown): string {
+  const responseData = (error as { response?: { data?: unknown } })?.response?.data;
+
+  if (!responseData || typeof responseData !== 'object') {
+    return 'We could not submit your application right now. Please try again.';
+  }
+
+  const values = Object.values(responseData as Record<string, unknown>);
+  const messages = values.flatMap((value) =>
+    Array.isArray(value) ? value : [String(value)]
+  );
+
+  return messages.length > 0
+    ? messages.join(' ')
+    : 'We could not submit your application right now. Please try again.';
+}
+
 export default function IndividualSponsorReview() {
   const navigate = useNavigate();
+
+  const form = useSponsorFormStore((state) => state.individual);
+  const resetIndividual = useSponsorFormStore((state) => state.resetIndividual);
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const isAuthenticated = Boolean(accessToken || getToken());
+
+  const [declarationChecked, setDeclarationChecked] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const dialCode = countryDialCodes[form.country] ?? '+256';
+  const fullName = [form.firstName, form.lastName].filter(Boolean).join(' ');
+
+  const handleSubmit = async () => {
+    setErrorMessage('');
+
+    if (!declarationChecked) {
+      setErrorMessage('Please confirm the declaration before submitting.');
+      return;
+    }
+
+    if (!isAuthenticated) {
+      navigate('/login', {
+        state: {
+          postLoginRedirect: '/sponsor/individual/review',
+          message: 'Please log in or create an account to submit your sponsorship application.',
+        },
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      await becomeSponsor({
+        sponsor_type: 'INDIVIDUAL',
+        name: fullName.trim(),
+        registration_country: countryIsoCodes[form.country] ?? 'UG',
+      });
+
+      resetIndividual();
+      navigate('/sponsor/individual/complete');
+    } catch (error) {
+      const status = (error as { response?: { status?: number } })?.response?.status;
+
+      if (status === 401) {
+        navigate('/login', {
+          state: {
+            postLoginRedirect: '/sponsor/individual/review',
+            message: 'Your session has expired. Please log in again to continue.',
+          },
+        });
+        return;
+      }
+
+      setErrorMessage(extractErrorMessage(error));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="isr-page">
@@ -88,32 +225,36 @@ export default function IndividualSponsorReview() {
               <div className="isr-detail-grid">
                 <div className="isr-detail-row">
                   <span className="isr-detail-label">Full Name</span>
-                  <span className="isr-detail-val">Jane Kintu</span>
+                  <span className="isr-detail-val">{fullName || '—'}</span>
                 </div>
                 <div className="isr-detail-row">
                   <span className="isr-detail-label">Email Address</span>
-                  <span className="isr-detail-val">jane.kintu@email.com</span>
+                  <span className="isr-detail-val">{form.email || '—'}</span>
                 </div>
                 <div className="isr-detail-row">
                   <span className="isr-detail-label">Phone Number</span>
-                  <span className="isr-detail-val">+256 700 123 456</span>
+                  <span className="isr-detail-val">{form.phone ? `${dialCode} ${form.phone}` : '—'}</span>
                 </div>
                 <div className="isr-detail-row">
                   <span className="isr-detail-label">Country</span>
-                  <span className="isr-detail-val">Uganda</span>
+                  <span className="isr-detail-val">{form.country || '—'}</span>
                 </div>
                 <div className="isr-detail-row">
                   <span className="isr-detail-label">City</span>
-                  <span className="isr-detail-val">Kampala</span>
+                  <span className="isr-detail-val">{form.city || '—'}</span>
                 </div>
                 <div className="isr-detail-row">
                   <span className="isr-detail-label">Sports Interests</span>
-                  <span className="isr-detail-val">Football, Basketball</span>
+                  <span className="isr-detail-val">
+                    {form.selectedSports.length > 0
+                      ? form.selectedSports.map((id) => sportLabels[id] ?? id).join(', ')
+                      : '—'}
+                  </span>
                 </div>
                 <div className="isr-detail-row isr-detail-full">
                   <span className="isr-detail-label">Why Sponsoring</span>
                   <span className="isr-detail-val">
-                    To support grassroots development and inspire the next generation of athletes.
+                    {form.reason || '—'}
                   </span>
                 </div>
               </div>
@@ -138,25 +279,34 @@ export default function IndividualSponsorReview() {
               <div className="isr-detail-grid">
                 <div className="isr-detail-row">
                   <span className="isr-detail-label">Annual Budget</span>
-                  <span className="isr-detail-val">UGX 1M – 5M</span>
+                  <span className="isr-detail-val">{budgetLabels[form.preferredBudget] ?? '—'}</span>
                 </div>
                 <div className="isr-detail-row">
                   <span className="isr-detail-label">Duration</span>
-                  <span className="isr-detail-val">1 Year</span>
+                  <span className="isr-detail-val">{form.duration || '—'}</span>
                 </div>
                 <div className="isr-detail-row isr-detail-full">
                   <span className="isr-detail-label">Sponsorship Types</span>
                   <div className="isr-chips">
-                    <span className="isr-chip">Club Sponsorship</span>
-                    <span className="isr-chip">Grassroots Development</span>
+                    {form.sponsorshipTypes.length > 0 ? (
+                      form.sponsorshipTypes.map((id) => (
+                        <span key={id} className="isr-chip">{typeLabels[id] ?? id}</span>
+                      ))
+                    ) : (
+                      <span className="isr-detail-val">—</span>
+                    )}
                   </div>
                 </div>
                 <div className="isr-detail-row isr-detail-full">
                   <span className="isr-detail-label">Goals</span>
                   <div className="isr-chips">
-                    <span className="isr-chip">Brand Visibility</span>
-                    <span className="isr-chip">Community Impact</span>
-                    <span className="isr-chip">Passion for Sport</span>
+                    {form.goals.length > 0 ? (
+                      form.goals.map((id) => (
+                        <span key={id} className="isr-chip">{goalLabels[id] ?? id}</span>
+                      ))
+                    ) : (
+                      <span className="isr-detail-val">—</span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -165,13 +315,33 @@ export default function IndividualSponsorReview() {
             {/* Declaration */}
             <div className="isr-declaration">
               <div className="isr-declaration-check">
-                <input type="checkbox" id="declaration" className="isr-checkbox" />
+                <input
+                  type="checkbox"
+                  id="declaration"
+                  className="isr-checkbox"
+                  checked={declarationChecked}
+                  onChange={(e) => {
+                    setDeclarationChecked(e.target.checked);
+                    setErrorMessage('');
+                  }}
+                />
                 <label htmlFor="declaration" className="isr-declaration-label">
                   I confirm that all information provided is accurate and I agree to the
                   League OS sponsorship terms and conditions.
                 </label>
               </div>
             </div>
+
+            {errorMessage && (
+              <div className="isr-declaration" style={{ borderColor: 'rgba(220, 38, 38, 0.3)' }}>
+                <div className="isr-declaration-check">
+                  <FiAlertCircle size={16} style={{ color: '#DC2626', flexShrink: 0, marginTop: 2 }} />
+                  <span className="isr-declaration-label" style={{ color: '#DC2626' }}>
+                    {errorMessage}
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Right summary panel */}
@@ -218,9 +388,10 @@ export default function IndividualSponsorReview() {
           </button>
           <button
             className="isr-submit-btn"
-            onClick={() => navigate('/sponsor/individual/complete')}
+            onClick={handleSubmit}
+            disabled={isSubmitting}
           >
-            Submit Application <FiArrowRight size={15} />
+            {isSubmitting ? 'Submitting...' : 'Submit Application'} <FiArrowRight size={15} />
           </button>
         </div>
       </main>

@@ -8,7 +8,7 @@ import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined';
 import EmojiEventsOutlinedIcon from '@mui/icons-material/EmojiEventsOutlined';
 import EventNoteOutlinedIcon from '@mui/icons-material/EventNoteOutlined';
 import { useState, type FormEvent, type ReactNode } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 import BackButton from '../../components/BackButton';
 import Navbar from '../../components/Navbar';
@@ -29,7 +29,7 @@ import {
 } from './registerUtils.js';
 import '../../styles/pages/auth/register.css';
 import { usePasswordValidation } from '../../hooks/usePasswordValidation.ts';
-import { PERSONALIZE_ROUTE, VERIFY_EMAIL_ROUTE } from '../../utils/authFlow.ts';
+import { PERSONALIZE_ROUTE, VERIFY_EMAIL_ROUTE, getSafeAuthRedirect, type AuthFlowState } from '../../utils/authFlow.ts';
 import { savePendingOnboardingSession } from '../../utils/onboardingSession.ts';
 
 const features = [
@@ -124,6 +124,9 @@ function PasswordStrengthIndicator({
 
 export default function Register() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const locationState = location.state as AuthFlowState | null;
+  const postLoginRedirect = getSafeAuthRedirect(locationState?.postLoginRedirect);
 
   const [formValues, setFormValues] = useState<RegisterFormValues>(initialFormValues);
   const [fieldErrors, setFieldErrors] = useState<RegisterFormErrors>({});
@@ -223,7 +226,7 @@ export default function Register() {
           message:
             data.message ??
             'Please verify your email address before continuing.',
-          postLoginRedirect: PERSONALIZE_ROUTE,
+          postLoginRedirect: postLoginRedirect ?? PERSONALIZE_ROUTE,
         },
       });
     } catch (error) {

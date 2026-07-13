@@ -11,6 +11,7 @@ import {
 } from 'react-icons/fi';
 import { GiSoccerBall, GiRugbyConversion } from 'react-icons/gi';
 import { MdSportsBasketball } from 'react-icons/md';
+import { useSponsorFormStore } from '../../store/sponsorFormStore';
 import '../../styles/pages/landing.css';
 import './IndividualSponsorSetup.css';
 
@@ -36,30 +37,81 @@ const countries = [
 ];
 
 const currentStep = 1;
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+type FieldErrors = {
+  firstName?: boolean;
+  lastName?: boolean;
+  email?: boolean;
+  phone?: boolean;
+  city?: boolean;
+  reason?: boolean;
+  sports?: boolean;
+};
 
 export default function IndividualSponsorSetup() {
   const navigate = useNavigate();
-  const [selectedSports, setSelectedSports] = useState<string[]>(['football', 'basketball']);
 
-  const [form, setForm] = useState({
-    fullName: '',
-    email: '',
-    phone: '',
-    country: 'Uganda',
-    city: '',
-    reason: '',
-  });
+  const form = useSponsorFormStore((state) => state.individual);
+  const updateIndividual = useSponsorFormStore((state) => state.updateIndividual);
+
+  const [errors, setErrors] = useState<FieldErrors>({});
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    updateIndividual({ [name]: value });
+
+    setErrors((prev) => {
+      if (!prev[name as keyof FieldErrors]) return prev;
+      const isNowValid = name === 'email' ? emailPattern.test(value.trim()) : Boolean(value.trim());
+      if (!isNowValid) return prev;
+      const next = { ...prev };
+      delete next[name as keyof FieldErrors];
+      return next;
+    });
   };
 
   const toggleSport = (id: string) => {
-    setSelectedSports((prev) =>
-      prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]
-    );
+    const current = form.selectedSports;
+    const next = current.includes(id)
+      ? current.filter((s) => s !== id)
+      : [...current, id];
+
+    updateIndividual({ selectedSports: next });
+
+    if (next.length > 0) {
+      setErrors((prev) => {
+        if (!prev.sports) return prev;
+        const nextErrors = { ...prev };
+        delete nextErrors.sports;
+        return nextErrors;
+      });
+    }
+  };
+
+  const handleNext = () => {
+    const nextErrors: FieldErrors = {};
+
+    if (!form.firstName.trim()) nextErrors.firstName = true;
+    if (!form.lastName.trim()) nextErrors.lastName = true;
+    if (!form.email.trim() || !emailPattern.test(form.email.trim())) nextErrors.email = true;
+    if (!form.phone.trim()) nextErrors.phone = true;
+    if (!form.city.trim()) nextErrors.city = true;
+    if (!form.reason.trim()) nextErrors.reason = true;
+    if (form.selectedSports.length === 0) nextErrors.sports = true;
+
+    if (Object.keys(nextErrors).length > 0) {
+      setErrors(nextErrors);
+      setErrorMessage('Please fill in all required fields correctly before continuing.');
+      return;
+    }
+
+    setErrors({});
+    setErrorMessage('');
+    navigate('/sponsor/individual/preferences');
   };
 
   return (
@@ -106,28 +158,52 @@ export default function IndividualSponsorSetup() {
           <h2 className="iss-form-title">Basic Information</h2>
           <p className="iss-form-subtitle">Please provide your details to get started.</p>
 
-          {/* Full Name + Email */}
+          {/* First Name + Last Name */}
           <div className="iss-field-row">
             <div className="iss-field-group">
-              <label className="iss-label">Full Name <span className="iss-required">*</span></label>
+              <label className="iss-label">
+                First Name {errors.firstName && <span className="iss-required">*</span>}
+              </label>
               <div className="iss-input-wrap">
                 <FiUser size={16} className="iss-input-icon" />
                 <input
-                  className="iss-input"
+                  className={`iss-input ${errors.firstName ? 'iss-input-error' : ''}`}
                   type="text"
-                  name="fullName"
-                  placeholder="Jane Kintu"
-                  value={form.fullName}
+                  name="firstName"
+                  placeholder="Jane"
+                  value={form.firstName}
                   onChange={handleChange}
                 />
               </div>
             </div>
             <div className="iss-field-group">
-              <label className="iss-label">Email Address <span className="iss-required">*</span></label>
+              <label className="iss-label">
+                Last Name {errors.lastName && <span className="iss-required">*</span>}
+              </label>
+              <div className="iss-input-wrap">
+                <FiUser size={16} className="iss-input-icon" />
+                <input
+                  className={`iss-input ${errors.lastName ? 'iss-input-error' : ''}`}
+                  type="text"
+                  name="lastName"
+                  placeholder="Kintu"
+                  value={form.lastName}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Email + Phone */}
+          <div className="iss-field-row">
+            <div className="iss-field-group">
+              <label className="iss-label">
+                Email Address {errors.email && <span className="iss-required">*</span>}
+              </label>
               <div className="iss-input-wrap">
                 <FiMail size={16} className="iss-input-icon" />
                 <input
-                  className="iss-input"
+                  className={`iss-input ${errors.email ? 'iss-input-error' : ''}`}
                   type="email"
                   name="email"
                   placeholder="jane.kintu@email.com"
@@ -136,13 +212,11 @@ export default function IndividualSponsorSetup() {
                 />
               </div>
             </div>
-          </div>
-
-          {/* Phone + Country */}
-          <div className="iss-field-row">
             <div className="iss-field-group">
-              <label className="iss-label">Phone Number <span className="iss-required">*</span></label>
-              <div className="iss-phone-wrap">
+              <label className="iss-label">
+                Phone Number {errors.phone && <span className="iss-required">*</span>}
+              </label>
+              <div className={`iss-phone-wrap ${errors.phone ? 'iss-input-error' : ''}`}>
                 <div className="iss-phone-prefix">
                   <span className="iss-flag">🇺🇬</span>
                   <span className="iss-code">+256</span>
@@ -158,8 +232,12 @@ export default function IndividualSponsorSetup() {
                 />
               </div>
             </div>
+          </div>
+
+          {/* Country + City */}
+          <div className="iss-field-row">
             <div className="iss-field-group">
-              <label className="iss-label">Country <span className="iss-required">*</span></label>
+              <label className="iss-label">Country</label>
               <div className="iss-select-wrap">
                 <FiGlobe size={16} className="iss-input-icon" />
                 <select
@@ -175,33 +253,33 @@ export default function IndividualSponsorSetup() {
                 <FiChevronDown size={14} className="iss-select-arrow" />
               </div>
             </div>
-          </div>
-
-          {/* City */}
-          <div className="iss-field-group iss-field-full">
-            <label className="iss-label">City <span className="iss-required">*</span></label>
-            <div className="iss-input-wrap">
-              <FiMapPin size={16} className="iss-input-icon" />
-              <input
-                className="iss-input"
-                type="text"
-                name="city"
-                placeholder="Kampala"
-                value={form.city}
-                onChange={handleChange}
-              />
+            <div className="iss-field-group">
+              <label className="iss-label">
+                City {errors.city && <span className="iss-required">*</span>}
+              </label>
+              <div className="iss-input-wrap">
+                <FiMapPin size={16} className="iss-input-icon" />
+                <input
+                  className={`iss-input ${errors.city ? 'iss-input-error' : ''}`}
+                  type="text"
+                  name="city"
+                  placeholder="Kampala"
+                  value={form.city}
+                  onChange={handleChange}
+                />
+              </div>
             </div>
           </div>
 
           {/* Reason */}
           <div className="iss-field-group iss-field-full">
             <label className="iss-label">
-              Why do you want to become a sponsor? <span className="iss-required">*</span>
+              Why do you want to become a sponsor? {errors.reason && <span className="iss-required">*</span>}
             </label>
             <div className="iss-input-wrap iss-textarea-wrap">
               <FiMessageSquare size={16} className="iss-input-icon iss-textarea-icon" />
               <textarea
-                className="iss-input iss-textarea"
+                className={`iss-input iss-textarea ${errors.reason ? 'iss-input-error' : ''}`}
                 name="reason"
                 placeholder="To support grassroots development and inspire the next generation of athletes."
                 value={form.reason}
@@ -214,13 +292,13 @@ export default function IndividualSponsorSetup() {
           {/* Sports interests */}
           <div className="iss-field-group iss-field-full">
             <label className="iss-label">
-              I'm interested in <span className="iss-required">*</span>
+              I'm interested in {errors.sports && <span className="iss-required">*</span>}
             </label>
             <p className="iss-field-hint">Select the sports you're passionate about.</p>
             <div className="iss-sports-grid">
               {sportOptions.map((sport) => {
                 const Icon = sport.icon;
-                const isSelected = selectedSports.includes(sport.id);
+                const isSelected = form.selectedSports.includes(sport.id);
                 return (
                   <div
                     key={sport.id}
@@ -245,11 +323,15 @@ export default function IndividualSponsorSetup() {
           </div>
         </div>
 
+        {errorMessage && (
+          <div className="iss-error-banner">{errorMessage}</div>
+        )}
+
         {/* Footer */}
         <div className="iss-footer">
           <button
             className="iss-next-btn"
-            onClick={() => navigate('/sponsor/individual/preferences')}
+            onClick={handleNext}
           >
             Next: Preferences →
           </button>
