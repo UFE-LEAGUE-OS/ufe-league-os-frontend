@@ -10,6 +10,8 @@ import {
     Layers3,
     LogOut,
     Megaphone,
+    PanelLeftClose,
+    PanelLeftOpen,
     RefreshCw,
     Search,
     ShieldCheck,
@@ -44,6 +46,7 @@ import UnionAdminRefereesPanel from "../../components/UnionAdminRefereesPanel/Un
 import OfficialAppointmentsPanel from "../../components/OfficialAppointmentsPanel/OfficialAppointmentsPanel";
 import LeagueAdminScopesPanel from "../../components/LeagueAdminScopesPanel/LeagueAdminScopesPanel";
 import logoHorizontal from "../../assets/logos/league-os-horizontal.png";
+import logoMark from "../../assets/league-os-mark.svg";
 import styles from "./UnionAdminDashboard.module.css";
 
 type TabKey =
@@ -931,6 +934,7 @@ function ModuleButton({
 }
 
 export default function UnionAdminDashboard() {
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
     const [workspaces, setWorkspaces] = useState<UnionWorkspaceOption[]>(fallbackWorkspaces);
     const [activeWorkspaceSlug, setActiveWorkspaceSlug] = useState(() =>
         resolvePreferredWorkspaceSlug(fallbackWorkspaces),
@@ -3289,10 +3293,62 @@ export default function UnionAdminDashboard() {
 
     return (
         <>
-            <main className={styles.pageShell}>
+            <main
+                className={`${styles.pageShell} ${
+                    isSidebarCollapsed ? styles.collapsedShell : ""
+                }`}
+            >
             <aside className={styles.sidebar}>
-                <Link className={styles.logoLink} to="/dashboard/fan">
-                    <img src={logoHorizontal} alt="League OS" />
+                <button
+                    className={styles.sidebarToggle}
+                    type="button"
+                    onClick={() =>
+                        setIsSidebarCollapsed(
+                            (currentValue) => !currentValue,
+                        )
+                    }
+                    aria-label={
+                        isSidebarCollapsed
+                            ? "Expand union sidebar"
+                            : "Collapse union sidebar"
+                    }
+                    title={
+                        isSidebarCollapsed
+                            ? "Expand union sidebar"
+                            : "Collapse union sidebar"
+                    }
+                >
+                    {isSidebarCollapsed ? (
+                        <PanelLeftOpen
+                            size={19}
+                            strokeWidth={2.4}
+                            aria-hidden="true"
+                        />
+                    ) : (
+                        <PanelLeftClose
+                            size={19}
+                            strokeWidth={2.4}
+                            aria-hidden="true"
+                        />
+                    )}
+                </button>
+
+                <Link
+                    className={styles.logoLink}
+                    to="/dashboard/fan"
+                    aria-label="Open Fan Dashboard"
+                >
+                    <img
+                        className={styles.logoHorizontal}
+                        src={logoHorizontal}
+                        alt="League OS"
+                    />
+                    <img
+                        className={styles.logoMark}
+                        src={logoMark}
+                        alt=""
+                        aria-hidden="true"
+                    />
                 </Link>
 
                 <span className={styles.portalLabel}>Union Workspace</span>
@@ -3328,9 +3384,15 @@ export default function UnionAdminDashboard() {
                         return (
                             <button
                                 key={tab.key}
-                                className={activeTab === tab.key ? styles.activeNavItem : ""}
+                                className={
+                                    activeTab === tab.key
+                                        ? styles.activeNavItem
+                                        : ""
+                                }
                                 type="button"
                                 onClick={() => resetSearch(tab.key)}
+                                aria-label={tab.label}
+                                title={tab.label}
                             >
                                 <Icon size={17} strokeWidth={2.3} aria-hidden="true" />
                                 <span>{tab.label}</span>
@@ -3339,7 +3401,13 @@ export default function UnionAdminDashboard() {
                     })}
                 </nav>
 
-                <button className={styles.logoutButton} type="button" onClick={handleLogout}>
+                <button
+                    className={styles.logoutButton}
+                    type="button"
+                    onClick={handleLogout}
+                    aria-label="Log out"
+                    title="Log out"
+                >
                     <LogOut size={17} strokeWidth={2.3} aria-hidden="true" />
                     <span>Log out</span>
                 </button>
