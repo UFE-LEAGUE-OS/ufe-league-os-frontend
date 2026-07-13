@@ -1,97 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, CalendarDays, BarChart3, RefreshCw, Trophy, Banknote, Medal, Shirt, Ticket, Users, DollarSign, Clock, Gamepad2, CheckCircle2, Zap } from 'lucide-react';
 import styles from './FantasyPage.module.css';
-import uplLogo from '../../assets/star-times-upl.svg';
-import rugbyLogo from '../../assets/nile-rugby.svg';
-import smackLogo from '../../assets/smack-league.svg';
-import nblLogo from '../../assets/national-basketball.svg';
 import fantasyHero from '../../assets/fantasylandingpage.png';
 import FantasyLeaguesLeaderboard from './FantasyLeaguesLeaderboard';
+import { fetchCompetitions, fetchMyTeam, fetchLeaderboard } from '../../services/fantasyService';
+import type { Competition, MyTeam, LeaderboardEntry } from '../../services/fantasyService';
 
 /* ── Types ── */
 type TabId = 'overview' | 'myteam' | 'leagues' | 'transfers' | 'standings';
-
-/* ── Static data ── */
-const COMPETITIONS = [
-  {
-    id: 'rugby',
-    sport: 'Rugby',
-    name: 'Nile Special Rugby Fantasy',
-    season: '2025/26',
-    logo: rugbyLogo,
-    status: 'LIVE' as const,
-    teamsJoined: 1842,
-    entryFee: 0,
-    deadline: '24 May, 17:00',
-    prizePool: 'UGX 500,000',
-    color: '#8135FA',
-  },
-  {
-    id: 'upl',
-    sport: 'Football',
-    name: 'UPL Fantasy',
-    season: '2025/26',
-    logo: uplLogo,
-    status: 'OPEN' as const,
-    teamsJoined: 3524,
-    entryFee: 5000,
-    deadline: '26 May, 20:00',
-    prizePool: 'UGX 1,000,000',
-    color: '#2563eb',
-  },
-  {
-    id: 'nbl',
-    sport: 'Basketball',
-    name: 'NBL Fantasy',
-    season: '2025/26',
-    logo: nblLogo,
-    status: 'OPEN' as const,
-    teamsJoined: 876,
-    entryFee: 5000,
-    deadline: '31 May, 17:00',
-    prizePool: 'UGX 300,000',
-    color: '#f97316',
-  },
-  {
-    id: 'smack',
-    sport: 'Multi-Sport',
-    name: 'SMACK League Fantasy',
-    season: '2025/26',
-    logo: smackLogo,
-    status: 'COMING SOON' as const,
-    teamsJoined: 412,
-    entryFee: 15000,
-    deadline: '1 Jun, 21:00',
-    prizePool: 'UGX 2,000,000',
-    color: '#facc15',
-  },
-];
-
-const MY_TEAM = {
-  name: 'My Dream Squad',
-  competition: 'Nile Special Rugby Fantasy',
-  totalPoints: 487,
-  gameweekPoints: 62,
-  rank: 142,
-  budget: 2.4,
-  players: [
-    { name: 'M. Wokorach', club: 'Pirates RFC', pos: 'FH', pts: 18, cost: 12.5 },
-    { name: 'H. Buyungo',  club: 'Heathens RFC', pos: 'WG', pts: 14, cost: 10.0 },
-    { name: 'P. Ogwang',   club: 'KOBS', pos: 'CTR', pts: 11, cost: 9.5 },
-    { name: 'D. Ssemanda', club: 'Pirates RFC', pos: 'WG', pts: 9,  cost: 8.0 },
-    { name: 'J. Odong',    club: 'Heathens RFC', pos: 'PR', pts: 10, cost: 8.5 },
-  ],
-};
-
-const LEADERBOARD = [
-  { rank: 1,  name: 'Brian Odongo',    team: 'KOBS Army',      pts: 2185, change: 'up' },
-  { rank: 2,  name: 'Patricia N.',     team: 'Iron Heels',     pts: 2024, change: 'same' },
-  { rank: 3,  name: 'Ivan Magomu',     team: 'OilersNation',   pts: 1876, change: 'up' },
-  { rank: 4,  name: 'John Wokorach',   team: 'Penalty Kings',  pts: 1732, change: 'down' },
-  { rank: 5,  name: 'Aaron Oforywoth', team: 'Mongers FC',     pts: 1654, change: 'up' },
-  { rank: 142, name: 'You',            team: 'My Dream Squad', pts: 487,  change: 'up', isMe: true },
-];
 
 const HOW_IT_WORKS = [
   { step: 1, icon: <User size={24} />, title: 'Pick Your Squad',     desc: 'Select players within your budget limit.' },
@@ -116,8 +33,53 @@ const statusStyle: Record<string, { bg: string; color: string }> = {
 };
 
 export default function FantasyPage() {
-const navigate = useNavigate();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabId>('overview');
+  const [competitions, setCompetitions] = useState<Competition[]>([]);
+  const [myTeam, setMyTeam] = useState<MyTeam | null>(null);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        const [compRes, teamRes, lbRes] = await Promise.all([
+          fetchCompetitions(),
+          fetchMyTeam(),
+          fetchLeaderboard(),
+        ]);
+        setCompetitions(compRes.data);
+        setMyTeam(teamRes.data);
+        setLeaderboard(lbRes.data);
+      } catch (err) {
+        setError('Failed to load fantasy data');
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadData();
+  }, []);
+
+  if (loading) {
+    return <div className={styles.page}>Loading...</div>;
+  }
+
+  if (error) {
+    return <div className={styles.page}>Error: {error}</div>;
+  }
+
+  const team = myTeam || {
+    name: 'My Dream Squad',
+    competition: '',
+    totalPoints: 0,
+    gameweekPoints: 0,
+    rank: 0,
+    budget: 0,
+    players: [],
+  };
 
   const tabs: { id: TabId; label: string }[] = [
     { id: 'overview',   label: 'Overview' },
@@ -187,12 +149,12 @@ const navigate = useNavigate();
                 <button className={styles.linkBtn} onClick={() => setActiveTab('leagues')}>View All →</button>
               </div>
               <div className={styles.compCards}>
-                {COMPETITIONS.map((c) => {
+                {competitions.map((c) => {
                   const ss = statusStyle[c.status];
                   return (
                     <div key={c.id} className={styles.compCard} style={{ '--accent': c.color } as React.CSSProperties}>
                       <div className={styles.compCardTop}>
-                        <img src={c.logo} alt={c.name} className={styles.compLogo} />
+                        <div className={styles.compLogoPlaceholder}>{c.sport[0]}</div>
                         <div>
                           <div className={styles.compName}>{c.name}</div>
                           <div className={styles.compSeason}>{c.sport} · {c.season}</div>
@@ -240,12 +202,12 @@ const navigate = useNavigate();
               <div className={styles.widget}>
                 <div className={styles.widgetHead}>My Team</div>
                 <div className={styles.myTeamSnap}>
-                  <div className={styles.myTeamName}>{MY_TEAM.name}</div>
-                  <div className={styles.myTeamComp}>{MY_TEAM.competition}</div>
+                  <div className={styles.myTeamName}>{team.name}</div>
+                  <div className={styles.myTeamComp}>{team.competition}</div>
                   <div className={styles.myTeamStats}>
-                    <div><strong>{MY_TEAM.gameweekPoints}</strong><span>GW Points</span></div>
-                    <div><strong>{MY_TEAM.totalPoints}</strong><span>Total</span></div>
-                    <div><strong>#{MY_TEAM.rank}</strong><span>Rank</span></div>
+                    <div><strong>{team.gameweekPoints}</strong><span>GW Points</span></div>
+                    <div><strong>{team.totalPoints}</strong><span>Total</span></div>
+                    <div><strong>#{team.rank}</strong><span>Rank</span></div>
                   </div>
                 </div>
                 <button className={styles.btnPrimary} style={{ width: '100%', marginTop: 12 }}
@@ -276,14 +238,14 @@ const navigate = useNavigate();
           <div className={styles.myTeamPage}>
             <div className={styles.myTeamHeader}>
               <div>
-                <h2>{MY_TEAM.name}</h2>
-                <p>{MY_TEAM.competition} · Season 2025/26</p>
+                <h2>{team.name}</h2>
+                <p>{team.competition} · Season 2025/26</p>
               </div>
               <div className={styles.myTeamHeaderStats}>
-                <div><strong>{MY_TEAM.gameweekPoints}</strong><span>GW12 Points</span></div>
-                <div><strong>{MY_TEAM.totalPoints}</strong><span>Total Points</span></div>
-                <div><strong>#{MY_TEAM.rank}</strong><span>Overall Rank</span></div>
-                <div><strong>UGX {MY_TEAM.budget}m</strong><span>In The Bank</span></div>
+                <div><strong>{team.gameweekPoints}</strong><span>GW12 Points</span></div>
+                <div><strong>{team.totalPoints}</strong><span>Total Points</span></div>
+                <div><strong>#{team.rank}</strong><span>Overall Rank</span></div>
+                <div><strong>UGX {team.budget}m</strong><span>In The Bank</span></div>
               </div>
             </div>
 
@@ -292,7 +254,7 @@ const navigate = useNavigate();
               <div className={styles.pitchLines} />
               <div className={styles.pitchLabel}>Your Squad</div>
               <div className={styles.pitchPlayers}>
-                {MY_TEAM.players.map((p) => (
+                {team.players.map((p) => (
                   <div key={p.name} className={styles.pitchPlayer}>
                     <div className={styles.pitchPlayerAvatar}>{p.name[0]}</div>
                     <div className={styles.pitchPlayerName}>{p.name}</div>
@@ -307,7 +269,7 @@ const navigate = useNavigate();
               <div className={styles.playerTableHead}>
                 <span>Player</span><span>Club</span><span>Pos</span><span>Cost</span><span>GW Pts</span>
               </div>
-              {MY_TEAM.players.map((p) => (
+              {team.players.map((p) => (
                 <div key={p.name} className={styles.playerRow}>
                   <span><strong>{p.name}</strong></span>
                   <span>{p.club}</span>
@@ -335,13 +297,13 @@ const navigate = useNavigate();
           <div className={styles.transfersPage}>
             <div className={styles.sectionHead}>
               <h2>Transfers</h2>
-              <span className={styles.transferInfo}>1 free transfer remaining · Gameweek 12 deadline: 24 May 17:00</span>
+              <span className={styles.transferInfo}>1 free transfer remaining · Gameweek 12 deadline: {team.competition ? '24 May 17:00' : 'N/A'}</span>
             </div>
             <div className={styles.transferColumns}>
               {/* Current squad */}
               <div className={styles.widget} style={{ flex: 1 }}>
                 <div className={styles.widgetHead}>Your Squad</div>
-                {MY_TEAM.players.map((p) => (
+                {team.players.map((p) => (
                   <div key={p.name} className={styles.transferPlayerRow}>
                     <div className={styles.transferPlayerInfo}>
                       <div className={styles.transferAvatar}>{p.name[0]}</div>
@@ -394,14 +356,14 @@ const navigate = useNavigate();
           <div>
             <div className={styles.sectionHead} style={{ marginBottom: 16 }}>
               <h2>Overall Standings</h2>
-              <span style={{ fontSize: 12, color: '#9ca3af' }}>Nile Special Rugby Fantasy · GW12</span>
+              <span style={{ fontSize: 12, color: '#9ca3af' }}>{team.competition} · GW12</span>
             </div>
             <div className={styles.widget}>
               <div className={styles.leaderHead}>
                 <span>#</span><span>Manager</span><span>Team</span><span>GW Pts</span><span>Total</span>
               </div>
-              {LEADERBOARD.map((m) => (
-                <div key={m.rank} className={`${styles.leaderRow}${(m as typeof m & { isMe?: boolean }).isMe ? ` ${styles.leaderRowMe}` : ''}`}>
+              {leaderboard.map((m) => (
+                <div key={m.rank} className={`${styles.leaderRow}${m.isMe ? ` ${styles.leaderRowMe}` : ''}`}>
                    <span className={styles.leaderRank}>
                     {m.rank <= 3 ? <Medal size={18} /> : m.rank}
                   </span>
@@ -410,7 +372,7 @@ const navigate = useNavigate();
                     <strong>{m.name}</strong>
                     <small>{m.team}</small>
                   </div>
-                  <span style={{ color: '#9ca3af', fontSize: 13 }}>62</span>
+                  <span style={{ color: '#9ca3af', fontSize: 13 }}>{team.gameweekPoints}</span>
                   <span className={styles.leaderPts}>{m.pts.toLocaleString()}</span>
                 </div>
               ))}

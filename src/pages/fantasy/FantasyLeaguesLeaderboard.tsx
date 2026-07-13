@@ -1,100 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Crown, Medal, Trophy, Users, Lock, User, Globe, Plus, DollarSign, ClipboardList, PartyPopper } from 'lucide-react';
+import { Trophy, Users, Lock, User, Globe, Plus, DollarSign, ClipboardList, PartyPopper } from 'lucide-react';
 import { GiRugbyConversion, GiSoccerBall } from 'react-icons/gi';
 import { MdSportsBasketball } from 'react-icons/md';
 import styles from './FantasyLeaguesLeaderboard.module.css';
-
-/* ── Static data ── */
-const MY_LEAGUES = [
-  {
-    id: 'rl1',
-    name: 'Rugby Kings League',
-    type: 'Competitive',
-    members: 15,
-    maxMembers: 15,
-    rank: 2,
-    rankLabel: 'Top 14%',
-    points: 1842,
-    lastUpdated: '2h ago',
-    live: true,
-    isOwn: true,
-  },
-  {
-    id: 'rl2',
-    name: 'KCCA Fan League',
-    type: 'Classic',
-    members: 28,
-    maxMembers: 30,
-    rank: 5,
-    rankLabel: 'Top 18%',
-    points: 1721,
-    lastUpdated: '9h ago',
-    live: true,
-    isOwn: false,
-  },
-  {
-    id: 'rl3',
-    name: 'Hoopers United',
-    type: 'Head-to-Head',
-    members: 12,
-    maxMembers: 12,
-    rank: 1,
-    rankLabel: 'Top 6%',
-    points: 2093,
-    lastUpdated: '1h ago',
-    live: true,
-    isOwn: false,
-  },
-  {
-    id: 'rl4',
-    name: 'City Oilers Fans',
-    type: 'Classic',
-    members: 25,
-    maxMembers: 25,
-    rank: 8,
-    rankLabel: 'Top 32%',
-    points: 1256,
-    lastUpdated: '3h ago',
-    live: true,
-    isOwn: false,
-  },
-  {
-    id: 'rl5',
-    name: 'Pirates Rugby Club',
-    type: 'Invitational',
-    members: 18,
-    maxMembers: 20,
-    rank: null,
-    rankLabel: 'Unranked',
-    points: 980,
-    lastUpdated: '1d ago',
-    live: false,
-    isOwn: false,
-  },
-];
-
-const GLOBAL_LEADERBOARD = [
-  { rank: 1, name: 'Brian Odongo',    team: 'Rugby Kings League',  pts: 2845, badge: <Crown size={18} />, pro: true },
-  { rank: 2, name: 'Patricia N.',     team: 'Hoopers United',      pts: 2671, badge: <Medal size={18} />, pro: true },
-  { rank: 3, name: 'Ivan Magomu',     team: 'KCCA Fan League',     pts: 2432, badge: <Medal size={18} />, pro: false },
-  { rank: 4, name: 'John Wokorach',   team: 'City Oilers Fans',    pts: 2210, badge: null, pro: false },
-  { rank: 5, name: 'Aaron Ofoyrwoth', team: 'Pirates Rugby Club',  pts: 2105, badge: null, pro: false },
-];
-
-const SportIcon = ({ sport }: { sport: string }) => {
-  if (sport === 'Rugby') return <GiRugbyConversion size={16} />;
-  if (sport === 'Football') return <GiSoccerBall size={16} />;
-  return <MdSportsBasketball size={16} />;
-};
-
-const PUBLIC_LEAGUES = [
-  { id: 'pub1', name: 'Nile Special Rugby Fantasy', sport: 'Rugby',  format: 'Classic',     members: 1842, maxMembers: 5000, entry: 'Free',       prize: 'UGX 500K' },
-  { id: 'pub2', name: 'UPL Fantasy League',         sport: 'Football',   format: 'Classic',     members: 3524, maxMembers: 5000, entry: 'UGX 5,000',  prize: 'UGX 1M' },
-  { id: 'pub3', name: 'NBL Fantasy Challenge',      sport: 'Basketball', format: 'Classic',     members: 876,  maxMembers: 2000, entry: 'UGX 5,000',  prize: 'UGX 300K' },
-  { id: 'pub4', name: 'Rugby Draft Masters',        sport: 'Rugby',      format: 'Draft',       members: 248,  maxMembers: 500,  entry: 'UGX 10,000', prize: 'UGX 200K' },
-  { id: 'pub5', name: 'UPL Head-to-Head',           sport: 'Football',   format: 'H2H',         members: 512,  maxMembers: 1000, entry: 'UGX 5,000',  prize: 'UGX 250K' },
-];
+import { fetchMyLeagues, fetchPublicLeagues, joinLeague } from '../../services/fantasyService';
+import type { League, PublicLeague } from '../../services/fantasyService';
 
 type Tab = 'my' | 'public' | 'private' | 'create';
 
@@ -103,11 +14,40 @@ export default function FantasyLeaguesLeaderboard() {
   const [tab, setTab]         = useState<Tab>('my');
   const [joinCode, setJoinCode] = useState('');
   const [joined, setJoined]   = useState<string | null>(null);
+  const [myLeagues, setMyLeagues] = useState<League[]>([]);
+  const [publicLeagues, setPublicLeagues] = useState<PublicLeague[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleJoin = () => {
+  useEffect(() => {
+    const loadLeagues = async () => {
+      try {
+        setLoading(true);
+        const [myRes, publicRes] = await Promise.all([
+          fetchMyLeagues(),
+          fetchPublicLeagues(),
+        ]);
+        setMyLeagues(myRes.data);
+        setPublicLeagues(publicRes.data);
+      } catch (err) {
+        setError('Failed to load leagues');
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadLeagues();
+  }, []);
+
+  const handleJoin = async () => {
     if (joinCode.trim().length >= 4) {
-      setJoined(joinCode.trim().toUpperCase());
-      setJoinCode('');
+      try {
+        await joinLeague(joinCode.trim().toUpperCase());
+        setJoined(joinCode.trim().toUpperCase());
+        setJoinCode('');
+      } catch (err) {
+        console.error('Failed to join league:', err);
+      }
     }
   };
 
@@ -127,6 +67,20 @@ export default function FantasyLeaguesLeaderboard() {
     return '—';
   };
 
+  const SportIcon = ({ sport }: { sport: string }) => {
+    if (sport === 'Rugby') return <GiRugbyConversion size={16} />;
+    if (sport === 'Football') return <GiSoccerBall size={16} />;
+    return <MdSportsBasketball size={16} />;
+  };
+
+  if (loading) {
+    return <div className={styles.page}>Loading...</div>;
+  }
+
+  if (error) {
+    return <div className={styles.page}>Error: {error}</div>;
+  }
+
   return (
     <div className={styles.page}>
 
@@ -135,7 +89,7 @@ export default function FantasyLeaguesLeaderboard() {
 
         {/* Page header */}
         <div className={styles.pageHeader}>
-          <h1>FANTASY LEAGUES &amp; <span className={styles.accent}>LEADERBOARDS</span></h1>
+          <h1>FANTASY LEAGUES & <span className={styles.accent}>LEADERBOARDS</span></h1>
           <p>Compete with friends. Climb the rankings. Win epic rewards.</p>
         </div>
 
@@ -144,7 +98,7 @@ export default function FantasyLeaguesLeaderboard() {
           <div className={styles.statCard}>
             <div className={styles.statIcon}>👥</div>
             <div>
-              <div className={styles.statValue}>5</div>
+              <div className={styles.statValue}>{myLeagues.length}</div>
               <div className={styles.statLabel}>Your Leagues</div>
               <div className={styles.statSub}>You're competing</div>
             </div>
@@ -152,7 +106,7 @@ export default function FantasyLeaguesLeaderboard() {
           <div className={styles.statCard}>
             <div className={styles.statIcon}>📊</div>
             <div>
-              <div className={styles.statValue}>1,245</div>
+              <div className={styles.statValue}>{myLeagues.reduce((sum, l) => sum + l.members, 0).toLocaleString()}</div>
               <div className={styles.statLabel}>Total Members</div>
               <div className={styles.statSub}>Across your leagues</div>
             </div>
@@ -195,7 +149,7 @@ export default function FantasyLeaguesLeaderboard() {
         {tab === 'my' && (
           <div className={styles.panel}>
             <div className={styles.panelHeaderRow}>
-              <h2>Your Leagues <span className={styles.leagueCount}>(5)</span></h2>
+              <h2>Your Leagues <span className={styles.leagueCount}>({myLeagues.length})</span></h2>
             </div>
 
             {/* Table head */}
@@ -209,7 +163,7 @@ export default function FantasyLeaguesLeaderboard() {
             </div>
 
             {/* League rows */}
-            {MY_LEAGUES.map(l => (
+            {myLeagues.map(l => (
               <div key={l.id} className={styles.leagueRow}>
                 <div className={styles.leagueInfo}>
                   <div className={styles.leagueBadge}>
@@ -262,7 +216,7 @@ export default function FantasyLeaguesLeaderboard() {
               </div>
             ))}
 
-            <div className={styles.tableFooter}>Showing 5 of 5 leagues</div>
+            <div className={styles.tableFooter}>Showing {myLeagues.length} of {myLeagues.length} leagues</div>
           </div>
         )}
 
@@ -271,7 +225,7 @@ export default function FantasyLeaguesLeaderboard() {
           <div className={styles.panel}>
             <h2 className={styles.panelTitle}>Public Leagues</h2>
             <div className={styles.publicGrid}>
-              {PUBLIC_LEAGUES.map(l => (
+              {publicLeagues.map(l => (
                 <div key={l.id} className={styles.publicCard}>
                   <div className={styles.publicCardTop}>
                     <div className={styles.publicCardBadge}>
@@ -357,22 +311,17 @@ export default function FantasyLeaguesLeaderboard() {
             <span>#</span><span>MANAGER</span><span>POINTS</span>
           </div>
 
-          {GLOBAL_LEADERBOARD.map(m => (
-            <div key={m.rank} className={styles.lbRow}>
-              <span className={styles.lbRank}>
-                {m.badge ?? m.rank}
-              </span>
+          {myLeagues.slice(0, 5).map((l, idx) => (
+            <div key={l.id} className={styles.lbRow}>
+              <span className={styles.lbRank}>{idx + 1}</span>
               <div className={styles.lbManager}>
-                <div className={styles.lbAvatar}>{m.name[0]}</div>
+                <div className={styles.lbAvatar}>{l.name[0]}</div>
                 <div>
-                  <div className={styles.lbName}>
-                    {m.name}
-                    {m.pro && <span className={styles.proBadge}>Pro</span>}
-                  </div>
-                  <div className={styles.lbTeam}>{m.team}</div>
+                  <div className={styles.lbName}>{l.name}</div>
+                  <div className={styles.lbTeam}>{l.type}</div>
                 </div>
               </div>
-              <span className={styles.lbPts}>{m.pts.toLocaleString()}</span>
+              <span className={styles.lbPts}>{l.points.toLocaleString()}</span>
             </div>
           ))}
 

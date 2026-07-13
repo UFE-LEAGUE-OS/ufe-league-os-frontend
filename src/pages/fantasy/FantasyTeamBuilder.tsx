@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Sparkles, Trash2, Wallet, Users, Shield, Check, X, CircleCheck, Plus, Star, Trophy } from 'lucide-react';
-import { SPORT_CONFIGS, PLAYERS } from './fantasyData';
+import { SPORT_CONFIGS } from './fantasyData';
 import type { Sport, Format, FantasyPlayer } from './fantasyData';
 import styles from './FantasyTeamBuilder.module.css';
+import { fetchPlayerMarket, saveTeam } from '../../services/fantasyService';
 
 /* ─── Rugby position rows (formation layout) ─── */
 const RUGBY_FORMATION: { row: string; positions: string[] }[] = [
@@ -55,7 +56,6 @@ export default function FantasyTeamBuilder() {
   const league = params.get('league')  ?? 'My League';
 
   const cfg        = SPORT_CONFIGS[sport];
-  const allPlayers = PLAYERS[sport];
   const formation  = getFormation(sport);
   const allSlots   = buildSlots(formation);
 
@@ -65,7 +65,10 @@ export default function FantasyTeamBuilder() {
   const [search, setSearch] = useState('');
   const [posFilter, setPosFilter] = useState('ALL');
   const [captainId, setCaptainId] = useState<string | null>(null);
-  const [saved] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [allPlayers, setAllPlayers] = useState<FantasyPlayer[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
   const squadPlayers = Object.values(squad);
   const spent        = squadPlayers.reduce((s, p) => s + p.cost, 0);
@@ -155,11 +158,42 @@ export default function FantasyTeamBuilder() {
   const clearSquad = () => { setSquad({}); setCaptainId(null); };
 
   const isValid = filledSlots === totalSlots;
-  const canContinue = filledSlots > 0; // allow review with partial squad for testing
+  const canContinue = filledSlots > 0;
 
-  const handleContinue = () => {
+  useEffect(() => {
+    const loadPlayers = async () => {
+      try {
+        setLoading(true);
+        const response = await fetchPlayerMarket({ sport, format, league });
+        setAllPlayers(response.data || []);
+      } catch (err) {
+        console.error('Failed to load player market:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadPlayers();
+  }, [sport, format, league]);
+
+  const handleContinue = async () => {
     if (!canContinue) return;
-    navigate(`/fantasy/player-market?sport=${sport}&league=${encodeURIComponent(league)}&budget=${remaining}`);
+    try {
+      setSaving(true);
+      await saveTeam({
+        sport,
+        format,
+        league,
+        squad,
+        captainId,
+        budget: remaining,
+      });
+      setSaved(true);
+    } catch (err) {
+      console.error('Failed to save team:', err);
+      alert('Failed to save team. Please try again.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   /* ─── colour helper ─── */
@@ -216,7 +250,12 @@ export default function FantasyTeamBuilder() {
           <div className={styles.savedIcon}>✅</div>
           <h2>Team Saved!</h2>
           <p>Your squad for <strong>{league}</strong> is ready. Good luck!</p>
+          <button className={styles.continueBtn} onClick={() => navigate('/fantasy')}>
+            Back to Fantasy Home
+          </button>
         </div>
+      ) : loading ? (
+        <div className={styles.page}>Loading players...</div>
       ) : (
         <div className={styles.mainLayout}>
 
@@ -407,10 +446,10 @@ export default function FantasyTeamBuilder() {
 
             <button
               className={`${styles.continueBtn}${canContinue ? ` ${styles.continueBtnActive}` : ''}`}
-              disabled={!canContinue}
+              disabled={!canContinue || saving}
               onClick={handleContinue}
             >
-              Continue to Review →
+              {saving ? 'Saving...' : 'Continue to Review →'}
             </button>
             {isValid && (
               <p className={styles.continueNote}>You can still make changes before confirming your squad.</p>
