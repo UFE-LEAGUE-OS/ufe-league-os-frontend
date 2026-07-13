@@ -162,6 +162,13 @@ async function resolvePostLoginRoute(
         return backendRoute;
     }
 
+    if (
+        backendRoute === '/dashboard/fan' &&
+        userRoles.includes('FAN')
+    ) {
+        return backendRoute;
+    }
+
     try {
         const workspaces = await getMyUnionWorkspaces();
 
