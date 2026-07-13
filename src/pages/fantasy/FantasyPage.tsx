@@ -107,7 +107,7 @@ const PRIZES = [
   { icon: <Medal size={24} />, place: '3rd Place',    prize: 'UGX 100,000 Cash' },
   { icon: <Shirt size={24} />, place: 'Top 10',       prize: 'Exclusive League OS Jersey' },
   { icon: <Ticket size={24} />, place: 'Weekly Best', prize: 'Match Ticket + Merch Pack' },
-};
+];
 
 const statusStyle: Record<string, { bg: string; color: string }> = {
   'LIVE':        { bg: 'rgba(34,197,94,0.15)',   color: '#22c55e' },
@@ -116,7 +116,7 @@ const statusStyle: Record<string, { bg: string; color: string }> = {
 };
 
 export default function FantasyPage() {
-  const navigate = useNavigate();
+const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabId>('overview');
 
   const tabs: { id: TabId; label: string }[] = [

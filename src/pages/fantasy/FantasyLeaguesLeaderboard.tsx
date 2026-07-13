@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Crown, Medal, Trophy, Gift, Users, BarChart3, Shield, Lock, User, Globe, Plus, DollarSign, ClipboardList, PartyPopper } from 'lucide-react';
+import { Crown, Medal, Trophy, Users, Lock, User, Globe, Plus, DollarSign, ClipboardList, PartyPopper } from 'lucide-react';
 import { GiRugbyConversion, GiSoccerBall, MdSportsBasketball } from 'react-icons/gi';
 import styles from './FantasyLeaguesLeaderboard.module.css';
 
