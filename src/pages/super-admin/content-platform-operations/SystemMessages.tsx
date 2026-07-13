@@ -65,6 +65,11 @@ const CATEGORY_COLOR: Record<Category, string> = {
   Alert: '#FB923C',
 };
 
+const CATEGORY_OPTIONS = Object.keys(CATEGORY_COLOR);
+const PRIORITY_OPTIONS = ['High', 'Medium', 'Low'];
+const AUDIENCE_OPTIONS = ['All Users', 'Fans Only', 'Union Admins', 'Sponsors'];
+const FREQUENCY_OPTIONS = ['Once per session', 'Once per day', 'Always'];
+
 const DEFAULT_CATEGORY_FILTER = 'All Categories';
 const DEFAULT_STATUS_FILTER = 'All Statuses';
 const DEFAULT_PLATFORM_FILTER = 'All Platforms';
@@ -386,7 +391,7 @@ export default function SystemMessages() {
 
       <section className="page-heading">
         <SuperAdminBackButton />
-        <div className="title-group">
+        <div className="title-group" style={{ flex: 1, textAlign: 'center' }}>
           <h1>System Messages</h1>
           <p className="panel-subtext" style={{ margin: '4px 0 0' }}>
             Create, manage and configure in-app system messages shown to users across the platform.
@@ -633,27 +638,19 @@ export default function SystemMessages() {
               <div className="field-row">
                 <div className="field-group">
                   <label>Category</label>
-                  <select
-                    className="page-select"
+                  <FilterDropdown
                     value={draft.category}
-                    onChange={(e) => updateDraft('category', e.target.value as Category)}
-                  >
-                    {Object.keys(CATEGORY_COLOR).map((c) => (
-                      <option key={c} value={c}>{c}</option>
-                    ))}
-                  </select>
+                    options={CATEGORY_OPTIONS}
+                    onChange={(v) => updateDraft('category', v as Category)}
+                  />
                 </div>
                 <div className="field-group">
                   <label>Priority</label>
-                  <select
-                    className="page-select"
+                  <FilterDropdown
                     value={draft.priority}
-                    onChange={(e) => updateDraft('priority', e.target.value as Priority)}
-                  >
-                    <option value="High">High</option>
-                    <option value="Medium">Medium</option>
-                    <option value="Low">Low</option>
-                  </select>
+                    options={PRIORITY_OPTIONS}
+                    onChange={(v) => updateDraft('priority', v as Priority)}
+                  />
                 </div>
               </div>
 
@@ -769,28 +766,19 @@ export default function SystemMessages() {
                 <div className="field-row">
                   <div className="field-group">
                     <label>Show to</label>
-                    <select
-                      className="page-select"
+                    <FilterDropdown
                       value={draft.showTo}
-                      onChange={(e) => updateDraft('showTo', e.target.value)}
-                    >
-                      <option>All Users</option>
-                      <option>Fans Only</option>
-                      <option>Union Admins</option>
-                      <option>Sponsors</option>
-                    </select>
+                      options={AUDIENCE_OPTIONS}
+                      onChange={(v) => updateDraft('showTo', v)}
+                    />
                   </div>
                   <div className="field-group">
                     <label>Frequency</label>
-                    <select
-                      className="page-select"
+                    <FilterDropdown
                       value={draft.frequency}
-                      onChange={(e) => updateDraft('frequency', e.target.value)}
-                    >
-                      <option>Once per session</option>
-                      <option>Once per day</option>
-                      <option>Always</option>
-                    </select>
+                      options={FREQUENCY_OPTIONS}
+                      onChange={(v) => updateDraft('frequency', v)}
+                    />
                   </div>
                 </div>
               </div>
@@ -801,16 +789,11 @@ export default function SystemMessages() {
             <div className="content-section" style={{ borderTop: 'none', paddingTop: 0 }}>
               <div className="field-group">
                 <label>Audience</label>
-                <select
-                  className="page-select"
+                <FilterDropdown
                   value={draft.showTo}
-                  onChange={(e) => updateDraft('showTo', e.target.value)}
-                >
-                  <option>All Users</option>
-                  <option>Fans Only</option>
-                  <option>Union Admins</option>
-                  <option>Sponsors</option>
-                </select>
+                  options={AUDIENCE_OPTIONS}
+                  onChange={(v) => updateDraft('showTo', v)}
+                />
               </div>
               <p className="panel-empty-hint">
                 Additional targeting rules (region, device type, plan tier) can be layered on here once
