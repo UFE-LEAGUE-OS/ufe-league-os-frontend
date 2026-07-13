@@ -1,52 +1,81 @@
-import { Navigate, useLocation, useNavigate } from 'react-router-dom';
-import type { ReactNode } from 'react';
-import { useEffect } from 'react';
-import { useAuthStore } from '../store/authStore.js';
-import { getToken } from '../utils/tokenManager.js';
-import { LOGIN_ROUTE, VERIFY_EMAIL_ROUTE } from '../utils/authFlow.js';
 import {
-  getDefaultDashboardRoute,
-  isFanDashboardRoute,
-  normalizeRole,
-} from '../utils/roleRoutes.js';
+  Navigate,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
+import {
+  type ReactNode,
+  useEffect,
+} from "react";
 
-export default function ProtectedRoute({ children }: { children: ReactNode }) {
+import { useAuthStore } from "../store/authStore.js";
+import { getToken } from "../utils/tokenManager.js";
+import {
+  LOGIN_ROUTE,
+  VERIFY_EMAIL_ROUTE,
+} from "../utils/authFlow.js";
+
+export default function ProtectedRoute({
+  children,
+}: {
+  children: ReactNode;
+}) {
   const location = useLocation();
   const navigate = useNavigate();
+
   const requiresEmailVerification = useAuthStore(
     (state) => state.requiresEmailVerification,
   );
+
   const user = useAuthStore((state) => state.user);
-  const accessToken = useAuthStore((state) => state.accessToken) ?? getToken();
-  const userRole = normalizeRole(user?.role);
 
+  const accessToken =
+    useAuthStore((state) => state.accessToken) ??
+    getToken();
+
+  /*
+   * Handle browser back/forward cache safely.
+   *
+   * Do not force authenticated administrators away from the
+   * Fan Dashboard. Every authenticated League OS account can
+   * use its normal fan experience alongside its admin role.
+   */
   useEffect(() => {
-    function handlePageShow(event: PageTransitionEvent) {
-      if (!event.persisted) return;
-
-      const currentToken = getToken();
-
-      if (!currentToken) {
-        navigate(LOGIN_ROUTE, { replace: true });
+    function handlePageShow(
+      event: PageTransitionEvent,
+    ) {
+      if (!event.persisted) {
         return;
       }
 
-      const latestRole = normalizeRole(useAuthStore.getState().user?.role);
-      const currentPath = window.location.pathname;
-
-      if (latestRole && isFanDashboardRoute(currentPath) && latestRole !== 'FAN') {
-        navigate(getDefaultDashboardRoute(latestRole), { replace: true });
+      if (!getToken()) {
+        navigate(LOGIN_ROUTE, {
+          replace: true,
+        });
       }
     }
 
-    window.addEventListener('pageshow', handlePageShow);
+    window.addEventListener(
+      "pageshow",
+      handlePageShow,
+    );
 
-    return () => window.removeEventListener('pageshow', handlePageShow);
+    return () => {
+      window.removeEventListener(
+        "pageshow",
+        handlePageShow,
+      );
+    };
   }, [navigate]);
 
   if (requiresEmailVerification) {
-    const email = typeof user?.email === 'string' ? user.email : undefined;
-    const postLoginRedirect = `${location.pathname}${location.search}`;
+    const email =
+      typeof user?.email === "string"
+        ? user.email
+        : undefined;
+
+    const postLoginRedirect =
+      `${location.pathname}${location.search}`;
 
     return (
       <Navigate
@@ -54,7 +83,8 @@ export default function ProtectedRoute({ children }: { children: ReactNode }) {
         replace
         state={{
           email,
-          message: 'Please verify your email address before continuing.',
+          message:
+            "Please verify your email address before continuing.",
           postLoginRedirect,
         }}
       />
@@ -62,22 +92,20 @@ export default function ProtectedRoute({ children }: { children: ReactNode }) {
   }
 
   if (!accessToken) {
-    const postLoginRedirect = `${location.pathname}${location.search}`;
+    const postLoginRedirect =
+      `${location.pathname}${location.search}`;
 
     return (
       <Navigate
         to={LOGIN_ROUTE}
         replace
         state={{
-          message: 'Please log in to continue.',
+          message:
+            "Please log in to continue.",
           postLoginRedirect,
         }}
       />
     );
-  }
-
-  if (userRole && isFanDashboardRoute(location.pathname) && userRole !== 'FAN') {
-    return <Navigate to={getDefaultDashboardRoute(userRole)} replace />;
   }
 
   return children;
