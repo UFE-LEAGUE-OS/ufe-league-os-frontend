@@ -52,6 +52,19 @@ export interface LeagueAdminWorkspaceData {
   recent_results: AdminWorkspaceMatch[];
 }
 
+export interface ClubActivityItem {
+  id: number | string;
+  title: string;
+  description: string;
+  timestamp: string;
+}
+
+export interface ClubFinancialPoint {
+  month: string;
+  income: number;
+  expense: number;
+}
+
 export interface ClubAdminWorkspaceData {
   scope_type: "CLUB";
   club: {
@@ -92,6 +105,8 @@ export interface ClubAdminWorkspaceData {
     role: string;
     role_display: string;
   }>;
+  recent_activity?: ClubActivityItem[];
+  financial_overview?: ClubFinancialPoint[];
 }
 
 export interface TicketingEvent extends AdminWorkspaceMatch {
