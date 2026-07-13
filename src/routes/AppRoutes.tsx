@@ -179,7 +179,7 @@ export default function AppRoutes() {
                 <Route path="/verify-email" element={<VerifyEmail />} />
                 <Route path="/fan/mvp-voting" element={<MVPVotingPage />} />
                 <Route path="/join-fantasy" element={<JoinFantasy />} />
-                <Route path="/sports-variants" element={<SuperVariants />} />
+               
 
                 <Route path="/dashboard" element={protectedPage(<Navigate to="/dashboard/fan" replace />)} />
 
@@ -334,11 +334,12 @@ export default function AppRoutes() {
                 <Route path="/payments" element={<Payments />} />
 
                 {/* Super Admin routes */}
-                <Route path="/super-admin"  element={roleProtectedPage(<SuperAdminDashboard />, ["SUPER_ADMIN"])}>
+              <Route path="/super-admin"  element={<SuperAdminDashboard/>}>
                     <Route index element={<SuperAdminHome />} />
                     <Route path="dashboard" element={<SuperAdminHome />} />
 
                     {/* Rules & Formats */}
+                     <Route path="sports-variants" element={<SuperVariants />} />
                     <Route path="rules" element={<RulesAndStandards />} />
                     <Route path="competition-formats" element={<CompetitionConfigurator />} />
                     <Route path="publish-standards" element={<PublishStandards />} />

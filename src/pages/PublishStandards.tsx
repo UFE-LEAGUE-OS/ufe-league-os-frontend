@@ -20,10 +20,7 @@ import {
     Ban,
 } from "lucide-react";
 
-import Footer from "../components/Footer";
-import Sidebar from "../components/SuperAdminSideBar";
-import SuperAdminTopBar from "../components/SuperAdminTopBar";
-import superImage from "../assets/cta-banner.png";
+
 
 /* ---------------- TYPES ---------------- */
 
@@ -215,7 +212,7 @@ function StatusIcon({ status }: { status: ItemStatus }) {
 /* ---------------- COMPONENT ---------------- */
 
 export default function PublishStandards() {
-    const [sidebarOpen, setSidebarOpen] = useState(false);
+   
     const [submissions, setSubmissions] = useState<Submission[]>(INITIAL_SUBMISSIONS);
 
     const [activeSport, setActiveSport] = useState<"All" | Sport>("All");
@@ -310,19 +307,12 @@ export default function PublishStandards() {
 
     return (
         <div
-            className="super-adminv"
-            style={{
-                backgroundImage: `linear-gradient(rgba(15, 18, 24, 0.38), rgba(15, 18, 24, 0.34)), url(${superImage})`,
-            }}
+
         >
-            {/* HEADER */}
-          <SuperAdminTopBar
-                         sidebarOpen={sidebarOpen}
-                         onToggleSidebar={() => setSidebarOpen((c) => !c)}
-                     />
+            
 
             <div className="dashboard-layout">
-                <Sidebar collapsed={!sidebarOpen} />
+                
 
                 <main className="main-content">
                     <div className="variants-page-header">
@@ -516,7 +506,7 @@ export default function PublishStandards() {
                 </main>
             </div>
 
-            <Footer />
+           
 
             {/* MODAL */}
             {modalOpen && (

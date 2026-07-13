@@ -18,11 +18,10 @@ import {
     Layers,
 } from "lucide-react";
 
-import Footer from "../components/Footer";
-import Sidebar from "../components/SuperAdminSideBar";
+
+
 import "../styles/pages/SuperAdminDashboard.css";
-import superImage from "../assets/cta-banner.png";
-import SuperAdminTopBar from "../components/SuperAdminTopBar";
+
 
 /* ---------------- TYPES ---------------- */
 
@@ -184,7 +183,7 @@ const EMPTY_FORM: FormState = {
 /* ---------------- COMPONENT ---------------- */
 
 export default function CompetitionFormatConfigurator() {
-    const [sidebarOpen, setSidebarOpen] = useState(false);
+   
    const [formats, setFormats] = useState<CompetitionFormat[]>([]);
 
     const [activeSport, setActiveSport] = useState<"All" | Sport>("All");
@@ -408,21 +407,11 @@ useEffect(() => {
 
     return (
         <div
-            className="super-adminv"
-            style={{
-                backgroundImage: `linear-gradient(rgba(15, 18, 24, 0.38), rgba(15, 18, 24, 0.34)), url(${superImage})`,
-            }}
         >
-            {/* HEADER */}
-             <SuperAdminTopBar
-                            sidebarOpen={sidebarOpen}
-                            onToggleSidebar={() => setSidebarOpen((current) => !current)}
-                        />
            
 
             <div className="dashboard-layout">
-                {/* SIDEBAR */}
-                <Sidebar collapsed={!sidebarOpen} />
+                
 
                 <main className="main-content">
                     <div className="variants-page-header">
@@ -573,7 +562,7 @@ useEffect(() => {
                 </main>
             </div>
 
-            <Footer />
+          
 
             {/* MODAL */}
             {modalOpen && (

@@ -5,10 +5,8 @@ import "../styles/pages/SuperVariantsPage.css";
 import "../components/SuperAdminSideBar.css";
 import { X, Plus, Pencil, Search, Inbox } from "lucide-react";
 
-import Footer from "../components/Footer";
-import Sidebar from "../components/SuperAdminSideBar";
-import SuperAdminTopBar from "../components/SuperAdminTopBar";
-import superImage from "../assets/cta-banner.png";
+
+
 
 /* ---------------- TYPES ---------------- */
 
@@ -78,7 +76,7 @@ const EMPTY_FORM: FormState = {
 /* ---------------- COMPONENT ---------------- */
 
 export default function RulesAndStandards() {
-    const [sidebarOpen, setSidebarOpen] = useState(false);
+   
     const [rules, setRules] = useState<Rule[]>([]);
 
     const [activeScope, setActiveScope] = useState<"All" | Scope>("All");
@@ -266,19 +264,13 @@ export default function RulesAndStandards() {
     /* ---------------- UI ---------------- */
 
     return (
-        <div className="super-adminv"
-            style={{
-                backgroundImage: `linear-gradient(rgba(15, 18, 24, 0.38), rgba(15, 18, 24, 0.34)), url(${superImage})`,
-            }}
+        <div 
         >
 
-            <SuperAdminTopBar
-                sidebarOpen={sidebarOpen}
-                onToggleSidebar={() => setSidebarOpen((current) => !current)}
-            />
+            
 
             <div className="dashboard-layout">
-                <Sidebar collapsed={!sidebarOpen} />
+                
 
                 <main className="main-content">
                     <div className="variants-page-header">
@@ -388,7 +380,7 @@ export default function RulesAndStandards() {
                 </main>
             </div>
 
-            <Footer />
+        
 
             {modalOpen && (
                 <div className="modal-overlay" onClick={closeModal}>

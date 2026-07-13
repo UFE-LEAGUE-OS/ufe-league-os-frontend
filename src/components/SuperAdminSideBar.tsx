@@ -91,7 +91,7 @@ const NAV_ITEMS: NavItem[] = [
     icon: ShieldCheck,
     path: "/super-admin/governance",
     children: [
-      { id: "sports", label: "Sports Variants", path: "/sports-variants", icon: Trophy },
+      { id: "sports", label: "Sports Variants", path: "/super-admin/sports-variants", icon:Trophy},
       { id: "competitions", label: "Competitions", path: "/super-admin/competition-formats", icon: ListChecks },
       { id: "rules", label: "Rules & Standards", path: "/super-admin/rules", icon: BookOpen },
       { id: "publish", label: "Publish Queue", path: "/super-admin/publish-standards", icon: Send },
