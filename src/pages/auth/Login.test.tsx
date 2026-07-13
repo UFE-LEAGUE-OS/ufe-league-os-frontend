@@ -190,6 +190,41 @@ describe('Login page', () => {
     expect(navigateMock).toHaveBeenCalledWith('/dashboard/fan', { replace: true })
   })
 
+  it('redirects a multi-role workspace user to the union dashboard', async () => {
+    const user = userEvent.setup()
+
+    loginMock.mockResolvedValueOnce({
+      access: 'access-token',
+      refresh: 'refresh-token',
+      requires_email_verification: false,
+      user: {
+        email: 'uru.owner@leagueos.test',
+        role: 'FAN',
+        roles: ['FAN', 'UNION_ADMIN'],
+        frontend_dashboard_route: '/dashboard/fan',
+      },
+    })
+
+    renderLogin()
+
+    await user.type(
+      screen.getByPlaceholderText('Enter phone number or email'),
+      'uru.owner@leagueos.test',
+    )
+    await user.type(
+      screen.getByPlaceholderText('Enter your password'),
+      'StrongPassword123',
+    )
+    await user.click(
+      screen.getByRole('button', { name: /^log in$/i }),
+    )
+
+    expect(navigateMock).toHaveBeenCalledWith(
+      '/dashboard/union-admin',
+      { replace: true },
+    )
+  })
+
   it('returns verified users to their requested protected page', async () => {
     const user = userEvent.setup()
 
