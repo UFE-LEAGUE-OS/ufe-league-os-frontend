@@ -18,11 +18,7 @@ import {
 
 } from "lucide-react";
 
-import Footer from "../components/Footer";
-import Sidebar from "../components/SuperAdminSideBar";
 
-import superImage from "../assets/cta-banner.png";
-import SuperAdminTopBar from "../components/SuperAdminTopBar";
 
 
 
@@ -106,7 +102,7 @@ const EMPTY_FORM: FormState = {
 /* ---------------- COMPONENT ---------------- */
 
 export default function SportVariants() {
-    const [sidebarOpen, setSidebarOpen] = useState(false);
+   
     const [variants, setVariants] = useState<Variant[]>([]);
     /*const [activeNav, setActiveNav] = useState("dashboard");*/
     const [activeSport, setActiveSport] = useState<"All" | Variant["sport"]>("All");
@@ -378,27 +374,13 @@ export default function SportVariants() {
     /* ---------------- UI ---------------- */
 
     return (
-        <div className="super-adminv"
-            style={{
-                backgroundImage: `linear-gradient(rgba(15, 18, 24, 0.38), rgba(15, 18, 24, 0.34)), url(${superImage})`,
-            }}
+        <div 
         >
-            {/* HEADER */}
-            <SuperAdminTopBar
-                sidebarOpen={sidebarOpen}
-                onToggleSidebar={() => setSidebarOpen((current) => !current)}
-            />
+            
 
-            <div className="dashboard-layout"
-                style={{
-                    backgroundImage: `linear-gradient(rgba(15, 18, 24, 0.38), rgba(15, 18, 24, 0.34)), url(${superImage})`,
-                }}
+            <div 
             >
-                {/* SIDEBAR */}
-                <Sidebar
-                    collapsed={!sidebarOpen}
-
-                />
+                
 
                 <main className="main-content">
                     <div className="variants-page-header">
@@ -523,7 +505,7 @@ export default function SportVariants() {
                 </main>
             </div>
 
-            <Footer />
+        
 
             {/* MODAL */}
             {modalOpen && (
