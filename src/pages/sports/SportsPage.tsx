@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+ import { Link } from 'react-router-dom';
 import {
   ArrowRight,
   CalendarDays,
@@ -7,6 +7,8 @@ import {
   Trophy,
   Users,
 } from 'lucide-react';
+import { GiRugbyConversion, GiSoccerBall } from 'react-icons/gi';
+import { MdSportsBasketball } from 'react-icons/md';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 import { competitionStandings, publicClubs, publicTeams } from '../../data/publicBrowseCatalog';
@@ -162,7 +164,7 @@ function SportsPage() {
               return (
                 <article key={sport.name}>
                   <div className={`sports-glance-icon ${sport.accentClass}`}>
-                    {sport.name === 'Rugby' ? '🏉' : sport.name === 'Football' ? '⚽' : '🏀'}
+                    {sport.name === 'Rugby' ? <GiRugbyConversion size={36} /> : sport.name === 'Football' ? <GiSoccerBall size={36} /> : <MdSportsBasketball size={36} />}
                   </div>
 
                   <div className="sports-glance-content">
@@ -202,7 +204,7 @@ function SportsPage() {
               <article key={sport.name} className="sports-section-card">
                 <div className={`sports-section-intro ${sport.accentClass}`}>
                   <div className="sports-section-symbol">
-                    {sport.name === 'Rugby' ? '🏉' : sport.name === 'Football' ? '⚽' : '🏀'}
+                    {sport.name === 'Rugby' ? <GiRugbyConversion size={28} /> : sport.name === 'Football' ? <GiSoccerBall size={28} /> : <MdSportsBasketball size={28} />}
                   </div>
 
                   <h2>{sport.name}</h2>

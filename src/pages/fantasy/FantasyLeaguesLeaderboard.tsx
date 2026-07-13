@@ -1,5 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Crown, Medal, Trophy, Users, Lock, User, Globe, Plus, DollarSign, ClipboardList, PartyPopper } from 'lucide-react';
+import { GiRugbyConversion, GiSoccerBall } from 'react-icons/gi';
+import { MdSportsBasketball } from 'react-icons/md';
 import styles from './FantasyLeaguesLeaderboard.module.css';
 
 /* ── Static data ── */
@@ -72,19 +75,25 @@ const MY_LEAGUES = [
 ];
 
 const GLOBAL_LEADERBOARD = [
-  { rank: 1, name: 'Brian Odongo',    team: 'Rugby Kings League',  pts: 2845, badge: '👑', pro: true },
-  { rank: 2, name: 'Patricia N.',     team: 'Hoopers United',      pts: 2671, badge: '🥈', pro: true },
-  { rank: 3, name: 'Ivan Magomu',     team: 'KCCA Fan League',     pts: 2432, badge: '🥉', pro: false },
+  { rank: 1, name: 'Brian Odongo',    team: 'Rugby Kings League',  pts: 2845, badge: <Crown size={18} />, pro: true },
+  { rank: 2, name: 'Patricia N.',     team: 'Hoopers United',      pts: 2671, badge: <Medal size={18} />, pro: true },
+  { rank: 3, name: 'Ivan Magomu',     team: 'KCCA Fan League',     pts: 2432, badge: <Medal size={18} />, pro: false },
   { rank: 4, name: 'John Wokorach',   team: 'City Oilers Fans',    pts: 2210, badge: null, pro: false },
   { rank: 5, name: 'Aaron Ofoyrwoth', team: 'Pirates Rugby Club',  pts: 2105, badge: null, pro: false },
 ];
 
+const SportIcon = ({ sport }: { sport: string }) => {
+  if (sport === 'Rugby') return <GiRugbyConversion size={16} />;
+  if (sport === 'Football') return <GiSoccerBall size={16} />;
+  return <MdSportsBasketball size={16} />;
+};
+
 const PUBLIC_LEAGUES = [
-  { id: 'pub1', name: 'Nile Special Rugby Fantasy', sport: '🏉 Rugby',      format: 'Classic',     members: 1842, maxMembers: 5000, entry: 'Free',       prize: 'UGX 500K' },
-  { id: 'pub2', name: 'UPL Fantasy League',         sport: '⚽ Football',   format: 'Classic',     members: 3524, maxMembers: 5000, entry: 'UGX 5,000',  prize: 'UGX 1M' },
-  { id: 'pub3', name: 'NBL Fantasy Challenge',      sport: '🏀 Basketball', format: 'Classic',     members: 876,  maxMembers: 2000, entry: 'UGX 5,000',  prize: 'UGX 300K' },
-  { id: 'pub4', name: 'Rugby Draft Masters',        sport: '🏉 Rugby',      format: 'Draft',       members: 248,  maxMembers: 500,  entry: 'UGX 10,000', prize: 'UGX 200K' },
-  { id: 'pub5', name: 'UPL Head-to-Head',           sport: '⚽ Football',   format: 'H2H',         members: 512,  maxMembers: 1000, entry: 'UGX 5,000',  prize: 'UGX 250K' },
+  { id: 'pub1', name: 'Nile Special Rugby Fantasy', sport: 'Rugby',  format: 'Classic',     members: 1842, maxMembers: 5000, entry: 'Free',       prize: 'UGX 500K' },
+  { id: 'pub2', name: 'UPL Fantasy League',         sport: 'Football',   format: 'Classic',     members: 3524, maxMembers: 5000, entry: 'UGX 5,000',  prize: 'UGX 1M' },
+  { id: 'pub3', name: 'NBL Fantasy Challenge',      sport: 'Basketball', format: 'Classic',     members: 876,  maxMembers: 2000, entry: 'UGX 5,000',  prize: 'UGX 300K' },
+  { id: 'pub4', name: 'Rugby Draft Masters',        sport: 'Rugby',      format: 'Draft',       members: 248,  maxMembers: 500,  entry: 'UGX 10,000', prize: 'UGX 200K' },
+  { id: 'pub5', name: 'UPL Head-to-Head',           sport: 'Football',   format: 'H2H',         members: 512,  maxMembers: 1000, entry: 'UGX 5,000',  prize: 'UGX 250K' },
 ];
 
 type Tab = 'my' | 'public' | 'private' | 'create';
@@ -169,16 +178,16 @@ export default function FantasyLeaguesLeaderboard() {
         {/* Tabs */}
         <div className={styles.tabs}>
           <button className={`${styles.tab}${tab === 'my'      ? ` ${styles.tabActive}` : ''}`} onClick={() => setTab('my')}>
-            👤 My Leagues
+            <User size={16} /> My Leagues
           </button>
           <button className={`${styles.tab}${tab === 'public'  ? ` ${styles.tabActive}` : ''}`} onClick={() => setTab('public')}>
-            🌍 Public Leagues
+            <Globe size={16} /> Public Leagues
           </button>
           <button className={`${styles.tab}${tab === 'private' ? ` ${styles.tabActive}` : ''}`} onClick={() => setTab('private')}>
-            🔒 Join Private
+            <Lock size={16} /> Join Private
           </button>
           <button className={`${styles.tab}${tab === 'create'  ? ` ${styles.tabActive}` : ''}`} onClick={() => setTab('create')}>
-            ＋ Create League
+            <Plus size={16} /> Create League
           </button>
         </div>
 
@@ -215,9 +224,9 @@ export default function FantasyLeaguesLeaderboard() {
                   </div>
                 </div>
 
-                <div className={styles.membersCell}>
-                  <span>👥 {l.members} / {l.maxMembers}</span>
-                </div>
+                 <div className={styles.membersCell}>
+                   <span><Users size={14} /> {l.members} / {l.maxMembers}</span>
+                 </div>
 
                 <div className={styles.rankCell}>
                   <span className={styles.rankIcon}>{rankIcon(l.rank)}</span>
@@ -270,15 +279,15 @@ export default function FantasyLeaguesLeaderboard() {
                     </div>
                     <div>
                       <div className={styles.publicCardName}>{l.name}</div>
-                      <div className={styles.publicCardSport}>{l.sport}</div>
+                      <div className={styles.publicCardSport}><SportIcon sport={l.sport} /> {l.sport}</div>
                     </div>
                   </div>
-                  <div className={styles.publicCardMeta}>
-                    <span>📋 {l.format}</span>
-                    <span>👥 {l.members.toLocaleString()}/{l.maxMembers.toLocaleString()}</span>
-                    <span>💰 {l.entry}</span>
-                    <span className={styles.prize}>🏆 {l.prize}</span>
-                  </div>
+                   <div className={styles.publicCardMeta}>
+                     <span><ClipboardList size={14} /> {l.format}</span>
+                     <span><Users size={14} /> {l.members.toLocaleString()}/{l.maxMembers.toLocaleString()}</span>
+                     <span><DollarSign size={14} /> {l.entry}</span>
+                     <span className={styles.prize}><Trophy size={14} /> {l.prize}</span>
+                   </div>
                   <button className={styles.joinPublicBtn}
                     onClick={() => navigate(`/fantasy/team-builder?league=${encodeURIComponent(l.name)}`)}>
                     Join League →
@@ -296,7 +305,7 @@ export default function FantasyLeaguesLeaderboard() {
             <p className={styles.panelSub}>Enter the league code shared by your friend to join their private league.</p>
             {joined ? (
               <div className={styles.successMsg}>
-                🎉 You've joined league <strong>{joined}</strong>!
+                <PartyPopper size={20} /> You've joined league <strong>{joined}</strong>!
                 <button className={styles.viewBtn} style={{ marginLeft: 12 }} onClick={() => setTab('my')}>View My Leagues</button>
               </div>
             ) : (
@@ -325,7 +334,7 @@ export default function FantasyLeaguesLeaderboard() {
             <p className={styles.panelSub}>Start your own league and invite friends to compete for glory.</p>
             <button className={styles.createLeagueBtn}
               onClick={() => navigate('/fantasy/create-league')}>
-              🏆 Create League →
+              <Trophy size={18} /> Create League →
             </button>
           </div>
         )}
@@ -337,7 +346,7 @@ export default function FantasyLeaguesLeaderboard() {
         {/* Global Leaderboard */}
         <div className={styles.widget}>
           <div className={styles.widgetHead}>
-            <div className={styles.widgetTitle}>🏆 GLOBAL LEADERBOARD</div>
+          <div className={styles.widgetTitle}><Trophy size={18} /> GLOBAL LEADERBOARD</div>
             <select className={styles.seasonSelect}>
               <option>This Season</option>
               <option>Last Season</option>
@@ -372,7 +381,7 @@ export default function FantasyLeaguesLeaderboard() {
 
         {/* Join Private */}
         <div className={`${styles.widget} ${styles.widgetJoin}`}>
-          <div className={styles.widgetTitle}>🔒 JOIN PRIVATE LEAGUE</div>
+          <div className={styles.widgetTitle}><Lock size={18} /> JOIN PRIVATE LEAGUE</div>
           <p>Enter a league code to join your friends' private league.</p>
           <div className={styles.miniCodeRow}>
             <input
@@ -393,7 +402,7 @@ export default function FantasyLeaguesLeaderboard() {
             <div className={styles.createCtaTitle}>CREATE YOUR OWN LEAGUE</div>
             <div className={styles.createCtaSub}>Start your own league and invite friends to compete for glory.</div>
           </div>
-          <div className={styles.createCtaTrophy}>🏆</div>
+          <div className={styles.createCtaTrophy}><Trophy size={28} /></div>
           <button className={styles.createCtaBtn} onClick={() => navigate('/fantasy/create-league')}>
             Create League →
           </button>
