@@ -92,6 +92,26 @@ describe('AppRoutes protected routes', () => {
         expect(screen.getByRole('heading', { name: /profile page/i })).toBeInTheDocument()
     })
 
+    it('allows union administrators to explicitly open the fan dashboard', () => {
+        useAuthStore.getState().setAuth({
+            user: {
+                email: 'union-admin@example.com',
+                role: 'union_admin',
+            },
+            access: 'access-token',
+            refresh: 'refresh-token',
+            requiresEmailVerification: false,
+        })
+
+        visit('/dashboard/fan')
+
+        expect(
+            screen.getByRole('heading', {
+                name: /fan dashboard/i,
+            }),
+        ).toBeInTheDocument()
+    })
+
     it('redirects signed-in users with unverified email to verification before protected pages', () => {
         useAuthStore.getState().setAuth({
             user: { email: 'fan@example.com', role: 'fan' },

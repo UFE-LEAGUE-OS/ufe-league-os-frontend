@@ -4,7 +4,7 @@
     display: none;
 }
 
-@media (max-width: 1180px) {
+@media (max-width: 980px) {
     .mobileNav {
         position: fixed;
         left: 50%;
@@ -251,5 +251,164 @@
     .drawer {
         width: min(calc(100vw - 24px), 328px);
         bottom: calc(84px + env(safe-area-inset-bottom));
+    }
+}
+
+
+/* =========================================================
+   UNION MOBILE NAVIGATION RESPONSIVE V2
+   Tablet dock + tablet side sheet + mobile bottom sheet.
+   ========================================================= */
+
+@media (max-width: 980px) {
+    .mobileNav {
+        width: min(calc(100vw - 40px), 520px);
+        min-height: 70px;
+        gap: 6px;
+        padding: 7px;
+
+        border-radius: 22px;
+    }
+
+    .mobileNavLink {
+        min-height: 56px;
+        border-radius: 15px;
+        font-size: 9px;
+    }
+
+    .mobileNavLink span {
+        max-width: 82px;
+    }
+}
+
+/*
+ * Tablet drawer:
+ * use a compact right-side floating sheet instead of a
+ * narrow phone drawer in the middle of a large screen.
+ */
+
+@media (min-width: 681px) and (max-width: 980px) {
+    .drawer {
+        left: auto;
+        right: 24px;
+        bottom: calc(
+            94px + env(safe-area-inset-bottom)
+        );
+
+        width: min(420px, calc(100vw - 48px));
+        max-height: min(72vh, 650px);
+
+        border-radius: 20px;
+
+        transform:
+            translateY(18px)
+            scale(0.98);
+    }
+
+    .drawerOpen {
+        transform:
+            translateY(0)
+            scale(1);
+    }
+
+    .drawerContent {
+        padding: 16px;
+    }
+
+    .drawerLinks {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+    .drawerLink {
+        min-height: 50px;
+    }
+}
+
+/* Mobile drawer and navigation dock. */
+
+@media (max-width: 680px) {
+    .mobileNav {
+        bottom: max(
+            8px,
+            env(safe-area-inset-bottom)
+        );
+
+        width: min(
+            calc(100vw - 18px),
+            440px
+        );
+
+        min-height: 66px;
+        gap: 3px;
+        padding: 6px;
+
+        border-radius: 20px;
+    }
+
+    .mobileNavLink {
+        min-height: 53px;
+        gap: 3px;
+        border-radius: 14px;
+        font-size: 8px;
+    }
+
+    .mobileNavLink svg {
+        width: 19px;
+        height: 19px;
+    }
+
+    .mobileNavLink span {
+        max-width: 58px;
+    }
+
+    .drawer {
+        left: 50%;
+        right: auto;
+
+        bottom: calc(
+            82px + env(safe-area-inset-bottom)
+        );
+
+        width: min(
+            calc(100vw - 18px),
+            430px
+        );
+
+        max-height: min(74vh, 620px);
+        border-radius: 20px;
+
+        transform:
+            translateX(-50%)
+            translateY(18px)
+            scale(0.98);
+    }
+
+    .drawerOpen {
+        transform:
+            translateX(-50%)
+            translateY(0)
+            scale(1);
+    }
+
+    .drawerLinks {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 400px) {
+    .mobileNav {
+        width: calc(100vw - 14px);
+        gap: 2px;
+        padding: 5px;
+    }
+
+    .mobileNavLink {
+        min-width: 0;
+        padding-inline: 2px;
+    }
+
+    .drawer {
+        width: calc(100vw - 14px);
     }
 }

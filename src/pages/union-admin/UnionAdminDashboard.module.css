@@ -3806,3 +3806,1144 @@ tr:last-child td {
         grid-template-columns: 1fr !important;
     }
 }
+
+
+/* =========================================================
+   UNION ADMIN FAN DASHBOARD PARITY V1
+   Applies only to the Union Admin dashboard.
+   ========================================================= */
+
+.pageShell {
+    --union-violet: var(--color-vivid-violet, #7b3ff2);
+    --union-violet-soft: rgba(123, 63, 242, 0.18);
+    --union-orange: #ffa31a;
+    --union-panel:
+        linear-gradient(
+            135deg,
+            rgba(15, 23, 42, 0.88),
+            rgba(2, 6, 23, 0.62)
+        );
+
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 286px minmax(0, 1fr);
+
+    color: #ffffff;
+    background-color: #020611;
+    background-image:
+        linear-gradient(
+            90deg,
+            rgba(2, 6, 23, 0.88),
+            rgba(2, 6, 23, 0.58),
+            rgba(2, 6, 23, 0.92)
+        ),
+        url("/assets/auth/auth-stadium-bg.png");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+
+    transition: grid-template-columns 0.22s ease;
+}
+
+.collapsedShell {
+    grid-template-columns: 88px minmax(0, 1fr);
+}
+
+/* Desktop sidebar */
+
+.sidebar {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+
+    width: 100%;
+    height: 100vh;
+    padding: 24px 14px 28px;
+    overflow-x: hidden;
+    overflow-y: auto;
+
+    color: #ffffff;
+    background:
+        linear-gradient(
+            180deg,
+            rgba(2, 6, 17, 0.98),
+            rgba(8, 10, 28, 0.96)
+        );
+    border-right: 1px solid rgba(255, 255, 255, 0.09);
+    box-shadow: 18px 0 54px rgba(0, 0, 0, 0.18);
+
+    transition:
+        padding 0.22s ease,
+        width 0.22s ease;
+}
+
+.sidebarToggle {
+    position: absolute;
+    top: 20px;
+    right: 14px;
+    z-index: 5;
+
+    width: 38px;
+    height: 38px;
+    padding: 0;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    color: #ffffff;
+    background:
+        linear-gradient(
+            135deg,
+            #6725d8,
+            #36106f
+        );
+    border: 1px solid rgba(168, 85, 247, 0.58);
+    border-radius: 999px;
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+
+    transition:
+        transform 0.18s ease,
+        box-shadow 0.18s ease;
+}
+
+.sidebarToggle:hover,
+.sidebarToggle:focus-visible {
+    transform: translateY(-1px) scale(1.03);
+    box-shadow: 0 18px 40px rgba(123, 63, 242, 0.32);
+}
+
+.logoLink {
+    width: fit-content;
+    min-height: 46px;
+    margin: 0 48px 26px 8px;
+
+    display: flex;
+    align-items: center;
+}
+
+.logoLink img {
+    width: 154px;
+    max-width: none;
+}
+
+.portalLabel,
+.workspaceSelectLabel {
+    padding-left: 6px;
+    color: rgba(255, 255, 255, 0.48);
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 0.13em;
+}
+
+.workspaceCard {
+    min-height: 78px;
+    margin-bottom: 17px;
+    padding: 13px;
+
+    border: 1px solid rgba(255, 255, 255, 0.11);
+    border-radius: 10px;
+    background:
+        linear-gradient(
+            135deg,
+            rgba(123, 63, 242, 0.13),
+            rgba(255, 255, 255, 0.035)
+        );
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.workspaceAvatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+
+    background:
+        radial-gradient(
+            circle at 30% 20%,
+            rgba(255, 163, 26, 0.82),
+            transparent 42%
+        ),
+        linear-gradient(
+            135deg,
+            #7b3ff2,
+            #4b1b9a
+        );
+}
+
+.workspaceSelect {
+    height: 42px;
+    margin-bottom: 17px;
+
+    color: #ffffff;
+    background: rgba(2, 6, 23, 0.46);
+    border: 1px solid rgba(123, 63, 242, 0.68);
+    border-radius: 6px;
+
+    font-family: var(--font-subhead, "Space Grotesk", Inter, sans-serif);
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.navList {
+    gap: 4px;
+    padding-top: 12px;
+}
+
+.navList button,
+.logoutButton {
+    min-height: 43px;
+    padding: 0 12px;
+
+    border-radius: 7px;
+    color: rgba(255, 255, 255, 0.7);
+
+    font-family: var(--font-subhead, "Space Grotesk", Inter, sans-serif);
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.navList button:hover,
+.logoutButton:hover {
+    color: #ffffff !important;
+    background: rgba(123, 63, 242, 0.16) !important;
+}
+
+.activeNavItem {
+    color: #ffffff !important;
+    background:
+        linear-gradient(
+            135deg,
+            #7134e7,
+            #4d1a9f
+        ) !important;
+    border: 1px solid rgba(168, 85, 247, 0.44) !important;
+    box-shadow: 0 10px 24px rgba(83, 34, 157, 0.26);
+}
+
+.logoutButton {
+    margin-top: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    background: rgba(255, 255, 255, 0.035);
+}
+
+/* Collapsed desktop sidebar */
+
+.collapsedShell .sidebar {
+    padding-inline: 10px;
+}
+
+.collapsedShell .sidebarToggle {
+    right: 10px;
+}
+
+.collapsedShell .logoLink {
+    width: 48px;
+    margin: 50px auto 24px;
+    overflow: hidden;
+}
+
+.collapsedShell .logoLink img {
+    width: 142px;
+    max-width: none;
+    transform: translateX(-1px);
+}
+
+.collapsedShell .portalLabel,
+.collapsedShell .workspaceSelectLabel,
+.collapsedShell .workspaceSelect,
+.collapsedShell .workspaceCard > div:last-child,
+.collapsedShell .navList button span,
+.collapsedShell .logoutButton span {
+    display: none;
+}
+
+.collapsedShell .workspaceCard {
+    min-height: auto;
+    padding: 6px;
+    justify-content: center;
+    border-color: transparent;
+    background: transparent;
+}
+
+.collapsedShell .workspaceAvatar {
+    width: 46px;
+    height: 46px;
+}
+
+.collapsedShell .navList button,
+.collapsedShell .logoutButton {
+    justify-content: center;
+    padding-inline: 0;
+}
+
+/* Main page layout */
+
+.contentArea {
+    width: 100%;
+    max-width: 1480px;
+    min-width: 0;
+    margin: 0 auto;
+    padding: clamp(22px, 3vw, 42px);
+}
+
+/* Fan dashboard-style page header */
+
+.heroHeader {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+
+    margin: 0 0 26px;
+    padding: 0;
+
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    overflow: visible;
+}
+
+.heroHeader::after {
+    display: none;
+}
+
+.heroMetaRow {
+    margin-bottom: 10px;
+}
+
+.liveBadge {
+    min-height: 30px;
+    margin: 0;
+    padding: 0 11px;
+
+    color: #ffffff;
+    background: rgba(123, 63, 242, 0.2);
+    border: 1px solid rgba(123, 63, 242, 0.58);
+    border-radius: 999px;
+
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: 0.1em;
+}
+
+.workspaceContext {
+    min-height: 30px;
+    padding: 0 11px;
+
+    color: rgba(255, 255, 255, 0.66);
+    background: rgba(2, 6, 23, 0.38);
+    border: 1px solid rgba(255, 255, 255, 0.11);
+    border-radius: 999px;
+}
+
+.heroHeader h1 {
+    margin: 0;
+
+    font-family:
+        var(--font-heading, "League Spartan"),
+        Inter,
+        sans-serif;
+    font-size: clamp(30px, 2.7vw, 42px);
+    font-style: italic;
+    font-weight: 900;
+    letter-spacing: -0.045em;
+    line-height: 1;
+}
+
+.heroHeader p {
+    max-width: 820px;
+    margin: 8px 0 0;
+
+    color: rgba(255, 255, 255, 0.68);
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.55;
+}
+
+.headerActions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-top: 0;
+    flex-wrap: wrap;
+}
+
+.headerActions .headerActionPrimary,
+.headerActions .headerActionSecondary,
+.primaryButton,
+.secondaryButton {
+    min-height: 42px;
+    padding: 0 18px;
+
+    border-radius: 6px;
+
+    font-family:
+        var(--font-subhead, "Space Grotesk"),
+        Inter,
+        sans-serif;
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.headerActions .headerActionPrimary,
+.primaryButton {
+    color: #ffffff;
+    background: rgba(123, 63, 242, 0.92);
+    border: 1px solid rgba(123, 63, 242, 0.86);
+}
+
+.headerActions .headerActionSecondary,
+.secondaryButton {
+    color: var(--union-violet);
+    background: rgba(2, 6, 23, 0.38);
+    border: 1px solid rgba(123, 63, 242, 0.7);
+}
+
+.headerActions .headerActionPrimary:hover,
+.primaryButton:hover {
+    background: #6f34df;
+}
+
+.headerActions .headerActionSecondary:hover,
+.secondaryButton:hover {
+    color: #ffffff;
+    background: rgba(123, 63, 242, 0.18);
+}
+
+/* Summary cards */
+
+.statsGrid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 18px;
+    margin-bottom: 28px;
+}
+
+.statCard {
+    min-height: 112px;
+    padding: 22px;
+
+    border-radius: 8px;
+    background: var(--union-panel);
+    border: 1px solid rgba(255, 255, 255, 0.13);
+    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.24);
+    backdrop-filter: blur(8px);
+
+    transition:
+        transform 0.18s ease,
+        border-color 0.18s ease,
+        box-shadow 0.18s ease;
+}
+
+.statCard:hover,
+.statCard:focus-within {
+    transform: translateY(-3px);
+    border-color: rgba(168, 85, 247, 0.7);
+    box-shadow:
+        0 20px 42px rgba(0, 0, 0, 0.27),
+        0 0 0 1px rgba(123, 63, 242, 0.16);
+}
+
+.statCard span {
+    color: rgba(255, 255, 255, 0.76);
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.statCard strong {
+    margin: 8px 0 4px;
+    font-size: 30px;
+    font-weight: 900;
+}
+
+.statCard small {
+    color: rgba(255, 255, 255, 0.56);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.statCard svg {
+    color: var(--union-violet);
+}
+
+/* Fan dashboard-style panels */
+
+.panelLarge,
+.sidePanel,
+.panelFull,
+.sidePanelCompact,
+.actionRail,
+.formPanel,
+.profileCard,
+.financeDashboard,
+.financeTablePanel,
+.financeConnectionPanel,
+.competitionMainPanel {
+    border-radius: 10px;
+    background: var(--union-panel);
+    border: 1px solid rgba(255, 255, 255, 0.13);
+    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.24);
+    backdrop-filter: blur(8px);
+}
+
+.panelLarge,
+.sidePanel,
+.panelFull,
+.sidePanelCompact,
+.actionRail,
+.formPanel,
+.profileCard {
+    padding: 22px;
+}
+
+.sectionHeader {
+    align-items: flex-start;
+    margin-bottom: 18px;
+}
+
+.sectionHeader span {
+    margin-bottom: 6px;
+    color: var(--union-orange);
+    font-size: 10px;
+    letter-spacing: 0.11em;
+}
+
+.sectionHeader h2 {
+    font-family:
+        var(--font-heading, "League Spartan"),
+        Inter,
+        sans-serif;
+    font-size: clamp(23px, 2vw, 31px);
+    font-style: italic;
+    font-weight: 900;
+}
+
+.sectionHeader p {
+    margin-top: 8px;
+    color: rgba(255, 255, 255, 0.64);
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.55;
+}
+
+/* Tables, forms and controls */
+
+.tableShell {
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 8px;
+    background: rgba(2, 6, 23, 0.28);
+}
+
+.tableShell th {
+    color: rgba(255, 255, 255, 0.5);
+    background: rgba(255, 255, 255, 0.035);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+}
+
+.tableShell td {
+    color: rgba(255, 255, 255, 0.78);
+}
+
+.tableShell tr {
+    border-color: rgba(255, 255, 255, 0.07);
+}
+
+.formPanel input,
+.formPanel select,
+.formPanel textarea,
+.searchBar,
+.searchBar input {
+    border-radius: 6px;
+}
+
+.formPanel input,
+.formPanel select,
+.formPanel textarea {
+    color: #ffffff;
+    background: rgba(2, 6, 23, 0.44);
+    border: 1px solid rgba(255, 255, 255, 0.13);
+}
+
+.formPanel input:focus,
+.formPanel select:focus,
+.formPanel textarea:focus {
+    border-color: rgba(123, 63, 242, 0.84);
+    box-shadow: 0 0 0 3px rgba(123, 63, 242, 0.13);
+}
+
+.alertBanner {
+    border-radius: 8px;
+    background: rgba(255, 163, 26, 0.09);
+    border-color: rgba(255, 163, 26, 0.36);
+}
+
+/* Tablet and mobile responsiveness */
+
+@media (max-width: 1400px) {
+    .statsGrid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .overviewLayout {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 980px) {
+    .statsGrid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .pageShell,
+    .collapsedShell {
+        display: block;
+        width: 100%;
+        min-height: 100vh;
+        background-attachment: scroll;
+    }
+
+    .sidebar,
+    .sidebarToggle {
+        display: none;
+    }
+
+    .contentArea {
+        width: 100%;
+        max-width: 100%;
+        padding: 28px 18px 138px;
+    }
+
+    .heroHeader {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .headerActions {
+        justify-content: flex-start;
+    }
+
+    .overviewLayout,
+    .contentSplit,
+    .profileGrid,
+    .scannerLayout,
+    .financeMainGrid,
+    .financeTablesGrid,
+    .financeConnectionGrid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 680px) {
+    .pageShell,
+    .collapsedShell {
+        width: 100% !important;
+        max-width: 100% !important;
+        background-image:
+            linear-gradient(
+                rgba(2, 6, 23, 0.9),
+                rgba(2, 6, 23, 0.94)
+            ),
+            url("/assets/auth/auth-stadium-bg.png") !important;
+        background-size: cover !important;
+        background-position: center !important;
+    }
+
+    .contentArea {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 22px 16px 138px !important;
+        overflow-x: hidden !important;
+    }
+
+    .heroHeader {
+        width: 100% !important;
+        display: flex !important;
+        flex-direction: column !important;
+        margin-bottom: 24px !important;
+        padding: 0 !important;
+        border: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+    }
+
+    .heroHeader::after {
+        display: none !important;
+    }
+
+    .heroMetaRow {
+        align-items: flex-start;
+    }
+
+    .workspaceContext {
+        width: auto;
+        max-width: 100%;
+        justify-content: flex-start;
+    }
+
+    .heroHeader h1 {
+        font-size: clamp(28px, 9vw, 37px) !important;
+    }
+
+    .heroHeader p {
+        font-size: 14px !important;
+    }
+
+    .headerActions {
+        width: 100%;
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 10px;
+    }
+
+    .headerActions a {
+        width: 100%;
+        min-width: 0;
+        padding-inline: 10px;
+    }
+
+    .statsGrid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .statCard {
+        min-height: 106px !important;
+        padding: 18px !important;
+    }
+
+    .panelLarge,
+    .sidePanel,
+    .panelFull,
+    .sidePanelCompact,
+    .actionRail,
+    .formPanel,
+    .profileCard {
+        width: 100%;
+        max-width: 100%;
+        padding: 18px !important;
+        border-radius: 10px !important;
+    }
+
+    .sectionHeader {
+        display: grid;
+        gap: 14px;
+    }
+
+    .sectionActions {
+        width: 100%;
+    }
+
+    .primaryButton,
+    .secondaryButton,
+    .primaryAction,
+    .secondaryAction {
+        min-height: 42px;
+    }
+
+    .tableShell {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .dashboardFooterWrap {
+        margin-left: -16px !important;
+        margin-right: -16px !important;
+    }
+}
+
+@media (max-width: 460px) {
+    .contentArea {
+        padding-inline: 12px !important;
+    }
+
+    .headerActions {
+        grid-template-columns: 1fr !important;
+    }
+
+    .liveBadge,
+    .workspaceContext {
+        width: 100%;
+        justify-content: center;
+        text-align: center;
+    }
+
+    .dashboardFooterWrap {
+        margin-left: -12px !important;
+        margin-right: -12px !important;
+    }
+}
+
+
+/* =========================================================
+   UNION ADMIN FAN LAYOUT PARITY V2
+   Matches AuthenticatedLayout structure.
+   ========================================================= */
+
+.pageShell {
+    display: flex;
+    align-items: stretch;
+    grid-template-columns: none;
+}
+
+.collapsedShell {
+    grid-template-columns: none;
+}
+
+.sidebar {
+    width: 292px;
+    flex: 0 0 auto;
+    padding: 24px 16px;
+}
+
+.collapsedShell .sidebar {
+    width: 76px;
+    padding-inline: 10px;
+}
+
+.sidebarToggle {
+    position: sticky;
+    top: 18px;
+    right: auto;
+    z-index: 40;
+
+    width: 38px;
+    height: 38px;
+    margin-top: 18px;
+    margin-left: -19px;
+
+    flex: 0 0 auto;
+}
+
+.contentArea {
+    min-width: 0;
+    flex: 1;
+
+    width: 100%;
+    max-width: 1480px;
+    margin: 0 auto;
+    padding: clamp(22px, 3vw, 42px);
+}
+
+.collapsedShell .contentArea {
+    padding-left: clamp(22px, 3vw, 34px);
+}
+
+.heroHeader h1 {
+    font-size: clamp(28px, 2.4vw, 38px);
+    letter-spacing: -0.04em;
+}
+
+.heroHeader p {
+    margin-top: 6px;
+    font-size: 16px;
+}
+
+@media (max-width: 980px) {
+    .pageShell,
+    .collapsedShell {
+        display: block;
+    }
+
+    .sidebar,
+    .sidebarToggle {
+        display: none;
+    }
+
+    .contentArea,
+    .collapsedShell .contentArea {
+        width: 100%;
+        max-width: 100%;
+        padding: 22px 16px 118px;
+    }
+}
+
+@media (max-width: 680px) {
+    .heroHeader {
+        flex-direction: column;
+    }
+
+    .statsGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .contentArea,
+    .collapsedShell .contentArea {
+        padding: 22px 16px 118px !important;
+    }
+}
+
+
+/* =========================================================
+   UNION ADMIN ADAPTIVE NAVIGATION V3
+   Desktop sidebar > compact tablet rail > mobile dock.
+   ========================================================= */
+
+.logoHorizontal {
+    display: block;
+    width: 154px;
+    height: auto;
+}
+
+.logoMark {
+    display: none;
+    width: 44px;
+    height: 44px;
+    object-fit: contain;
+}
+
+/* Correct the collapsed desktop logo. */
+
+@media (min-width: 1181px) {
+    .collapsedShell .logoLink {
+        width: 48px;
+        height: 48px;
+        margin: 50px auto 24px;
+        overflow: visible;
+        justify-content: center;
+    }
+
+    .collapsedShell .logoHorizontal {
+        display: none;
+    }
+
+    .collapsedShell .logoMark {
+        display: block;
+    }
+}
+
+/*
+ * Tablet landscape / small laptop navigation.
+ *
+ * Older Union Admin CSS hides the sidebar below 1180px.
+ * This final override restores it as a compact icon rail.
+ */
+
+@media (min-width: 981px) and (max-width: 1180px) {
+    .pageShell,
+    .collapsedShell {
+        width: 100%;
+        min-height: 100vh;
+        display: flex !important;
+        align-items: stretch;
+    }
+
+    .sidebar {
+        position: sticky !important;
+        top: 0;
+        z-index: 40;
+
+        width: 76px !important;
+        min-width: 76px !important;
+        height: 100vh !important;
+
+        display: flex !important;
+        flex-direction: column !important;
+
+        padding: 20px 10px 24px !important;
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+    }
+
+    .sidebarToggle {
+        display: none !important;
+    }
+
+    .logoLink,
+    .collapsedShell .logoLink {
+        width: 48px !important;
+        height: 48px !important;
+        min-height: 48px !important;
+
+        margin: 0 auto 20px !important;
+        padding: 0 !important;
+
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+
+        overflow: visible !important;
+    }
+
+    .logoHorizontal,
+    .collapsedShell .logoHorizontal {
+        display: none !important;
+    }
+
+    .logoMark,
+    .collapsedShell .logoMark {
+        display: block !important;
+        width: 43px !important;
+        height: 43px !important;
+    }
+
+    .portalLabel,
+    .workspaceSelectLabel,
+    .workspaceSelect,
+    .workspaceCard > div:last-child,
+    .navList button span,
+    .logoutButton span {
+        display: none !important;
+    }
+
+    .workspaceCard,
+    .collapsedShell .workspaceCard {
+        width: 54px !important;
+        min-height: 54px !important;
+
+        margin: 0 auto 18px !important;
+        padding: 3px !important;
+
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+
+        border-color: rgba(123, 63, 242, 0.28) !important;
+        background: rgba(123, 63, 242, 0.08) !important;
+    }
+
+    .workspaceAvatar,
+    .collapsedShell .workspaceAvatar {
+        width: 46px !important;
+        height: 46px !important;
+        flex: 0 0 46px !important;
+    }
+
+    .navList {
+        width: 100%;
+        gap: 6px !important;
+        padding-top: 10px !important;
+    }
+
+    .navList button,
+    .collapsedShell .navList button,
+    .logoutButton,
+    .collapsedShell .logoutButton {
+        width: 54px !important;
+        min-width: 54px !important;
+        min-height: 48px !important;
+
+        margin-inline: auto !important;
+        padding: 0 !important;
+
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+
+        border-radius: 10px !important;
+    }
+
+    .navList button svg,
+    .logoutButton svg {
+        width: 20px;
+        height: 20px;
+        flex: 0 0 auto;
+    }
+
+    .logoutButton {
+        margin-top: auto !important;
+    }
+
+    .contentArea,
+    .collapsedShell .contentArea {
+        min-width: 0;
+        width: calc(100% - 76px) !important;
+        max-width: none !important;
+        flex: 1 1 auto;
+
+        margin: 0 !important;
+        padding: 28px 24px 100px !important;
+    }
+
+    .heroHeader {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: flex-start !important;
+    }
+
+    .headerActions {
+        width: auto !important;
+        display: flex !important;
+        flex: 0 0 auto;
+        gap: 10px !important;
+    }
+
+    .headerActions a {
+        width: auto !important;
+        min-width: 132px;
+    }
+}
+
+/*
+ * Tablet navigation.
+ *
+ * At 980px and below the compact rail is replaced by the
+ * fixed bottom navigation and its full module drawer.
+ */
+
+@media (min-width: 681px) and (max-width: 980px) {
+    .contentArea,
+    .collapsedShell .contentArea {
+        padding:
+            24px
+            clamp(18px, 4vw, 34px)
+            122px !important;
+    }
+
+    .heroHeader {
+        display: grid !important;
+        grid-template-columns: minmax(0, 1fr) !important;
+        gap: 20px !important;
+    }
+
+    .headerActions {
+        width: 100% !important;
+        display: grid !important;
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr)) !important;
+        gap: 10px !important;
+    }
+
+    .headerActions a {
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    .statsGrid {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr)) !important;
+    }
+}
+
+/* Phone navigation and controls. */
+
+@media (max-width: 680px) {
+    .contentArea,
+    .collapsedShell .contentArea {
+        padding:
+            22px
+            16px
+            116px !important;
+    }
+
+    .headerActions {
+        width: 100% !important;
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 10px !important;
+    }
+
+    .headerActions a {
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    .statsGrid {
+        grid-template-columns: 1fr !important;
+    }
+}
