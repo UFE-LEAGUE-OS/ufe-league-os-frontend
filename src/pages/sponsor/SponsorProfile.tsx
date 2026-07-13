@@ -1,7 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  FiUser,
   FiMail,
   FiPhone,
   FiMapPin,
@@ -12,9 +11,12 @@ import {
   FiClock,
   FiXCircle,
   FiCamera,
+  FiCheck,
+  FiX,
+  FiAtSign,
 } from 'react-icons/fi';
 import SponsorSidebar from '../../components/SponsorSidebar';
-import { fetchProfile } from '../../services/authService.js';
+import { fetchProfile, updateProfile, uploadAvatar } from '../../services/authService.js';
 import { getSponsorAccounts, type SponsorAccountResponse } from '../../services/sponsorshipService';
 import '../../styles/pages/landing.css';
 import './SponsorProfile.css';
@@ -41,12 +43,23 @@ const statusConfig: Record<string, { icon: typeof FiCheckCircle; label: string; 
   REJECTED: { icon: FiXCircle, label: 'Rejected', className: 'spf-status-rejected' },
 };
 
+const usernamePattern = /^[A-Za-z0-9#$_@]{4,14}$/;
+
 export default function SponsorProfile() {
   const navigate = useNavigate();
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [sponsorAccounts, setSponsorAccounts] = useState<SponsorAccountResponse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
+
+  const [isEditingUsername, setIsEditingUsername] = useState(false);
+  const [usernameDraft, setUsernameDraft] = useState('');
+  const [usernameError, setUsernameError] = useState('');
+  const [isSavingUsername, setIsSavingUsername] = useState(false);
+
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [avatarError, setAvatarError] = useState('');
+  const avatarInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -95,6 +108,81 @@ export default function SponsorProfile() {
       })
     : '—';
 
+  const startEditingUsername = () => {
+    setUsernameDraft(profile?.username ?? '');
+    setUsernameError('');
+    setIsEditingUsername(true);
+  };
+
+  const cancelEditingUsername = () => {
+    setIsEditingUsername(false);
+    setUsernameDraft('');
+    setUsernameError('');
+  };
+
+  const saveUsername = async () => {
+    const trimmed = usernameDraft.trim();
+
+    if (!usernamePattern.test(trimmed)) {
+      setUsernameError(
+        'Username must be 4–14 characters using letters, numbers, or # $ _ @ only.'
+      );
+      return;
+    }
+
+    setIsSavingUsername(true);
+    setUsernameError('');
+
+    try {
+      const response = await updateProfile({ username: trimmed });
+      setProfile((prev) => (prev ? { ...prev, username: (response.data as ProfileData).username } : prev));
+      setIsEditingUsername(false);
+    } catch (error) {
+      const responseData = (error as { response?: { data?: unknown } })?.response?.data;
+      const message =
+        responseData && typeof responseData === 'object'
+          ? Object.values(responseData as Record<string, unknown>).flat().join(' ')
+          : '';
+      setUsernameError(message || 'That username could not be saved. Please try another.');
+    } finally {
+      setIsSavingUsername(false);
+    }
+  };
+
+  const handleAvatarClick = () => {
+    avatarInputRef.current?.click();
+  };
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setAvatarError('');
+
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+    if (!allowedTypes.includes(file.type)) {
+      setAvatarError('Please upload a JPEG, PNG, WEBP, or GIF image.');
+      return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+      setAvatarError('Avatar file size must not exceed 2MB.');
+      return;
+    }
+
+    setIsUploadingAvatar(true);
+
+    try {
+      const response = await uploadAvatar(file);
+      setProfile((prev) => (prev ? { ...prev, avatar_url: (response.data as ProfileData).avatar_url } : prev));
+    } catch {
+      setAvatarError('We could not upload your photo right now. Please try again.');
+    } finally {
+      setIsUploadingAvatar(false);
+      if (avatarInputRef.current) avatarInputRef.current.value = '';
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="spf-page">
@@ -135,7 +223,19 @@ export default function SponsorProfile() {
               ) : (
                 <div className="spf-avatar-fallback">{initials}</div>
               )}
-              <button className="spf-avatar-edit" title="Change photo">
+              <input
+                type="file"
+                ref={avatarInputRef}
+                className="spf-avatar-input"
+                accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
+                onChange={handleAvatarChange}
+              />
+              <button
+                className="spf-avatar-edit"
+                title="Change photo"
+                onClick={handleAvatarClick}
+                disabled={isUploadingAvatar}
+              >
                 <FiCamera size={13} />
               </button>
             </div>
@@ -166,6 +266,8 @@ export default function SponsorProfile() {
                   <FiCalendar size={13} /> Joined {joinedDate}
                 </span>
               </div>
+              {avatarError && <p className="spf-inline-error">{avatarError}</p>}
+              {isUploadingAvatar && <p className="spf-inline-hint">Uploading photo...</p>}
             </div>
 
             <button className="spf-edit-btn" onClick={() => navigate('/sponsor/settings')}>
@@ -185,10 +287,53 @@ export default function SponsorProfile() {
                 <span className="spf-detail-label"><FiPhone size={13} /> Phone</span>
                 <span className="spf-detail-val">{profile?.phone_number || '—'}</span>
               </div>
+
+              {/* Username — inline editable */}
               <div className="spf-detail-row">
-                <span className="spf-detail-label"><FiUser size={13} /> Username</span>
-                <span className="spf-detail-val">{profile?.username || '—'}</span>
+                <span className="spf-detail-label"><FiAtSign size={13} /> Username</span>
+                {isEditingUsername ? (
+                  <div className="spf-username-edit">
+                    <input
+                      className={`spf-username-input ${usernameError ? 'spf-username-input-error' : ''}`}
+                      type="text"
+                      value={usernameDraft}
+                      maxLength={14}
+                      placeholder="e.g. jane_kintu"
+                      onChange={(e) => {
+                        setUsernameDraft(e.target.value);
+                        setUsernameError('');
+                      }}
+                      autoFocus
+                    />
+                    <button
+                      className="spf-username-btn spf-username-save"
+                      onClick={saveUsername}
+                      disabled={isSavingUsername}
+                      title="Save"
+                    >
+                      <FiCheck size={14} />
+                    </button>
+                    <button
+                      className="spf-username-btn spf-username-cancel"
+                      onClick={cancelEditingUsername}
+                      disabled={isSavingUsername}
+                      title="Cancel"
+                    >
+                      <FiX size={14} />
+                    </button>
+                  </div>
+                ) : (
+                  <span className="spf-detail-val spf-detail-editable" onClick={startEditingUsername}>
+                    {profile?.username ? `@${profile.username}` : 'Set a username'}
+                    <FiEdit2 size={11} className="spf-detail-edit-icon" />
+                  </span>
+                )}
+                {usernameError && <p className="spf-inline-error">{usernameError}</p>}
+                {isEditingUsername && !usernameError && (
+                  <p className="spf-inline-hint">4–14 characters: letters, numbers, or # $ _ @</p>
+                )}
               </div>
+
               <div className="spf-detail-row">
                 <span className="spf-detail-label"><FiMapPin size={13} /> Location</span>
                 <span className="spf-detail-val">{profile?.location || '—'}</span>
