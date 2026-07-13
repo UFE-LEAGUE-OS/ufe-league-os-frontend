@@ -109,7 +109,7 @@ export default function SupportSettings() {
     <main className="super-admin-page content-child">
       <section className="page-heading">
         <SuperAdminBackButton />
-        <div className="title-group">
+        <div className="title-group" style={{ flex: 1, textAlign: 'center' }}>
           <h1>Support Settings</h1>
         </div>
       </section>
