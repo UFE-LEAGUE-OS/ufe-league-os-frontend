@@ -247,7 +247,7 @@ export default function AppRoutes() {
                     path="/dashboard/team-manager"
                     element={roleProtectedPage(
                         <TeamManagerDashboard />,
-                        ['CUSTOM_ADMIN'],
+                        ['TEAM_MANAGER'],
                     )}
                 />
 
