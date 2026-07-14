@@ -74,7 +74,6 @@ import TicketPaymentSuccessPage from '../pages/tickets/TicketPaymentSuccessPage'
 import TicketPaymentFailedPage from '../pages/tickets/TicketPaymentFailedPage';
 import MatchCentrePage from '../pages/MatchCentrePage';
 import MVPVotingPage from '../pages/fan/MVPVotingPage';
-import JoinFantasy from '../pages/JoinFantasy';
 import SuperAdminDashboard from '../pages/SuperAdminDashboard';
 import SuperVariants from '../pages/SuperVariantsPage';
 import RulesAndStandards from '../pages/SuperAdminRules';
@@ -189,7 +188,7 @@ export default function AppRoutes() {
                 <Route path="/personalize" element={<Personalize />} />
                 <Route path="/verify-email" element={<VerifyEmail />} />
                 <Route path="/fan/mvp-voting" element={<MVPVotingPage />} />
-                <Route path="/join-fantasy" element={<JoinFantasy />} />
+                <Route path="/join-fantasy" element={<Navigate to="/fantasy" replace />} />
 
 
                 <Route path="/dashboard" element={protectedPage(<Navigate to="/dashboard/fan" replace />)} />
