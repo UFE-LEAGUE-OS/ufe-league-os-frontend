@@ -31,6 +31,14 @@ vi.mock('../pages/landing/TicketsLandingPage', () => ({
     default: () => <h1>Tickets Page</h1>,
 }))
 
+vi.mock('../pages/sponsor/SponsorPayments', () => ({
+    default: () => <h1>Sponsor Payments Page</h1>,
+}))
+
+vi.mock('../pages/sponsor/SponsorPaymentProcessing', () => ({
+    default: () => <h1>Sponsor Payment Processing Page</h1>,
+}))
+
 function visit(path: string) {
     window.history.pushState({}, '', path)
     render(<AppRoutes />)
@@ -142,6 +150,26 @@ describe('AppRoutes protected routes', () => {
         expect(
             screen.getByRole('heading', {
                 name: /login page/i,
+            }),
+        ).toBeInTheDocument()
+    })
+
+    it('redirects logged-out users from sponsor payments to login', () => {
+        visit('/sponsor/payments')
+
+        expect(
+            screen.getByRole('heading', {
+                name: /login page/i,
+            }),
+        ).toBeInTheDocument()
+    })
+
+    it('keeps the sponsor payment callback available after Flutterwave redirect', () => {
+        visit('/sponsor/payment/processing?status=successful&tx_ref=test-reference')
+
+        expect(
+            screen.getByRole('heading', {
+                name: /sponsor payment processing page/i,
             }),
         ).toBeInTheDocument()
     })

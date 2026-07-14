@@ -125,6 +125,8 @@ import CorporateSponsorSetup from '../pages/sponsor/CorporateSponsorSetup';
 import CorporateVerificationUpload from '../pages/sponsor/CorporateVerificationUpload';
 import CorporateContactPerson from '../pages/sponsor/CorporateContactPerson';
 import CorporateSponsorDashboard from '../pages/sponsor/CorporateSponsorDashboard';
+import SponsorPayments from '../pages/sponsor/SponsorPayments';
+import SponsorPaymentProcessing from '../pages/sponsor/SponsorPaymentProcessing';
 import CorporateTeamManagement from '../pages/sponsor/CorporateTeamManagement';
 import SponsorPermissions from '../pages/sponsor/SponsorPermissions';
 import SponsorPackages from '../pages/sponsor/SponsorPackages';
@@ -371,6 +373,14 @@ export default function AppRoutes() {
                 <Route
                     path="/sponsor/team"
                     element={protectedPage(<CorporateTeamManagement />)}
+                />
+                <Route
+                    path="/sponsor/payments"
+                    element={protectedPage(<SponsorPayments />)}
+                />
+                <Route
+                    path="/sponsor/payment/processing"
+                    element={<SponsorPaymentProcessing />}
                 />
                 <Route path="/sponsor/permissions" element={<SponsorPermissions />} />
                 <Route
