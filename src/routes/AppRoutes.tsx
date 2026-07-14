@@ -148,6 +148,16 @@ import LeagueAdminDashboard from '../pages/league-admin/LeagueAdminDashboard';
 import ClubAdminDashboard from '../pages/club-admin/ClubAdminDashboard';
 import TicketingOfficerDashboard from '../pages/ticketing-officer/TicketingOfficerDashboard';
 
+//super admin sponsorship management
+import SponsorFramework from "../pages/super-admin/sponsorship-management/SponsorshipFramework";
+import CampaignVisibility from "../pages/super-admin/sponsorship-management/CampaignVisibility";
+import PlacementManager from "../pages/super-admin/sponsorship-management/PlacementManager";
+import BenefitSharing from "../pages/super-admin/sponsorship-management/BenefitSharing";
+import SponsorshipInventory from "../pages/super-admin/sponsorship-management/SponsorshipInvetory";
+import CampaignPerformance from "../pages/super-admin/sponsorship-management/CampaignPerformance";
+import ApprovalWorkflow from "../pages/super-admin/sponsorship-management/ApprovalWorkFlow";
+import SponsorAudits from "../pages/super-admin/sponsorship-management/SponsorsAudit";
+
 function protectedPage(page: ReactNode) {
     return <ProtectedRoute>{page}</ProtectedRoute>;
 }
@@ -180,7 +190,7 @@ export default function AppRoutes() {
                 <Route path="/verify-email" element={<VerifyEmail />} />
                 <Route path="/fan/mvp-voting" element={<MVPVotingPage />} />
                 <Route path="/join-fantasy" element={<JoinFantasy />} />
-               
+
 
                 <Route path="/dashboard" element={protectedPage(<Navigate to="/dashboard/fan" replace />)} />
 
@@ -336,12 +346,12 @@ export default function AppRoutes() {
                 <Route path="/payments" element={<Payments />} />
 
                 {/* Super Admin routes */}
-             <Route path="/super-admin"  element={roleProtectedPage(<SuperAdminDashboard />, ["SUPER_ADMIN"])}>
+               <Route path="/super-admin" element={roleProtectedPage(<SuperAdminDashboard />, ["SUPER_ADMIN"])}> 
                     <Route index element={<SuperAdminHome />} />
                     <Route path="dashboard" element={<SuperAdminHome />} />
 
                     {/* Rules & Formats */}
-                     <Route path="sports-variants" element={<SuperVariants />} />
+                    <Route path="sports-variants" element={<SuperVariants />} />
                     <Route path="rules" element={<RulesAndStandards />} />
                     <Route path="competition-formats" element={<CompetitionConfigurator />} />
                     <Route path="publish-standards" element={<PublishStandards />} />
@@ -389,6 +399,16 @@ export default function AppRoutes() {
                     <Route path="feature-flags" element={<FeatureFlags />} />
                     <Route path="system-messages" element={<SystemMessages />} />
                     <Route path="bulk-operations" element={<BulkOperations />} />
+
+                    {/*Sponsorship Management*/}
+                    <Route path="frameworks" element={<SponsorFramework />} />
+                    <Route path="visibility" element={<CampaignVisibility />} />
+                    <Route path="placements" element={<PlacementManager />} />
+                    <Route path="benefit-sharing" element={<BenefitSharing />} />
+                    <Route path="inventory" element={<SponsorshipInventory />} />
+                    <Route path="performance" element={<CampaignPerformance />} />
+                    <Route path="approvals" element={<ApprovalWorkflow />} />
+                    <Route path="audits" element={<SponsorAudits />} />
                 </Route>
             </Routes>
         </Router>
