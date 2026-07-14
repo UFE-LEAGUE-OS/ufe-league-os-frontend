@@ -364,7 +364,10 @@ export default function AppRoutes() {
                 <Route path="/sponsor/corporatesetup/verification" element={<CorporateVerificationUpload />} />
                 <Route path="/sponsor/corporatesetup/review" element={<CorporateSponsorReview />} />
                 <Route path="/sponsor/corporatesetup/complete" element={<CorporateSponsorComplete />} />
-                <Route path="/sponsor/dashboard" element={<CorporateSponsorDashboard />} />
+                <Route
+                    path="/sponsor/dashboard"
+                    element={protectedPage(<CorporateSponsorDashboard />)}
+                />
                 <Route path="/sponsor/team" element={<CorporateTeamManagement />} />
                 <Route path="/sponsor/permissions" element={<SponsorPermissions />} />
                 <Route

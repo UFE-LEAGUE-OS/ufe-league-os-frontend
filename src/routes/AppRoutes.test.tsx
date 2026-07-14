@@ -126,6 +126,16 @@ describe('AppRoutes protected routes', () => {
         expect(screen.queryByRole('heading', { name: /profile page/i })).not.toBeInTheDocument()
     })
 
+    it('redirects logged-out users from the sponsor dashboard to login', () => {
+        visit('/sponsor/dashboard')
+
+        expect(
+            screen.getByRole('heading', {
+                name: /login page/i,
+            }),
+        ).toBeInTheDocument()
+    })
+
     it('keeps public routes available without login', () => {
         visit('/fixtures')
 
