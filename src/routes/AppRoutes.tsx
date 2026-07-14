@@ -146,6 +146,10 @@ import UnionAdminDashboard from '../pages/union-admin/UnionAdminDashboard';
 import LeagueAdminDashboard from '../pages/league-admin/LeagueAdminDashboard';
 import ClubAdminDashboard from '../pages/club-admin/ClubAdminDashboard';
 import TicketingOfficerDashboard from '../pages/ticketing-officer/TicketingOfficerDashboard';
+import TreasurerDashboard from '../pages/club-admin/TreasurerDashboard';
+import ChairmanDashboard from '../pages/club-admin/ChairmannDashboard';
+import CustomAdminDashboard from '../pages/club-admin/CustomAdminDashboard';
+import TeamManagerDashboard from '@/pages/club-admin/TeamManagerDashboard';
 
 //super admin sponsorship management
 import SponsorFramework from "../pages/super-admin/sponsorship-management/SponsorshipFramework";
@@ -198,6 +202,7 @@ export default function AppRoutes() {
                     element={protectedPage(<Navigate to="/dashboard/union-admin" replace />)}
                 />
 
+               
                 <Route
                     path="/dashboard/league-admin"
                     element={roleProtectedPage(
@@ -211,6 +216,38 @@ export default function AppRoutes() {
                     element={roleProtectedPage(
                         <ClubAdminDashboard />,
                         ['CLUB_ADMIN'],
+                    )}
+                />
+
+                <Route
+                    path="/dashboard/treasurer"
+                    element={roleProtectedPage(
+                        <TreasurerDashboard />,
+                        ['TREASURER'],
+                    )}
+                />
+
+                <Route
+                    path="/dashboard/chairman"
+                    element={roleProtectedPage(
+                        <ChairmanDashboard />,
+                        ['CHAIRMAN'],
+                    )}
+                />
+
+                <Route
+                    path="/dashboard/custom-admin"
+                    element={roleProtectedPage(
+                        <CustomAdminDashboard />,
+                        ['CUSTOM_ADMIN'],
+                    )}
+                />
+
+                <Route
+                    path="/dashboard/team-manager"
+                    element={roleProtectedPage(
+                        <TeamManagerDashboard />,
+                        ['CUSTOM_ADMIN'],
                     )}
                 />
 
@@ -398,6 +435,8 @@ export default function AppRoutes() {
                     <Route path="feature-flags" element={<FeatureFlags />} />
                     <Route path="system-messages" element={<SystemMessages />} />
                     <Route path="bulk-operations" element={<BulkOperations />} />
+
+                    
 
                     {/*Sponsorship Management*/}
                     <Route path="frameworks" element={<SponsorFramework />} />
