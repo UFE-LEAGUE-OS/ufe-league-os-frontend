@@ -392,9 +392,19 @@ export default function AppRoutes() {
                     element={protectedPage(<SponsorPackageDetail />)}
                 />
                 <Route path="/sponsor/campaigns/new" element={<CampaignCreation />} />
-                <Route path="/sponsor/analytics" element={<CampaignAnalytics />} />
+                <Route
+                    path="/sponsor/analytics"
+                    element={protectedPage(<CampaignAnalytics />)}
+                />
                 <Route path="/sponsor/campaigns/preview" element={<CampaignPlacementPreview />} />
-                <Route path="/sponsor/campaigns" element={<SponsorCampaigns />} />
+                <Route
+                    path="/sponsor/activations"
+                    element={protectedPage(<SponsorCampaigns />)}
+                />
+                <Route
+                    path="/sponsor/campaigns"
+                    element={<Navigate to="/sponsor/activations" replace />}
+                />
                 <Route path="/sponsor/settings" element={<SponsorSettings />} />
                 <Route path="/sponsor/support" element={<SponsorHelp />} />
                 <Route path="/sponsor/campaigns/new/targeting" element={<CampaignTargeting />} />

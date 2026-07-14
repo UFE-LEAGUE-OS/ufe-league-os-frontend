@@ -12,8 +12,8 @@ import {
   FiArrowLeft,
   FiCheckCircle,
   FiCreditCard,
+  FiMapPin,
   FiRefreshCw,
-  FiShield,
 } from 'react-icons/fi';
 import SponsorSidebar from '../../components/SponsorSidebar';
 import {
@@ -24,86 +24,17 @@ import {
   type SponsorAgreement,
   type SponsorPackage,
 } from '../../services/sponsorshipService';
-import '../../styles/pages/landing.css';
 import './SponsorPackages.css';
 
-type ApiErrorShape = {
-  response?: {
-    data?: unknown;
-  };
-};
-
-function extractErrorMessage(
-  value: unknown,
-): string | null {
-  if (
-    typeof value === 'string' &&
-    value.trim()
-  ) {
-    return value;
-  }
-
-  if (Array.isArray(value)) {
-    for (const item of value) {
-      const message =
-        extractErrorMessage(item);
-
-      if (message) {
-        return message;
-      }
-    }
-  }
-
-  if (
-    value &&
-    typeof value === 'object'
-  ) {
-    for (
-      const item of Object.values(
-        value as Record<string, unknown>,
-      )
-    ) {
-      const message =
-        extractErrorMessage(item);
-
-      if (message) {
-        return message;
-      }
-    }
-  }
-
-  return null;
-}
-
-function getApiErrorMessage(
-  error: unknown,
-  fallback: string,
+function money(
+  amount: string,
+  currency: string,
 ) {
-  const data = (
-    error as ApiErrorShape
-  ).response?.data;
-
-  return (
-    extractErrorMessage(data) ??
-    fallback
-  );
-}
-
-function formatAmount(
-  value: string,
-) {
-  const amount = Number(value);
-
-  if (!Number.isFinite(amount)) {
-    return value;
-  }
-
-  return new Intl.NumberFormat(
-    'en-UG',
-    {
-      maximumFractionDigits: 0,
-    },
-  ).format(amount);
+  return new Intl.NumberFormat('en-UG', {
+    style: 'currency',
+    currency,
+    maximumFractionDigits: 0,
+  }).format(Number(amount));
 }
 
 export default function SponsorPackageDetail() {
@@ -111,37 +42,49 @@ export default function SponsorPackageDetail() {
   const { packageId } = useParams();
 
   const parsedPackageId =
-    Number.parseInt(
-      packageId ?? '',
-      10,
-    );
+    Number(packageId);
 
-  const validPackageId =
-    Number.isInteger(parsedPackageId) &&
-    parsedPackageId > 0;
-
-  const [
-    sponsorPackage,
-    setSponsorPackage,
-  ] =
+  const [sponsorPackage, setSponsorPackage] =
     useState<SponsorPackage | null>(
       null,
     );
-
-  const [
-    accounts,
-    setAccounts,
-  ] =
+  const [accounts, setAccounts] =
     useState<SponsorAccountResponse[]>(
       [],
     );
+  const [loading, setLoading] =
+    useState(true);
+  const [error, setError] =
+    useState('');
 
   const [
     selectedAccountId,
     setSelectedAccountId,
-  ] =
-    useState<number | null>(null);
-
+  ] = useState<number | null>(null);
+  const [
+    selectedOpportunityId,
+    setSelectedOpportunityId,
+  ] = useState<number | null>(null);
+  const [
+    agreementType,
+    setAgreementType,
+  ] = useState<'CASH' | 'IN_KIND'>(
+    'CASH',
+  );
+  const [
+    paymentModel,
+    setPaymentModel,
+  ] = useState<
+    'ONE_TIME' | 'INSTALLMENT'
+  >('ONE_TIME');
+  const [
+    customRequirements,
+    setCustomRequirements,
+  ] = useState('');
+  const [submitting, setSubmitting] =
+    useState(false);
+  const [actionError, setActionError] =
+    useState('');
   const [
     createdAgreement,
     setCreatedAgreement,
@@ -150,38 +93,12 @@ export default function SponsorPackageDetail() {
       null,
     );
 
-  const [loading, setLoading] =
-    useState(true);
-
-  const [submitting, setSubmitting] =
-    useState(false);
-
-  const [error, setError] =
-    useState<string | null>(null);
-
-  const [actionError, setActionError] =
-    useState<string | null>(null);
-
-  const [reloadKey, setReloadKey] =
-    useState(0);
-
   useEffect(() => {
     let active = true;
 
-    if (!validPackageId) {
-      setError(
-        'The selected sponsorship package is invalid.',
-      );
-      setLoading(false);
-
-      return () => {
-        active = false;
-      };
-    }
-
-    const loadDetail = async () => {
+    async function load() {
       setLoading(true);
-      setError(null);
+      setError('');
 
       try {
         const [
@@ -198,41 +115,61 @@ export default function SponsorPackageDetail() {
           return;
         }
 
-        setSponsorPackage(
-          packageResponse.data,
-        );
+        const packageData =
+          packageResponse.data;
+        const availableOpportunities =
+          (
+            packageData.opportunities ??
+            []
+          ).filter(
+            (opportunity) =>
+              opportunity.status ===
+              'AVAILABLE',
+          );
 
+        setSponsorPackage(packageData);
         setAccounts(
           accountsResponse.data.results,
         );
-      } catch (loadError) {
-        if (!active) {
-          return;
-        }
-
-        setError(
-          getApiErrorMessage(
-            loadError,
-            'The sponsorship package could not be loaded.',
-          ),
+        setSelectedAccountId(
+          accountsResponse.data
+            .results[0]?.id ?? null,
         );
+        setSelectedOpportunityId(
+          availableOpportunities[0]
+            ?.id ?? null,
+        );
+      } catch {
+        if (active) {
+          setError(
+            'We could not load this sponsorship package.',
+          );
+        }
       } finally {
         if (active) {
           setLoading(false);
         }
       }
-    };
+    }
 
-    void loadDetail();
+    if (
+      Number.isInteger(
+        parsedPackageId,
+      ) &&
+      parsedPackageId > 0
+    ) {
+      void load();
+    } else {
+      setLoading(false);
+      setError(
+        'The sponsorship package number is invalid.',
+      );
+    }
 
     return () => {
       active = false;
     };
-  }, [
-    parsedPackageId,
-    reloadKey,
-    validPackageId,
-  ]);
+  }, [parsedPackageId]);
 
   const eligibleAccounts =
     useMemo(() => {
@@ -251,131 +188,116 @@ export default function SponsorPackageDetail() {
               account.sponsor_type
           ),
       );
-    }, [
-      accounts,
-      sponsorPackage,
-    ]);
+    }, [accounts, sponsorPackage]);
 
-  useEffect(() => {
+  const selectedOpportunity =
+    sponsorPackage?.opportunities?.find(
+      (opportunity) =>
+        opportunity.id ===
+        selectedOpportunityId,
+    ) ?? null;
+
+  async function submitRequest() {
     if (
-      selectedAccountId === null &&
-      eligibleAccounts.length > 0
+      !sponsorPackage ||
+      !selectedAccountId ||
+      !selectedOpportunity
     ) {
-      setSelectedAccountId(
-        eligibleAccounts[0].id,
+      setActionError(
+        'Select a sponsor account and sports property.',
       );
+      return;
     }
-  }, [
-    eligibleAccounts,
-    selectedAccountId,
-  ]);
 
-  const handleCreateAgreement =
-    async () => {
-      if (
-        !sponsorPackage ||
-        selectedAccountId === null
-      ) {
-        return;
-      }
+    setSubmitting(true);
+    setActionError('');
 
-      setSubmitting(true);
-      setActionError(null);
+    try {
+      const response =
+        await createSponsorAgreement({
+          sponsor_account:
+            selectedAccountId,
+          sponsor_package:
+            sponsorPackage.id,
+          opportunity:
+            selectedOpportunity.id,
+          agreement_type:
+            agreementType,
+          payment_source:
+            agreementType === 'CASH'
+              ? 'PLATFORM'
+              : 'IN_KIND',
+          payment_model:
+            agreementType === 'CASH'
+              ? paymentModel
+              : 'EXTERNAL',
+          total_value:
+            selectedOpportunity.price_amount,
+          currency:
+            selectedOpportunity.currency,
+          starts_at:
+            selectedOpportunity.starts_at,
+          ends_at:
+            selectedOpportunity.ends_at,
+          benefits_tier:
+            sponsorPackage.is_exclusive
+              ? 'PREMIUM'
+              : 'DIGITAL',
+          notes:
+            customRequirements.trim() ||
+            'Sponsorship request submitted through the League OS marketplace.',
+        });
 
-      try {
-        const response =
-          await createSponsorAgreement({
-            sponsor_account:
-              selectedAccountId,
-            sponsor_package:
-              sponsorPackage.id,
-            agreement_type: 'CASH',
-            payment_source: 'PLATFORM',
-            payment_model: 'ONE_TIME',
-            total_value:
-              sponsorPackage.price_amount,
-            currency:
-              sponsorPackage.currency,
-            benefits_tier:
-              sponsorPackage.is_exclusive
-                ? 'PREMIUM'
-                : 'DIGITAL',
-            notes:
-              'Agreement requested through the League OS sponsor package page.',
-          });
-
-        setCreatedAgreement(
-          response.data.agreement,
-        );
-      } catch (submitError) {
-        setActionError(
-          getApiErrorMessage(
-            submitError,
-            'The sponsorship agreement could not be created.',
-          ),
-        );
-      } finally {
-        setSubmitting(false);
-      }
-    };
+      setCreatedAgreement(
+        response.data.agreement,
+      );
+    } catch {
+      setActionError(
+        'The sponsorship request could not be submitted.',
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  }
 
   return (
     <div className="spkg-page">
       <div className="spkg-layout">
         <SponsorSidebar />
 
-        <main className="spkg-main landing-page">
+        <main className="spkg-main">
           <button
             type="button"
-            className="spkg-detail-back"
+            className="spkg-back"
             onClick={() =>
-              navigate('/sponsor/packages')
+              navigate(
+                '/sponsor/packages',
+              )
             }
           >
             <FiArrowLeft size={16} />
-            Back to Packages
+            Back to Opportunities
           </button>
 
           {loading && (
-            <div className="spkg-state-card">
+            <div className="spkg-state">
               <FiRefreshCw
-                size={30}
-                className="spkg-state-spinner"
+                className="spkg-spin"
+                size={28}
               />
-
               <h2>
                 Loading package details
               </h2>
-
-              <p>
-                Fetching the sponsorship offer
-                and your sponsor accounts.
-              </p>
             </div>
           )}
 
           {!loading && error && (
-            <div className="spkg-state-card">
+            <div className="spkg-state">
               <FiAlertCircle size={30} />
-
               <h2>
-                Package could not be loaded
+                Package unavailable
               </h2>
-
               <p>{error}</p>
-
-              <button
-                type="button"
-                className="spkg-btn pkg-btn-purple spkg-state-action"
-                onClick={() =>
-                  setReloadKey(
-                    (current) =>
-                      current + 1,
-                  )
-                }
-              >
-                Try Again
-              </button>
             </div>
           )}
 
@@ -383,191 +305,173 @@ export default function SponsorPackageDetail() {
             !error &&
             sponsorPackage && (
               <>
-                <section className="spkg-detail-hero">
+                <header className="spkg-detail-header">
                   <div>
-                    <div className="spkg-detail-kicker">
-                      {
-                        sponsorPackage.scope_type_display
-                      }
-                    </div>
-
-                    <h1 className="spkg-title">
-                      {sponsorPackage.name}
-                    </h1>
-
-                    <p className="spkg-detail-description">
-                      {
-                        sponsorPackage.description ||
-                        `Sponsor ${sponsorPackage.scope_name}.`
-                      }
-                    </p>
-
-                    <div className="spkg-detail-badges">
-                      <span>
-                        {
-                          sponsorPackage.status_display
-                        }
-                      </span>
-
-                      <span>
-                        {
-                          sponsorPackage.sponsor_type_allowed_display
-                        }{' '}
-                        sponsors
-                      </span>
-
-                      {sponsorPackage.is_exclusive && (
-                        <span>
-                          Exclusive
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="spkg-detail-price-card">
-                    <div>
-                      Package Value
-                    </div>
-
-                    <strong>
-                      {
-                        sponsorPackage.currency
-                      }{' '}
-                      {formatAmount(
-                        sponsorPackage.price_amount,
-                      )}
-                    </strong>
-
                     <span>
                       {
-                        sponsorPackage.activation_rule_display
+                        sponsorPackage.objective_display
+                      }
+                    </span>
+
+                    <h1>
+                      {
+                        sponsorPackage.name
+                      }
+                    </h1>
+
+                    <p>
+                      {
+                        sponsorPackage.description
+                      }
+                    </p>
+                  </div>
+
+                  <div className="spkg-detail-value">
+                    <small>
+                      Starting from
+                    </small>
+                    <strong>
+                      {money(
+                        sponsorPackage.price_amount,
+                        sponsorPackage.currency,
+                      )}
+                    </strong>
+                    <span>
+                      {
+                        sponsorPackage.duration_type_display
                       }
                     </span>
                   </div>
-                </section>
+                </header>
 
                 <div className="spkg-detail-grid">
                   <section className="spkg-detail-panel">
                     <h2>
-                      Package Information
-                    </h2>
-
-                    <dl className="spkg-detail-list">
-                      <div>
-                        <dt>Offered by</dt>
-                        <dd>
-                          {
-                            sponsorPackage.owner_name
-                          }
-                        </dd>
-                      </div>
-
-                      <div>
-                        <dt>Scope</dt>
-                        <dd>
-                          {
-                            sponsorPackage.scope_name
-                          }
-                        </dd>
-                      </div>
-
-                      <div>
-                        <dt>Category</dt>
-                        <dd>
-                          {
-                            sponsorPackage.category_display
-                          }
-                        </dd>
-                      </div>
-
-                      <div>
-                        <dt>Platform fee</dt>
-                        <dd>
-                          {sponsorPackage.requires_platform_fee
-                            ? `${sponsorPackage.currency} ${formatAmount(
-                                sponsorPackage.platform_fee_amount,
-                              )}`
-                            : 'Not required'}
-                        </dd>
-                      </div>
-                    </dl>
-
-                    <h2>
                       Included Benefits
                     </h2>
 
-                    {sponsorPackage
-                      .benefits.length >
-                    0 ? (
-                      <ul className="spkg-detail-benefits">
-                        {sponsorPackage.benefits.map(
-                          (benefit) => (
-                            <li key={benefit.id}>
-                              <FiCheckCircle
-                                size={17}
-                              />
+                    <ul className="spkg-benefits">
+                      {sponsorPackage.benefits.map(
+                        (benefit) => (
+                          <li
+                            key={
+                              benefit.id
+                            }
+                          >
+                            <FiCheckCircle
+                              size={16}
+                            />
+                            <div>
+                              <strong>
+                                {
+                                  benefit.name
+                                }
+                              </strong>
+                              <span>
+                                {
+                                  benefit.description
+                                }
+                              </span>
+                            </div>
+                          </li>
+                        ),
+                      )}
+                    </ul>
 
+                    <h2>
+                      Choose a Sports Property
+                    </h2>
+
+                    <div className="spkg-opportunity-list">
+                      {sponsorPackage.opportunities
+                        ?.filter(
+                          (opportunity) =>
+                            opportunity.status ===
+                            'AVAILABLE',
+                        )
+                        .map(
+                          (opportunity) => (
+                            <button
+                              type="button"
+                              key={
+                                opportunity.id
+                              }
+                              className={`spkg-opportunity ${
+                                selectedOpportunityId ===
+                                opportunity.id
+                                  ? 'spkg-opportunity-active'
+                                  : ''
+                              }`}
+                              onClick={() =>
+                                setSelectedOpportunityId(
+                                  opportunity.id,
+                                )
+                              }
+                            >
                               <div>
                                 <strong>
                                   {
-                                    benefit.name
+                                    opportunity.property_name
                                   }
                                 </strong>
-
-                                {benefit.description && (
-                                  <span>
-                                    {
-                                      benefit.description
-                                    }
-                                  </span>
-                                )}
+                                <span>
+                                  <FiMapPin
+                                    size={13}
+                                  />
+                                  {
+                                    opportunity.location
+                                  }{' '}
+                                  ·{' '}
+                                  {
+                                    opportunity.sport_display
+                                  }
+                                </span>
                               </div>
-                            </li>
+
+                              <strong>
+                                {money(
+                                  opportunity.price_amount,
+                                  opportunity.currency,
+                                )}
+                              </strong>
+                            </button>
                           ),
                         )}
-                      </ul>
-                    ) : (
-                      <p className="spkg-detail-muted">
-                        Detailed benefits have
-                        not yet been added to
-                        this package.
-                      </p>
-                    )}
+                    </div>
                   </section>
 
-                  <aside className="spkg-detail-panel spkg-detail-action-panel">
+                  <aside className="spkg-detail-panel">
                     {createdAgreement ? (
-                      <div className="spkg-detail-success">
+                      <div className="spkg-request-success">
                         <FiCheckCircle
-                          size={38}
+                          size={40}
                         />
 
                         <h2>
-                          Agreement Created
+                          Request Submitted
                         </h2>
 
                         <p>
-                          Your sponsorship
-                          request has been
-                          recorded successfully.
+                          The selected sports
+                          property must review
+                          and approve the request
+                          before payment becomes
+                          available.
                         </p>
 
-                        <div className="spkg-detail-reference">
+                        <div>
                           <span>
                             Reference
                           </span>
-
                           <strong>
                             {
-                              createdAgreement.reference ||
-                              `Agreement #${createdAgreement.id}`
+                              createdAgreement.reference
                             }
                           </strong>
                         </div>
 
-                        <div className="spkg-detail-reference">
+                        <div>
                           <span>Status</span>
-
                           <strong>
                             {
                               createdAgreement.status_display
@@ -577,138 +481,183 @@ export default function SponsorPackageDetail() {
 
                         <button
                           type="button"
-                          className="spkg-btn pkg-btn-purple"
+                          className="spkg-primary-btn"
                           onClick={() =>
                             navigate(
-                              `/sponsor/dashboard?agreement=${createdAgreement.id}`,
+                              `/sponsor/payments?agreement=${createdAgreement.id}`,
                             )
                           }
                         >
-                          Go to Sponsor Dashboard
+                          View Agreements & Payments
                         </button>
                       </div>
                     ) : (
                       <>
-                        <FiShield
-                          size={32}
-                          className="spkg-detail-action-icon"
-                        />
-
                         <h2>
-                          Start Sponsorship
+                          Submit Sponsorship Request
                         </h2>
 
-                        <p className="spkg-detail-muted">
-                          Select the sponsor
-                          account that will enter
-                          this agreement.
-                        </p>
+                        <label>
+                          <span>
+                            Sponsor account
+                          </span>
+                          <select
+                            value={
+                              selectedAccountId ??
+                              ''
+                            }
+                            onChange={(
+                              event,
+                            ) =>
+                              setSelectedAccountId(
+                                Number(
+                                  event
+                                    .target
+                                    .value,
+                                ),
+                              )
+                            }
+                          >
+                            {eligibleAccounts.map(
+                              (account) => (
+                                <option
+                                  key={
+                                    account.id
+                                  }
+                                  value={
+                                    account.id
+                                  }
+                                >
+                                  {
+                                    account.name
+                                  }
+                                </option>
+                              ),
+                            )}
+                          </select>
+                        </label>
 
-                        {eligibleAccounts.length >
-                        0 ? (
-                          <>
-                            <label
-                              className="spkg-detail-label"
-                              htmlFor="sponsor-account"
-                            >
-                              Sponsor Account
-                            </label>
+                        <label>
+                          <span>
+                            Sponsorship type
+                          </span>
+                          <select
+                            value={
+                              agreementType
+                            }
+                            onChange={(
+                              event,
+                            ) =>
+                              setAgreementType(
+                                event.target
+                                  .value as
+                                  | 'CASH'
+                                  | 'IN_KIND',
+                              )
+                            }
+                          >
+                            <option value="CASH">
+                              Cash sponsorship
+                            </option>
+                            <option value="IN_KIND">
+                              In-kind support
+                            </option>
+                          </select>
+                        </label>
 
+                        {agreementType ===
+                          'CASH' && (
+                          <label>
+                            <span>
+                              Payment preference
+                            </span>
                             <select
-                              id="sponsor-account"
-                              aria-label="Sponsor account"
-                              className="spkg-detail-select"
                               value={
-                                selectedAccountId ??
-                                ''
+                                paymentModel
                               }
                               onChange={(
                                 event,
                               ) =>
-                                setSelectedAccountId(
-                                  Number(
-                                    event
-                                      .target
-                                      .value,
-                                  ),
+                                setPaymentModel(
+                                  event.target
+                                    .value as
+                                    | 'ONE_TIME'
+                                    | 'INSTALLMENT',
                                 )
                               }
                             >
-                              {eligibleAccounts.map(
-                                (account) => (
-                                  <option
-                                    key={
-                                      account.id
-                                    }
-                                    value={
-                                      account.id
-                                    }
-                                  >
-                                    {
-                                      account.name
-                                    }{' '}
-                                    —{' '}
-                                    {
-                                      account.status_display
-                                    }
-                                  </option>
-                                ),
-                              )}
+                              <option value="ONE_TIME">
+                                One-time payment
+                              </option>
+                              <option value="INSTALLMENT">
+                                Instalments
+                              </option>
                             </select>
-
-                            {actionError && (
-                              <div className="spkg-detail-error">
-                                <FiAlertCircle
-                                  size={16}
-                                />
-                                {actionError}
-                              </div>
-                            )}
-
-                            <button
-                              type="button"
-                              className="spkg-btn pkg-btn-orange"
-                              onClick={() =>
-                                void handleCreateAgreement()
-                              }
-                              disabled={
-                                submitting
-                              }
-                            >
-                              <FiCreditCard
-                                size={16}
-                              />
-
-                              {submitting
-                                ? 'Creating Agreement...'
-                                : 'Start Sponsorship'}
-                            </button>
-                          </>
-                        ) : (
-                          <>
-                            <div className="spkg-detail-error">
-                              <FiAlertCircle
-                                size={16}
-                              />
-                              You do not have an
-                              eligible sponsor
-                              account for this
-                              package.
-                            </div>
-
-                            <button
-                              type="button"
-                              className="spkg-btn pkg-btn-purple"
-                              onClick={() =>
-                                navigate(
-                                  '/sponsorhub',
-                                )
-                              }
-                            >
-                              Create Sponsor Account
-                            </button>
-                          </>
+                          </label>
                         )}
+
+                        <label>
+                          <span>
+                            Custom requirements
+                          </span>
+                          <textarea
+                            value={
+                              customRequirements
+                            }
+                            onChange={(
+                              event,
+                            ) =>
+                              setCustomRequirements(
+                                event.target
+                                  .value,
+                              )
+                            }
+                            placeholder="Describe any custom activation, hospitality or delivery requirements."
+                          />
+                        </label>
+
+                        {selectedOpportunity && (
+                          <div className="spkg-request-summary">
+                            <span>
+                              Proposed value
+                            </span>
+                            <strong>
+                              {money(
+                                selectedOpportunity.price_amount,
+                                selectedOpportunity.currency,
+                              )}
+                            </strong>
+                          </div>
+                        )}
+
+                        {actionError && (
+                          <div className="spkg-action-error">
+                            <FiAlertCircle
+                              size={16}
+                            />
+                            {actionError}
+                          </div>
+                        )}
+
+                        <button
+                          type="button"
+                          className="spkg-primary-btn"
+                          disabled={
+                            submitting ||
+                            !selectedOpportunity ||
+                            !selectedAccountId
+                          }
+                          onClick={() =>
+                            void submitRequest()
+                          }
+                        >
+                          <FiCreditCard
+                            size={16}
+                          />
+                          {submitting
+                            ? 'Submitting request...'
+                            : 'Submit Sponsorship Request'}
+                        </button>
                       </>
                     )}
                   </aside>

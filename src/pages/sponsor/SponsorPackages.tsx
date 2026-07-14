@@ -3,230 +3,132 @@ import {
   useMemo,
   useState,
 } from 'react';
-import { useNavigate } from 'react-router-dom';
+import {
+  useNavigate,
+} from 'react-router-dom';
 import {
   FiAlertCircle,
   FiCheckCircle,
-  FiChevronRight,
-  FiInfo,
+  FiFilter,
+  FiMapPin,
   FiRefreshCw,
   FiSearch,
-  FiStar,
+  FiTarget,
 } from 'react-icons/fi';
 import SponsorSidebar from '../../components/SponsorSidebar';
 import {
   getSponsorPackages,
   type SponsorPackage,
+  type SponsorPackageDuration,
+  type SponsorPackageObjective,
+  type SponsorPackageSport,
 } from '../../services/sponsorshipService';
-import '../../styles/pages/landing.css';
 import './SponsorPackages.css';
 
-type PackageFilter =
-  | 'All'
-  | 'Popular'
-  | 'Clubs'
-  | 'Leagues'
-  | 'Events'
-  | 'Athletes';
-
-type ApiErrorShape = {
-  response?: {
-    data?: unknown;
-  };
-};
-
-const filterTabs: PackageFilter[] = [
-  'All',
-  'Popular',
-  'Clubs',
-  'Leagues',
-  'Events',
-  'Athletes',
+const objectives: Array<{
+  value: 'ALL' | SponsorPackageObjective;
+  label: string;
+}> = [
+  { value: 'ALL', label: 'All objectives' },
+  { value: 'VISIBILITY', label: 'Visibility' },
+  {
+    value: 'FAN_ENGAGEMENT',
+    label: 'Fan Engagement',
+  },
+  {
+    value: 'HOSPITALITY',
+    label: 'Hospitality',
+  },
+  {
+    value: 'COMMUNITY_IMPACT',
+    label: 'Community Impact',
+  },
+  {
+    value: 'GRASSROOTS',
+    label: 'Grassroots Development',
+  },
 ];
 
-function extractErrorMessage(
-  value: unknown,
-): string | null {
-  if (
-    typeof value === 'string' &&
-    value.trim()
-  ) {
-    return value;
-  }
+const sports: Array<{
+  value: 'ALL' | SponsorPackageSport;
+  label: string;
+}> = [
+  { value: 'ALL', label: 'All sports' },
+  { value: 'GENERAL', label: 'All Sports' },
+  { value: 'RUGBY', label: 'Rugby' },
+  { value: 'FOOTBALL', label: 'Football' },
+  { value: 'BASKETBALL', label: 'Basketball' },
+  {
+    value: 'COMMUNITY',
+    label: 'Community Sport',
+  },
+];
 
-  if (Array.isArray(value)) {
-    for (const item of value) {
-      const message =
-        extractErrorMessage(item);
+const durations: Array<{
+  value: 'ALL' | SponsorPackageDuration;
+  label: string;
+}> = [
+  { value: 'ALL', label: 'Any duration' },
+  { value: 'ONE_MATCH', label: 'One Match' },
+  { value: 'ONE_EVENT', label: 'One Event' },
+  { value: 'MONTHLY', label: 'Monthly' },
+  { value: 'SEASON', label: 'Season-long' },
+];
 
-      if (message) {
-        return message;
-      }
-    }
-  }
-
-  if (
-    value &&
-    typeof value === 'object'
-  ) {
-    for (
-      const item of Object.values(
-        value as Record<string, unknown>,
-      )
-    ) {
-      const message =
-        extractErrorMessage(item);
-
-      if (message) {
-        return message;
-      }
-    }
-  }
-
-  return null;
-}
-
-function getApiErrorMessage(
-  error: unknown,
-  fallback: string,
+function money(
+  amount: string,
+  currency: string,
 ) {
-  const data = (
-    error as ApiErrorShape
-  ).response?.data;
-
-  return (
-    extractErrorMessage(data) ??
-    fallback
-  );
-}
-
-function formatAmount(
-  value: string,
-) {
-  const amount = Number(value);
-
-  if (!Number.isFinite(amount)) {
-    return value;
-  }
-
-  return new Intl.NumberFormat(
-    'en-UG',
-    {
-      maximumFractionDigits: 0,
-    },
-  ).format(amount);
-}
-
-function packageIcon(
-  sponsorPackage: SponsorPackage,
-) {
-  switch (sponsorPackage.scope_type) {
-    case 'PLAYER':
-      return '🏅';
-    case 'TEAM':
-      return '👥';
-    case 'CLUB':
-      return '🛡️';
-    case 'LEAGUE':
-    case 'COMPETITION':
-      return '🏆';
-    case 'EVENT':
-    case 'MATCH':
-      return '🎟️';
-    case 'UNION':
-      return '🏛️';
-    case 'SPORT':
-      return '⚽';
-    default:
-      return '⭐';
-  }
-}
-
-function matchesFilter(
-  sponsorPackage: SponsorPackage,
-  filter: PackageFilter,
-) {
-  if (filter === 'All') {
-    return true;
-  }
-
-  if (filter === 'Popular') {
-    return sponsorPackage.is_exclusive;
-  }
-
-  if (filter === 'Clubs') {
-    return (
-      sponsorPackage.owner_type ===
-        'CLUB' ||
-      sponsorPackage.scope_type ===
-        'CLUB' ||
-      sponsorPackage.scope_type ===
-        'TEAM'
-    );
-  }
-
-  if (filter === 'Leagues') {
-    return (
-      sponsorPackage.owner_type ===
-        'LEAGUE' ||
-      sponsorPackage.scope_type ===
-        'LEAGUE' ||
-      sponsorPackage.scope_type ===
-        'COMPETITION'
-    );
-  }
-
-  if (filter === 'Events') {
-    return (
-      sponsorPackage.scope_type ===
-        'EVENT' ||
-      sponsorPackage.scope_type ===
-        'MATCH'
-    );
-  }
-
-  return (
-    sponsorPackage.scope_type ===
-    'PLAYER'
-  );
+  return new Intl.NumberFormat('en-UG', {
+    style: 'currency',
+    currency,
+    maximumFractionDigits: 0,
+  }).format(Number(amount));
 }
 
 export default function SponsorPackages() {
   const navigate = useNavigate();
 
-  const [
-    activeFilter,
-    setActiveFilter,
-  ] =
-    useState<PackageFilter>('All');
-
-  const [search, setSearch] =
-    useState('');
-
-  const [
-    packages,
-    setPackages,
-  ] = useState<SponsorPackage[]>([]);
-
+  const [packages, setPackages] =
+    useState<SponsorPackage[]>([]);
   const [loading, setLoading] =
     useState(true);
-
   const [error, setError] =
-    useState<string | null>(null);
-
+    useState('');
   const [reloadKey, setReloadKey] =
     useState(0);
+
+  const [query, setQuery] =
+    useState('');
+  const [objective, setObjective] =
+    useState<
+      'ALL' | SponsorPackageObjective
+    >('ALL');
+  const [sport, setSport] =
+    useState<
+      'ALL' | SponsorPackageSport
+    >('ALL');
+  const [duration, setDuration] =
+    useState<
+      'ALL' | SponsorPackageDuration
+    >('ALL');
+  const [propertyType, setPropertyType] =
+    useState('ALL');
+  const [maxBudget, setMaxBudget] =
+    useState('ALL');
 
   useEffect(() => {
     let active = true;
 
-    const loadPackages = async () => {
+    async function loadPackages() {
       setLoading(true);
-      setError(null);
+      setError('');
 
       try {
         const response =
-          await getSponsorPackages();
+          await getSponsorPackages({
+            is_template: true,
+          });
 
         if (!active) {
           return;
@@ -235,23 +137,18 @@ export default function SponsorPackages() {
         setPackages(
           response.data.results,
         );
-      } catch (loadError) {
-        if (!active) {
-          return;
+      } catch {
+        if (active) {
+          setError(
+            'We could not load sponsorship opportunities.',
+          );
         }
-
-        setError(
-          getApiErrorMessage(
-            loadError,
-            'We could not load sponsorship packages.',
-          ),
-        );
       } finally {
         if (active) {
           setLoading(false);
         }
       }
-    };
+    }
 
     void loadPackages();
 
@@ -262,43 +159,90 @@ export default function SponsorPackages() {
 
   const filteredPackages =
     useMemo(() => {
-      const query =
-        search.trim().toLowerCase();
+      const normalized =
+        query.trim().toLowerCase();
 
       return packages.filter(
-        (sponsorPackage) => {
-          if (
-            !matchesFilter(
-              sponsorPackage,
-              activeFilter,
-            )
-          ) {
-            return false;
-          }
-
-          if (!query) {
-            return true;
-          }
-
-          return [
-            sponsorPackage.name,
-            sponsorPackage.description,
-            sponsorPackage.owner_name,
-            sponsorPackage.scope_name,
-            sponsorPackage.category_display,
-          ]
-            .filter(Boolean)
-            .some((value) =>
+        (item) => {
+          const matchesQuery =
+            !normalized ||
+            [
+              item.name,
+              item.description,
+              item.objective_display,
+              item.sport_display,
+              ...(item.opportunities ?? []).map(
+                (opportunity) =>
+                  opportunity.property_name,
+              ),
+            ].some((value) =>
               value
                 .toLowerCase()
-                .includes(query),
+                .includes(normalized),
             );
+
+          const matchesObjective =
+            objective === 'ALL' ||
+            item.objective === objective;
+
+          const matchesSport =
+            sport === 'ALL' ||
+            item.sport === sport ||
+            item.sport === 'GENERAL' ||
+            item.opportunities?.some(
+              (opportunity) =>
+                opportunity.sport === sport,
+            );
+
+          const matchesDuration =
+            duration === 'ALL' ||
+            item.duration_type ===
+              duration;
+
+          const matchesProperty =
+            propertyType === 'ALL' ||
+            item.opportunities?.some(
+              (opportunity) =>
+                opportunity.property_type ===
+                propertyType,
+            );
+
+          const startingPrice =
+            Math.min(
+              ...(
+                item.opportunities?.map(
+                  (opportunity) =>
+                    Number(
+                      opportunity.price_amount,
+                    ),
+                ) ?? []
+              ),
+              Number(item.price_amount),
+            );
+
+          const matchesBudget =
+            maxBudget === 'ALL' ||
+            startingPrice <=
+              Number(maxBudget);
+
+          return (
+            matchesQuery &&
+            matchesObjective &&
+            matchesSport &&
+            matchesDuration &&
+            matchesProperty &&
+            matchesBudget
+          );
         },
       );
     }, [
-      activeFilter,
+      duration,
+      maxBudget,
+      objective,
       packages,
-      search,
+      propertyType,
+      query,
+      sport,
     ]);
 
   return (
@@ -306,118 +250,226 @@ export default function SponsorPackages() {
       <div className="spkg-layout">
         <SponsorSidebar />
 
-        <main className="spkg-main landing-page">
-          <div className="spkg-header">
-            <div className="spkg-header-left">
-              <h1 className="spkg-title">
-                Sponsor Packages
+        <main className="spkg-main">
+          <header className="spkg-header">
+            <div>
+              <div className="spkg-eyebrow">
+                Sponsorship marketplace
+              </div>
+
+              <h1>
+                Discover Opportunities
               </h1>
 
-              <p className="spkg-subtitle">
-                Explore approved sponsorship
-                opportunities across the League
-                OS ecosystem.
+              <p>
+                Start with a neutral
+                package, then choose the
+                club, competition, event,
+                match or digital property
+                you want to support.
               </p>
             </div>
 
-            <div className="spkg-header-right">
-              <div className="spkg-search-wrap">
-                <FiSearch
-                  size={15}
-                  className="spkg-search-icon"
-                />
+            <button
+              type="button"
+              className="spkg-secondary-btn"
+              onClick={() =>
+                setReloadKey(
+                  (value) => value + 1,
+                )
+              }
+            >
+              <FiRefreshCw size={16} />
+              Refresh
+            </button>
+          </header>
 
-                <input
-                  className="spkg-search"
-                  type="search"
-                  placeholder="Search packages..."
-                  value={search}
-                  onChange={(event) =>
-                    setSearch(
-                      event.target.value,
-                    )
-                  }
-                />
-              </div>
-
-              <button
-                type="button"
-                className="spkg-compare-btn"
-                onClick={() =>
-                  setReloadKey(
-                    (current) =>
-                      current + 1,
+          <section className="spkg-filters">
+            <div className="spkg-search">
+              <FiSearch size={16} />
+              <input
+                type="search"
+                value={query}
+                onChange={(event) =>
+                  setQuery(
+                    event.target.value,
                   )
                 }
-                disabled={loading}
-              >
-                <FiRefreshCw size={15} />
-                Refresh Packages
-              </button>
+                placeholder="Search packages or sports properties"
+              />
             </div>
-          </div>
 
-          <div className="spkg-filter-tabs">
-            {filterTabs.map((tab) => (
-              <button
-                type="button"
-                key={tab}
-                className={
-                  `spkg-filter-tab ${
-                    activeFilter === tab
-                      ? 'spkg-filter-active'
-                      : ''
-                  }`
-                }
-                onClick={() =>
-                  setActiveFilter(tab)
+            <label>
+              <span>Objective</span>
+              <select
+                value={objective}
+                onChange={(event) =>
+                  setObjective(
+                    event.target
+                      .value as
+                      | 'ALL'
+                      | SponsorPackageObjective,
+                  )
                 }
               >
-                {tab}
-              </button>
-            ))}
+                {objectives.map(
+                  (item) => (
+                    <option
+                      key={item.value}
+                      value={item.value}
+                    >
+                      {item.label}
+                    </option>
+                  ),
+                )}
+              </select>
+            </label>
+
+            <label>
+              <span>Sport</span>
+              <select
+                value={sport}
+                onChange={(event) =>
+                  setSport(
+                    event.target
+                      .value as
+                      | 'ALL'
+                      | SponsorPackageSport,
+                  )
+                }
+              >
+                {sports.map((item) => (
+                  <option
+                    key={item.value}
+                    value={item.value}
+                  >
+                    {item.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label>
+              <span>Property</span>
+              <select
+                value={propertyType}
+                onChange={(event) =>
+                  setPropertyType(
+                    event.target.value,
+                  )
+                }
+              >
+                <option value="ALL">
+                  All properties
+                </option>
+                <option value="CLUB">
+                  Clubs
+                </option>
+                <option value="TEAM">
+                  Teams
+                </option>
+                <option value="COMPETITION">
+                  Competitions
+                </option>
+                <option value="MATCH">
+                  Matches
+                </option>
+                <option value="EVENT">
+                  Events
+                </option>
+                <option value="UNION">
+                  Unions
+                </option>
+                <option value="PLATFORM">
+                  League OS Digital
+                </option>
+              </select>
+            </label>
+
+            <label>
+              <span>Duration</span>
+              <select
+                value={duration}
+                onChange={(event) =>
+                  setDuration(
+                    event.target
+                      .value as
+                      | 'ALL'
+                      | SponsorPackageDuration,
+                  )
+                }
+              >
+                {durations.map(
+                  (item) => (
+                    <option
+                      key={item.value}
+                      value={item.value}
+                    >
+                      {item.label}
+                    </option>
+                  ),
+                )}
+              </select>
+            </label>
+
+            <label>
+              <span>Maximum budget</span>
+              <select
+                value={maxBudget}
+                onChange={(event) =>
+                  setMaxBudget(
+                    event.target.value,
+                  )
+                }
+              >
+                <option value="ALL">
+                  Any budget
+                </option>
+                <option value="2000000">
+                  Up to UGX 2M
+                </option>
+                <option value="5000000">
+                  Up to UGX 5M
+                </option>
+                <option value="15000000">
+                  Up to UGX 15M
+                </option>
+                <option value="30000000">
+                  Up to UGX 30M
+                </option>
+              </select>
+            </label>
+          </section>
+
+          <div className="spkg-result-title">
+            <FiFilter size={15} />
+            {filteredPackages.length}{' '}
+            package
+            {filteredPackages.length === 1
+              ? ''
+              : 's'}{' '}
+            available
           </div>
 
           {loading && (
-            <div className="spkg-state-card">
+            <div className="spkg-state">
               <FiRefreshCw
+                className="spkg-spin"
                 size={28}
-                className="spkg-state-spinner"
               />
-
               <h2>
-                Loading sponsor packages
+                Loading opportunities
               </h2>
-
-              <p>
-                Fetching the latest approved
-                opportunities.
-              </p>
             </div>
           )}
 
           {!loading && error && (
-            <div className="spkg-state-card">
+            <div className="spkg-state">
               <FiAlertCircle size={30} />
-
               <h2>
-                Packages could not be loaded
+                Opportunities unavailable
               </h2>
-
               <p>{error}</p>
-
-              <button
-                type="button"
-                className="spkg-btn pkg-btn-purple spkg-state-action"
-                onClick={() =>
-                  setReloadKey(
-                    (current) =>
-                      current + 1,
-                  )
-                }
-              >
-                Try Again
-              </button>
             </div>
           )}
 
@@ -425,28 +477,16 @@ export default function SponsorPackages() {
             !error &&
             filteredPackages.length ===
               0 && (
-              <div className="spkg-state-card">
-                <FiInfo size={30} />
-
+              <div className="spkg-state">
+                <FiTarget size={30} />
                 <h2>
-                  No packages found
+                  No matching opportunities
                 </h2>
-
                 <p>
-                  No sponsorship packages match
-                  the current search and filter.
+                  Adjust the objective,
+                  sport, property or
+                  budget filters.
                 </p>
-
-                <button
-                  type="button"
-                  className="spkg-btn pkg-btn-purple spkg-state-action"
-                  onClick={() => {
-                    setSearch('');
-                    setActiveFilter('All');
-                  }}
-                >
-                  Clear Filters
-                </button>
               </div>
             )}
 
@@ -454,211 +494,103 @@ export default function SponsorPackages() {
             !error &&
             filteredPackages.length >
               0 && (
-              <div className="spkg-cards-grid">
+              <section className="spkg-grid">
                 {filteredPackages.map(
-                  (
-                    sponsorPackage,
-                    index,
-                  ) => {
-                    const highlighted =
-                      sponsorPackage.is_exclusive;
+                  (item) => (
+                    <article
+                      key={item.id}
+                      className="spkg-card"
+                    >
+                      <div className="spkg-card-top">
+                        <span>
+                          {
+                            item.objective_display
+                          }
+                        </span>
 
-                    const orange =
-                      highlighted ||
-                      index % 4 === 1;
+                        {item.is_exclusive && (
+                          <strong>
+                            Negotiated
+                          </strong>
+                        )}
+                      </div>
 
-                    return (
-                      <article
-                        key={
-                          sponsorPackage.id
-                        }
-                        className={
-                          `spkg-card ${
-                            highlighted
-                              ? 'spkg-card-gold'
-                              : ''
-                          }`
+                      <h2>{item.name}</h2>
+
+                      <p>
+                        {item.description}
+                      </p>
+
+                      <div className="spkg-meta">
+                        <span>
+                          {item.sport_display}
+                        </span>
+                        <span>
+                          {
+                            item.duration_type_display
+                          }
+                        </span>
+                      </div>
+
+                      <div className="spkg-price">
+                        <small>
+                          Starting from
+                        </small>
+                        <strong>
+                          {money(
+                            item.price_amount,
+                            item.currency,
+                          )}
+                        </strong>
+                      </div>
+
+                      <div className="spkg-property-count">
+                        <FiMapPin size={15} />
+                        {
+                          item.opportunities
+                            ?.length
+                        }{' '}
+                        available sports
+                        propert
+                        {item.opportunities
+                          ?.length === 1
+                          ? 'y'
+                          : 'ies'}
+                      </div>
+
+                      <ul>
+                        {item.benefits
+                          .slice(0, 4)
+                          .map((benefit) => (
+                            <li
+                              key={
+                                benefit.id
+                              }
+                            >
+                              <FiCheckCircle
+                                size={14}
+                              />
+                              {benefit.name}
+                            </li>
+                          ))}
+                      </ul>
+
+                      <button
+                        type="button"
+                        className="spkg-primary-btn"
+                        onClick={() =>
+                          navigate(
+                            `/sponsor/packages/${item.id}`,
+                          )
                         }
                       >
-                        {highlighted && (
-                          <div className="spkg-popular-badge">
-                            <FiStar size={11} />
-                            Exclusive
-                          </div>
-                        )}
-
-                        <div className="spkg-card-top">
-                          <div
-                            className={
-                              `spkg-pkg-icon ${
-                                orange
-                                  ? 'pkg-icon-orange'
-                                  : 'pkg-icon-grey'
-                              }`
-                            }
-                          >
-                            <span className="spkg-pkg-emoji">
-                              {packageIcon(
-                                sponsorPackage,
-                              )}
-                            </span>
-                          </div>
-
-                          <div>
-                            <div className="spkg-tier-label">
-                              {
-                                sponsorPackage
-                                  .scope_type_display
-                              }
-                            </div>
-
-                            <div className="spkg-tier-name">
-                              {
-                                sponsorPackage.name
-                              }
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="spkg-price-row">
-                          <span
-                            className={
-                              `spkg-currency ${
-                                orange
-                                  ? 'pkg-price-orange'
-                                  : 'pkg-price-purple'
-                              }`
-                            }
-                          >
-                            {
-                              sponsorPackage.currency
-                            }
-                          </span>
-
-                          <span
-                            className={
-                              `spkg-price ${
-                                orange
-                                  ? 'pkg-price-orange'
-                                  : 'pkg-price-purple'
-                              }`
-                            }
-                          >
-                            {formatAmount(
-                              sponsorPackage.price_amount,
-                            )}
-                          </span>
-                        </div>
-
-                        <div className="spkg-per-year">
-                          {
-                            sponsorPackage.owner_name
-                          }
-                        </div>
-
-                        <p className="spkg-desc">
-                          {
-                            sponsorPackage.description ||
-                            `Sponsor ${sponsorPackage.scope_name}.`
-                          }
-                        </p>
-
-                        <div className="spkg-divider" />
-
-                        <ul className="spkg-features">
-                          {sponsorPackage
-                            .benefits.length >
-                          0 ? (
-                            sponsorPackage.benefits
-                              .slice(0, 6)
-                              .map((benefit) => (
-                                <li
-                                  key={
-                                    benefit.id
-                                  }
-                                  className="spkg-feature-item"
-                                >
-                                  <FiCheckCircle
-                                    size={15}
-                                    className={
-                                      `spkg-check ${
-                                        orange
-                                          ? 'pkg-check-orange'
-                                          : 'pkg-check-purple'
-                                      }`
-                                    }
-                                  />
-
-                                  <span>
-                                    {
-                                      benefit.name
-                                    }
-                                  </span>
-                                </li>
-                              ))
-                          ) : (
-                            <li className="spkg-feature-item">
-                              <FiCheckCircle
-                                size={15}
-                                className="spkg-check pkg-check-purple"
-                              />
-
-                              <span>
-                                {
-                                  sponsorPackage.activation_rule_display
-                                }
-                              </span>
-                            </li>
-                          )}
-                        </ul>
-
-                        <button
-                          type="button"
-                          className={
-                            `spkg-btn ${
-                              orange
-                                ? 'pkg-btn-orange'
-                                : 'pkg-btn-purple'
-                            }`
-                          }
-                          onClick={() =>
-                            navigate(
-                              `/sponsor/packages/${sponsorPackage.id}`,
-                            )
-                          }
-                        >
-                          View Details
-                        </button>
-                      </article>
-                    );
-                  },
+                        View Opportunities
+                      </button>
+                    </article>
+                  ),
                 )}
-              </div>
+              </section>
             )}
-
-          <div className="spkg-bottom-banner">
-            <FiInfo
-              size={16}
-              className="spkg-banner-icon"
-            />
-
-            <p className="spkg-banner-text">
-              Sponsorship packages are created
-              and approved by clubs, leagues,
-              unions and League OS administrators.
-            </p>
-
-            <button
-              type="button"
-              className="spkg-talk-btn"
-              onClick={() =>
-                navigate('/support')
-              }
-            >
-              Talk to Sponsorship Team
-              <FiChevronRight size={14} />
-            </button>
-          </div>
         </main>
       </div>
     </div>

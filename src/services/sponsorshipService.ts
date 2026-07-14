@@ -23,6 +23,31 @@ export type SponsorPackageStatus =
   | 'ACTIVE'
   | 'ARCHIVED';
 
+export type SponsorPackageObjective =
+  | 'VISIBILITY'
+  | 'FAN_ENGAGEMENT'
+  | 'HOSPITALITY'
+  | 'COMMUNITY_IMPACT'
+  | 'GRASSROOTS';
+
+export type SponsorPackageDuration =
+  | 'ONE_MATCH'
+  | 'ONE_EVENT'
+  | 'MONTHLY'
+  | 'SEASON';
+
+export type SponsorPackageSport =
+  | 'GENERAL'
+  | 'RUGBY'
+  | 'FOOTBALL'
+  | 'BASKETBALL'
+  | 'COMMUNITY';
+
+export type SponsorshipOpportunityStatus =
+  | 'AVAILABLE'
+  | 'RESERVED'
+  | 'CLOSED';
+
 export type SponsorAgreementStatus =
   | 'DRAFT'
   | 'SUBMITTED'
@@ -159,10 +184,37 @@ export interface SponsorRevenueShareRule {
   created_at: string;
 }
 
+export interface SponsorshipOpportunity {
+  id: number;
+  sponsor_package: number;
+  property_type: string;
+  property_type_display: string;
+  property_identifier: string;
+  property_name: string;
+  sport: SponsorPackageSport;
+  sport_display: string;
+  location: string;
+  price_amount: string;
+  currency: string;
+  starts_at: string | null;
+  ends_at: string | null;
+  status: SponsorshipOpportunityStatus;
+  status_display: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface SponsorPackage {
   id: number;
   name: string;
   description: string;
+  is_template: boolean;
+  objective: SponsorPackageObjective;
+  objective_display: string;
+  duration_type: SponsorPackageDuration;
+  duration_type_display: string;
+  sport: SponsorPackageSport;
+  sport_display: string;
   owner_type: string;
   owner_type_display: string;
   owner_identifier: string;
@@ -192,6 +244,7 @@ export interface SponsorPackage {
   approved_by_email?: string | null;
   approved_at: string | null;
   benefits: SponsorBenefit[];
+  opportunities: SponsorshipOpportunity[];
   revenue_share_rules:
     SponsorRevenueShareRule[];
   created_at: string;
@@ -203,6 +256,10 @@ export interface SponsorPackageFilters {
   scope_type?: string;
   category?: string;
   status?: SponsorPackageStatus;
+  objective?: SponsorPackageObjective;
+  duration_type?: SponsorPackageDuration;
+  sport?: SponsorPackageSport;
+  is_template?: boolean;
 }
 
 export interface SponsorPaymentSchedule {
@@ -288,6 +345,8 @@ export interface SponsorAgreement {
     SponsorAccountResponse;
   sponsor_package: number;
   sponsor_package_detail: SponsorPackage;
+  opportunity: number | null;
+  opportunity_detail: SponsorshipOpportunity | null;
   reference: string;
   agreement_type: string;
   agreement_type_display: string;
@@ -345,6 +404,7 @@ export interface SponsorAgreementFilters {
 export interface CreateSponsorAgreementPayload {
   sponsor_account: number;
   sponsor_package: number;
+  opportunity?: number;
   agreement_type?:
     | 'CASH'
     | 'IN_KIND'
