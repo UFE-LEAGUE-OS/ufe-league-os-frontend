@@ -265,3 +265,180 @@
   .summary { flex-direction: column; align-items: flex-start; }
   .continueBtn { width: 100%; text-align: center; }
 }
+
+/* ── API-backed competition selection ── */
+.stateCard {
+  width: min(460px, calc(100% - 32px));
+  margin: auto;
+  padding: 34px;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 16px;
+  background: #0d0f1e;
+  text-align: center;
+}
+
+.stateCard svg {
+  color: #8135FA;
+}
+
+.stateCard h2 {
+  margin: 14px 0 8px;
+}
+
+.stateCard p {
+  margin: 0 0 18px;
+  color: rgba(255,255,255,0.55);
+  line-height: 1.6;
+}
+
+.stateSpinner {
+  animation: competitionSpin 1s linear infinite;
+}
+
+@keyframes competitionSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.retryBtn {
+  margin: 0 8px 12px 0;
+  padding: 10px 20px;
+  border: 0;
+  border-radius: 8px;
+  background: #8135FA;
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.emptyState {
+  min-height: 230px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 28px;
+  border: 1px dashed rgba(255,255,255,0.14);
+  border-radius: 14px;
+  background: rgba(255,255,255,0.025);
+  text-align: center;
+}
+
+.emptyState svg {
+  color: #8135FA;
+}
+
+.emptyState h3,
+.emptyState p {
+  margin: 0;
+}
+
+.emptyState p {
+  max-width: 520px;
+  color: rgba(255,255,255,0.52);
+  line-height: 1.6;
+}
+
+.competitionHeading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.statusChip {
+  padding: 4px 9px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.competitionName {
+  min-height: 46px;
+  line-height: 1.25;
+}
+
+.competitionSeason {
+  color: rgba(255,255,255,0.68);
+  font-size: 12px;
+}
+
+.sportMeta span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.selectionSummary {
+  flex: 1;
+  min-width: 0;
+}
+
+.linkedCompetition,
+.rulesSummary,
+.availabilityMessage {
+  margin: 8px 0 0;
+  line-height: 1.5;
+}
+
+.linkedCompetition {
+  color: rgba(255,255,255,0.5);
+  font-size: 12px;
+}
+
+.rulesSummary {
+  color: rgba(255,255,255,0.72);
+  font-size: 13px;
+}
+
+.availabilityMessage {
+  color: #fdba74;
+  font-size: 12px;
+}
+
+.selectionActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.secondaryBtn {
+  padding: 11px 18px;
+  border: 1px solid rgba(129,53,250,0.7);
+  border-radius: 8px;
+  background: transparent;
+  color: #fff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.secondaryBtn:hover {
+  background: rgba(129,53,250,0.12);
+}
+
+.continueBtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+@media (max-width: 700px) {
+  .selectionActions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .secondaryBtn,
+  .continueBtn {
+    width: 100%;
+    text-align: center;
+  }
+}
