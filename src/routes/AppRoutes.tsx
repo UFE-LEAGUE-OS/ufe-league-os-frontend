@@ -128,6 +128,7 @@ import CorporateSponsorDashboard from '../pages/sponsor/CorporateSponsorDashboar
 import CorporateTeamManagement from '../pages/sponsor/CorporateTeamManagement';
 import SponsorPermissions from '../pages/sponsor/SponsorPermissions';
 import SponsorPackages from '../pages/sponsor/SponsorPackages';
+import SponsorPackageDetail from '../pages/sponsor/SponsorPackageDetail';
 import CampaignCreation from '../pages/sponsor/CampaignCreation';
 import CampaignAnalytics from '../pages/sponsor/CampaignAnalytics';
 import CampaignPlacementPreview from '../pages/sponsor/CampaignPlacementPreview';
@@ -366,7 +367,14 @@ export default function AppRoutes() {
                 <Route path="/sponsor/dashboard" element={<CorporateSponsorDashboard />} />
                 <Route path="/sponsor/team" element={<CorporateTeamManagement />} />
                 <Route path="/sponsor/permissions" element={<SponsorPermissions />} />
-                <Route path="/sponsor/packages" element={<SponsorPackages />} />
+                <Route
+                    path="/sponsor/packages"
+                    element={protectedPage(<SponsorPackages />)}
+                />
+                <Route
+                    path="/sponsor/packages/:packageId"
+                    element={protectedPage(<SponsorPackageDetail />)}
+                />
                 <Route path="/sponsor/campaigns/new" element={<CampaignCreation />} />
                 <Route path="/sponsor/analytics" element={<CampaignAnalytics />} />
                 <Route path="/sponsor/campaigns/preview" element={<CampaignPlacementPreview />} />
