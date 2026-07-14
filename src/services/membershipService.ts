@@ -241,3 +241,77 @@ export async function getMembershipCatalogForClubSlug(
 
   return catalog.find((club) => club.clubSlug === clubSlug) || null;
 }
+export interface BackendMembershipSubscription {
+  id: number;
+  user: number;
+  user_email: string;
+  plan: number;
+  plan_name: string;
+  club: number;
+  club_name: string;
+  club_slug: string;
+  club_logo_url: string;
+  status: string;
+  starts_at: string | null;
+  ends_at: string | null;
+  created_at: string;
+  updated_at: string;
+  card: unknown;
+}
+
+export interface BackendMembershipSubscriptionResponse {
+  count: number;
+  results: BackendMembershipSubscription[];
+}
+
+export async function getClubSubscriptions(
+  clubId: number
+): Promise<BackendMembershipSubscription[]> {
+  const response = await apiClient.get<BackendMembershipSubscriptionResponse>(
+    `/memberships/subscriptions/?club=${clubId}`
+  );
+  return response.data.results;
+}
+
+export async function getClubMembershipPlans(
+  clubId: number
+): Promise<BackendMembershipPlan[]> {
+  const response = await apiClient.get<BackendMembershipPlanResponse>(
+    `/memberships/plans/?club=${clubId}`
+  );
+  return response.data.results;
+}
+
+export type CreateMembershipPlanPayload = {
+  club: number;
+  name: string;
+  description: string;
+  tier: string;
+  billing_cycle: string;
+  price_amount: string;
+  currency: string;
+  benefits: string[];
+  is_active: boolean;
+  is_visible: boolean;
+};
+
+export async function createMembershipPlan(
+  payload: CreateMembershipPlanPayload
+) {
+  const response = await apiClient.post<{ message: string; plan: BackendMembershipPlan }>(
+    '/memberships/plans/',
+    payload
+  );
+  return response.data.plan;
+}
+
+export async function updateMembershipPlan(
+  planId: number,
+  payload: Partial<CreateMembershipPlanPayload>
+) {
+  const response = await apiClient.patch<{ message: string; plan: BackendMembershipPlan }>(
+    `/memberships/plans/${planId}/`,
+    payload
+  );
+  return response.data.plan;
+}
