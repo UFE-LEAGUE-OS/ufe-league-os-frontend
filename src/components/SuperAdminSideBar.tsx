@@ -34,7 +34,7 @@ import {
   BadgeDollarSign,
   BarChart3,
   Package,
-  CheckCircle2,
+ 
   ClipboardCheck,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -136,14 +136,14 @@ const NAV_ITEMS: NavItem[] = [
     path: "/super-admin/sponsor-management",
 
   children: [
-  {id: "sm-frameworks",label: "Sponsor Frameworks", path: "/super-admin/sponsor-frameworks",icon: Layers3},
-  {id: "sm-visibility", label: "Campaign Visibility",path: "/super-admin/campaign-visibility", icon: Eye},
-  {id: "sm-placements", label: "Placements Manager", path: "/super-admin/system-placements", icon: LayoutPanelTop},
-  {id: "sm-benefits",  label: "Benefit Sharing", path: "/super-admin/benefit-sharing", icon: BadgeDollarSign},
-  { id: "sm-inventory",  label: "Sponsorship Inventory",  path: "/super-admin/sponsorship-inventory",  icon: Package},
-  {id: "sm-performance", label: "Campaign Performance",   path: "/super-admin/campaign-performance",   icon: BarChart3},
-  {id: "sm-approvals", label: "Approvals Workflow", path: "/super-admin/approvals", icon: CheckCircle2},
-  { id: "sm-audits",  label: "Compliance Audits",  path: "/super-admin/compliance-audits",  icon: ClipboardCheck},  
+  { id: "sm-frameworks", label: "Sponsor Frameworks", path: "/super-admin/frameworks", icon: Layers3 },
+{ id: "sm-visibility", label: "Campaign Visibility", path: "/super-admin/visibility", icon: Eye },
+{ id: "sm-placements", label: "Placements Manager", path: "/super-admin/placements", icon: LayoutPanelTop },
+{ id: "sm-benefits", label: "Benefit Sharing", path: "/super-admin/benefit-sharing", icon: BadgeDollarSign },
+{ id: "sm-inventory", label: "Sponsorship Inventory", path: "/super-admin/inventory", icon: Package },
+{ id: "sm-performance", label: "Campaign Performance", path: "/super-admin/performance", icon: BarChart3 },
+{ id: "sm-approvals", label: "Approvals Workflow", path: "/super-admin/approvals", icon: ClipboardCheck},
+{ id: "sm-audits", label: "Compliance & Audit Logs", path: "/super-admin/audits", icon: ClipboardList },
  
 ],
   },
