@@ -368,7 +368,10 @@ export default function AppRoutes() {
                     path="/sponsor/dashboard"
                     element={protectedPage(<CorporateSponsorDashboard />)}
                 />
-                <Route path="/sponsor/team" element={<CorporateTeamManagement />} />
+                <Route
+                    path="/sponsor/team"
+                    element={protectedPage(<CorporateTeamManagement />)}
+                />
                 <Route path="/sponsor/permissions" element={<SponsorPermissions />} />
                 <Route
                     path="/sponsor/packages"

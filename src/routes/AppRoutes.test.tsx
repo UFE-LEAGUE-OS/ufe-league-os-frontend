@@ -136,6 +136,16 @@ describe('AppRoutes protected routes', () => {
         ).toBeInTheDocument()
     })
 
+    it('redirects logged-out users from sponsor team management to login', () => {
+        visit('/sponsor/team')
+
+        expect(
+            screen.getByRole('heading', {
+                name: /login page/i,
+            }),
+        ).toBeInTheDocument()
+    })
+
     it('keeps public routes available without login', () => {
         visit('/fixtures')
 
