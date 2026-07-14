@@ -102,6 +102,48 @@ export interface FantasyOverview {
 export const fetchFantasyOverview = () =>
   axiosInstance.get<FantasyOverview>('/fantasy/overview/');
 
+export interface FantasyCompetitionApi {
+  id: number;
+  name: string;
+  slug: string;
+  linked_competition: number;
+  linked_competition_label: string;
+  sport: string;
+  season: string;
+  status: string;
+  budget: string;
+  squad_size: number;
+  lineup_size: number;
+  max_players_per_club: number;
+  captain_multiplier: string;
+  min_player_price: string;
+  max_player_price: string;
+  default_player_price: string;
+  rules_summary: string;
+  teams_count: number;
+  gameweeks_count: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface FantasyCompetitionListResponse {
+  count: number;
+  results: FantasyCompetitionApi[];
+}
+
+export interface FantasyCompetitionFilters {
+  sport?: string;
+  status?: string;
+}
+
+export const fetchFantasyCompetitions = (
+  params?: FantasyCompetitionFilters,
+) =>
+  axiosInstance.get<FantasyCompetitionListResponse>(
+    '/fantasy/competitions/',
+    { params },
+  );
+
 export interface Competition {
   id: string;
   sport: string;
