@@ -144,6 +144,41 @@ export const fetchFantasyCompetitions = (
     { params },
   );
 
+export interface FantasyPlayerApi {
+  id: number;
+  fantasy_competition: number;
+  fantasy_competition_name: string;
+  club: number;
+  club_name: string;
+  display_name: string;
+  position: string;
+  position_label: string;
+  calculated_price: string;
+  final_price: string;
+  price_source: string;
+  price_source_label: string;
+  price_override_reason: string;
+  price_locked_at: string | null;
+  previous_stats: Record<string, unknown>;
+  current_form: string;
+  is_active: boolean;
+  is_available: boolean;
+  availability_note: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface FantasySquadPlayerApi {
+  id: number;
+  fantasy_team: number;
+  fantasy_player: number;
+  fantasy_player_detail: FantasyPlayerApi;
+  price_at_selection: string;
+  is_active: boolean;
+  joined_at: string;
+  removed_at: string | null;
+}
+
 export interface FantasyTeamApi {
   id: number;
   owner: number;
@@ -156,7 +191,7 @@ export interface FantasyTeamApi {
   active_squad_count: number;
   budget_used: string;
   budget_remaining: string;
-  squad_players: unknown[];
+  squad_players: FantasySquadPlayerApi[];
   created_at: string;
   updated_at: string;
 }
@@ -164,6 +199,37 @@ export interface FantasyTeamApi {
 export interface FantasyTeamListResponse {
   count: number;
   results: FantasyTeamApi[];
+}
+
+export interface FantasyPlayerListResponse {
+  count: number;
+  results: FantasyPlayerApi[];
+}
+
+export interface FantasyPlayerFilters {
+  search?: string;
+  club?: number;
+  position?: string;
+  available?: 'true' | 'false';
+}
+
+export interface CreateFantasyTeamPayload {
+  fantasy_competition_id: number;
+  name: string;
+}
+
+export interface CreateFantasyTeamResponse {
+  message: string;
+  team: FantasyTeamApi;
+}
+
+export interface UpdateFantasySquadPayload {
+  player_ids: number[];
+}
+
+export interface UpdateFantasySquadResponse {
+  message: string;
+  team: FantasyTeamApi;
 }
 
 export interface FantasyCompetitionDetailResponse {
@@ -226,6 +292,32 @@ export const fetchFantasyCompetitionDetail = (
 export const fetchMyFantasyTeams = () =>
   axiosInstance.get<FantasyTeamListResponse>(
     '/fantasy/teams/me/',
+  );
+
+export const fetchFantasyPlayers = (
+  competitionId: number,
+  params?: FantasyPlayerFilters,
+) =>
+  axiosInstance.get<FantasyPlayerListResponse>(
+    `/fantasy/competitions/${competitionId}/players/`,
+    { params },
+  );
+
+export const createFantasyTeam = (
+  payload: CreateFantasyTeamPayload,
+) =>
+  axiosInstance.post<CreateFantasyTeamResponse>(
+    '/fantasy/teams/',
+    payload,
+  );
+
+export const updateFantasySquad = (
+  teamId: number,
+  payload: UpdateFantasySquadPayload,
+) =>
+  axiosInstance.post<UpdateFantasySquadResponse>(
+    `/fantasy/teams/${teamId}/squad/`,
+    payload,
   );
 
 export const fetchAvailableFantasyLeagues = (
