@@ -50,7 +50,7 @@ export interface FantasyLeagueSummary {
   fantasy_competition_name: string;
   name: string;
   league_type: 'PUBLIC' | 'PRIVATE';
-  join_code: string;
+  join_code: string | null;
   created_by: number;
   created_by_email: string;
   is_active: boolean;
@@ -142,6 +142,114 @@ export const fetchFantasyCompetitions = (
   axiosInstance.get<FantasyCompetitionListResponse>(
     '/fantasy/competitions/',
     { params },
+  );
+
+export interface FantasyTeamApi {
+  id: number;
+  owner: number;
+  owner_email: string;
+  fantasy_competition: number;
+  fantasy_competition_name: string;
+  name: string;
+  total_points: string;
+  current_rank: number | null;
+  active_squad_count: number;
+  budget_used: string;
+  budget_remaining: string;
+  squad_players: unknown[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface FantasyTeamListResponse {
+  count: number;
+  results: FantasyTeamApi[];
+}
+
+export interface FantasyCompetitionDetailResponse {
+  competition: FantasyCompetitionApi;
+  gameweeks: FantasyGameweekSummary[];
+  leagues: FantasyLeagueSummary[];
+}
+
+export interface FantasyLeagueListResponse {
+  count: number;
+  limit: number;
+  offset: number;
+  results: FantasyLeagueSummary[];
+}
+
+export interface FantasyLeagueFilters {
+  competition?: number;
+  league_type?: 'PUBLIC' | 'PRIVATE';
+  limit?: number;
+  offset?: number;
+}
+
+export interface CreateFantasyLeaguePayload {
+  fantasy_competition_id: number;
+  name: string;
+  league_type: 'PUBLIC' | 'PRIVATE';
+}
+
+export interface CreateFantasyLeagueResponse {
+  message: string;
+  league: FantasyLeagueSummary;
+}
+
+export interface FantasyLeagueMembershipApi {
+  id: number;
+  fantasy_league: number;
+  fantasy_league_detail: FantasyLeagueSummary;
+  fantasy_team: number;
+  fantasy_team_name: string;
+  joined_at: string;
+}
+
+export interface JoinPrivateFantasyLeaguePayload {
+  fantasy_team_id: number;
+  join_code: string;
+}
+
+export interface JoinPrivateFantasyLeagueResponse {
+  message: string;
+  membership: FantasyLeagueMembershipApi;
+}
+
+export const fetchFantasyCompetitionDetail = (
+  competitionId: number,
+) =>
+  axiosInstance.get<FantasyCompetitionDetailResponse>(
+    `/fantasy/competitions/${competitionId}/`,
+  );
+
+export const fetchMyFantasyTeams = () =>
+  axiosInstance.get<FantasyTeamListResponse>(
+    '/fantasy/teams/me/',
+  );
+
+export const fetchAvailableFantasyLeagues = (
+  params: FantasyLeagueFilters,
+) =>
+  axiosInstance.get<FantasyLeagueListResponse>(
+    '/fantasy/leagues/available/',
+    { params },
+  );
+
+export const createFantasyLeague = (
+  payload: CreateFantasyLeaguePayload,
+) =>
+  axiosInstance.post<CreateFantasyLeagueResponse>(
+    '/fantasy/leagues/',
+    payload,
+  );
+
+export const joinPrivateFantasyLeague = (
+  payload: JoinPrivateFantasyLeaguePayload,
+) =>
+  axiosInstance.post<JoinPrivateFantasyLeagueResponse>(
+    '/fantasy/leagues/join/',
+    payload,
   );
 
 export interface Competition {

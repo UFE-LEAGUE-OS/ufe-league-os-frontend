@@ -335,3 +335,338 @@
   .leagueTableHead span:not(:first-child):not(:last-child),
   .leagueTableRow span:not(:first-child):not(:last-child) { display: none; }
 }
+
+/* ── Real API create/join workflow ── */
+.stateCard {
+  width: min(470px, calc(100% - 32px));
+  margin: auto;
+  padding: 34px;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 16px;
+  background: #0d0f1e;
+  text-align: center;
+}
+
+.stateCard svg {
+  color: #8135FA;
+}
+
+.stateCard h2 {
+  margin: 14px 0 8px;
+}
+
+.stateCard p {
+  margin: 0 0 18px;
+  color: rgba(255,255,255,0.55);
+  line-height: 1.6;
+}
+
+.stateSpinner {
+  animation: createJoinSpin 1s linear infinite;
+}
+
+@keyframes createJoinSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.teamNotice,
+.teamNoticeWarning {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 10px;
+}
+
+.teamNotice {
+  border: 1px solid rgba(34,197,94,0.25);
+  background: rgba(34,197,94,0.08);
+}
+
+.teamNoticeWarning {
+  border: 1px solid rgba(249,115,22,0.28);
+  background: rgba(249,115,22,0.08);
+}
+
+.teamNotice svg {
+  color: #22c55e;
+  flex-shrink: 0;
+}
+
+.teamNoticeWarning svg {
+  color: #fb923c;
+  flex-shrink: 0;
+}
+
+.teamNotice > div,
+.teamNoticeWarning > div {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.teamNotice strong,
+.teamNoticeWarning strong {
+  font-size: 13px;
+}
+
+.teamNotice span,
+.teamNoticeWarning span {
+  color: rgba(255,255,255,0.55);
+  font-size: 12px;
+}
+
+.apiError {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 12px 14px;
+  border: 1px solid rgba(239,68,68,0.3);
+  border-radius: 9px;
+  background: rgba(239,68,68,0.09);
+  color: #fecaca;
+  font-size: 13px;
+}
+
+.apiError svg {
+  flex-shrink: 0;
+}
+
+.toggleBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+
+.panelDescription {
+  margin: 5px 0 0;
+  color: rgba(255,255,255,0.5);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.secondaryBtn {
+  padding: 10px 18px;
+  border: 1px solid rgba(129,53,250,0.65);
+  border-radius: 8px;
+  background: transparent;
+  color: #fff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.secondaryBtn:hover {
+  background: rgba(129,53,250,0.12);
+}
+
+.successDetail {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px 18px;
+  color: rgba(255,255,255,0.7);
+  font-size: 12px;
+}
+
+.successDetail span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.codeBox {
+  min-width: 260px;
+  padding: 15px 20px;
+  border: 1px solid rgba(129,53,250,0.35);
+  border-radius: 10px;
+  background: rgba(129,53,250,0.09);
+}
+
+.codeBox small,
+.codeBox span {
+  display: block;
+  color: rgba(255,255,255,0.48);
+  font-size: 10px;
+}
+
+.codeBox strong {
+  display: block;
+  margin: 7px 0;
+  color: #fff;
+  font-size: 24px;
+  letter-spacing: 0.18em;
+}
+
+.membershipSuccess {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  background: rgba(34,197,94,0.1);
+  color: #86efac;
+  font-size: 12px;
+}
+
+.successActions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.successActions .primaryBtn {
+  align-self: auto;
+}
+
+.publicCount {
+  color: rgba(255,255,255,0.5);
+  font-size: 12px;
+}
+
+.emptyState {
+  min-height: 150px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 24px;
+  border: 1px dashed rgba(255,255,255,0.12);
+  border-radius: 12px;
+  text-align: center;
+}
+
+.emptyState svg {
+  color: #8135FA;
+}
+
+.emptyState h4,
+.emptyState p {
+  margin: 0;
+}
+
+.emptyState p {
+  color: rgba(255,255,255,0.48);
+  font-size: 12px;
+}
+
+.publicLeagueGrid {
+  display: grid;
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.publicLeagueCard {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  padding: 16px;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 11px;
+  background: rgba(255,255,255,0.025);
+}
+
+.publicLeagueTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.publicLeagueBadge {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background:
+    linear-gradient(
+      135deg,
+      #8135FA,
+      #f97316
+    );
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.statusTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(34,197,94,0.1);
+  color: #86efac;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.publicLeagueCard h4 {
+  margin: 0;
+  font-size: 14px;
+}
+
+.publicLeagueCard p {
+  margin: 0;
+  color: rgba(255,255,255,0.5);
+  font-size: 11px;
+}
+
+.publicLeagueCard small {
+  color: rgba(255,255,255,0.38);
+  line-height: 1.45;
+}
+
+.publicLeagueMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  color: rgba(255,255,255,0.7);
+  font-size: 11px;
+}
+
+.publicLeagueMeta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+@media (max-width: 700px) {
+  .teamNoticeWarning {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .teamNoticeWarning .secondaryBtn {
+    width: 100%;
+  }
+
+  .codeRow {
+    flex-direction: column;
+  }
+
+  .codeInput {
+    max-width: none;
+    width: 100%;
+  }
+
+  .publicLeagueGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .successActions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .successActions button {
+    width: 100%;
+  }
+}
