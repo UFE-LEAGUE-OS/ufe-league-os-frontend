@@ -607,3 +607,281 @@
   .leftSidebar, .rightSidebar { border: none; border-bottom: 1px solid rgba(255,255,255,0.07); }
   .marketDrawer { left: 0; right: 0; }
 }
+
+/* ── Real API team builder ── */
+.stateCard {
+  width: min(480px, calc(100% - 32px));
+  margin: auto;
+  padding: 34px;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 16px;
+  background: #0d0f1e;
+  text-align: center;
+}
+
+.stateCard svg {
+  color: #8135FA;
+}
+
+.stateCard h2 {
+  margin: 14px 0 8px;
+}
+
+.stateCard p {
+  margin: 0 0 18px;
+  color: rgba(255,255,255,0.55);
+  line-height: 1.6;
+}
+
+.stateSpinner {
+  animation: teamBuilderSpin 1s linear infinite;
+}
+
+@keyframes teamBuilderSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.stateActions,
+.savedActions,
+.teamSetupActions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.secondaryBtn {
+  padding: 11px 20px;
+  border: 1px solid rgba(129,53,250,0.65);
+  border-radius: 8px;
+  background: transparent;
+  color: #fff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.secondaryBtn:hover {
+  background: rgba(129,53,250,0.12);
+}
+
+.apiError,
+.apiSuccess {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin: 12px 20px 0;
+  padding: 12px 14px;
+  border-radius: 9px;
+  font-size: 13px;
+}
+
+.apiError {
+  border: 1px solid rgba(239,68,68,0.3);
+  background: rgba(239,68,68,0.09);
+  color: #fecaca;
+}
+
+.apiSuccess {
+  border: 1px solid rgba(34,197,94,0.28);
+  background: rgba(34,197,94,0.08);
+  color: #bbf7d0;
+}
+
+.apiError svg,
+.apiSuccess svg {
+  flex-shrink: 0;
+}
+
+.teamSetupCard {
+  width: min(700px, calc(100% - 32px));
+  margin: 32px auto;
+  padding: 28px;
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 16px;
+  background: #0d0f1e;
+}
+
+.teamSetupHeader {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 22px;
+}
+
+.teamSetupIcon {
+  width: 54px;
+  height: 54px;
+  display: grid;
+  place-items: center;
+  border-radius: 13px;
+  background: rgba(129,53,250,0.15);
+  font-size: 28px;
+}
+
+.teamSetupHeader h2,
+.teamSetupHeader p {
+  margin: 0;
+}
+
+.teamSetupHeader p {
+  margin-top: 4px;
+  color: rgba(255,255,255,0.5);
+  font-size: 13px;
+}
+
+.teamSetupStats {
+  display: grid;
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.teamSetupStats > div {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 9px;
+  align-items: center;
+  padding: 13px;
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 10px;
+  background: rgba(255,255,255,0.025);
+}
+
+.teamSetupStats svg {
+  grid-row: 1 / span 2;
+  color: #8135FA;
+}
+
+.teamSetupStats span {
+  color: rgba(255,255,255,0.48);
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.teamSetupStats strong {
+  font-size: 13px;
+}
+
+.teamSetupField {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-bottom: 18px;
+}
+
+.teamSetupField label {
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: rgba(255,255,255,0.58);
+}
+
+.teamSetupField input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 9px;
+  outline: none;
+  background: rgba(255,255,255,0.045);
+  color: #fff;
+  font: inherit;
+}
+
+.teamSetupField input:focus {
+  border-color: #8135FA;
+}
+
+.setupWarning {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 18px;
+  padding: 11px 13px;
+  border: 1px solid rgba(249,115,22,0.28);
+  border-radius: 8px;
+  background: rgba(249,115,22,0.08);
+  color: #fdba74;
+  font-size: 12px;
+}
+
+.suggestedShapeNote {
+  margin: 12px 20px;
+  padding: 10px 13px;
+  border: 1px solid rgba(129,53,250,0.2);
+  border-radius: 8px;
+  background: rgba(129,53,250,0.06);
+  color: rgba(255,255,255,0.58);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.emptyDataState {
+  width: min(520px, calc(100% - 32px));
+  margin: 40px auto;
+  padding: 34px;
+  border: 1px dashed rgba(255,255,255,0.14);
+  border-radius: 14px;
+  text-align: center;
+}
+
+.emptyDataState svg {
+  color: #8135FA;
+}
+
+.emptyDataState h2 {
+  margin: 12px 0 7px;
+}
+
+.emptyDataState p {
+  margin: 0;
+  color: rgba(255,255,255,0.5);
+  line-height: 1.6;
+}
+
+.autoPickBtn:disabled,
+.clearBtn:disabled,
+.continueBtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.competitionBadge {
+  cursor: default;
+}
+
+.marketPlayer {
+  cursor: pointer;
+}
+
+@media (max-width: 700px) {
+  .teamSetupStats {
+    grid-template-columns: 1fr;
+  }
+
+  .stateActions,
+  .savedActions,
+  .teamSetupActions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .stateActions button,
+  .savedActions button,
+  .teamSetupActions button {
+    width: 100%;
+  }
+
+  .apiError,
+  .apiSuccess,
+  .suggestedShapeNote {
+    margin-left: 12px;
+    margin-right: 12px;
+  }
+}
