@@ -14,6 +14,10 @@ import logoMark from "../../assets/league-os-mark.svg";
 import logoHorizontal from "../../assets/logos/league-os-horizontal.png";
 import styles from "./AdminWorkspaceLayout.module.css";
 
+/* eslint-disable react-refresh/only-export-components */
+// This file deliberately exports utility functions alongside components
+// so consumers can import everything they need from one place.
+
 // ---------------------------------------------------------------------------
 // Shared types
 // ---------------------------------------------------------------------------

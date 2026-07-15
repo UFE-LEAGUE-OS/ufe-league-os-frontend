@@ -328,6 +328,10 @@ export function WorkspaceStatus({
   );
 }
 
+/* eslint-disable react-refresh/only-export-components */
+// The utility functions below are deliberately exported from this file
+// for convenience so consuming pages can import everything from one place.
+
 export function formatStatus(value: string) {
   return value
     .toLowerCase()
