@@ -164,6 +164,8 @@ import SponsorshipInventory from "../pages/super-admin/sponsorship-management/Sp
 import CampaignPerformance from "../pages/super-admin/sponsorship-management/CampaignPerformance";
 import ApprovalWorkflow from "../pages/super-admin/sponsorship-management/ApprovalWorkFlow";
 import SponsorAudits from "../pages/super-admin/sponsorship-management/SponsorsAudit";
+import SuperAdminSettings from "../pages/super-admin/superadmin-settings/SuperAdminSettings";
+
 
 function protectedPage(page: ReactNode) {
     return <ProtectedRoute>{page}</ProtectedRoute>;
@@ -424,7 +426,7 @@ export default function AppRoutes() {
                 <Route path="/payments" element={<Payments />} />
 
                 {/* Super Admin routes */}
-               <Route path="/super-admin" element={roleProtectedPage(<SuperAdminDashboard />, ["SUPER_ADMIN"])}> 
+                <Route path="/super-admin" element={roleProtectedPage(<SuperAdminDashboard />, ["SUPER_ADMIN"])}>
                     <Route index element={<SuperAdminHome />} />
                     <Route path="dashboard" element={<SuperAdminHome />} />
 
@@ -489,6 +491,9 @@ export default function AppRoutes() {
                     <Route path="performance" element={<CampaignPerformance />} />
                     <Route path="approvals" element={<ApprovalWorkflow />} />
                     <Route path="audits" element={<SponsorAudits />} />
+
+                    {/*settings*/}
+                    <Route path="settings" element={<SuperAdminSettings />} />
                 </Route>
             </Routes>
         </Router>
