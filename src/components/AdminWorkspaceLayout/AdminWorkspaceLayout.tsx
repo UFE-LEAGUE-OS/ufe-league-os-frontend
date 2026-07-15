@@ -1,6 +1,5 @@
 import {
   ExternalLink,
-  Home,
   type LucideIcon,
 } from "lucide-react";
 import {
@@ -128,14 +127,6 @@ export default function AdminWorkspaceLayout<
                     />
                   </Link>
                 ) : null}
-
-                <Link
-                  className={styles.secondaryHeaderLink}
-                  to="/dashboard/fan"
-                >
-                  <Home size={16} aria-hidden="true" />
-                  Back to Fan Dashboard
-                </Link>
               </div>
             </header>
 
