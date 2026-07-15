@@ -21,7 +21,6 @@ import {
 import type { LucideIcon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Link, NavLink } from "react-router-dom";
-import leagueLogo from "../../assets/logos/league-os-horizontal.png";
 import { useCurrentUser } from "../../hooks/useCurrentUser";
 import { getMyUnionWorkspaces } from "../../services/unionAdminService";
 import logoHorizontal from "../../assets/logos/league-os-horizontal.png";
@@ -143,13 +142,17 @@ function UserSidebar({ isCollapsed = false }: UserSidebarProps) {
     return (
         <aside className={`${styles.sidebar} ${isCollapsed ? styles.collapsedSidebar : ""}`}>
 
-            <div className={styles.brandHeader}>
+            <Link
+                to="/"
+                className={styles.brandHeader}
+                aria-label="Go to League OS home page"
+            >
                 <img
                     src={logoHorizontal}
                     alt="League OS"
                     className={styles.brandLogo}
                 />
-            </div>
+            </Link>
 
             <div className={styles.userCard}>
                 <span className={styles.avatar}>
