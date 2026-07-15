@@ -426,7 +426,7 @@ export default function AppRoutes() {
                 <Route path="/payments" element={<Payments />} />
 
                 {/* Super Admin routes */}
-               <Route path="/super-admin"  element={<SuperAdminDashboard/>}>
+                <Route path="/super-admin" element={roleProtectedPage(<SuperAdminDashboard />, ["SUPER_ADMIN"])}>
                     <Route index element={<SuperAdminHome />} />
                     <Route path="dashboard" element={<SuperAdminHome />} />
 
