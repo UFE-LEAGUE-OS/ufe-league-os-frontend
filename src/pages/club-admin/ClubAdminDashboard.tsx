@@ -2,6 +2,7 @@ import {
   BarChart3,
   CalendarDays,
   CheckCircle2,
+  CreditCard,
   RefreshCw,
   ShieldCheck,
   TicketCheck,
@@ -14,6 +15,7 @@ import {
   useMemo,
   useState,
 } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Bar,
   BarChart,
@@ -44,6 +46,7 @@ import {
 
 type TabKey =
   | "overview"
+  | "membership"
   | "fixtures"
   | "results"
   | "ticketing"
@@ -54,6 +57,11 @@ const navItems: AdminWorkspaceNavItem<TabKey>[] = [
     key: "overview",
     label: "Overview",
     icon: BarChart3,
+  },
+  {
+    key: "membership",
+    label: "Membership",
+    icon: CreditCard,
   },
   {
     key: "fixtures",
@@ -78,12 +86,24 @@ const navItems: AdminWorkspaceNavItem<TabKey>[] = [
 ];
 
 export default function ClubAdminDashboard() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] =
     useState<TabKey>("overview");
   const [data, setData] =
     useState<ClubAdminWorkspaceData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const handleTabChange = useCallback(
+    (tab: TabKey) => {
+      if (tab === "membership") {
+        navigate("/dashboard/club-admin/membership");
+        return;
+      }
+      setActiveTab(tab);
+    },
+    [navigate],
+  );
 
   const loadWorkspace = useCallback(async () => {
     setIsLoading(true);
@@ -537,7 +557,7 @@ export default function ClubAdminDashboard() {
       description="Review your club’s competitions, fixtures, ticketing activity and administrative users using live League OS records."
       navItems={navItems}
       activeTab={activeTab}
-      onTabChange={setActiveTab}
+      onTabChange={handleTabChange}
       publicPath={
         data ? `/clubs/${data.club.slug}` : "/clubs"
       }
