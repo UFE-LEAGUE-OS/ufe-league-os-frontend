@@ -16,8 +16,13 @@ import {
     VERIFY_EMAIL_ROUTE,
     type AuthFlowState,
 } from '../../utils/authFlow.js';
-import { getDefaultDashboardRoute } from '../../utils/roleRoutes.js';
 import BackButton from '../../components/BackButton.js';
+import { getMyUnionWorkspaces } from '../../services/unionAdminService';
+import {
+    canRoleAccessRedirect,
+    getDefaultDashboardRoute,
+    getNormalizedRoles,
+} from '../../utils/roleRoutes.js';
 
 import '../../styles/pages/auth/login.css';
 
@@ -114,19 +119,6 @@ function safeDashboardRoute(value: unknown) {
 }
 
 function resolveDashboardRoute(result: LoginResult) {
-    // Prefer the frontend's own role-based routing table over whatever the
-    // backend says, since backend-provided dashboard paths can drift out of
-    // sync with the routes actually registered in the frontend router.
-    const role = result.user?.roles ?? result.user?.role;
-
-    if (role) {
-        const roleBasedRoute = getDefaultDashboardRoute(role);
-
-        if (roleBasedRoute) {
-            return roleBasedRoute;
-        }
-    }
-
     return (
         safeDashboardRoute(result.user?.frontend_dashboard_route) ||
         safeDashboardRoute(result.frontend_dashboard_route) ||
@@ -134,6 +126,61 @@ function resolveDashboardRoute(result: LoginResult) {
         safeDashboardRoute(result.dashboard_route) ||
         '/dashboard'
     );
+}
+
+async function resolvePostLoginRoute(
+    result: LoginResult,
+    postLoginRedirect?: string | null,
+) {
+    const backendRoute = resolveDashboardRoute(result);
+    const userContext =
+        result.user ??
+        result.user?.roles ??
+        result.user?.role ??
+        'FAN';
+
+    const userRoles = getNormalizedRoles(userContext);
+
+    if (
+        postLoginRedirect &&
+        canRoleAccessRedirect(userContext, postLoginRedirect)
+    ) {
+        return postLoginRedirect;
+    }
+
+    if (userRoles.includes('SUPER_ADMIN')) {
+        return getDefaultDashboardRoute(userContext);
+    }
+
+    if (userRoles.includes('UNION_ADMIN')) {
+        return '/dashboard/union-admin';
+    }
+
+    if (
+        backendRoute !== '/dashboard' &&
+        backendRoute !== '/dashboard/fan'
+    ) {
+        return backendRoute;
+    }
+
+    if (
+        backendRoute === '/dashboard/fan' &&
+        userRoles.includes('FAN')
+    ) {
+        return backendRoute;
+    }
+
+    try {
+        const workspaces = await getMyUnionWorkspaces();
+
+        if (workspaces.length > 0) {
+            return '/dashboard/union-admin';
+        }
+    } catch {
+        // Fall back to the effective role-based dashboard.
+    }
+
+    return getDefaultDashboardRoute(userContext);
 }
 
 function getUserEmail(value: unknown) {
@@ -210,13 +257,18 @@ export default function Login() {
                             getUserEmail(result.user?.email) ??
                             getUserEmail(identifier.trim()),
                         message: 'Please verify your email address before continuing.',
-                        postLoginRedirect: postLoginRedirect ?? resolveDashboardRoute(result),
+                        postLoginRedirect: await resolvePostLoginRoute(result, postLoginRedirect),
                     },
                 });
                 return;
             }
 
-            navigate(postLoginRedirect ?? resolveDashboardRoute(result), { replace: true });
+            const redirectRoute = await resolvePostLoginRoute(
+                    result,
+                    postLoginRedirect,
+                );
+
+                navigate(redirectRoute, { replace: true });
         } catch (error) {
             const data = (error as ApiError).response?.data;
 
@@ -258,7 +310,7 @@ export default function Login() {
                     state: {
                         email: getUserEmail(result.user?.email),
                         message: 'Please verify your email address before continuing.',
-                        postLoginRedirect: postLoginRedirect ?? resolveDashboardRoute(result),
+                        postLoginRedirect: await resolvePostLoginRoute(result, postLoginRedirect),
                     },
                 });
                 return;
@@ -267,7 +319,12 @@ export default function Login() {
             if (result.is_new_user) {
                 navigate('/personalize', { replace: true });
             } else {
-                navigate(postLoginRedirect ?? resolveDashboardRoute(result), { replace: true });
+                const redirectRoute = await resolvePostLoginRoute(
+                    result,
+                    postLoginRedirect,
+                );
+
+                navigate(redirectRoute, { replace: true });
             }
         } catch (error) {
             const apiMessage = getLoginErrorMessage(error);

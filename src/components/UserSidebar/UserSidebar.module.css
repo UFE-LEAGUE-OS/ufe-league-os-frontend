@@ -529,7 +529,26 @@
 .brandHeader {
     margin: 0 8px 18px;
     padding-bottom: 12px;
+
+    display: block;
+
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    text-decoration: none;
+
+    transition:
+        opacity 0.2s ease,
+        transform 0.2s ease;
+}
+
+.brandHeader:hover {
+    opacity: 0.88;
+    transform: translateY(-1px);
+}
+
+.brandHeader:focus-visible {
+    outline: 3px solid rgba(123, 63, 242, 0.78);
+    outline-offset: 3px;
 }
 
 .brandLogo {

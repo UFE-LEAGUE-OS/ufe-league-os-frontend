@@ -1,385 +1,1389 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, CalendarDays, BarChart3, RefreshCw, Trophy, Banknote, Medal, Shirt, Ticket, Users, DollarSign, Clock, Gamepad2, CheckCircle2, Zap } from 'lucide-react';
+import {
+  AlertCircle,
+  BarChart3,
+  CalendarDays,
+  CheckCircle2,
+  Clock,
+  Gamepad2,
+  Medal,
+  RefreshCw,
+  Trophy,
+  User,
+  Users,
+  Wallet,
+  Zap,
+} from 'lucide-react';
 import styles from './FantasyPage.module.css';
 import fantasyHero from '../../assets/fantasylandingpage.png';
-import FantasyLeaguesLeaderboard from './FantasyLeaguesLeaderboard';
-import { fetchCompetitions, fetchMyTeam, fetchLeaderboard } from '../../services/fantasyService';
-import type { Competition, MyTeam, LeaderboardEntry } from '../../services/fantasyService';
+import { fetchFantasyOverview } from '../../services/fantasyService';
+import type {
+  FantasyCompetitionOverview,
+  FantasyOverview,
+} from '../../services/fantasyService';
 
-/* ── Types ── */
-type TabId = 'overview' | 'myteam' | 'leagues' | 'transfers' | 'standings';
+type TabId =
+  | 'overview'
+  | 'myteam'
+  | 'leagues'
+  | 'players'
+  | 'standings';
 
 const HOW_IT_WORKS = [
-  { step: 1, icon: <User size={24} />, title: 'Pick Your Squad',     desc: 'Select players within your budget limit.' },
-  { step: 2, icon: <CalendarDays size={24} />, title: 'Set Your Lineup',     desc: 'Choose your captain and starting lineup each gameweek.' },
-  { step: 3, icon: <BarChart3 size={24} />, title: 'Earn Points',         desc: 'Players score points based on real match performance.' },
-  { step: 4, icon: <RefreshCw size={24} />, title: 'Make Transfers',      desc: 'Swap players before each gameweek deadline.' },
-  { step: 5, icon: <Trophy size={24} />, title: 'Win Prizes',          desc: 'Top managers each season win cash and exclusive rewards.' },
+  {
+    step: 1,
+    icon: <User size={24} />,
+    title: 'Pick Your Squad',
+    desc: 'Select players within your competition budget.',
+  },
+  {
+    step: 2,
+    icon: <CalendarDays size={24} />,
+    title: 'Set Your Lineup',
+    desc: 'Choose your captain and starting lineup each gameweek.',
+  },
+  {
+    step: 3,
+    icon: <BarChart3 size={24} />,
+    title: 'Earn Points',
+    desc: 'Players score points from real match performance.',
+  },
+  {
+    step: 4,
+    icon: <RefreshCw size={24} />,
+    title: 'Manage Your Team',
+    desc: 'Update your squad before each gameweek deadline.',
+  },
+  {
+    step: 5,
+    icon: <Trophy size={24} />,
+    title: 'Climb The Rankings',
+    desc: 'Compete in public and private fantasy leagues.',
+  },
 ];
 
-const PRIZES = [
-  { icon: <Banknote size={24} />, place: '1st Place',    prize: 'UGX 500,000 Cash' },
-  { icon: <Medal size={24} />, place: '2nd Place',    prize: 'UGX 200,000 Cash' },
-  { icon: <Medal size={24} />, place: '3rd Place',    prize: 'UGX 100,000 Cash' },
-  { icon: <Shirt size={24} />, place: 'Top 10',       prize: 'Exclusive League OS Jersey' },
-  { icon: <Ticket size={24} />, place: 'Weekly Best', prize: 'Match Ticket + Merch Pack' },
-];
+const STATUS_STYLE: Record<
+  string,
+  { bg: string; color: string }
+> = {
+  OPEN: {
+    bg: 'rgba(34,197,94,0.15)',
+    color: '#22c55e',
+  },
+  LOCKED: {
+    bg: 'rgba(249,115,22,0.15)',
+    color: '#fb923c',
+  },
+  UPCOMING: {
+    bg: 'rgba(156,163,175,0.12)',
+    color: '#9ca3af',
+  },
+  COMPLETED: {
+    bg: 'rgba(59,130,246,0.15)',
+    color: '#60a5fa',
+  },
+};
 
-const statusStyle: Record<string, { bg: string; color: string }> = {
-  'LIVE':        { bg: 'rgba(34,197,94,0.15)',   color: '#22c55e' },
-  'OPEN':        { bg: 'rgba(34,197,94,0.15)',   color: '#22c55e' },
-  'COMING SOON': { bg: 'rgba(156,163,175,0.12)', color: '#9ca3af' },
+const SPORT_ACCENT: Record<string, string> = {
+  RUGBY: '#8135FA',
+  FOOTBALL: '#2563eb',
+  BASKETBALL: '#f97316',
+};
+
+function formatNumber(value: number) {
+  return new Intl.NumberFormat('en-UG').format(value);
+}
+
+function formatPoints(value: string) {
+  const parsed = Number(value);
+
+  return Number.isFinite(parsed)
+    ? formatNumber(parsed)
+    : '0';
+}
+
+function formatDeadline(value?: string | null) {
+  if (!value) {
+    return 'No deadline set';
+  }
+
+  const parsed = new Date(value);
+
+  if (Number.isNaN(parsed.getTime())) {
+    return 'Deadline unavailable';
+  }
+
+  return new Intl.DateTimeFormat('en-UG', {
+    day: 'numeric',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: 'Africa/Kampala',
+    timeZoneName: 'short',
+  }).format(parsed);
+}
+
+function competitionAccent(
+  competition: FantasyCompetitionOverview,
+) {
+  return SPORT_ACCENT[competition.sport] ?? '#8135FA';
+}
+
+const emptyOverview: FantasyOverview = {
+  competitions: [],
+  public_leagues: [],
+  featured_players: [],
+  leaderboard: [],
+  my_teams: [],
+  summary: {
+    competitions_count: 0,
+    public_leagues_count: 0,
+    players_count: 0,
+    teams_count: 0,
+  },
 };
 
 export default function FantasyPage() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<TabId>('overview');
-  const [competitions, setCompetitions] = useState<Competition[]>([]);
-  const [myTeam, setMyTeam] = useState<MyTeam | null>(null);
-  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+
+  const [activeTab, setActiveTab] =
+    useState<TabId>('overview');
+
+  const [overview, setOverview] =
+    useState<FantasyOverview | null>(null);
+
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] =
+    useState<string | null>(null);
+
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
-    const loadData = async () => {
+    let active = true;
+
+    const loadOverview = async () => {
       try {
         setLoading(true);
-        const [compRes, teamRes, lbRes] = await Promise.all([
-          fetchCompetitions(),
-          fetchMyTeam(),
-          fetchLeaderboard(),
-        ]);
-        setCompetitions(compRes.data);
-        setMyTeam(teamRes.data);
-        setLeaderboard(lbRes.data);
-      } catch (err) {
-        setError('Failed to load fantasy data');
-        console.error(err);
+        setError(null);
+
+        const response =
+          await fetchFantasyOverview();
+
+        if (active) {
+          setOverview(response.data);
+        }
+      } catch (requestError) {
+        console.error(
+          'Failed to load fantasy overview:',
+          requestError,
+        );
+
+        if (active) {
+          setError(
+            'We could not load the fantasy hub. Please try again.',
+          );
+        }
       } finally {
-        setLoading(false);
+        if (active) {
+          setLoading(false);
+        }
       }
     };
-    loadData();
-  }, []);
 
-  if (loading) {
-    return <div className={styles.page}>Loading...</div>;
-  }
+    void loadOverview();
 
-  if (error) {
-    return <div className={styles.page}>Error: {error}</div>;
-  }
+    return () => {
+      active = false;
+    };
+  }, [reloadKey]);
 
-  const team = myTeam || {
-    name: 'My Dream Squad',
-    competition: '',
-    totalPoints: 0,
-    gameweekPoints: 0,
-    rank: 0,
-    budget: 0,
-    players: [],
+  const data = overview ?? emptyOverview;
+
+  const activeCompetition = useMemo(
+    () =>
+      data.competitions.find(
+        (competition) =>
+          competition.active_gameweek,
+      ) ??
+      data.competitions[0] ??
+      null,
+    [data.competitions],
+  );
+
+  const myTeam = data.my_teams[0] ?? null;
+
+  const myTeamIds = useMemo(
+    () =>
+      new Set(
+        data.my_teams.map((team) => team.id),
+      ),
+    [data.my_teams],
+  );
+
+  const gameweek =
+    activeCompetition?.active_gameweek ?? null;
+
+  const tabs: {
+    id: TabId;
+    label: string;
+  }[] = [
+    {
+      id: 'overview',
+      label: 'Overview',
+    },
+    {
+      id: 'myteam',
+      label: 'My Team',
+    },
+    {
+      id: 'leagues',
+      label: 'Leagues',
+    },
+    {
+      id: 'players',
+      label: 'Players',
+    },
+    {
+      id: 'standings',
+      label: 'Standings',
+    },
+  ];
+
+  const openCompetition = (
+    competitionId?: number,
+  ) => {
+    const query = competitionId
+      ? `?competition=${competitionId}`
+      : '';
+
+    navigate(`/fantasy/select${query}`);
   };
 
-  const tabs: { id: TabId; label: string }[] = [
-    { id: 'overview',   label: 'Overview' },
-    { id: 'myteam',     label: 'My Team' },
-    { id: 'leagues',    label: 'Leagues' },
-    { id: 'transfers',  label: 'Transfers' },
-    { id: 'standings',  label: 'Standings' },
-  ];
+  if (loading && !overview) {
+    return (
+      <div
+        className={`${styles.page} ${styles.statePage}`}
+        role="status"
+        aria-live="polite"
+      >
+        <div className={styles.stateCard}>
+          <RefreshCw
+            className={styles.stateSpinner}
+            size={28}
+          />
+
+          <h2>Loading Fantasy Leagues</h2>
+
+          <p>
+            Fetching competitions, teams and
+            leaderboards.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error && !overview) {
+    return (
+      <div
+        className={`${styles.page} ${styles.statePage}`}
+        role="alert"
+      >
+        <div className={styles.stateCard}>
+          <AlertCircle size={30} />
+
+          <h2>Fantasy Hub Unavailable</h2>
+
+          <p>{error}</p>
+
+          <button
+            className={styles.btnPrimary}
+            onClick={() =>
+              setReloadKey((value) => value + 1)
+            }
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.page}>
-
-      {/* ── HERO ── */}
       <div className={styles.hero}>
         <div className={styles.heroContent}>
-          <div className={styles.heroBadge}><Zap size={18} /> FANTASY LEAGUES</div>
-          <h1>BUILD YOUR SQUAD.<br /><span>BEAT THE LEAGUE.</span></h1>
-          <p>Create your ultimate fantasy team across Rugby, Football & Basketball.<br />Compete with fans across Uganda for glory, bragging rights and epic rewards.</p>
+          <div className={styles.heroBadge}>
+            <Zap size={18} />
+            FANTASY LEAGUES
+          </div>
+
+          <h1>
+            BUILD YOUR SQUAD.
+            <br />
+            <span>BEAT THE LEAGUE.</span>
+          </h1>
+
+          <p>
+            Create your ultimate fantasy team
+            across Rugby, Football and Basketball.
+            <br />
+            Compete with fans across Uganda and
+            climb the rankings.
+          </p>
+
           <div className={styles.heroBtns}>
-            <button className={styles.btnPrimary} onClick={() => navigate('/fantasy/select')}>Create Team →</button>
-            <button className={styles.btnOutline} onClick={() => navigate('/fantasy/select')}>Explore Competitions</button>
+            <button
+              className={styles.btnPrimary}
+              onClick={() =>
+                openCompetition(
+                  activeCompetition?.id,
+                )
+              }
+              disabled={
+                data.competitions.length === 0
+              }
+            >
+              Create Team →
+            </button>
+
+            <button
+              className={styles.btnOutline}
+              onClick={() =>
+                setActiveTab('overview')
+              }
+            >
+              Explore Competitions
+            </button>
           </div>
+
           <div className={styles.heroBadges}>
-            <span><Gamepad2 size={16} /> 3 SPORTS, 1 PLATFORM<br /><small>Rugby, Football, Basketball</small></span>
-            <span><Users size={16} /> REAL FANS. REAL COMPETITION<br /><small>Compete with thousands</small></span>
-            <span><Trophy size={16} /> EPIC REWARDS<br /><small>Win prizes every week</small></span>
-            <span><CheckCircle2 size={16} /> 100% FREE TO PLAY<br /><small>Join, play and win</small></span>
+            <span>
+              <Gamepad2 size={16} />
+              {data.summary.competitions_count}
+              {' '}ACTIVE COMPETITIONS
+              <br />
+              <small>
+                Across supported sports
+              </small>
+            </span>
+
+            <span>
+              <Users size={16} />
+              {formatNumber(
+                data.summary.teams_count,
+              )}
+              {' '}FANTASY TEAMS
+              <br />
+              <small>
+                Created by League OS fans
+              </small>
+            </span>
+
+            <span>
+              <Trophy size={16} />
+              {formatNumber(
+                data.summary
+                  .public_leagues_count,
+              )}
+              {' '}PUBLIC LEAGUES
+              <br />
+              <small>
+                Open competitions to join
+              </small>
+            </span>
+
+            <span>
+              <CheckCircle2 size={16} />
+              {formatNumber(
+                data.summary.players_count,
+              )}
+              {' '}AVAILABLE PLAYERS
+              <br />
+              <small>
+                Competition-linked rosters
+              </small>
+            </span>
           </div>
         </div>
 
-        {/* Players image — right side */}
         <div className={styles.heroImageWrap}>
-          <img src={fantasyHero} alt="Fantasy players" className={styles.heroImage} />
+          <img
+            src={fantasyHero}
+            alt="Fantasy players"
+            className={styles.heroImage}
+          />
         </div>
 
-        {/* Gameweek chip */}
         <div className={styles.gwChip}>
-          <div className={styles.gwChipLabel}>Gameweek 12</div>
-          <div className={styles.gwChipDeadline}>Deadline: 24 May, 17:00 EAT</div>
-          <div className={styles.gwChipBadge}>OPEN FOR TRANSFERS</div>
+          <div className={styles.gwChipLabel}>
+            {gameweek?.name ??
+              'Fantasy Season'}
+          </div>
+
+          <div
+            className={styles.gwChipDeadline}
+          >
+            Deadline:{' '}
+            {formatDeadline(gameweek?.lock_at)}
+          </div>
+
+          <div className={styles.gwChipBadge}>
+            {gameweek?.status ??
+              activeCompetition?.status_label ??
+              'NO OPEN GAMEWEEK'}
+          </div>
         </div>
       </div>
 
-      {/* ── TABS ── */}
       <div className={styles.tabs}>
-        {tabs.map((t) => (
+        {tabs.map((tab) => (
           <button
-            key={t.id}
-            className={`${styles.tab}${activeTab === t.id ? ` ${styles.tabActive}` : ''}`}
-            onClick={() => setActiveTab(t.id)}
+            key={tab.id}
+            className={
+              `${styles.tab}` +
+              (
+                activeTab === tab.id
+                  ? ` ${styles.tabActive}`
+                  : ''
+              )
+            }
+            onClick={() =>
+              setActiveTab(tab.id)
+            }
           >
-            {t.label}
+            {tab.label}
           </button>
         ))}
       </div>
 
       <div className={styles.body}>
+        {error && (
+          <div
+            className={styles.inlineNotice}
+            role="status"
+          >
+            <AlertCircle size={18} />
 
-        {/* ══════════════ OVERVIEW ══════════════ */}
-        {activeTab === 'overview' && (
-          <div className={styles.overviewGrid}>
+            <span>
+              {error} Showing the last available
+              fantasy data.
+            </span>
 
-            {/* Competition cards */}
-            <div className={styles.section}>
-              <div className={styles.sectionHead}>
-                <h2>Featured Competitions</h2>
-                <button className={styles.linkBtn} onClick={() => setActiveTab('leagues')}>View All →</button>
-              </div>
-              <div className={styles.compCards}>
-                {competitions.map((c) => {
-                  const ss = statusStyle[c.status];
-                  return (
-                    <div key={c.id} className={styles.compCard} style={{ '--accent': c.color } as React.CSSProperties}>
-                      <div className={styles.compCardTop}>
-                        <div className={styles.compLogoPlaceholder}>{c.sport[0]}</div>
-                        <div>
-                          <div className={styles.compName}>{c.name}</div>
-                          <div className={styles.compSeason}>{c.sport} · {c.season}</div>
-                          <span className={styles.compStatus} style={{ background: ss.bg, color: ss.color }}>
-                            {c.status}
-                          </span>
-                        </div>
-                      </div>
-                        <div className={styles.compMeta}>
-                        <span><Users size={14} /> {c.teamsJoined.toLocaleString()} teams</span>
-                        <span><DollarSign size={14} /> {c.entryFee === 0 ? 'Free' : `UGX ${c.entryFee.toLocaleString()}`}</span>
-                        <span><Clock size={14} /> {c.deadline}</span>
-                        <span><Trophy size={14} /> {c.prizePool}</span>
-                      </div>
-                      {c.status !== 'COMING SOON'
-                        ? <button className={styles.compBtn} onClick={() => navigate(`/fantasy/select?sport=${c.id}`)}>Play Now →</button>
-                        : <button className={styles.compBtnGhost}>Notify Me</button>
-                      }
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* How it works */}
-            <div className={styles.section}>
-              <div className={styles.sectionHead}><h2>How Fantasy Works</h2></div>
-              <div className={styles.howRow}>
-                {HOW_IT_WORKS.map((h, i) => (
-                  <div key={h.step} className={styles.howStep}>
-                    <div className={styles.howNum}>{h.step}</div>
-                    <div className={styles.howIcon}>{h.icon}</div>
-                    <div className={styles.howTitle}>{h.title}</div>
-                    <div className={styles.howDesc}>{h.desc}</div>
-                    {i < HOW_IT_WORKS.length - 1 && <div className={styles.howArrow}>→</div>}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Right sidebar */}
-            <div className={styles.overviewSide}>
-
-              {/* My team snapshot */}
-              <div className={styles.widget}>
-                <div className={styles.widgetHead}>My Team</div>
-                <div className={styles.myTeamSnap}>
-                  <div className={styles.myTeamName}>{team.name}</div>
-                  <div className={styles.myTeamComp}>{team.competition}</div>
-                  <div className={styles.myTeamStats}>
-                    <div><strong>{team.gameweekPoints}</strong><span>GW Points</span></div>
-                    <div><strong>{team.totalPoints}</strong><span>Total</span></div>
-                    <div><strong>#{team.rank}</strong><span>Rank</span></div>
-                  </div>
-                </div>
-                <button className={styles.btnPrimary} style={{ width: '100%', marginTop: 12 }}
-                  onClick={() => setActiveTab('myteam')}>
-                  Manage Team →
-                </button>
-              </div>
-
-              {/* Prizes */}
-              <div className={styles.widget} style={{ marginTop: 14 }}>
-                <div className={styles.widgetHead}>🏆 Prize Pool</div>
-                {PRIZES.map((p) => (
-                  <div key={p.place} className={styles.prizeRow}>
-                    <span className={styles.prizeIcon}>{p.icon}</span>
-                    <div>
-                      <strong>{p.place}</strong>
-                      <p>{p.prize}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ══════════════ MY TEAM ══════════════ */}
-        {activeTab === 'myteam' && (
-          <div className={styles.myTeamPage}>
-            <div className={styles.myTeamHeader}>
-              <div>
-                <h2>{team.name}</h2>
-                <p>{team.competition} · Season 2025/26</p>
-              </div>
-              <div className={styles.myTeamHeaderStats}>
-                <div><strong>{team.gameweekPoints}</strong><span>GW12 Points</span></div>
-                <div><strong>{team.totalPoints}</strong><span>Total Points</span></div>
-                <div><strong>#{team.rank}</strong><span>Overall Rank</span></div>
-                <div><strong>UGX {team.budget}m</strong><span>In The Bank</span></div>
-              </div>
-            </div>
-
-            {/* Pitch visual */}
-            <div className={styles.pitch}>
-              <div className={styles.pitchLines} />
-              <div className={styles.pitchLabel}>Your Squad</div>
-              <div className={styles.pitchPlayers}>
-                {team.players.map((p) => (
-                  <div key={p.name} className={styles.pitchPlayer}>
-                    <div className={styles.pitchPlayerAvatar}>{p.name[0]}</div>
-                    <div className={styles.pitchPlayerName}>{p.name}</div>
-                    <div className={styles.pitchPlayerPts}>{p.pts} pts</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Player list */}
-            <div className={styles.playerTable}>
-              <div className={styles.playerTableHead}>
-                <span>Player</span><span>Club</span><span>Pos</span><span>Cost</span><span>GW Pts</span>
-              </div>
-              {team.players.map((p) => (
-                <div key={p.name} className={styles.playerRow}>
-                  <span><strong>{p.name}</strong></span>
-                  <span>{p.club}</span>
-                  <span><span className={styles.posBadge}>{p.pos}</span></span>
-                  <span>UGX {p.cost}m</span>
-                  <span className={styles.ptsCell}>{p.pts}</span>
-                </div>
-              ))}
-            </div>
-
-            <button className={styles.btnPrimary} style={{ marginTop: 16 }}
-              onClick={() => setActiveTab('transfers')}>
-              Make Transfers →
+            <button
+              onClick={() =>
+                setReloadKey(
+                  (value) => value + 1,
+                )
+              }
+            >
+              Retry
             </button>
           </div>
         )}
 
-        {/* ══════════════ LEAGUES ══════════════ */}
-        {activeTab === 'leagues' && (
-          <FantasyLeaguesLeaderboard />
-        )}
+        {activeTab === 'overview' && (
+          <div className={styles.overviewGrid}>
+            <div className={styles.section}>
+              <div
+                className={styles.sectionHead}
+              >
+                <h2>
+                  Featured Competitions
+                </h2>
 
-        {/* ══════════════ TRANSFERS ══════════════ */}
-        {activeTab === 'transfers' && (
-          <div className={styles.transfersPage}>
-            <div className={styles.sectionHead}>
-              <h2>Transfers</h2>
-              <span className={styles.transferInfo}>1 free transfer remaining · Gameweek 12 deadline: {team.competition ? '24 May 17:00' : 'N/A'}</span>
-            </div>
-            <div className={styles.transferColumns}>
-              {/* Current squad */}
-              <div className={styles.widget} style={{ flex: 1 }}>
-                <div className={styles.widgetHead}>Your Squad</div>
-                {team.players.map((p) => (
-                  <div key={p.name} className={styles.transferPlayerRow}>
-                    <div className={styles.transferPlayerInfo}>
-                      <div className={styles.transferAvatar}>{p.name[0]}</div>
-                      <div>
-                        <strong>{p.name}</strong>
-                        <span>{p.club} · <span className={styles.posBadge}>{p.pos}</span></span>
-                      </div>
-                    </div>
-                    <div className={styles.transferPlayerRight}>
-                      <span className={styles.transferCost}>UGX {p.cost}m</span>
-                      <button className={styles.transferOutBtn}>Transfer Out</button>
-                    </div>
-                  </div>
-                ))}
+                <span
+                  className={styles.sectionCount}
+                >
+                  {data.competitions.length}
+                  {' '}available
+                </span>
               </div>
 
-              {/* Available players */}
-              <div className={styles.widget} style={{ flex: 1 }}>
-                <div className={styles.widgetHead}>Available Players</div>
-                <input className={styles.codeInput} placeholder="Search players..." style={{ marginBottom: 12, width: '100%' }} />
-                {[
-                  { name: 'P. Odeke',    club: 'Pirates RFC',  pos: 'WG',  cost: 9.0,  pts: 145 },
-                  { name: 'C. Asiimwe',  club: 'KOBS',         pos: 'FH',  cost: 11.0, pts: 162 },
-                  { name: 'B. Otim',     club: 'Jinja Hippos', pos: 'PR',  cost: 7.5,  pts: 98 },
-                  { name: 'S. Mugisha',  club: 'Heathens RFC', pos: 'CTR', cost: 8.5,  pts: 121 },
-                  { name: 'R. Okello',   club: 'Pirates RFC',  pos: 'HK',  cost: 8.0,  pts: 110 },
-                ].map((p) => (
-                  <div key={p.name} className={styles.transferPlayerRow}>
-                    <div className={styles.transferPlayerInfo}>
-                      <div className={styles.transferAvatar}>{p.name[0]}</div>
+              {data.competitions.length ===
+              0 ? (
+                <div
+                  className={styles.emptyState}
+                >
+                  <Trophy size={30} />
+
+                  <h3>
+                    No fantasy competitions
+                    are open
+                  </h3>
+
+                  <p>
+                    Open and locked
+                    competitions will appear
+                    here when configured.
+                  </p>
+                </div>
+              ) : (
+                <div
+                  className={styles.compCards}
+                >
+                  {data.competitions.map(
+                    (competition) => {
+                      const status =
+                        STATUS_STYLE[
+                          competition.status
+                        ] ??
+                        STATUS_STYLE.UPCOMING;
+
+                      const accent =
+                        competitionAccent(
+                          competition,
+                        );
+
+                      return (
+                        <article
+                          key={competition.id}
+                          className={
+                            styles.compCard
+                          }
+                          style={
+                            {
+                              '--accent':
+                                accent,
+                            } as React.CSSProperties
+                          }
+                        >
+                          <div
+                            className={
+                              styles.compCardTop
+                            }
+                          >
+                            <div
+                              className={
+                                styles
+                                  .compLogoPlaceholder
+                              }
+                              style={{
+                                background:
+                                  accent,
+                              }}
+                            >
+                              {competition
+                                .sport_label
+                                .charAt(0)}
+                            </div>
+
+                            <div>
+                              <div
+                                className={
+                                  styles.compName
+                                }
+                              >
+                                {
+                                  competition.name
+                                }
+                              </div>
+
+                              <div
+                                className={
+                                  styles
+                                    .compSeason
+                                }
+                              >
+                                {
+                                  competition
+                                    .sport_label
+                                }
+                                {' · '}
+                                {
+                                  competition
+                                    .season
+                                }
+                              </div>
+
+                              <span
+                                className={
+                                  styles
+                                    .compStatus
+                                }
+                                style={{
+                                  background:
+                                    status.bg,
+                                  color:
+                                    status.color,
+                                }}
+                              >
+                                {
+                                  competition
+                                    .status_label
+                                }
+                              </span>
+                            </div>
+                          </div>
+
+                          <div
+                            className={
+                              styles.compMeta
+                            }
+                          >
+                            <span>
+                              <Users
+                                size={14}
+                              />
+                              {formatNumber(
+                                competition
+                                  .teams_count,
+                              )}
+                              {' '}teams
+                            </span>
+
+                            <span>
+                              <Wallet
+                                size={14}
+                              />
+                              {
+                                competition
+                                  .budget
+                              }
+                              {' '}credits
+                            </span>
+
+                            <span>
+                              <User size={14} />
+                              Squad of{' '}
+                              {
+                                competition
+                                  .squad_size
+                              }
+                            </span>
+
+                            <span>
+                              <Clock size={14} />
+                              {formatDeadline(
+                                competition
+                                  .active_gameweek
+                                  ?.lock_at,
+                              )}
+                            </span>
+                          </div>
+
+                          <button
+                            className={
+                              styles.compBtn
+                            }
+                            onClick={() =>
+                              openCompetition(
+                                competition.id,
+                              )
+                            }
+                          >
+                            {competition.status ===
+                            'OPEN'
+                              ? 'Play Now'
+                              : 'View Competition'}
+                            {' '}→
+                          </button>
+                        </article>
+                      );
+                    },
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div className={styles.section}>
+              <div
+                className={styles.sectionHead}
+              >
+                <h2>How Fantasy Works</h2>
+              </div>
+
+              <div className={styles.howRow}>
+                {HOW_IT_WORKS.map(
+                  (item, index) => (
+                    <div
+                      key={item.step}
+                      className={styles.howStep}
+                    >
+                      <div
+                        className={styles.howNum}
+                      >
+                        {item.step}
+                      </div>
+
+                      <div
+                        className={
+                          styles.howIcon
+                        }
+                      >
+                        {item.icon}
+                      </div>
+
+                      <div
+                        className={
+                          styles.howTitle
+                        }
+                      >
+                        {item.title}
+                      </div>
+
+                      <div
+                        className={
+                          styles.howDesc
+                        }
+                      >
+                        {item.desc}
+                      </div>
+
+                      {index <
+                        HOW_IT_WORKS.length -
+                          1 && (
+                        <div
+                          className={
+                            styles.howArrow
+                          }
+                        >
+                          →
+                        </div>
+                      )}
+                    </div>
+                  ),
+                )}
+              </div>
+            </div>
+
+            <div
+              className={styles.overviewSide}
+            >
+              <div className={styles.widget}>
+                <div
+                  className={styles.widgetHead}
+                >
+                  My Team
+                </div>
+
+                {myTeam ? (
+                  <div
+                    className={
+                      styles.myTeamSnap
+                    }
+                  >
+                    <div
+                      className={
+                        styles.myTeamName
+                      }
+                    >
+                      {myTeam.name}
+                    </div>
+
+                    <div
+                      className={
+                        styles.myTeamComp
+                      }
+                    >
+                      {
+                        myTeam
+                          .fantasy_competition_name
+                      }
+                    </div>
+
+                    <div
+                      className={
+                        styles.myTeamStats
+                      }
+                    >
                       <div>
-                        <strong>{p.name}</strong>
-                        <span>{p.club} · <span className={styles.posBadge}>{p.pos}</span></span>
+                        <strong>
+                          {
+                            myTeam
+                              .active_squad_count
+                          }
+                        </strong>
+                        <span>Players</span>
+                      </div>
+
+                      <div>
+                        <strong>
+                          {formatPoints(
+                            myTeam.total_points,
+                          )}
+                        </strong>
+                        <span>Total</span>
+                      </div>
+
+                      <div>
+                        <strong>
+                          {myTeam.current_rank
+                            ? `#${myTeam.current_rank}`
+                            : '—'}
+                        </strong>
+                        <span>Rank</span>
                       </div>
                     </div>
-                    <div className={styles.transferPlayerRight}>
-                      <span className={styles.transferCost}>UGX {p.cost}m</span>
-                      <span style={{ fontSize: 11, color: '#9ca3af' }}>{p.pts} pts</span>
-                      <button className={styles.transferInBtn}>Transfer In</button>
-                    </div>
+
+                    <button
+                      className={
+                        styles.btnPrimary
+                      }
+                      style={{
+                        width: '100%',
+                        marginTop: 12,
+                      }}
+                      onClick={() =>
+                        setActiveTab('myteam')
+                      }
+                    >
+                      View Team →
+                    </button>
                   </div>
-                ))}
+                ) : (
+                  <div
+                    className={
+                      styles.compactEmptyState
+                    }
+                  >
+                    <p>
+                      You have not created a
+                      fantasy team yet.
+                    </p>
+
+                    <button
+                      className={
+                        styles.btnPrimary
+                      }
+                      onClick={() =>
+                        openCompetition(
+                          activeCompetition?.id,
+                        )
+                      }
+                      disabled={
+                        data.competitions
+                          .length === 0
+                      }
+                    >
+                      Create Your First Team
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <div
+                className={styles.widget}
+                style={{ marginTop: 14 }}
+              >
+                <div
+                  className={styles.widgetHead}
+                >
+                  Fantasy Platform
+                </div>
+
+                <div
+                  className={styles.summaryGrid}
+                >
+                  <div>
+                    <strong>
+                      {
+                        data.summary
+                          .competitions_count
+                      }
+                    </strong>
+                    <span>Competitions</span>
+                  </div>
+
+                  <div>
+                    <strong>
+                      {formatNumber(
+                        data.summary
+                          .public_leagues_count,
+                      )}
+                    </strong>
+                    <span>Public Leagues</span>
+                  </div>
+
+                  <div>
+                    <strong>
+                      {formatNumber(
+                        data.summary
+                          .players_count,
+                      )}
+                    </strong>
+                    <span>Players</span>
+                  </div>
+
+                  <div>
+                    <strong>
+                      {formatNumber(
+                        data.summary
+                          .teams_count,
+                      )}
+                    </strong>
+                    <span>Teams</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         )}
 
-        {/* ══════════════ STANDINGS ══════════════ */}
+        {activeTab === 'myteam' &&
+          (
+            myTeam ? (
+              <div
+                className={styles.myTeamPage}
+              >
+                <div
+                  className={
+                    styles.myTeamHeader
+                  }
+                >
+                  <div>
+                    <h2>{myTeam.name}</h2>
+                    <p>
+                      {
+                        myTeam
+                          .fantasy_competition_name
+                      }
+                    </p>
+                  </div>
+
+                  <div
+                    className={
+                      styles
+                        .myTeamHeaderStats
+                    }
+                  >
+                    <div>
+                      <strong>
+                        {
+                          myTeam
+                            .active_squad_count
+                        }
+                      </strong>
+                      <span>
+                        Squad Players
+                      </span>
+                    </div>
+
+                    <div>
+                      <strong>
+                        {formatPoints(
+                          myTeam.total_points,
+                        )}
+                      </strong>
+                      <span>Total Points</span>
+                    </div>
+
+                    <div>
+                      <strong>
+                        {myTeam.current_rank
+                          ? `#${myTeam.current_rank}`
+                          : '—'}
+                      </strong>
+                      <span>Overall Rank</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  className={styles.emptyState}
+                >
+                  <CheckCircle2 size={30} />
+
+                  <h3>
+                    Your fantasy team is active
+                  </h3>
+
+                  <p>
+                    The detailed squad and
+                    lineup view will be connected
+                    in the next integration step.
+                  </p>
+
+                  <button
+                    className={
+                      styles.btnPrimary
+                    }
+                    onClick={() =>
+                      openCompetition(
+                        myTeam
+                          .fantasy_competition,
+                      )
+                    }
+                  >
+                    View Competition
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div
+                className={styles.emptyState}
+              >
+                <User size={32} />
+
+                <h2>No Fantasy Team Yet</h2>
+
+                <p>
+                  Select an open competition to
+                  create your first team.
+                </p>
+
+                <button
+                  className={styles.btnPrimary}
+                  onClick={() =>
+                    openCompetition(
+                      activeCompetition?.id,
+                    )
+                  }
+                  disabled={
+                    data.competitions.length ===
+                    0
+                  }
+                >
+                  Explore Competitions
+                </button>
+              </div>
+            )
+          )}
+
+        {activeTab === 'leagues' && (
+          <div className={styles.section}>
+            <div
+              className={styles.sectionHead}
+            >
+              <h2>Public Fantasy Leagues</h2>
+
+              <span
+                className={styles.sectionCount}
+              >
+                {data.public_leagues.length}
+                {' '}featured
+              </span>
+            </div>
+
+            {data.public_leagues.length ===
+            0 ? (
+              <div
+                className={styles.emptyState}
+              >
+                <Trophy size={30} />
+
+                <h3>
+                  No public leagues available
+                </h3>
+
+                <p>
+                  Public leagues will appear
+                  here when administrators
+                  create them.
+                </p>
+              </div>
+            ) : (
+              <div
+                className={styles.leagueGrid}
+              >
+                {data.public_leagues.map(
+                  (league) => (
+                    <article
+                      key={league.id}
+                      className={
+                        styles.leagueCard
+                      }
+                    >
+                      <div
+                        className={
+                          styles.leagueBadge
+                        }
+                      >
+                        {league.name
+                          .slice(0, 2)
+                          .toUpperCase()}
+                      </div>
+
+                      <div>
+                        <h3>{league.name}</h3>
+                        <p>
+                          {
+                            league
+                              .fantasy_competition_name
+                          }
+                        </p>
+                      </div>
+
+                      <div
+                        className={
+                          styles.leagueMeta
+                        }
+                      >
+                        <span>
+                          <Users size={15} />
+                          {formatNumber(
+                            league.members_count,
+                          )}
+                          {' '}members
+                        </span>
+
+                        <span>
+                          <Trophy size={15} />
+                          {league.league_type}
+                        </span>
+                      </div>
+
+                      <button
+                        className={
+                          styles.btnOutline
+                        }
+                        onClick={() =>
+                          navigate(
+                            `/fantasy/create-league?competition=${league.fantasy_competition}`,
+                          )
+                        }
+                      >
+                        View Options
+                      </button>
+                    </article>
+                  ),
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'players' && (
+          <div className={styles.section}>
+            <div
+              className={styles.sectionHead}
+            >
+              <h2>Featured Players</h2>
+
+              <span
+                className={styles.sectionCount}
+              >
+                Live player preview
+              </span>
+            </div>
+
+            {data.featured_players.length ===
+            0 ? (
+              <div
+                className={styles.emptyState}
+              >
+                <Users size={30} />
+
+                <h3>No players available</h3>
+
+                <p>
+                  Players will appear after
+                  competition rosters are
+                  configured.
+                </p>
+              </div>
+            ) : (
+              <div
+                className={styles.featuredGrid}
+              >
+                {data.featured_players.map(
+                  (player) => (
+                    <article
+                      key={player.id}
+                      className={
+                        styles.featuredPlayer
+                      }
+                    >
+                      <div
+                        className={
+                          styles.featuredAvatar
+                        }
+                      >
+                        {player.display_name
+                          .charAt(0)}
+                      </div>
+
+                      <div>
+                        <h3>
+                          {player.display_name}
+                        </h3>
+
+                        <p>
+                          {player.club_name}
+                          {' · '}
+                          {
+                            player
+                              .position_label
+                          }
+                        </p>
+                      </div>
+
+                      <div
+                        className={
+                          styles.featuredStats
+                        }
+                      >
+                        <span>
+                          <strong>
+                            {
+                              player
+                                .final_price
+                            }
+                          </strong>
+                          {' '}credits
+                        </span>
+
+                        <span>
+                          Form{' '}
+                          {player.current_form}
+                        </span>
+                      </div>
+
+                      <button
+                        className={
+                          styles.btnOutline
+                        }
+                        onClick={() =>
+                          navigate(
+                            `/fantasy/player-market?competition=${player.fantasy_competition}`,
+                          )
+                        }
+                      >
+                        Open Market
+                      </button>
+                    </article>
+                  ),
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
         {activeTab === 'standings' && (
           <div>
-            <div className={styles.sectionHead} style={{ marginBottom: 16 }}>
+            <div
+              className={styles.sectionHead}
+              style={{ marginBottom: 16 }}
+            >
               <h2>Overall Standings</h2>
-              <span style={{ fontSize: 12, color: '#9ca3af' }}>{team.competition} · GW12</span>
+
+              <span
+                className={styles.sectionCount}
+              >
+                Top {data.leaderboard.length}
+              </span>
             </div>
-            <div className={styles.widget}>
-              <div className={styles.leaderHead}>
-                <span>#</span><span>Manager</span><span>Team</span><span>GW Pts</span><span>Total</span>
+
+            {data.leaderboard.length === 0 ? (
+              <div
+                className={styles.emptyState}
+              >
+                <Medal size={30} />
+
+                <h3>No rankings yet</h3>
+
+                <p>
+                  Standings will appear after
+                  fantasy teams begin scoring.
+                </p>
               </div>
-              {leaderboard.map((m) => (
-                <div key={m.rank} className={`${styles.leaderRow}${m.isMe ? ` ${styles.leaderRowMe}` : ''}`}>
-                   <span className={styles.leaderRank}>
-                    {m.rank <= 3 ? <Medal size={18} /> : m.rank}
-                  </span>
-                  <div className={styles.leaderAvatar}>{m.name[0]}</div>
-                  <div className={styles.leaderInfo}>
-                    <strong>{m.name}</strong>
-                    <small>{m.team}</small>
-                  </div>
-                  <span style={{ color: '#9ca3af', fontSize: 13 }}>{team.gameweekPoints}</span>
-                  <span className={styles.leaderPts}>{m.pts.toLocaleString()}</span>
+            ) : (
+              <div className={styles.widget}>
+                <div
+                  className={styles.leaderHead}
+                >
+                  <span>#</span>
+                  <span></span>
+                  <span>Manager / Team</span>
+                  <span>Squad</span>
+                  <span>Total</span>
                 </div>
-              ))}
-            </div>
+
+                {data.leaderboard.map(
+                  (entry, index) => {
+                    const rank =
+                      entry.current_rank ??
+                      index + 1;
+
+                    return (
+                      <div
+                        key={entry.id}
+                        className={
+                          `${styles.leaderRow}` +
+                          (
+                            myTeamIds.has(
+                              entry.id,
+                            )
+                              ? ` ${styles.leaderRowMe}`
+                              : ''
+                          )
+                        }
+                      >
+                        <span
+                          className={
+                            styles.leaderRank
+                          }
+                        >
+                          {rank <= 3
+                            ? (
+                              <Medal
+                                size={18}
+                              />
+                            )
+                            : rank}
+                        </span>
+
+                        <div
+                          className={
+                            styles
+                              .leaderAvatar
+                          }
+                        >
+                          {entry.owner_name
+                            .charAt(0)}
+                        </div>
+
+                        <div
+                          className={
+                            styles.leaderInfo
+                          }
+                        >
+                          <strong>
+                            {
+                              entry.owner_name
+                            }
+                          </strong>
+
+                          <small>
+                            {entry.name}
+                            {' · '}
+                            {
+                              entry
+                                .fantasy_competition_name
+                            }
+                          </small>
+                        </div>
+
+                        <span
+                          style={{
+                            color: '#9ca3af',
+                            fontSize: 13,
+                          }}
+                        >
+                          {
+                            entry
+                              .active_squad_count
+                          }
+                        </span>
+
+                        <span
+                          className={
+                            styles.leaderPts
+                          }
+                        >
+                          {formatPoints(
+                            entry.total_points,
+                          )}
+                        </span>
+                      </div>
+                    );
+                  },
+                )}
+              </div>
+            )}
           </div>
         )}
-
       </div>
     </div>
   );

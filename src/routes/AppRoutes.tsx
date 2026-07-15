@@ -74,7 +74,6 @@ import TicketPaymentSuccessPage from '../pages/tickets/TicketPaymentSuccessPage'
 import TicketPaymentFailedPage from '../pages/tickets/TicketPaymentFailedPage';
 import MatchCentrePage from '../pages/MatchCentrePage';
 import MVPVotingPage from '../pages/fan/MVPVotingPage';
-import JoinFantasy from '../pages/JoinFantasy';
 import SuperAdminDashboard from '../pages/SuperAdminDashboard';
 import SuperVariants from '../pages/SuperVariantsPage';
 import RulesAndStandards from '../pages/SuperAdminRules';
@@ -126,9 +125,12 @@ import CorporateSponsorSetup from '../pages/sponsor/CorporateSponsorSetup';
 import CorporateVerificationUpload from '../pages/sponsor/CorporateVerificationUpload';
 import CorporateContactPerson from '../pages/sponsor/CorporateContactPerson';
 import CorporateSponsorDashboard from '../pages/sponsor/CorporateSponsorDashboard';
+import SponsorPayments from '../pages/sponsor/SponsorPayments';
+import SponsorPaymentProcessing from '../pages/sponsor/SponsorPaymentProcessing';
 import CorporateTeamManagement from '../pages/sponsor/CorporateTeamManagement';
 import SponsorPermissions from '../pages/sponsor/SponsorPermissions';
 import SponsorPackages from '../pages/sponsor/SponsorPackages';
+import SponsorPackageDetail from '../pages/sponsor/SponsorPackageDetail';
 import CampaignCreation from '../pages/sponsor/CampaignCreation';
 import CampaignAnalytics from '../pages/sponsor/CampaignAnalytics';
 import CampaignPlacementPreview from '../pages/sponsor/CampaignPlacementPreview';
@@ -147,6 +149,11 @@ import UnionAdminDashboard from '../pages/union-admin/UnionAdminDashboard';
 import LeagueAdminDashboard from '../pages/league-admin/LeagueAdminDashboard';
 import ClubAdminDashboard from '../pages/club-admin/ClubAdminDashboard';
 import TicketingOfficerDashboard from '../pages/ticketing-officer/TicketingOfficerDashboard';
+import TreasurerDashboard from '../pages/club-admin/TreasurerDashboard';
+import ChairmanDashboard from '../pages/club-admin/ChairmannDashboard';
+import CustomAdminDashboard from '../pages/club-admin/CustomAdminDashboard';
+import TeamManagerDashboard from '@/pages/club-admin/TeamManagerDashboard';
+import ClubMembershipManagement from '../pages/club-admin/ClubMembershipManagement';
 
 //super admin sponsorship management
 import SponsorFramework from "../pages/super-admin/sponsorship-management/SponsorshipFramework";
@@ -191,7 +198,7 @@ export default function AppRoutes() {
                 <Route path="/personalize" element={<Personalize />} />
                 <Route path="/verify-email" element={<VerifyEmail />} />
                 <Route path="/fan/mvp-voting" element={<MVPVotingPage />} />
-                <Route path="/join-fantasy" element={<JoinFantasy />} />
+                <Route path="/join-fantasy" element={<Navigate to="/fantasy" replace />} />
 
 
                 <Route path="/dashboard" element={protectedPage(<Navigate to="/dashboard/fan" replace />)} />
@@ -201,6 +208,7 @@ export default function AppRoutes() {
                     element={protectedPage(<Navigate to="/dashboard/union-admin" replace />)}
                 />
 
+               
                 <Route
                     path="/dashboard/league-admin"
                     element={roleProtectedPage(
@@ -214,6 +222,45 @@ export default function AppRoutes() {
                     element={roleProtectedPage(
                         <ClubAdminDashboard />,
                         ['CLUB_ADMIN'],
+                    )}
+                />
+                <Route
+                    path="/dashboard/club-admin/membership"
+                    element={roleProtectedPage(
+                       <ClubMembershipManagement />,
+                       ['CLUB_ADMIN'],
+              )}
+/>
+
+                <Route
+                    path="/dashboard/treasurer"
+                    element={roleProtectedPage(
+                        <TreasurerDashboard />,
+                        ['TREASURER'],
+                    )}
+                />
+
+                <Route
+                    path="/dashboard/chairman"
+                    element={roleProtectedPage(
+                        <ChairmanDashboard />,
+                        ['CHAIRMAN'],
+                    )}
+                />
+
+                <Route
+                    path="/dashboard/custom-admin"
+                    element={roleProtectedPage(
+                        <CustomAdminDashboard />,
+                        ['CUSTOM_ADMIN'],
+                    )}
+                />
+
+                <Route
+                    path="/dashboard/team-manager"
+                    element={roleProtectedPage(
+                        <TeamManagerDashboard />,
+                        ['TEAM_MANAGER'],
                     )}
                 />
 
@@ -329,14 +376,45 @@ export default function AppRoutes() {
                 <Route path="/sponsor/corporatesetup/verification" element={<CorporateVerificationUpload />} />
                 <Route path="/sponsor/corporatesetup/review" element={<CorporateSponsorReview />} />
                 <Route path="/sponsor/corporatesetup/complete" element={<CorporateSponsorComplete />} />
-                <Route path="/sponsor/dashboard" element={<CorporateSponsorDashboard />} />
-                <Route path="/sponsor/team" element={<CorporateTeamManagement />} />
+                <Route
+                    path="/sponsor/dashboard"
+                    element={protectedPage(<CorporateSponsorDashboard />)}
+                />
+                <Route
+                    path="/sponsor/team"
+                    element={protectedPage(<CorporateTeamManagement />)}
+                />
+                <Route
+                    path="/sponsor/payments"
+                    element={protectedPage(<SponsorPayments />)}
+                />
+                <Route
+                    path="/sponsor/payment/processing"
+                    element={<SponsorPaymentProcessing />}
+                />
                 <Route path="/sponsor/permissions" element={<SponsorPermissions />} />
-                <Route path="/sponsor/packages" element={<SponsorPackages />} />
+                <Route
+                    path="/sponsor/packages"
+                    element={protectedPage(<SponsorPackages />)}
+                />
+                <Route
+                    path="/sponsor/packages/:packageId"
+                    element={protectedPage(<SponsorPackageDetail />)}
+                />
                 <Route path="/sponsor/campaigns/new" element={<CampaignCreation />} />
-                <Route path="/sponsor/analytics" element={<CampaignAnalytics />} />
+                <Route
+                    path="/sponsor/analytics"
+                    element={protectedPage(<CampaignAnalytics />)}
+                />
                 <Route path="/sponsor/campaigns/preview" element={<CampaignPlacementPreview />} />
-                <Route path="/sponsor/campaigns" element={<SponsorCampaigns />} />
+                <Route
+                    path="/sponsor/activations"
+                    element={protectedPage(<SponsorCampaigns />)}
+                />
+                <Route
+                    path="/sponsor/campaigns"
+                    element={<Navigate to="/sponsor/activations" replace />}
+                />
                 <Route path="/sponsor/settings" element={<SponsorSettings />} />
                 <Route path="/sponsor/support" element={<SponsorHelp />} />
                 <Route path="/sponsor/campaigns/new/targeting" element={<CampaignTargeting />} />
@@ -401,6 +479,8 @@ export default function AppRoutes() {
                     <Route path="feature-flags" element={<FeatureFlags />} />
                     <Route path="system-messages" element={<SystemMessages />} />
                     <Route path="bulk-operations" element={<BulkOperations />} />
+
+                    
 
                     {/*Sponsorship Management*/}
                     <Route path="frameworks" element={<SponsorFramework />} />

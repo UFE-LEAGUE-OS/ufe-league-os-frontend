@@ -1,251 +1,1354 @@
-import { useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { SPORT_CONFIGS, PUBLIC_LEAGUES } from './fantasyData';
-import type { Sport, Format } from './fantasyData';
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
+import {
+  AlertCircle,
+  CheckCircle2,
+  Globe2,
+  LockKeyhole,
+  RefreshCw,
+  Trophy,
+  Users,
+  Wallet,
+} from 'lucide-react';
+import {
+  useNavigate,
+  useSearchParams,
+} from 'react-router-dom';
+import {
+  createFantasyLeague,
+  fetchAvailableFantasyLeagues,
+  fetchFantasyCompetitionDetail,
+  fetchMyFantasyTeams,
+  joinPrivateFantasyLeague,
+} from '../../services/fantasyService';
+import type {
+  FantasyCompetitionApi,
+  FantasyLeagueMembershipApi,
+  FantasyLeagueSummary,
+  FantasyTeamApi,
+} from '../../services/fantasyService';
 import styles from './FantasyCreateJoin.module.css';
 
 type Tab = 'create' | 'join';
+type LeagueType = 'PUBLIC' | 'PRIVATE';
+
+type ApiErrorShape = {
+  response?: {
+    data?: unknown;
+  };
+};
+
+const SPORT_PRESENTATION: Record<
+  string,
+  {
+    label: string;
+    emoji: string;
+  }
+> = {
+  RUGBY: {
+    label: 'Rugby',
+    emoji: '🏉',
+  },
+  FOOTBALL: {
+    label: 'Football',
+    emoji: '⚽',
+  },
+  BASKETBALL: {
+    label: 'Basketball',
+    emoji: '🏀',
+  },
+  OTHER: {
+    label: 'Other',
+    emoji: '🏆',
+  },
+};
+
+function sportPresentation(sport: string) {
+  return (
+    SPORT_PRESENTATION[sport] ??
+    SPORT_PRESENTATION.OTHER
+  );
+}
+
+function extractErrorMessage(
+  value: unknown,
+): string | null {
+  if (
+    typeof value === 'string' &&
+    value.trim()
+  ) {
+    return value;
+  }
+
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      const message =
+        extractErrorMessage(item);
+
+      if (message) {
+        return message;
+      }
+    }
+  }
+
+  if (
+    value &&
+    typeof value === 'object'
+  ) {
+    for (
+      const item of Object.values(
+        value as Record<string, unknown>,
+      )
+    ) {
+      const message =
+        extractErrorMessage(item);
+
+      if (message) {
+        return message;
+      }
+    }
+  }
+
+  return null;
+}
+
+function getApiErrorMessage(
+  error: unknown,
+  fallback: string,
+) {
+  const data = (
+    error as ApiErrorShape
+  ).response?.data;
+
+  return (
+    extractErrorMessage(data) ??
+    fallback
+  );
+}
 
 export default function FantasyCreateJoin() {
   const navigate = useNavigate();
-  const [params] = useSearchParams();
-  const sport = (params.get('sport') ?? 'rugby') as Sport;
-  const format = (params.get('format') ?? 'classic') as Format;
-  const cfg = SPORT_CONFIGS[sport];
+  const [searchParams] = useSearchParams();
 
-  const [tab, setTab] = useState<Tab>('create');
-  const [leagueName, setLeagueName] = useState('');
-  const [isPrivate, setIsPrivate] = useState(false);
-  const [maxTeams, setMaxTeams] = useState('20');
-  const [entryFee, setEntryFee] = useState('0');
-  const [joinCode, setJoinCode] = useState('');
-  const [sportFilter, setSportFilter] = useState<Sport | 'all'>('all');
-  const [created, setCreated] = useState(false);
-  const [joinSuccess, setJoinSuccess] = useState<string | null>(null);
+  const competitionId =
+    Number.parseInt(
+      searchParams.get('competition') ?? '',
+      10,
+    );
 
-  const filteredLeagues = PUBLIC_LEAGUES.filter(l =>
-    sportFilter === 'all' || l.sport === sportFilter
+  const [tab, setTab] =
+    useState<Tab>('create');
+
+  const [
+    competition,
+    setCompetition,
+  ] =
+    useState<FantasyCompetitionApi | null>(
+      null,
+    );
+
+  const [teams, setTeams] =
+    useState<FantasyTeamApi[]>([]);
+
+  const [
+    publicLeagues,
+    setPublicLeagues,
+  ] = useState<FantasyLeagueSummary[]>(
+    [],
   );
 
-  const handleCreate = () => {
-    if (!leagueName.trim()) return;
-    setCreated(true);
-    setTimeout(() => {
-      navigate(`/fantasy/team-builder?sport=${sport}&format=${format}&league=${encodeURIComponent(leagueName.trim())}`);
-    }, 1400);
+  const [leagueName, setLeagueName] =
+    useState('');
+
+  const [leagueType, setLeagueType] =
+    useState<LeagueType>('PRIVATE');
+
+  const [joinCode, setJoinCode] =
+    useState('');
+
+  const [
+    createdLeague,
+    setCreatedLeague,
+  ] =
+    useState<FantasyLeagueSummary | null>(
+      null,
+    );
+
+  const [
+    joinedMembership,
+    setJoinedMembership,
+  ] =
+    useState<FantasyLeagueMembershipApi | null>(
+      null,
+    );
+
+  const [loading, setLoading] =
+    useState(true);
+
+  const [creating, setCreating] =
+    useState(false);
+
+  const [joining, setJoining] =
+    useState(false);
+
+  const [loadError, setLoadError] =
+    useState<string | null>(null);
+
+  const [actionError, setActionError] =
+    useState<string | null>(null);
+
+  const [reloadKey, setReloadKey] =
+    useState(0);
+
+  const validCompetitionId =
+    Number.isInteger(competitionId) &&
+    competitionId > 0;
+
+  useEffect(() => {
+    let active = true;
+
+    if (!validCompetitionId) {
+      setLoadError(
+        'No valid fantasy competition was selected.',
+      );
+      setLoading(false);
+      return () => {
+        active = false;
+      };
+    }
+
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        setLoadError(null);
+
+        const [
+          competitionResponse,
+          teamsResponse,
+          leaguesResponse,
+        ] = await Promise.all([
+          fetchFantasyCompetitionDetail(
+            competitionId,
+          ),
+          fetchMyFantasyTeams(),
+          fetchAvailableFantasyLeagues({
+            competition: competitionId,
+            league_type: 'PUBLIC',
+            limit: 50,
+            offset: 0,
+          }),
+        ]);
+
+        if (!active) {
+          return;
+        }
+
+        setCompetition(
+          competitionResponse.data
+            .competition,
+        );
+
+        setTeams(
+          teamsResponse.data.results,
+        );
+
+        setPublicLeagues(
+          leaguesResponse.data.results,
+        );
+      } catch (requestError) {
+        console.error(
+          'Failed to load fantasy create/join data:',
+          requestError,
+        );
+
+        if (active) {
+          setLoadError(
+            getApiErrorMessage(
+              requestError,
+              'We could not load this fantasy competition.',
+            ),
+          );
+        }
+      } finally {
+        if (active) {
+          setLoading(false);
+        }
+      }
+    };
+
+    void loadData();
+
+    return () => {
+      active = false;
+    };
+  }, [
+    competitionId,
+    reloadKey,
+    validCompetitionId,
+  ]);
+
+  const competitionTeam = useMemo(
+    () =>
+      teams.find(
+        (team) =>
+          team.fantasy_competition ===
+          competitionId,
+      ) ?? null,
+    [competitionId, teams],
+  );
+
+  const currentSport = competition
+    ? sportPresentation(
+        competition.sport,
+      )
+    : SPORT_PRESENTATION.OTHER;
+
+  const teamBuilderUrl = (
+    league?: FantasyLeagueSummary | null,
+    membership?: FantasyLeagueMembershipApi | null,
+  ) => {
+    const params = new URLSearchParams({
+      competition: String(competitionId),
+    });
+
+    if (competitionTeam) {
+      params.set(
+        'team',
+        String(competitionTeam.id),
+      );
+    }
+
+    const leagueId =
+      membership?.fantasy_league ??
+      league?.id;
+
+    if (leagueId) {
+      params.set(
+        'league',
+        String(leagueId),
+      );
+    }
+
+    const code =
+      league?.join_code ??
+      membership
+        ?.fantasy_league_detail
+        .join_code;
+
+    if (code) {
+      params.set('joinCode', code);
+    }
+
+    return (
+      `/fantasy/team-builder?` +
+      params.toString()
+    );
   };
 
-  const handleJoinPublic = (leagueId: string, leagueName: string) => {
-    setJoinSuccess(leagueName);
-    setTimeout(() => {
-      const league = PUBLIC_LEAGUES.find(l => l.id === leagueId)!;
-      navigate(`/fantasy/team-builder?sport=${league.sport}&format=${league.format}&league=${encodeURIComponent(leagueName)}`);
-    }, 1400);
+  const handleCreate = async () => {
+    const cleanName = leagueName.trim();
+
+    if (
+      !competition ||
+      !cleanName
+    ) {
+      return;
+    }
+
+    try {
+      setCreating(true);
+      setActionError(null);
+      setJoinedMembership(null);
+
+      const response =
+        await createFantasyLeague({
+          fantasy_competition_id:
+            competition.id,
+          name: cleanName,
+          league_type: leagueType,
+        });
+
+      const league =
+        response.data.league;
+
+      setCreatedLeague(league);
+
+      if (
+        league.league_type ===
+          'PRIVATE' &&
+        league.join_code &&
+        competitionTeam
+      ) {
+        try {
+          const joinResponse =
+            await joinPrivateFantasyLeague({
+              fantasy_team_id:
+                competitionTeam.id,
+              join_code:
+                league.join_code,
+            });
+
+          setJoinedMembership(
+            joinResponse.data.membership,
+          );
+        } catch (joinError) {
+          console.error(
+            'League created but automatic membership failed:',
+            joinError,
+          );
+
+          setActionError(
+            'The league was created, but your existing team could not be added automatically. Use the displayed private code to join.',
+          );
+        }
+      }
+    } catch (requestError) {
+      console.error(
+        'Failed to create fantasy league:',
+        requestError,
+      );
+
+      setActionError(
+        getApiErrorMessage(
+          requestError,
+          'The fantasy league could not be created.',
+        ),
+      );
+    } finally {
+      setCreating(false);
+    }
   };
 
-  const handleJoinCode = () => {
-    if (joinCode.trim().length < 4) return;
-    setJoinSuccess(`League #${joinCode.trim().toUpperCase()}`);
-    setTimeout(() => {
-      navigate(`/fantasy/team-builder?sport=${sport}&format=${format}&league=${joinCode.trim().toUpperCase()}`);
-    }, 1400);
+  const handleJoin = async () => {
+    const cleanCode =
+      joinCode.trim().toUpperCase();
+
+    if (
+      !competitionTeam ||
+      cleanCode.length < 4
+    ) {
+      return;
+    }
+
+    try {
+      setJoining(true);
+      setActionError(null);
+
+      const response =
+        await joinPrivateFantasyLeague({
+          fantasy_team_id:
+            competitionTeam.id,
+          join_code: cleanCode,
+        });
+
+      setJoinedMembership(
+        response.data.membership,
+      );
+
+      setJoinCode('');
+    } catch (requestError) {
+      console.error(
+        'Failed to join private fantasy league:',
+        requestError,
+      );
+
+      setActionError(
+        getApiErrorMessage(
+          requestError,
+          'The private fantasy league could not be joined.',
+        ),
+      );
+    } finally {
+      setJoining(false);
+    }
   };
+
+  const resetCreateForm = () => {
+    setCreatedLeague(null);
+    setJoinedMembership(null);
+    setLeagueName('');
+    setActionError(null);
+  };
+
+  const resetJoinForm = () => {
+    setJoinedMembership(null);
+    setJoinCode('');
+    setActionError(null);
+  };
+
+  if (loading) {
+    return (
+      <div className={styles.page}>
+        <div className={styles.stateCard}>
+          <RefreshCw
+            className={styles.stateSpinner}
+            size={30}
+          />
+
+          <h2>
+            Loading League Options
+          </h2>
+
+          <p>
+            Fetching the competition,
+            your team and available
+            leagues.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (loadError || !competition) {
+    return (
+      <div className={styles.page}>
+        <div className={styles.stateCard}>
+          <AlertCircle size={32} />
+
+          <h2>
+            League Options Unavailable
+          </h2>
+
+          <p>
+            {loadError ??
+              'Fantasy competition not found.'}
+          </p>
+
+          <div
+            className={
+              styles.successActions
+            }
+          >
+            <button
+              className={styles.primaryBtn}
+              onClick={() =>
+                setReloadKey(
+                  (value) => value + 1,
+                )
+              }
+              disabled={
+                !validCompetitionId
+              }
+            >
+              Try Again
+            </button>
+
+            <button
+              className={
+                styles.secondaryBtn
+              }
+              onClick={() =>
+                navigate(
+                  '/fantasy/select',
+                )
+              }
+            >
+              Select Competition
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.page}>
-      {/* Header */}
       <div className={styles.header}>
-        <button className={styles.backBtn} onClick={() => navigate(`/fantasy/select?sport=${sport}&format=${format}`)}>
+        <button
+          className={styles.backBtn}
+          onClick={() =>
+            navigate(
+              `/fantasy/select?competition=${competition.id}`,
+            )
+          }
+        >
           ← Back
         </button>
+
         <div className={styles.steps}>
-          <span className={styles.step}>1 Sport &amp; Format</span>
-          <span className={styles.stepArrow}>›</span>
-          <span className={`${styles.step} ${styles.stepActive}`}>2 Create / Join</span>
-          <span className={styles.stepArrow}>›</span>
-          <span className={styles.step}>3 Build Team</span>
+          <span className={styles.step}>
+            1 Select Competition
+          </span>
+
+          <span
+            className={styles.stepArrow}
+          >
+            ›
+          </span>
+
+          <span
+            className={
+              `${styles.step} ` +
+              styles.stepActive
+            }
+          >
+            2 Create / Join
+          </span>
+
+          <span
+            className={styles.stepArrow}
+          >
+            ›
+          </span>
+
+          <span className={styles.step}>
+            3 Build Team
+          </span>
         </div>
       </div>
 
-      {/* Context pill */}
       <div className={styles.contextPill}>
-        <span>{cfg.emoji} {cfg.label}</span>
-        <span className={styles.dot}>·</span>
-        <span>{cfg.formats.find(f => f.id === format)?.label ?? format}</span>
-        <span className={styles.dot}>·</span>
-        <span>Budget: {cfg.budget}m UGX</span>
+        <span>
+          {currentSport.emoji}{' '}
+          {competition.name}
+        </span>
+
+        <span className={styles.dot}>
+          ·
+        </span>
+
+        <span>
+          {competition.season ||
+            'Current Season'}
+        </span>
+
+        <span className={styles.dot}>
+          ·
+        </span>
+
+        <span>
+          Budget: {competition.budget}
+          {' '}credits
+        </span>
+
+        <span className={styles.dot}>
+          ·
+        </span>
+
+        <span>
+          Squad: {
+            competition.squad_size
+          }
+        </span>
       </div>
 
       <div className={styles.body}>
-        {/* Tabs */}
+        {competitionTeam ? (
+          <div
+            className={styles.teamNotice}
+          >
+            <CheckCircle2 size={19} />
+
+            <div>
+              <strong>
+                Your competition team:
+                {' '}
+                {competitionTeam.name}
+              </strong>
+
+              <span>
+                Team #{competitionTeam.id}
+                {' · '}
+                {
+                  competitionTeam
+                    .active_squad_count
+                }
+                {' '}players selected
+              </span>
+            </div>
+          </div>
+        ) : (
+          <div
+            className={
+              styles.teamNoticeWarning
+            }
+          >
+            <AlertCircle size={19} />
+
+            <div>
+              <strong>
+                You do not have a team for
+                this competition yet.
+              </strong>
+
+              <span>
+                You can create a league now,
+                but a fantasy team is required
+                before joining a private
+                league.
+              </span>
+            </div>
+
+            <button
+              className={
+                styles.secondaryBtn
+              }
+              onClick={() =>
+                navigate(
+                  teamBuilderUrl(),
+                )
+              }
+            >
+              Create Team First
+            </button>
+          </div>
+        )}
+
+        {actionError && (
+          <div
+            className={styles.apiError}
+            role="alert"
+          >
+            <AlertCircle size={18} />
+            <span>{actionError}</span>
+          </div>
+        )}
+
         <div className={styles.tabs}>
-          <button className={`${styles.tab}${tab === 'create' ? ` ${styles.tabActive}` : ''}`} onClick={() => setTab('create')}>
+          <button
+            className={
+              `${styles.tab}` +
+              (
+                tab === 'create'
+                  ? ` ${styles.tabActive}`
+                  : ''
+              )
+            }
+            onClick={() => {
+              setTab('create');
+              setActionError(null);
+            }}
+          >
             🏆 Create New League
           </button>
-          <button className={`${styles.tab}${tab === 'join' ? ` ${styles.tabActive}` : ''}`} onClick={() => setTab('join')}>
+
+          <button
+            className={
+              `${styles.tab}` +
+              (
+                tab === 'join'
+                  ? ` ${styles.tabActive}`
+                  : ''
+              )
+            }
+            onClick={() => {
+              setTab('join');
+              setActionError(null);
+            }}
+          >
             🔗 Join a League
           </button>
         </div>
 
-        {/* ── CREATE ── */}
         {tab === 'create' && (
           <div className={styles.panel}>
-            {created ? (
-              <div className={styles.successState}>
-                <div className={styles.successIcon}>🎉</div>
+            {createdLeague ? (
+              <div
+                className={
+                  styles.successState
+                }
+              >
+                <div
+                  className={
+                    styles.successIcon
+                  }
+                >
+                  🎉
+                </div>
+
                 <h3>League Created!</h3>
-                <p>Taking you to the team builder…</p>
+
+                <p>
+                  <strong>
+                    {createdLeague.name}
+                  </strong>
+                  {' '}has been created for
+                  {' '}
+                  {competition.name}.
+                </p>
+
+                <div
+                  className={
+                    styles.successDetail
+                  }
+                >
+                  <span>
+                    {createdLeague
+                      .league_type ===
+                    'PRIVATE'
+                      ? (
+                        <LockKeyhole
+                          size={16}
+                        />
+                      )
+                      : (
+                        <Globe2
+                          size={16}
+                        />
+                      )}
+                    {
+                      createdLeague
+                        .league_type
+                    }
+                  </span>
+
+                  <span>
+                    <Users size={16} />
+                    {
+                      createdLeague
+                        .members_count
+                    }
+                    {' '}members
+                  </span>
+                </div>
+
+                {createdLeague.join_code && (
+                  <div
+                    className={
+                      styles.codeBox
+                    }
+                  >
+                    <small>
+                      PRIVATE JOIN CODE
+                    </small>
+
+                    <strong>
+                      {
+                        createdLeague
+                          .join_code
+                      }
+                    </strong>
+
+                    <span>
+                      Share this code with
+                      invited managers.
+                    </span>
+                  </div>
+                )}
+
+                {joinedMembership && (
+                  <div
+                    className={
+                      styles.membershipSuccess
+                    }
+                  >
+                    <CheckCircle2
+                      size={18}
+                    />
+                    {
+                      joinedMembership
+                        .fantasy_team_name
+                    }
+                    {' '}was added to the
+                    league.
+                  </div>
+                )}
+
+                {!competitionTeam &&
+                  createdLeague
+                    .league_type ===
+                    'PRIVATE' && (
+                    <p>
+                      Build your fantasy team
+                      next, then use the join
+                      code above to enter this
+                      private league.
+                    </p>
+                  )}
+
+                <div
+                  className={
+                    styles.successActions
+                  }
+                >
+                  <button
+                    className={
+                      styles.primaryBtn
+                    }
+                    onClick={() =>
+                      navigate(
+                        teamBuilderUrl(
+                          createdLeague,
+                          joinedMembership,
+                        ),
+                      )
+                    }
+                  >
+                    Continue to Team Builder →
+                  </button>
+
+                  <button
+                    className={
+                      styles.secondaryBtn
+                    }
+                    onClick={
+                      resetCreateForm
+                    }
+                  >
+                    Create Another League
+                  </button>
+                </div>
               </div>
             ) : (
               <>
-                <h3 className={styles.panelTitle}>Set Up Your League</h3>
+                <h3
+                  className={
+                    styles.panelTitle
+                  }
+                >
+                  Set Up Your League
+                </h3>
 
-                <div className={styles.formGrid}>
-                  <div className={styles.field}>
-                    <label>League Name *</label>
+                <div
+                  className={
+                    styles.formGrid
+                  }
+                >
+                  <div
+                    className={
+                      styles.field
+                    }
+                  >
+                    <label
+                      htmlFor="fantasy-league-name"
+                    >
+                      League Name *
+                    </label>
+
                     <input
+                      id="fantasy-league-name"
                       type="text"
-                      placeholder="e.g. KadagaFC Fantasy"
+                      placeholder="e.g. KOBS Fans Mini League"
                       value={leagueName}
-                      maxLength={40}
-                      onChange={e => setLeagueName(e.target.value)}
+                      maxLength={160}
+                      onChange={(event) =>
+                        setLeagueName(
+                          event.target.value,
+                        )
+                      }
                     />
                   </div>
 
-                  <div className={styles.field}>
-                    <label>Max Teams</label>
-                    <select value={maxTeams} onChange={e => setMaxTeams(e.target.value)}>
-                      {['10','20','50','100'].map(n => <option key={n}>{n}</option>)}
-                    </select>
-                  </div>
+                  <div
+                    className={
+                      `${styles.field} ` +
+                      styles.fieldRow
+                    }
+                  >
+                    <label>
+                      League Privacy
+                    </label>
 
-                  <div className={styles.field}>
-                    <label>Entry Fee (UGX)</label>
-                    <select value={entryFee} onChange={e => setEntryFee(e.target.value)}>
-                      {['0','2000','5000','10000','20000'].map(n => (
-                        <option key={n} value={n}>{n === '0' ? 'Free' : `UGX ${Number(n).toLocaleString()}`}</option>
-                      ))}
-                    </select>
-                  </div>
+                    <div
+                      className={
+                        styles.toggleRow
+                      }
+                    >
+                      <button
+                        type="button"
+                        className={
+                          `${styles.toggleBtn}` +
+                          (
+                            leagueType ===
+                            'PUBLIC'
+                              ? ` ${styles.toggleBtnActive}`
+                              : ''
+                          )
+                        }
+                        onClick={() =>
+                          setLeagueType(
+                            'PUBLIC',
+                          )
+                        }
+                      >
+                        <Globe2
+                          size={15}
+                        />
+                        Public
+                      </button>
 
-                  <div className={`${styles.field} ${styles.fieldRow}`}>
-                    <label>Privacy</label>
-                    <div className={styles.toggleRow}>
                       <button
-                        className={`${styles.toggleBtn}${!isPrivate ? ` ${styles.toggleBtnActive}` : ''}`}
-                        onClick={() => setIsPrivate(false)}
-                      >🌍 Public</button>
-                      <button
-                        className={`${styles.toggleBtn}${isPrivate ? ` ${styles.toggleBtnActive}` : ''}`}
-                        onClick={() => setIsPrivate(true)}
-                      >🔒 Private</button>
+                        type="button"
+                        className={
+                          `${styles.toggleBtn}` +
+                          (
+                            leagueType ===
+                            'PRIVATE'
+                              ? ` ${styles.toggleBtnActive}`
+                              : ''
+                          )
+                        }
+                        onClick={() =>
+                          setLeagueType(
+                            'PRIVATE',
+                          )
+                        }
+                      >
+                        <LockKeyhole
+                          size={15}
+                        />
+                        Private
+                      </button>
                     </div>
                   </div>
                 </div>
 
-                {/* League preview */}
-                {leagueName && (
-                  <div className={styles.leaguePreview}>
-                    <div className={styles.leaguePreviewIcon}>{cfg.emoji}</div>
+                {leagueName.trim() && (
+                  <div
+                    className={
+                      styles.leaguePreview
+                    }
+                  >
+                    <div
+                      className={
+                        styles
+                          .leaguePreviewIcon
+                      }
+                    >
+                      {currentSport.emoji}
+                    </div>
+
                     <div>
-                      <strong>{leagueName}</strong>
-                      <p>{cfg.label} · {cfg.formats.find(f => f.id === format)?.label} · {isPrivate ? '🔒 Private' : '🌍 Public'} · Max {maxTeams} teams · {entryFee === '0' ? 'Free' : `UGX ${Number(entryFee).toLocaleString()} entry`}</p>
+                      <strong>
+                        {leagueName.trim()}
+                      </strong>
+
+                      <p>
+                        {competition.name}
+                        {' · '}
+                        {leagueType ===
+                        'PRIVATE'
+                          ? 'Private with join code'
+                          : 'Public and discoverable'}
+                      </p>
                     </div>
                   </div>
                 )}
 
                 <button
-                  className={styles.primaryBtn}
+                  className={
+                    styles.primaryBtn
+                  }
                   onClick={handleCreate}
-                  disabled={!leagueName.trim()}
+                  disabled={
+                    !leagueName.trim() ||
+                    creating
+                  }
                 >
-                  Create League &amp; Build Team →
+                  {creating
+                    ? 'Creating League…'
+                    : 'Create League'}
                 </button>
               </>
             )}
           </div>
         )}
 
-        {/* ── JOIN ── */}
         {tab === 'join' && (
           <div className={styles.panel}>
-            {joinSuccess ? (
-              <div className={styles.successState}>
-                <div className={styles.successIcon}>🎉</div>
-                <h3>You've Joined!</h3>
-                <p>Taking you to build your team for <strong>{joinSuccess}</strong>…</p>
+            {joinedMembership ? (
+              <div
+                className={
+                  styles.successState
+                }
+              >
+                <div
+                  className={
+                    styles.successIcon
+                  }
+                >
+                  🎉
+                </div>
+
+                <h3>
+                  Private League Joined!
+                </h3>
+
+                <p>
+                  <strong>
+                    {
+                      joinedMembership
+                        .fantasy_team_name
+                    }
+                  </strong>
+                  {' '}has joined
+                  {' '}
+                  <strong>
+                    {
+                      joinedMembership
+                        .fantasy_league_detail
+                        .name
+                    }
+                  </strong>
+                  .
+                </p>
+
+                <div
+                  className={
+                    styles.successActions
+                  }
+                >
+                  <button
+                    className={
+                      styles.primaryBtn
+                    }
+                    onClick={() =>
+                      navigate(
+                        teamBuilderUrl(
+                          joinedMembership
+                            .fantasy_league_detail,
+                          joinedMembership,
+                        ),
+                      )
+                    }
+                  >
+                    Continue to Team Builder →
+                  </button>
+
+                  <button
+                    className={
+                      styles.secondaryBtn
+                    }
+                    onClick={resetJoinForm}
+                  >
+                    Join Another League
+                  </button>
+                </div>
               </div>
             ) : (
               <>
-                {/* Join by code */}
-                <div className={styles.joinCodeSection}>
-                  <h3 className={styles.panelTitle}>Join by Private Code</h3>
-                  <div className={styles.codeRow}>
+                <div
+                  className={
+                    styles.joinCodeSection
+                  }
+                >
+                  <h3
+                    className={
+                      styles.panelTitle
+                    }
+                  >
+                    Join by Private Code
+                  </h3>
+
+                  <p
+                    className={
+                      styles.panelDescription
+                    }
+                  >
+                    A team belonging to this
+                    competition is required.
+                  </p>
+
+                  <div
+                    className={
+                      styles.codeRow
+                    }
+                  >
                     <input
-                      className={styles.codeInput}
+                      className={
+                        styles.codeInput
+                      }
                       type="text"
-                      placeholder="Enter league code (e.g. XK84JF)"
-                      maxLength={8}
+                      aria-label="Private league code"
+                      placeholder="Enter private league code"
+                      maxLength={20}
                       value={joinCode}
-                      onChange={e => setJoinCode(e.target.value.toUpperCase())}
-                      onKeyDown={e => e.key === 'Enter' && handleJoinCode()}
+                      disabled={!competitionTeam}
+                      onChange={(event) =>
+                        setJoinCode(
+                          event.target.value
+                            .toUpperCase(),
+                        )
+                      }
+                      onKeyDown={(event) => {
+                        if (
+                          event.key ===
+                          'Enter'
+                        ) {
+                          void handleJoin();
+                        }
+                      }}
                     />
+
                     <button
-                      className={styles.primaryBtn}
-                      onClick={handleJoinCode}
-                      disabled={joinCode.trim().length < 4}
+                      className={
+                        styles.primaryBtn
+                      }
+                      onClick={handleJoin}
+                      disabled={
+                        !competitionTeam ||
+                        joinCode.trim()
+                          .length < 4 ||
+                        joining
+                      }
                     >
-                      Join
+                      {joining
+                        ? 'Joining…'
+                        : 'Join Private League'}
                     </button>
                   </div>
                 </div>
 
-                <div className={styles.divider}><span>or browse public leagues</span></div>
+                <div
+                  className={styles.divider}
+                >
+                  <span>
+                    public leagues for this
+                    competition
+                  </span>
+                </div>
 
-                {/* Public leagues */}
                 <div>
-                  <div className={styles.publicHeader}>
-                    <h3 className={styles.panelTitle}>Public Leagues</h3>
-                    <div className={styles.filterRow}>
-                      {(['all','rugby','football','basketball'] as const).map(s => (
-                        <button
-                          key={s}
-                          className={`${styles.filterBtn}${sportFilter === s ? ` ${styles.filterBtnActive}` : ''}`}
-                          onClick={() => setSportFilter(s)}
-                        >
-                          {s === 'all' ? 'All' : SPORT_CONFIGS[s].emoji + ' ' + SPORT_CONFIGS[s].label}
-                        </button>
-                      ))}
+                  <div
+                    className={
+                      styles.publicHeader
+                    }
+                  >
+                    <div>
+                      <h3
+                        className={
+                          styles.panelTitle
+                        }
+                      >
+                        Public Leagues
+                      </h3>
+
+                      <p
+                        className={
+                          styles
+                            .panelDescription
+                        }
+                      >
+                        Browse currently active
+                        public leagues.
+                      </p>
                     </div>
+
+                    <span
+                      className={
+                        styles.publicCount
+                      }
+                    >
+                      {publicLeagues.length}
+                      {' '}available
+                    </span>
                   </div>
 
-                  <div className={styles.leagueTable}>
-                    <div className={styles.leagueTableHead}>
-                      <span>League</span>
-                      <span>Sport</span>
-                      <span>Format</span>
-                      <span>Teams</span>
-                      <span>Entry</span>
-                      <span>Prize Pool</span>
-                      <span></span>
+                  {publicLeagues.length ===
+                  0 ? (
+                    <div
+                      className={
+                        styles.emptyState
+                      }
+                    >
+                      <Trophy size={30} />
+
+                      <h4>
+                        No Public Leagues
+                      </h4>
+
+                      <p>
+                        Create the first public
+                        league for this
+                        competition.
+                      </p>
                     </div>
-                    {filteredLeagues.map(l => (
-                      <div key={l.id} className={styles.leagueTableRow}>
-                        <span className={styles.leagueName}>{l.name}</span>
-                        <span>{SPORT_CONFIGS[l.sport].emoji} {SPORT_CONFIGS[l.sport].label}</span>
-                        <span><span className={styles.formatBadge}>{l.format}</span></span>
-                        <span>{l.teams.toLocaleString()} / {l.maxTeams.toLocaleString()}</span>
-                        <span>{l.entryFee === 0 ? <span className={styles.free}>Free</span> : `UGX ${l.entryFee.toLocaleString()}`}</span>
-                        <span className={styles.prize}>{l.prizePool}</span>
-                        <button
-                          className={styles.joinBtn}
-                          onClick={() => handleJoinPublic(l.id, l.name)}
-                        >
-                          Join →
-                        </button>
-                      </div>
-                    ))}
-                  </div>
+                  ) : (
+                    <div
+                      className={
+                        styles.publicLeagueGrid
+                      }
+                    >
+                      {publicLeagues.map(
+                        (league) => (
+                          <article
+                            key={league.id}
+                            className={
+                              styles.publicLeagueCard
+                            }
+                          >
+                            <div
+                              className={
+                                styles
+                                  .publicLeagueTop
+                              }
+                            >
+                              <div
+                                className={
+                                  styles
+                                    .publicLeagueBadge
+                                }
+                              >
+                                {league.name
+                                  .slice(0, 2)
+                                  .toUpperCase()}
+                              </div>
+
+                              <span
+                                className={
+                                  styles
+                                    .statusTag
+                                }
+                              >
+                                <Globe2
+                                  size={13}
+                                />
+                                Public
+                              </span>
+                            </div>
+
+                            <h4>
+                              {league.name}
+                            </h4>
+
+                            <p>
+                              {
+                                league
+                                  .fantasy_competition_name
+                              }
+                            </p>
+
+                            <div
+                              className={
+                                styles
+                                  .publicLeagueMeta
+                              }
+                            >
+                              <span>
+                                <Users
+                                  size={14}
+                                />
+                                {
+                                  league
+                                    .members_count
+                                }
+                                {' '}members
+                              </span>
+
+                              <span>
+                                <Wallet
+                                  size={14}
+                                />
+                                Free
+                              </span>
+                            </div>
+
+                            <small>
+                              Public league
+                              membership will
+                              be connected after
+                              the backend exposes
+                              a public join
+                              action.
+                            </small>
+                          </article>
+                        ),
+                      )}
+                    </div>
+                  )}
                 </div>
               </>
             )}

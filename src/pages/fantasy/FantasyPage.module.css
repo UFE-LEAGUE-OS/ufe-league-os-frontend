@@ -497,3 +497,237 @@
   .body { padding: 16px; }
   .tabs { padding: 0 12px; }
 }
+
+/* ── API states and data-driven fantasy hub ── */
+.statePage {
+  min-height: 70vh;
+  display: grid;
+  place-items: center;
+  padding: 32px;
+}
+
+.stateCard {
+  width: min(460px, 100%);
+  padding: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 18px;
+  background: rgba(13, 13, 24, 0.94);
+  text-align: center;
+  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.28);
+}
+
+.stateCard svg {
+  color: #8135fa;
+}
+
+.stateCard h2 {
+  margin: 14px 0 8px;
+}
+
+.stateCard p {
+  margin: 0 0 18px;
+  color: #9ca3af;
+}
+
+.stateSpinner {
+  animation: fantasySpin 1s linear infinite;
+}
+
+@keyframes fantasySpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.inlineNotice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+  padding: 12px 14px;
+  border: 1px solid rgba(249, 115, 22, 0.28);
+  border-radius: 10px;
+  background: rgba(249, 115, 22, 0.1);
+  color: #fed7aa;
+  font-size: 13px;
+}
+
+.inlineNotice button {
+  margin-left: auto;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.sectionCount {
+  color: #9ca3af;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.emptyState {
+  min-height: 190px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 28px;
+  border: 1px dashed rgba(255, 255, 255, 0.14);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.025);
+  text-align: center;
+}
+
+.emptyState svg {
+  color: #8135fa;
+}
+
+.emptyState h2,
+.emptyState h3 {
+  margin: 0;
+}
+
+.emptyState p {
+  max-width: 560px;
+  margin: 0 0 8px;
+  color: #9ca3af;
+}
+
+.compactEmptyState {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  color: #9ca3af;
+  font-size: 13px;
+}
+
+.compactEmptyState p {
+  margin: 0;
+}
+
+.summaryGrid {
+  display: grid;
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.summaryGrid > div {
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.summaryGrid strong {
+  display: block;
+  color: #fff;
+  font-size: 20px;
+}
+
+.summaryGrid span {
+  color: #9ca3af;
+  font-size: 11px;
+}
+
+.leagueGrid,
+.featuredGrid {
+  display: grid;
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.leagueCard,
+.featuredPlayer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.leagueCard h3,
+.featuredPlayer h3 {
+  margin: 0 0 4px;
+  font-size: 16px;
+}
+
+.leagueCard p,
+.featuredPlayer p {
+  margin: 0;
+  color: #9ca3af;
+  font-size: 12px;
+}
+
+.leagueBadge,
+.featuredAvatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background:
+    linear-gradient(
+      135deg,
+      #8135fa,
+      #f97316
+    );
+  color: #fff;
+  font-weight: 900;
+}
+
+.leagueMeta,
+.featuredStats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  color: #d1d5db;
+  font-size: 12px;
+}
+
+.leagueMeta span,
+.featuredStats span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.featuredStats strong {
+  color: #22c55e;
+}
+
+.btnPrimary:disabled,
+.compBtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+@media (max-width: 1000px) {
+  .leagueGrid,
+  .featuredGrid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .leagueGrid,
+  .featuredGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .inlineNotice {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .inlineNotice button {
+    margin-left: 0;
+  }
+}

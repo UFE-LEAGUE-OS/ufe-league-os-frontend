@@ -1,6 +1,349 @@
 // fantasyService.ts
 import axiosInstance from './apiClient.js';
 
+
+export interface FantasyGameweekSummary {
+  id: number;
+  fantasy_competition: number;
+  fantasy_competition_name: string;
+  name: string;
+  number: number;
+  matches: number[];
+  matches_count: number;
+  start_at: string;
+  lock_at: string;
+  end_at: string;
+  status: string;
+  is_locked: boolean;
+  can_submit_lineup: boolean;
+}
+
+export interface FantasyCompetitionOverview {
+  id: number;
+  name: string;
+  slug: string;
+  sport: string;
+  sport_label: string;
+  season: string;
+  status: string;
+  status_label: string;
+  budget: string;
+  squad_size: number;
+  lineup_size: number;
+  max_players_per_club: number;
+  rules_summary: string;
+  teams_count: number;
+  players_count: number;
+  leagues_count: number;
+  linked_competition: {
+    id: number;
+    name: string;
+    slug: string;
+    season: string;
+  };
+  active_gameweek: FantasyGameweekSummary | null;
+}
+
+export interface FantasyLeagueSummary {
+  id: number;
+  fantasy_competition: number;
+  fantasy_competition_name: string;
+  name: string;
+  league_type: 'PUBLIC' | 'PRIVATE';
+  join_code: string | null;
+  created_by: number;
+  created_by_email: string;
+  is_active: boolean;
+  members_count: number;
+  created_at: string;
+}
+
+export interface FantasyFeaturedPlayer {
+  id: number;
+  display_name: string;
+  club_name: string;
+  position: string;
+  position_label: string;
+  final_price: string;
+  current_form: string;
+  is_available: boolean;
+  availability_note: string;
+  fantasy_competition: number;
+  fantasy_competition_name: string;
+}
+
+export interface FantasyTeamRank {
+  id: number;
+  name: string;
+  owner_name: string;
+  fantasy_competition: number;
+  fantasy_competition_name: string;
+  total_points: string;
+  current_rank: number | null;
+  active_squad_count: number;
+}
+
+export interface FantasyOverviewSummary {
+  competitions_count: number;
+  public_leagues_count: number;
+  players_count: number;
+  teams_count: number;
+}
+
+export interface FantasyOverview {
+  competitions: FantasyCompetitionOverview[];
+  public_leagues: FantasyLeagueSummary[];
+  featured_players: FantasyFeaturedPlayer[];
+  leaderboard: FantasyTeamRank[];
+  my_teams: FantasyTeamRank[];
+  summary: FantasyOverviewSummary;
+}
+
+export const fetchFantasyOverview = () =>
+  axiosInstance.get<FantasyOverview>('/fantasy/overview/');
+
+export interface FantasyCompetitionApi {
+  id: number;
+  name: string;
+  slug: string;
+  linked_competition: number;
+  linked_competition_label: string;
+  sport: string;
+  season: string;
+  status: string;
+  budget: string;
+  squad_size: number;
+  lineup_size: number;
+  max_players_per_club: number;
+  captain_multiplier: string;
+  min_player_price: string;
+  max_player_price: string;
+  default_player_price: string;
+  rules_summary: string;
+  teams_count: number;
+  gameweeks_count: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface FantasyCompetitionListResponse {
+  count: number;
+  results: FantasyCompetitionApi[];
+}
+
+export interface FantasyCompetitionFilters {
+  sport?: string;
+  status?: string;
+}
+
+export const fetchFantasyCompetitions = (
+  params?: FantasyCompetitionFilters,
+) =>
+  axiosInstance.get<FantasyCompetitionListResponse>(
+    '/fantasy/competitions/',
+    { params },
+  );
+
+export interface FantasyPlayerApi {
+  id: number;
+  fantasy_competition: number;
+  fantasy_competition_name: string;
+  club: number;
+  club_name: string;
+  display_name: string;
+  position: string;
+  position_label: string;
+  calculated_price: string;
+  final_price: string;
+  price_source: string;
+  price_source_label: string;
+  price_override_reason: string;
+  price_locked_at: string | null;
+  previous_stats: Record<string, unknown>;
+  current_form: string;
+  is_active: boolean;
+  is_available: boolean;
+  availability_note: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface FantasySquadPlayerApi {
+  id: number;
+  fantasy_team: number;
+  fantasy_player: number;
+  fantasy_player_detail: FantasyPlayerApi;
+  price_at_selection: string;
+  is_active: boolean;
+  joined_at: string;
+  removed_at: string | null;
+}
+
+export interface FantasyTeamApi {
+  id: number;
+  owner: number;
+  owner_email: string;
+  fantasy_competition: number;
+  fantasy_competition_name: string;
+  name: string;
+  total_points: string;
+  current_rank: number | null;
+  active_squad_count: number;
+  budget_used: string;
+  budget_remaining: string;
+  squad_players: FantasySquadPlayerApi[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface FantasyTeamListResponse {
+  count: number;
+  results: FantasyTeamApi[];
+}
+
+export interface FantasyPlayerListResponse {
+  count: number;
+  results: FantasyPlayerApi[];
+}
+
+export interface FantasyPlayerFilters {
+  search?: string;
+  club?: number;
+  position?: string;
+  available?: 'true' | 'false';
+}
+
+export interface CreateFantasyTeamPayload {
+  fantasy_competition_id: number;
+  name: string;
+}
+
+export interface CreateFantasyTeamResponse {
+  message: string;
+  team: FantasyTeamApi;
+}
+
+export interface UpdateFantasySquadPayload {
+  player_ids: number[];
+}
+
+export interface UpdateFantasySquadResponse {
+  message: string;
+  team: FantasyTeamApi;
+}
+
+export interface FantasyCompetitionDetailResponse {
+  competition: FantasyCompetitionApi;
+  gameweeks: FantasyGameweekSummary[];
+  leagues: FantasyLeagueSummary[];
+}
+
+export interface FantasyLeagueListResponse {
+  count: number;
+  limit: number;
+  offset: number;
+  results: FantasyLeagueSummary[];
+}
+
+export interface FantasyLeagueFilters {
+  competition?: number;
+  league_type?: 'PUBLIC' | 'PRIVATE';
+  limit?: number;
+  offset?: number;
+}
+
+export interface CreateFantasyLeaguePayload {
+  fantasy_competition_id: number;
+  name: string;
+  league_type: 'PUBLIC' | 'PRIVATE';
+}
+
+export interface CreateFantasyLeagueResponse {
+  message: string;
+  league: FantasyLeagueSummary;
+}
+
+export interface FantasyLeagueMembershipApi {
+  id: number;
+  fantasy_league: number;
+  fantasy_league_detail: FantasyLeagueSummary;
+  fantasy_team: number;
+  fantasy_team_name: string;
+  joined_at: string;
+}
+
+export interface JoinPrivateFantasyLeaguePayload {
+  fantasy_team_id: number;
+  join_code: string;
+}
+
+export interface JoinPrivateFantasyLeagueResponse {
+  message: string;
+  membership: FantasyLeagueMembershipApi;
+}
+
+export const fetchFantasyCompetitionDetail = (
+  competitionId: number,
+) =>
+  axiosInstance.get<FantasyCompetitionDetailResponse>(
+    `/fantasy/competitions/${competitionId}/`,
+  );
+
+export const fetchMyFantasyTeams = () =>
+  axiosInstance.get<FantasyTeamListResponse>(
+    '/fantasy/teams/me/',
+  );
+
+export const fetchFantasyPlayers = (
+  competitionId: number,
+  params?: FantasyPlayerFilters,
+) =>
+  axiosInstance.get<FantasyPlayerListResponse>(
+    `/fantasy/competitions/${competitionId}/players/`,
+    { params },
+  );
+
+export const createFantasyTeam = (
+  payload: CreateFantasyTeamPayload,
+) =>
+  axiosInstance.post<CreateFantasyTeamResponse>(
+    '/fantasy/teams/',
+    payload,
+  );
+
+export const updateFantasySquad = (
+  teamId: number,
+  payload: UpdateFantasySquadPayload,
+) =>
+  axiosInstance.post<UpdateFantasySquadResponse>(
+    `/fantasy/teams/${teamId}/squad/`,
+    payload,
+  );
+
+export const fetchAvailableFantasyLeagues = (
+  params: FantasyLeagueFilters,
+) =>
+  axiosInstance.get<FantasyLeagueListResponse>(
+    '/fantasy/leagues/available/',
+    { params },
+  );
+
+export const createFantasyLeague = (
+  payload: CreateFantasyLeaguePayload,
+) =>
+  axiosInstance.post<CreateFantasyLeagueResponse>(
+    '/fantasy/leagues/',
+    payload,
+  );
+
+export const joinPrivateFantasyLeague = (
+  payload: JoinPrivateFantasyLeaguePayload,
+) =>
+  axiosInstance.post<JoinPrivateFantasyLeagueResponse>(
+    '/fantasy/leagues/join/',
+    payload,
+  );
+
 export interface Competition {
   id: string;
   sport: string;
