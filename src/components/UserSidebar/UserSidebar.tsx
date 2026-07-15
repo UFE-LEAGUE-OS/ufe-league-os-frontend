@@ -151,11 +151,6 @@ function UserSidebar({ isCollapsed = false }: UserSidebarProps) {
                 />
             </div>
 
-            <Link to="/" className={styles.brandLink} aria-label="Go to League OS landing page">
-                <img src={leagueLogo} alt="League OS" />
-                <span className={styles.brandText}>Fan Portal</span>
-            </Link>
-
             <div className={styles.userCard}>
                 <span className={styles.avatar}>
                     {currentUser.avatarUrl ? (
