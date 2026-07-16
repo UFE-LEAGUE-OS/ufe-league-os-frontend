@@ -3,8 +3,10 @@ import {
   Home,
   LogOut,
   Menu,
+  Minus,
   PanelLeftClose,
   PanelLeftOpen,
+  Plus,
   X,
   type LucideIcon,
 } from "lucide-react";
@@ -26,7 +28,64 @@ export type AdminWorkspaceNavItem<T extends string> = {
   key: T;
   label: string;
   icon: LucideIcon;
+  /**
+   * Optional sub-pages rendered indented beneath this item once
+   * expanded (e.g. "Membership" revealing "Members Directory",
+   * "Renewals & Expiry", "Tiers & Pricing", "Requests Queue", "Export
+   * Reports" — the same pattern as "User Management" in the
+   * super-admin sidebar). When present, the parent item is a
+   * toggle — clicking it expands/collapses the group instead of
+   * navigating anywhere; only the children carry real tabs.
+   */
+  children?: AdminWorkspaceNavItem<T>[];
 };
+
+// Optional grouping: pass navItems as AdminWorkspaceNavGroup<T>[]
+// instead of a flat AdminWorkspaceNavItem<T>[] to render section
+// headers (e.g. "OPERATIONS", "GOVERNANCE") above clusters of nav
+// buttons, similar to the Fan Dashboard's MAIN / BROWSE / ENGAGE
+// sections. Flat arrays still work exactly as before — this is
+// backward compatible, nothing existing needs to change unless you
+// want grouping.
+export type AdminWorkspaceNavGroup<T extends string> = {
+  label: string;
+  items: AdminWorkspaceNavItem<T>[];
+};
+
+export type NavItemsProp<T extends string> =
+  | AdminWorkspaceNavItem<T>[]
+  | AdminWorkspaceNavGroup<T>[];
+
+function isGroupedNavItems<T extends string>(
+  navItems: NavItemsProp<T>,
+): navItems is AdminWorkspaceNavGroup<T>[] {
+  return navItems.length > 0 && "items" in navItems[0];
+}
+
+export function flattenNavItems<T extends string>(
+  navItems: NavItemsProp<T>,
+): AdminWorkspaceNavItem<T>[] {
+  return isGroupedNavItems(navItems)
+    ? navItems.flatMap((group) => group.items)
+    : navItems;
+}
+
+export function asNavGroups<T extends string>(
+  navItems: NavItemsProp<T>,
+): AdminWorkspaceNavGroup<T>[] {
+  return isGroupedNavItems(navItems)
+    ? navItems
+    : [{ label: "", items: navItems }];
+}
+
+export function findOwningParent<T extends string>(
+  items: AdminWorkspaceNavItem<T>[],
+  tab: T,
+): AdminWorkspaceNavItem<T> | undefined {
+  return items.find((item) =>
+    item.children?.some((child) => child.key === tab),
+  );
+}
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -68,12 +127,16 @@ export type AdminSidebarProps<T extends string> = {
   workspaceTitle: string;
   /** Subtitle shown below the workspace name */
   workspaceSubtitle: string;
-  /** Navigation items rendered as buttons */
-  navItems: AdminWorkspaceNavItem<T>[];
+  /** Navigation groups rendered as section headers + buttons */
+  navGroups: AdminWorkspaceNavGroup<T>[];
   /** Currently active tab key */
   activeTab: T;
-  /** Called when a nav item is clicked */
+  /** Called when a nav item (with no children) is clicked */
   onTabChange: (tab: T) => void;
+  /** Which parent items are currently expanded, showing their children */
+  expandedKeys: Set<T>;
+  /** Called when a parent item with children is clicked, to expand/collapse it */
+  onToggleExpand: (item: AdminWorkspaceNavItem<T>) => void;
   /** Whether the sidebar is collapsed to an icon rail */
   isCollapsed: boolean;
   /** Toggle collapse state */
@@ -83,12 +146,99 @@ export type AdminSidebarProps<T extends string> = {
 export function AdminSidebar<T extends string>({
   workspaceTitle,
   workspaceSubtitle,
-  navItems,
+  navGroups,
   activeTab,
   onTabChange,
+  expandedKeys,
+  onToggleExpand,
   isCollapsed,
   onToggleCollapse,
 }: AdminSidebarProps<T>) {
+  function renderNavItem(item: AdminWorkspaceNavItem<T>) {
+    const Icon = item.icon;
+    const hasChildren = Boolean(item.children?.length);
+
+    if (!hasChildren) {
+      const isActive = item.key === activeTab;
+
+      return (
+        <button
+          key={item.key}
+          type="button"
+          className={isActive ? styles.activeNavButton : styles.navButton}
+          onClick={() => onTabChange(item.key)}
+          aria-label={item.label}
+          title={item.label}
+        >
+          <Icon size={20} strokeWidth={2.15} aria-hidden="true" />
+          <span>{item.label}</span>
+        </button>
+      );
+    }
+
+    const isExpanded = expandedKeys.has(item.key);
+    const hasActiveChild = item.children!.some(
+      (child) => child.key === activeTab,
+    );
+
+    return (
+      <div key={item.key}>
+        <button
+          type="button"
+          className={hasActiveChild ? styles.activeNavButton : styles.navButton}
+          onClick={() => onToggleExpand(item)}
+          aria-expanded={isExpanded}
+          aria-label={item.label}
+          title={item.label}
+        >
+          <Icon size={20} strokeWidth={2.15} aria-hidden="true" />
+          <span>{item.label}</span>
+
+          {isExpanded ? (
+            <Minus
+              size={14}
+              strokeWidth={2.6}
+              className={styles.navToggleIcon}
+              aria-hidden="true"
+            />
+          ) : (
+            <Plus
+              size={14}
+              strokeWidth={2.6}
+              className={styles.navToggleIcon}
+              aria-hidden="true"
+            />
+          )}
+        </button>
+
+        {isExpanded ? (
+          <div className={styles.navChildren}>
+            {item.children!.map((child) => {
+              const ChildIcon = child.icon;
+              const isChildActive = child.key === activeTab;
+
+              return (
+                <button
+                  key={child.key}
+                  type="button"
+                  className={
+                    isChildActive
+                      ? styles.activeNavChildButton
+                      : styles.navChildButton
+                  }
+                  onClick={() => onTabChange(child.key)}
+                >
+                  <ChildIcon size={15} strokeWidth={2.1} aria-hidden="true" />
+                  <span>{child.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        ) : null}
+      </div>
+    );
+  }
+
   return (
     <>
       <aside className={styles.sidebar}>
@@ -137,26 +287,15 @@ export function AdminSidebar<T extends string>({
           className={styles.nav}
           aria-label={`${workspaceTitle} navigation`}
         >
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = item.key === activeTab;
+          {navGroups.map((group, groupIndex) => (
+            <div key={group.label || `group-${groupIndex}`}>
+              {group.label ? (
+                <span className={styles.navGroupLabel}>{group.label}</span>
+              ) : null}
 
-            return (
-              <button
-                key={item.key}
-                type="button"
-                className={
-                  isActive ? styles.activeNavButton : styles.navButton
-                }
-                onClick={() => onTabChange(item.key)}
-                aria-label={item.label}
-                title={item.label}
-              >
-                <Icon size={20} strokeWidth={2.15} aria-hidden="true" />
-                <span>{item.label}</span>
-              </button>
-            );
-          })}
+              {group.items.map(renderNavItem)}
+            </div>
+          ))}
         </nav>
 
         <button
@@ -198,6 +337,9 @@ export type AdminMobileBottomNavProps<T extends string> = {
   onTabChange: (tab: T) => void;
   isMenuOpen: boolean;
   onToggleMenu: () => void;
+  /** Explicitly opens the drawer — used when a primary item with
+   * children is tapped, since there's no room for a submenu here. */
+  onOpenMenu: () => void;
 };
 
 export function AdminMobileBottomNav<T extends string>({
@@ -206,6 +348,7 @@ export function AdminMobileBottomNav<T extends string>({
   onTabChange,
   isMenuOpen,
   onToggleMenu,
+  onOpenMenu,
 }: AdminMobileBottomNavProps<T>) {
   const primaryItems = navItems.slice(0, 4);
 
@@ -216,7 +359,10 @@ export function AdminMobileBottomNav<T extends string>({
     >
       {primaryItems.map((item) => {
         const Icon = item.icon;
-        const isActive = item.key === activeTab;
+        const hasChildren = Boolean(item.children?.length);
+        const isActive =
+          item.key === activeTab ||
+          (item.children?.some((child) => child.key === activeTab) ?? false);
 
         return (
           <button
@@ -227,7 +373,7 @@ export function AdminMobileBottomNav<T extends string>({
                 ? `${styles.mobileNavButton} ${styles.activeMobileNavButton}`
                 : styles.mobileNavButton
             }
-            onClick={() => onTabChange(item.key)}
+            onClick={() => (hasChildren ? onOpenMenu() : onTabChange(item.key))}
             aria-label={item.label}
           >
             <Icon size={20} strokeWidth={2.3} aria-hidden="true" />
@@ -260,9 +406,11 @@ export function AdminMobileBottomNav<T extends string>({
 
 export type AdminMobileDrawerProps<T extends string> = {
   workspaceTitle: string;
-  navItems: AdminWorkspaceNavItem<T>[];
+  navGroups: AdminWorkspaceNavGroup<T>[];
   activeTab: T;
   onTabChange: (tab: T) => void;
+  expandedKeys: Set<T>;
+  onToggleExpand: (item: AdminWorkspaceNavItem<T>) => void;
   onClose: () => void;
   publicPath?: string;
   publicLabel?: string;
@@ -270,9 +418,11 @@ export type AdminMobileDrawerProps<T extends string> = {
 
 export function AdminMobileDrawer<T extends string>({
   workspaceTitle,
-  navItems,
+  navGroups,
   activeTab,
   onTabChange,
+  expandedKeys,
+  onToggleExpand,
   onClose,
   publicPath,
   publicLabel,
@@ -280,6 +430,96 @@ export function AdminMobileDrawer<T extends string>({
   function handleTabChange(tab: T) {
     onTabChange(tab);
     onClose();
+  }
+
+  function renderDrawerNavItem(item: AdminWorkspaceNavItem<T>) {
+    const Icon = item.icon;
+    const hasChildren = Boolean(item.children?.length);
+
+    if (!hasChildren) {
+      const isActive = item.key === activeTab;
+
+      return (
+        <button
+          key={item.key}
+          type="button"
+          className={
+            isActive
+              ? `${styles.drawerButton} ${styles.activeDrawerButton}`
+              : styles.drawerButton
+          }
+          onClick={() => handleTabChange(item.key)}
+        >
+          <Icon size={19} strokeWidth={2.2} aria-hidden="true" />
+          <span>{item.label}</span>
+        </button>
+      );
+    }
+
+    const isExpanded = expandedKeys.has(item.key);
+    const hasActiveChild = item.children!.some(
+      (child) => child.key === activeTab,
+    );
+
+    return (
+      <div key={item.key} style={{ gridColumn: "1 / -1" }}>
+        <button
+          type="button"
+          className={
+            hasActiveChild
+              ? `${styles.drawerButton} ${styles.activeDrawerButton}`
+              : styles.drawerButton
+          }
+          onClick={() => onToggleExpand(item)}
+          aria-expanded={isExpanded}
+          style={{ width: "100%" }}
+        >
+          <Icon size={19} strokeWidth={2.2} aria-hidden="true" />
+          <span>{item.label}</span>
+
+          {isExpanded ? (
+            <Minus
+              size={14}
+              strokeWidth={2.6}
+              className={styles.navToggleIcon}
+              aria-hidden="true"
+            />
+          ) : (
+            <Plus
+              size={14}
+              strokeWidth={2.6}
+              className={styles.navToggleIcon}
+              aria-hidden="true"
+            />
+          )}
+        </button>
+
+        {isExpanded ? (
+          <div className={styles.drawerChildren}>
+            {item.children!.map((child) => {
+              const ChildIcon = child.icon;
+              const isChildActive = child.key === activeTab;
+
+              return (
+                <button
+                  key={child.key}
+                  type="button"
+                  className={
+                    isChildActive
+                      ? styles.activeDrawerChildButton
+                      : styles.drawerChildButton
+                  }
+                  onClick={() => handleTabChange(child.key)}
+                >
+                  <ChildIcon size={16} strokeWidth={2.1} aria-hidden="true" />
+                  <span>{child.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        ) : null}
+      </div>
+    );
   }
 
   return (
@@ -311,32 +551,18 @@ export function AdminMobileDrawer<T extends string>({
         </header>
 
         <div className={styles.drawerContent}>
-          <section className={styles.drawerSection}>
-            <h2>Workspace sections</h2>
+          {navGroups.map((group, groupIndex) => (
+            <section
+              className={styles.drawerSection}
+              key={group.label || `drawer-group-${groupIndex}`}
+            >
+              <h2>{group.label || "Workspace sections"}</h2>
 
-            <div className={styles.drawerLinks}>
-              {navItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = item.key === activeTab;
-
-                return (
-                  <button
-                    key={item.key}
-                    type="button"
-                    className={
-                      isActive
-                        ? `${styles.drawerButton} ${styles.activeDrawerButton}`
-                        : styles.drawerButton
-                    }
-                    onClick={() => handleTabChange(item.key)}
-                  >
-                    <Icon size={19} strokeWidth={2.2} aria-hidden="true" />
-                    <span>{item.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </section>
+              <div className={styles.drawerLinks}>
+                {group.items.map(renderDrawerNavItem)}
+              </div>
+            </section>
+          ))}
 
           <section className={styles.drawerSection}>
             <h2>Quick links</h2>

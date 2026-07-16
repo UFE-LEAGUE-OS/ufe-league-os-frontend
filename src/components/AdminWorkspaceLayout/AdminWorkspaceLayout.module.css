@@ -20,7 +20,7 @@
 .body {
   min-height: 100vh;
   display: flex;
-  align-items: stretch;
+  align-items: flex-start;
   flex: 1;
 
   background-image:
@@ -41,6 +41,7 @@
 .sidebar {
   position: sticky;
   top: 0;
+  align-self: flex-start;
   z-index: 30;
 
   width: 292px;
@@ -50,7 +51,6 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
-  flex: 0 0 auto;
 
   overflow-x: hidden;
   overflow-y: auto;
@@ -229,6 +229,32 @@
   padding-top: 3px;
 }
 
+/*
+ * Section headers above clusters of nav buttons (e.g. "Overview",
+ * "Club Operations"). Referenced as styles.navGroupLabel in
+ * AdminWorkspaceLayout.tsx.
+ */
+.navGroupLabel {
+  display: block;
+  padding: 16px 12px 6px;
+  margin: 0;
+
+  color: rgba(255, 255, 255, 0.45);
+
+  font-family:
+    var(--font-subhead, "Space Grotesk"),
+    Inter,
+    sans-serif;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.nav > div:first-child > .navGroupLabel {
+  padding-top: 0;
+}
+
 .navButton,
 .activeNavButton,
 .logout {
@@ -284,28 +310,101 @@
   box-shadow: 0 10px 24px rgba(83, 34, 157, 0.26);
 }
 
-.logout {
-  margin-top: auto;
+/*
+ * The +/− toggle icon on expandable parent items (e.g.
+ * "Membership"). Pushed to the far right of the button regardless
+ * of label length.
+ */
+.navToggleIcon {
+  margin-left: auto;
+  flex: 0 0 auto;
+  opacity: 0.8;
+}
 
-  color: rgba(255, 255, 255, 0.72);
-  background: rgba(255, 255, 255, 0.035);
-  border-color: rgba(255, 255, 255, 0.09);
+/*
+ * Indented sub-item list revealed under an expanded parent (e.g.
+ * Membership -> Members Directory, Renewals & Expiry, ...). A
+ * vertical stack with a left "rail" to show hierarchy.
+ */
+.navChildren {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+
+  margin: 4px 0 8px;
+  padding-left: 15px;
+
+  border-left: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+.navChildButton,
+.activeNavChildButton {
+  width: 100%;
+  min-height: 38px;
+  padding: 0 10px;
+
+  display: flex;
+  align-items: center;
+  gap: 9px;
+
+  border: 1px solid transparent;
+  border-radius: 7px;
+
+  font: inherit;
+  font-family:
+    var(--font-subhead, "Space Grotesk"),
+    Inter,
+    sans-serif;
+  font-size: 11.5px;
+  font-weight: 700;
+  text-align: left;
+
+  cursor: pointer;
+
+  transition:
+    color 160ms ease,
+    background 160ms ease,
+    border-color 160ms ease;
+}
+
+.navChildButton {
+  color: rgba(255, 255, 255, 0.58);
+  background: transparent;
+}
+
+.navChildButton:hover {
+  color: #ffffff;
+  background: rgba(123, 63, 242, 0.12);
+}
+
+.activeNavChildButton {
+  color: #ffffff;
+  background: rgba(123, 63, 242, 0.22);
+  border-color: rgba(168, 85, 247, 0.4);
+}
+
+.logout {
+  margin-top: 28px;
+
+  color: #ff9b9b;
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.32);
 }
 
 .logout:hover {
   color: #ffffff;
-  background: rgba(123, 63, 242, 0.14);
+  background: rgba(239, 68, 68, 0.22);
+  border-color: rgba(239, 68, 68, 0.5);
 }
 
 .sidebarToggle {
-  position: sticky;
+  position: fixed;
   top: 18px;
+  left: calc(292px - 19px);
   z-index: 40;
 
   width: 38px;
   height: 38px;
-  margin-top: 18px;
-  margin-left: -19px;
   padding: 0;
 
   display: inline-flex;
@@ -327,6 +426,7 @@
   cursor: pointer;
 
   transition:
+    left 180ms ease,
     transform 180ms ease,
     box-shadow 180ms ease;
 }
@@ -340,6 +440,10 @@
 .bodySidebarCollapsed .sidebar {
   width: 76px;
   padding-inline: 10px;
+}
+
+.bodySidebarCollapsed .sidebarToggle {
+  left: calc(76px - 19px);
 }
 
 .bodySidebarCollapsed .brand {
@@ -363,6 +467,17 @@
 .bodySidebarCollapsed .navButton span,
 .bodySidebarCollapsed .activeNavButton span,
 .bodySidebarCollapsed .logout span {
+  display: none;
+}
+
+/*
+ * A collapsed icon-only rail has no room for section headers,
+ * toggle icons, or an indented sub-list — hide them rather than
+ * letting them render broken.
+ */
+.bodySidebarCollapsed .navGroupLabel,
+.bodySidebarCollapsed .navToggleIcon,
+.bodySidebarCollapsed .navChildren {
   display: none;
 }
 
@@ -1072,7 +1187,10 @@
   .workspaceSwitchLink span,
   .navButton span,
   .activeNavButton span,
-  .logout span {
+  .logout span,
+  .navGroupLabel,
+  .navToggleIcon,
+  .navChildren {
     display: none;
   }
 
@@ -1387,6 +1505,56 @@
     color: #ffffff;
     background: rgba(123, 63, 242, 0.25);
     border-color: rgba(123, 63, 242, 0.54);
+  }
+
+  /*
+   * Indented sub-item list inside the mobile drawer, under an
+   * expanded parent (e.g. Membership). Kept single-column and
+   * full-width — the drawer's default 2-column grid produced a
+   * jumbled look for children, so they get their own dedicated
+   * block instead of joining that grid.
+   */
+  .drawerChildren {
+    grid-column: 1 / -1;
+
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+
+    margin-top: 7px;
+    padding-left: 14px;
+
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .drawerChildButton,
+  .activeDrawerChildButton {
+    min-height: 44px;
+    padding: 0 12px;
+
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    color: rgba(255, 255, 255, 0.68);
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 10px;
+
+    font: inherit;
+    font-size: 10.5px;
+    font-weight: 800;
+    text-align: left;
+    text-decoration: none;
+
+    cursor: pointer;
+  }
+
+  .drawerChildButton:hover,
+  .activeDrawerChildButton {
+    color: #ffffff;
+    background: rgba(123, 63, 242, 0.22);
+    border-color: rgba(123, 63, 242, 0.48);
   }
 
   @keyframes drawerEnter {

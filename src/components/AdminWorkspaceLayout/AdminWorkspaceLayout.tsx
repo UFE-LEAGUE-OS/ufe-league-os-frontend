@@ -5,6 +5,7 @@ import {
 import {
   type ReactNode,
   useEffect,
+  useMemo,
   useState,
 } from "react";
 import { Link } from "react-router-dom";
@@ -14,7 +15,11 @@ import {
   AdminMobileBottomNav,
   AdminMobileDrawer,
   AdminSidebar,
+  asNavGroups,
+  findOwningParent,
+  flattenNavItems,
   type AdminWorkspaceNavItem,
+  type NavItemsProp,
 } from "./ClubAdminSidebar";
 import styles from "./AdminWorkspaceLayout.module.css";
 
@@ -24,7 +29,7 @@ type LayoutProps<T extends string> = {
   eyebrow: string;
   title: string;
   description: string;
-  navItems: AdminWorkspaceNavItem<T>[];
+  navItems: NavItemsProp<T>;
   activeTab: T;
   onTabChange: (tab: T) => void;
   publicPath?: string;
@@ -62,13 +67,60 @@ export default function AdminWorkspaceLayout<
   const [isMobileMenuOpen, setIsMobileMenuOpen] =
     useState(false);
 
+  const [expandedKeys, setExpandedKeys] = useState<Set<T>>(
+    () => new Set(),
+  );
+
+  const flatNavItems = useMemo(
+    () => flattenNavItems(navItems),
+    [navItems],
+  );
+
+  const navGroups = useMemo(
+    () => asNavGroups(navItems),
+    [navItems],
+  );
+
   useEffect(() => {
     setIsMobileMenuOpen(false);
   }, [activeTab]);
 
+  // Whichever group contains the active tab stays expanded — e.g.
+  // landing directly on a Membership sub-page keeps Membership open
+  // instead of showing the active page nowhere in a collapsed list.
+  useEffect(() => {
+    const owningParent = findOwningParent(
+      flatNavItems,
+      activeTab,
+    );
+
+    if (owningParent) {
+      setExpandedKeys((current) => {
+        if (current.has(owningParent.key)) return current;
+        const next = new Set(current);
+        next.add(owningParent.key);
+        return next;
+      });
+    }
+  }, [activeTab, flatNavItems]);
+
   function handleTabChange(tab: T) {
     onTabChange(tab);
     setIsMobileMenuOpen(false);
+  }
+
+  function toggleExpanded(item: AdminWorkspaceNavItem<T>) {
+    setExpandedKeys((current) => {
+      const next = new Set(current);
+
+      if (next.has(item.key)) {
+        next.delete(item.key);
+      } else {
+        next.add(item.key);
+      }
+
+      return next;
+    });
   }
 
   return (
@@ -83,9 +135,11 @@ export default function AdminWorkspaceLayout<
         <AdminSidebar
           workspaceTitle={workspaceTitle}
           workspaceSubtitle={workspaceSubtitle}
-          navItems={navItems}
+          navGroups={navGroups}
           activeTab={activeTab}
           onTabChange={handleTabChange}
+          expandedKeys={expandedKeys}
+          onToggleExpand={toggleExpanded}
           isCollapsed={isSidebarCollapsed}
           onToggleCollapse={() =>
             setIsSidebarCollapsed(
@@ -142,9 +196,11 @@ export default function AdminWorkspaceLayout<
       {isMobileMenuOpen ? (
         <AdminMobileDrawer
           workspaceTitle={workspaceTitle}
-          navItems={navItems}
+          navGroups={navGroups}
           activeTab={activeTab}
           onTabChange={handleTabChange}
+          expandedKeys={expandedKeys}
+          onToggleExpand={toggleExpanded}
           onClose={() => setIsMobileMenuOpen(false)}
           publicPath={publicPath}
           publicLabel={publicLabel}
@@ -152,7 +208,7 @@ export default function AdminWorkspaceLayout<
       ) : null}
 
       <AdminMobileBottomNav
-        navItems={navItems}
+        navItems={flatNavItems}
         activeTab={activeTab}
         onTabChange={handleTabChange}
         isMenuOpen={isMobileMenuOpen}
@@ -161,6 +217,7 @@ export default function AdminWorkspaceLayout<
             (currentValue) => !currentValue,
           )
         }
+        onOpenMenu={() => setIsMobileMenuOpen(true)}
       />
     </div>
   );
@@ -369,6 +426,7 @@ export type {
   AdminMobileBottomNavProps,
   AdminMobileDrawerProps,
   AdminWorkspaceNavItem,
+  AdminWorkspaceNavGroup,
 } from "./ClubAdminSidebar";
 
 export { styles as adminWorkspaceStyles };

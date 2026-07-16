@@ -150,11 +150,16 @@ import LeagueAdminDashboard from '../pages/league-admin/LeagueAdminDashboard';
 import ClubAdminDashboard from '../pages/club-admin/ClubAdminDashboard';
 import TicketingOfficerDashboard from '../pages/ticketing-officer/TicketingOfficerDashboard';
 import TreasurerDashboard from '../pages/club-admin/TreasurerDashboard';
-import ChairmanDashboard from '../pages/club-admin/ChairmannDashboard';
+import ChairmanDashboard from '../pages/club-admin/ChairmanDashboard';
 import CustomAdminDashboard from '../pages/club-admin/CustomAdminDashboard';
-import TeamManagerDashboard from '@/pages/club-admin/TeamManagerDashboard';
+import TeamManagerDashboard from '../pages/club-admin/TeamManagerDashboard';
 import ClubMembershipManagement from '../pages/club-admin/ClubMembershipManagement';
 import ClubTicketingManagement from '../pages/club-admin/ClubTicketingManagement';
+
+// Nested club sub-role shell (Chairman / Treasurer / Custom Admin /
+// Team Manager / Ticketing Officer) — see routes/ClubAdminSubRoleRouting.tsx
+import { ClubAdminSubRoleShell, ClubAdminSubRoleRedirect } from '../routes/ClubAdminSubRoleRouting';
+import DefaultDashboardRedirect from '../components/DefaultDashboardRedirect';
 
 //super admin sponsorship management
 import SponsorFramework from "../pages/super-admin/sponsorship-management/SponsorshipFramework";
@@ -165,6 +170,8 @@ import SponsorshipInventory from "../pages/super-admin/sponsorship-management/Sp
 import CampaignPerformance from "../pages/super-admin/sponsorship-management/CampaignPerformance";
 import ApprovalWorkflow from "../pages/super-admin/sponsorship-management/ApprovalWorkFlow";
 import SponsorAudits from "../pages/super-admin/sponsorship-management/SponsorsAudit";
+import SuperAdminSettings from "../pages/super-admin/superadmin-settings/SuperAdminSettings";
+
 
 function protectedPage(page: ReactNode) {
     return <ProtectedRoute>{page}</ProtectedRoute>;
@@ -199,15 +206,17 @@ export default function AppRoutes() {
                 <Route path="/fan/mvp-voting" element={<MVPVotingPage />} />
                 <Route path="/join-fantasy" element={<Navigate to="/fantasy" replace />} />
 
-
-                <Route path="/dashboard" element={protectedPage(<Navigate to="/dashboard/fan" replace />)} />
+                {/* Role-aware — sends each logged-in user to their own
+                    workspace (fan, club-admin, or, via getDefaultDashboardRoute,
+                    the correct /club-admin/<sub-role> branch). Only true fans
+                    with no elevated role land on /dashboard/fan. */}
+                <Route path="/dashboard" element={protectedPage(<DefaultDashboardRedirect />)} />
 
                 <Route
                     path="/union-admin"
                     element={protectedPage(<Navigate to="/dashboard/union-admin" replace />)}
                 />
 
-               
                 <Route
                     path="/dashboard/league-admin"
                     element={roleProtectedPage(
@@ -216,6 +225,8 @@ export default function AppRoutes() {
                     )}
                 />
 
+                {/* Plain CLUB_ADMIN role — intentionally separate from the
+                    /club-admin sub-role shell below. Untouched. */}
                 <Route
                     path="/dashboard/club-admin"
                     element={roleProtectedPage(
@@ -223,14 +234,23 @@ export default function AppRoutes() {
                         ['CLUB_ADMIN'],
                     )}
                 />
+
+                {/* Membership now also renders inline as a tab inside
+                    ClubAdminDashboard. This standalone route is kept for any
+                    direct links/bookmarks, guarded the same as the parent
+                    dashboard. */}
                 <Route
                     path="/dashboard/club-admin/membership"
                     element={roleProtectedPage(
-                       <ClubMembershipManagement />,
-                       ['CLUB_ADMIN'],
-              )}
-/>
+                        <ClubMembershipManagement />,
+                        ['CLUB_ADMIN'],
+                    )}
+                />
 
+                {/* Ticketing now also renders inline as a tab inside
+                    ClubAdminDashboard. This standalone route is kept for any
+                    direct links/bookmarks, guarded the same as the parent
+                    dashboard. */}
                 <Route
                     path="/dashboard/club-admin/ticketing"
                     element={roleProtectedPage(
@@ -247,37 +267,52 @@ export default function AppRoutes() {
                     )}
                 />
 
-                <Route
-                    path="/dashboard/chairman"
-                    element={roleProtectedPage(
-                        <ChairmanDashboard />,
-                        ['CHAIRMAN'],
-                    )}
-                />
+                {/* ---- Nested club sub-role shell ----
+                    /club-admin            -> role-aware redirect into the branch below
+                    /club-admin/chairman/*          (CHAIRMAN only)
+                    /club-admin/treasurer/*         (TREASURER only)
+                    /club-admin/custom-admin/*      (CUSTOM_ADMIN only)
+                    /club-admin/team-manager/*      (TEAM_MANAGER only)
+                    /club-admin/ticketing-officer/* (TICKETING_OFFICER only)
 
-                <Route
-                    path="/dashboard/custom-admin"
-                    element={roleProtectedPage(
-                        <CustomAdminDashboard />,
-                        ['CUSTOM_ADMIN'],
-                    )}
-                />
+                    Each branch is independently role-guarded, so a user with
+                    the wrong sub-role hitting another branch's URL directly
+                    gets redirected by RoleProtectedRoute before that
+                    dashboard ever mounts (cross sub-role navigation blocked).
+                    Each dashboard keeps its own full AdminWorkspaceLayout —
+                    this shell renders no chrome of its own. */}
+                <Route path="/club-admin" element={protectedPage(<ClubAdminSubRoleShell />)}>
+                    <Route index element={<ClubAdminSubRoleRedirect />} />
 
-                <Route
-                    path="/dashboard/team-manager"
-                    element={roleProtectedPage(
-                        <TeamManagerDashboard />,
-                        ['TEAM_MANAGER'],
-                    )}
-                />
+                    <Route
+                        path="chairman/*"
+                        element={roleProtectedPage(<ChairmanDashboard />, ['CHAIRMAN'])}
+                    />
+                    <Route
+                        path="treasurer/*"
+                        element={roleProtectedPage(<TreasurerDashboard />, ['TREASURER'])}
+                    />
+                    <Route
+                        path="custom-admin/*"
+                        element={roleProtectedPage(<CustomAdminDashboard />, ['CUSTOM_ADMIN'])}
+                    />
+                    <Route
+                        path="team-manager/*"
+                        element={roleProtectedPage(<TeamManagerDashboard />, ['TEAM_MANAGER'])}
+                    />
+                    <Route
+                        path="ticketing-officer/*"
+                        element={roleProtectedPage(<TicketingOfficerDashboard />, ['TICKETING_OFFICER'])}
+                    />
+                </Route>
 
-                <Route
-                    path="/dashboard/ticketing-officer"
-                    element={roleProtectedPage(
-                        <TicketingOfficerDashboard />,
-                        ['TICKETING_OFFICER'],
-                    )}
-                />
+                {/* Backward-compat: old flat paths now just forward into the
+                    nested shell, so any existing links/bookmarks still work. */}
+                <Route path="/dashboard/chairman" element={<Navigate to="/club-admin/chairman" replace />} />
+                <Route path="/dashboard/treasurer" element={<Navigate to="/club-admin/treasurer" replace />} />
+                <Route path="/dashboard/custom-admin" element={<Navigate to="/club-admin/custom-admin" replace />} />
+                <Route path="/dashboard/team-manager" element={<Navigate to="/club-admin/team-manager" replace />} />
+                <Route path="/dashboard/ticketing-officer" element={<Navigate to="/club-admin/ticketing-officer" replace />} />
 
                 <Route
                     path="/dashboard/union-admin"
@@ -349,10 +384,6 @@ export default function AppRoutes() {
                 <Route path="/competitions" element={<Competitions />} />
                 <Route path="/news" element={<NewsSection />} />
                 <Route path="/tickets" element={<Tickets />} />
-                <Route path="/memberships/payment/processing" element={<MembershipPaymentProcessingPage />} />
-                <Route path="/tickets/payment/processing" element={<TicketPaymentProcessingPage />} />
-                <Route path="/tickets/payment/success" element={<TicketPaymentSuccessPage />} />
-                <Route path="/tickets/payment/failed" element={<TicketPaymentFailedPage />} />
                 <Route path="/unions" element={<Unions />} />
                 <Route path="/clubs" element={<ExploreClubsPage />} />
                 <Route path="/clubs/:clubSlug" element={<ClubDetailsPage />} />
@@ -433,7 +464,7 @@ export default function AppRoutes() {
                 <Route path="/payments" element={<Payments />} />
 
                 {/* Super Admin routes */}
-               <Route path="/super-admin" element={roleProtectedPage(<SuperAdminDashboard />, ["SUPER_ADMIN"])}> 
+                <Route path="/super-admin" element={roleProtectedPage(<SuperAdminDashboard />, ["SUPER_ADMIN"])}>
                     <Route index element={<SuperAdminHome />} />
                     <Route path="dashboard" element={<SuperAdminHome />} />
 
@@ -487,8 +518,6 @@ export default function AppRoutes() {
                     <Route path="system-messages" element={<SystemMessages />} />
                     <Route path="bulk-operations" element={<BulkOperations />} />
 
-                    
-
                     {/*Sponsorship Management*/}
                     <Route path="frameworks" element={<SponsorFramework />} />
                     <Route path="visibility" element={<CampaignVisibility />} />
@@ -498,7 +527,21 @@ export default function AppRoutes() {
                     <Route path="performance" element={<CampaignPerformance />} />
                     <Route path="approvals" element={<ApprovalWorkflow />} />
                     <Route path="audits" element={<SponsorAudits />} />
+
+                    {/*settings*/}
+                    <Route path="settings" element={<SuperAdminSettings />} />
                 </Route>
+
+                {/* Catch-all — if you ever land here, a route path is wrong.
+                    A visible message beats a silent blank page. */}
+                <Route
+                    path="*"
+                    element={
+                        <div style={{ padding: 40, color: '#fff' }}>
+                            Page not found — check the route path.
+                        </div>
+                    }
+                />
             </Routes>
         </Router>
     );
