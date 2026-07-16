@@ -152,7 +152,7 @@ import TicketingOfficerDashboard from '../pages/ticketing-officer/TicketingOffic
 import TreasurerDashboard from '../pages/club-admin/TreasurerDashboard';
 import ChairmanDashboard from '../pages/club-admin/ChairmanDashboard';
 import CustomAdminDashboard from '../pages/club-admin/CustomAdminDashboard';
-import TeamManagerDashboard from '/pages/club-admin/TeamManagerDashboard';
+import TeamManagerDashboard from '../pages/club-admin/TeamManagerDashboard';
 import ClubMembershipManagement from '../pages/club-admin/ClubMembershipManagement';
 
 // Nested club sub-role shell (Chairman / Treasurer / Custom Admin /
