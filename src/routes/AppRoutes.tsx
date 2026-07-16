@@ -154,6 +154,7 @@ import ChairmanDashboard from '../pages/club-admin/ChairmanDashboard';
 import CustomAdminDashboard from '../pages/club-admin/CustomAdminDashboard';
 import TeamManagerDashboard from '../pages/club-admin/TeamManagerDashboard';
 import ClubMembershipManagement from '../pages/club-admin/ClubMembershipManagement';
+import ClubTicketingManagement from '../pages/club-admin/ClubTicketingManagement';
 
 // Nested club sub-role shell (Chairman / Treasurer / Custom Admin /
 // Team Manager / Ticketing Officer) — see routes/ClubAdminSubRoleRouting.tsx
@@ -251,6 +252,26 @@ export default function AppRoutes() {
                     element={roleProtectedPage(
                         <ClubMembershipManagement />,
                         ['CLUB_ADMIN'],
+                    )}
+                />
+
+                {/* Ticketing now also renders inline as a tab inside
+                    ClubAdminDashboard. This standalone route is kept for any
+                    direct links/bookmarks, guarded the same as the parent
+                    dashboard. */}
+                <Route
+                    path="/dashboard/club-admin/ticketing"
+                    element={roleProtectedPage(
+                        <ClubTicketingManagement />,
+                        ['CLUB_ADMIN'],
+                    )}
+                />
+
+                <Route
+                    path="/dashboard/treasurer"
+                    element={roleProtectedPage(
+                        <TreasurerDashboard />,
+                        ['TREASURER'],
                     )}
                 />
 
