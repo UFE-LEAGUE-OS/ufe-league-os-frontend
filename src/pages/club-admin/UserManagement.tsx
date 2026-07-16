@@ -33,6 +33,7 @@ import {
   formatWorkspaceDate,
 } from "../../components/AdminWorkspaceLayout/AdminWorkspaceLayout";
 import {
+  createClubRole,
   createClubUser,
   deleteClubUser,
   getClubManagedUsers,
@@ -265,7 +266,7 @@ export default function UserManagement({ clubId }: UserManagementProps) {
     PermissionModule[]
   >([]);
 
- function resetForm() {
+  function resetForm() {
     setUserForm(emptyUserForm);
     setEditingUserId(null);
     setAvatarFile(null);
@@ -335,8 +336,7 @@ export default function UserManagement({ clubId }: UserManagementProps) {
     } catch {
       // Non-fatal — the permission picker will just start empty.
     }
-
-    }
+  }
 
   async function handleRoleChange(roleKey: string) {
     setUserForm((prev) => ({ ...prev, role: roleKey }));
@@ -639,6 +639,49 @@ export default function UserManagement({ clubId }: UserManagementProps) {
     [roleModules],
   );
 
+  /* ---------------- Create role modal ---------------- */
+
+  const [showRoleForm, setShowRoleForm] = useState(false);
+  const [roleForm, setRoleForm] = useState({ label: "", description: "" });
+  const [roleFormError, setRoleFormError] = useState("");
+  const [isSavingRole, setIsSavingRole] = useState(false);
+
+  function openCreateRole() {
+    setRoleForm({ label: "", description: "" });
+    setRoleFormError("");
+    setShowRoleForm(true);
+  }
+
+  function closeRoleForm() {
+    setShowRoleForm(false);
+    setRoleForm({ label: "", description: "" });
+    setRoleFormError("");
+  }
+
+  async function submitRoleForm() {
+    if (!roleForm.label.trim()) {
+      setRoleFormError("Role name is required.");
+      return;
+    }
+    setIsSavingRole(true);
+    setRoleFormError("");
+    try {
+      const created = await createClubRole(clubId, {
+        label: roleForm.label.trim(),
+        description: roleForm.description.trim(),
+      });
+      setRoles((prev) => [...prev, created]);
+      setSelectedRoleId(created.id);
+      closeRoleForm();
+    } catch (createError) {
+      setRoleFormError(
+        getApiErrorMessage(createError, "The role could not be created."),
+      );
+    } finally {
+      setIsSavingRole(false);
+    }
+  }
+
   /* ------------------------------------------------------------------ */
   /* Render                                                              */
   /* ------------------------------------------------------------------ */
@@ -668,7 +711,7 @@ export default function UserManagement({ clubId }: UserManagementProps) {
         </div>
       )}
 
-   <WorkspacePanel
+      <WorkspacePanel
         eyebrow="Access control"
         title="User Management"
         description={`${filteredUsers.length} user${filteredUsers.length === 1 ? "" : "s"} across this club`}
@@ -1088,11 +1131,7 @@ export default function UserManagement({ clubId }: UserManagementProps) {
             <button
               type="button"
               className={styles.secondaryButton}
-              onClick={() =>
-                window.alert(
-                  "Custom role creation isn't wired up yet — add a handler in UserManagement.tsx.",
-                )
-              }
+              onClick={openCreateRole}
             >
               <Plus size={14} /> Add Role
             </button>
@@ -1271,6 +1310,83 @@ export default function UserManagement({ clubId }: UserManagementProps) {
           )}
         </WorkspacePanel>
       </div>
+
+      {/* ---------------- Create role modal ---------------- */}
+      {showRoleForm && (
+        <div className="upm-modal-overlay" onClick={closeRoleForm}>
+          <div className="upm-modal-card" onClick={(e) => e.stopPropagation()}>
+            <div className="upm-modal-header">
+              <div>
+                <h3 style={{ margin: 0 }}>Add Role</h3>
+                <p
+                  style={{
+                    margin: "4px 0 0",
+                    fontSize: 12.5,
+                    color: "var(--muted, #8b93a7)",
+                  }}
+                >
+                  Create a new custom role for this club.
+                </p>
+              </div>
+              <button
+                type="button"
+                className="upm-modal-close"
+                onClick={closeRoleForm}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="upm-form">
+              <label className="upm-field">
+                Role Name *
+                <input
+                  type="text"
+                  value={roleForm.label}
+                  onChange={(e) =>
+                    setRoleForm({ ...roleForm, label: e.target.value })
+                  }
+                  placeholder="Media Officer"
+                />
+              </label>
+
+              <label className="upm-field upm-form-full">
+                Description
+                <input
+                  type="text"
+                  value={roleForm.description}
+                  onChange={(e) =>
+                    setRoleForm({ ...roleForm, description: e.target.value })
+                  }
+                  placeholder="Manages club social media and press releases"
+                />
+              </label>
+
+              {roleFormError && (
+                <p className="upm-form-error">{roleFormError}</p>
+              )}
+
+              <div className="upm-form-actions">
+                <button
+                  type="button"
+                  className={styles.secondaryButton}
+                  onClick={closeRoleForm}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className={styles.primaryButton}
+                  onClick={() => void submitRoleForm()}
+                  disabled={isSavingRole}
+                >
+                  {isSavingRole ? "Saving..." : "Create Role"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ---------------- Per-user permission picker modal ---------------- */}
       {showPermissionPicker && (
