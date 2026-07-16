@@ -166,6 +166,20 @@ export async function getUserPerformance(
 /* Roles & permissions                                                 */
 /* ------------------------------------------------------------------ */
 
+export interface CreateRolePayload {
+  label: string;
+  description: string;
+}
+
+export async function createClubRole(
+  clubId: number,
+  payload: CreateRolePayload,
+): Promise<RoleSummary> {
+  const { data } = await apiClient.post(`${rolesBase(clubId)}/`, payload);
+  return data;
+}
+
+
 export async function getClubRoles(
   clubId: number,
 ): Promise<RoleSummary[]> {
