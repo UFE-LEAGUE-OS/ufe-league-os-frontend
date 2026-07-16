@@ -41,6 +41,12 @@ export function userHasAnyRole(userOrRole: unknown, allowedRoles: unknown[]) {
   return userRoles.some((role) => normalizedAllowedRoles.includes(role));
 }
 
+// Ordered by priority: if a user carries more than one role, the first
+// match here wins. The five club sub-roles (CHAIRMAN, TREASURER,
+// CUSTOM_ADMIN, TEAM_MANAGER, TICKETING_OFFICER) are checked before the
+// plain CLUB_ADMIN fallback, since a sub-role is more specific and should
+// route into its own /club-admin/<sub-role> branch rather than the
+// generic club-admin dashboard.
 function getPreferredDashboardRole(value: unknown) {
   const roles = getNormalizedRoles(value);
 
@@ -48,11 +54,15 @@ function getPreferredDashboardRole(value: unknown) {
     [
       'SUPER_ADMIN',
       'UNION_ADMIN',
+      'CHAIRMAN',
+      'TREASURER',
+      'CUSTOM_ADMIN',
+      'TEAM_MANAGER',
+      'TICKETING_OFFICER',
       'CLUB_ADMIN',
       'LEAGUE_ADMIN',
       'REFEREE',
       'MATCH_OFFICIAL',
-      'TICKETING_OFFICER',
       'SPONSOR',
       'FAN',
     ].find((role) => roles.includes(role)) || ''
@@ -67,6 +77,22 @@ export function getDefaultDashboardRoute(role: unknown) {
       return '/super-admin';
     case 'UNION_ADMIN':
       return '/dashboard/union-admin';
+
+    // Club sub-roles nest under /club-admin (see ClubAdminSubRoleRouting).
+    case 'CHAIRMAN':
+      return '/club-admin/chairman';
+    case 'TREASURER':
+      return '/club-admin/treasurer';
+    case 'CUSTOM_ADMIN':
+      return '/club-admin/custom-admin';
+    case 'TEAM_MANAGER':
+      return '/club-admin/team-manager';
+    case 'TICKETING_OFFICER':
+      // Was '/dashboard/ticketing-officer' — updated to land directly in
+      // the nested shell instead of bouncing through the backward-compat
+      // redirect in AppRoutes.tsx.
+      return '/club-admin/ticketing-officer';
+
     case 'CLUB_ADMIN':
       return '/dashboard/club-admin';
     case 'LEAGUE_ADMIN':
@@ -74,8 +100,6 @@ export function getDefaultDashboardRoute(role: unknown) {
     case 'REFEREE':
     case 'MATCH_OFFICIAL':
       return '/dashboard/referee';
-    case 'TICKETING_OFFICER':
-      return '/dashboard/ticketing-officer';
     case 'SPONSOR':
       return '/dashboard/sponsor';
     case 'FAN':
