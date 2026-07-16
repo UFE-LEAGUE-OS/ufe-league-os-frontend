@@ -65,6 +65,7 @@ import {
   type BackendMembershipPlan,
 } from "../../services/membershipService";
 import "./ClubMembershipManagement.css";
+import UserManagement from "./UserManagement";
 
 type TabKey =
   | "overview"
@@ -691,54 +692,54 @@ export default function ClubAdminDashboard() {
     );
   }
 
-  function renderStaff() {
-    const staff = data?.staff ?? [];
+  // function renderStaff() {
+  //   const staff = data?.staff ?? [];
 
-    return (
-      <WorkspacePanel
-        eyebrow="Club access"
-        title="Club administrators and officers"
-        description="Active administrative and ticketing users attached to this club."
-      >
-        {staff.length === 0 ? (
-          <WorkspaceEmpty
-            title="No club users"
-            description="No administrative accounts are currently attached to this club."
-          />
-        ) : (
-          <div className={styles.tableShell}>
-            <table>
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Email</th>
-                  <th>Role</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
+  //   return (
+  //     <WorkspacePanel
+  //       eyebrow="Club access"
+  //       title="Club administrators and officers"
+  //       description="Active administrative and ticketing users attached to this club."
+  //     >
+  //       {staff.length === 0 ? (
+  //         <WorkspaceEmpty
+  //           title="No club users"
+  //           description="No administrative accounts are currently attached to this club."
+  //         />
+  //       ) : (
+  //         <div className={styles.tableShell}>
+  //           <table>
+  //             <thead>
+  //               <tr>
+  //                 <th>Name</th>
+  //                 <th>Email</th>
+  //                 <th>Role</th>
+  //                 <th>Status</th>
+  //               </tr>
+  //             </thead>
 
-              <tbody>
-                {staff.map((user) => (
-                  <tr key={user.id}>
-                    <td>
-                      <span className={styles.tablePrimary}>
-                        {user.name}
-                      </span>
-                    </td>
-                    <td>{user.email}</td>
-                    <td>{user.role_display}</td>
-                    <td>
-                      <WorkspaceStatus value="ACTIVE" />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </WorkspacePanel>
-    );
-  }
+  //             <tbody>
+  //               {staff.map((user) => (
+  //                 <tr key={user.id}>
+  //                   <td>
+  //                     <span className={styles.tablePrimary}>
+  //                       {user.name}
+  //                     </span>
+  //                   </td>
+  //                   <td>{user.email}</td>
+  //                   <td>{user.role_display}</td>
+  //                   <td>
+  //                     <WorkspaceStatus value="ACTIVE" />
+  //                   </td>
+  //                 </tr>
+  //               ))}
+  //             </tbody>
+  //           </table>
+  //         </div>
+  //       )}
+  //     </WorkspacePanel>
+  //   );
+  // }
 
   /* ------------------------------------------------------------------ */
   /* Membership sub-pages (real content, ported from                    */
@@ -1499,7 +1500,7 @@ export default function ClubAdminDashboard() {
     );
   } else if (activeTab === "sponsorshipMatchday") {
     content = renderPlaceholder(
-      "Sponsorship & Matchday Operations",
+      "Sponsorship",
       "Manage sponsors and matchday operational details.",
     );
   } else if (activeTab === "compliance") {
@@ -1517,8 +1518,12 @@ export default function ClubAdminDashboard() {
       "Communications",
       "Messages and alerts for this club.",
     );
-  } else if (activeTab === "clubUsers") {
-    content = renderStaff();
+} else if (activeTab === "clubUsers") {
+    content = data ? (
+      <UserManagement clubId={data.club.id} />
+    ) : (
+      <WorkspaceLoading label="Loading club users…" />
+    );
   } else if (activeTab === "settings") {
     content = renderPlaceholder(
       "Settings",
