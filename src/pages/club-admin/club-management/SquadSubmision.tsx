@@ -6,7 +6,7 @@ import {
   Send,
 } from "lucide-react";
 
-import "../../../styles/pages/club-admin/clubManagement.css";
+import "../../../styles/pages/club-admin/ClubManagement.css";
 
 
 interface Player {
