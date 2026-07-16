@@ -96,6 +96,7 @@ const emptyUserForm = {
   country_code: "+256",
   phone_number: "",
   password: "",
+  confirm_password: "",
   role: "",
   permission_keys: [] as string[],
 };
@@ -253,6 +254,7 @@ export default function UserManagement({ clubId }: UserManagementProps) {
   const formRef = useRef<HTMLDivElement | null>(null);
   const [userForm, setUserForm] = useState(emptyUserForm);
   const [editingUserId, setEditingUserId] = useState<number | null>(null);
+  const [showUserForm, setShowUserForm] = useState(false);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
@@ -263,7 +265,7 @@ export default function UserManagement({ clubId }: UserManagementProps) {
     PermissionModule[]
   >([]);
 
-  function resetForm() {
+ function resetForm() {
     setUserForm(emptyUserForm);
     setEditingUserId(null);
     setAvatarFile(null);
@@ -271,6 +273,12 @@ export default function UserManagement({ clubId }: UserManagementProps) {
     setFormError("");
     setShowPassword(false);
     setFormPermissionModules([]);
+    setShowUserForm(false);
+  }
+
+  function openCreateUser() {
+    resetForm();
+    setShowUserForm(true);
   }
 
   function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -284,6 +292,8 @@ export default function UserManagement({ clubId }: UserManagementProps) {
     setFormError("");
     setAvatarFile(null);
     setAvatarPreview(user.avatar_url);
+    setShowUserForm(true);
+
     const [code, ...rest] =
       COUNTRY_CODES.find((c) => user.phone_number.startsWith(c.code))
         ?.code === undefined
@@ -304,6 +314,7 @@ export default function UserManagement({ clubId }: UserManagementProps) {
       country_code: code,
       phone_number: rest.join("").trim(),
       password: "",
+      confirm_password: "",
       role: user.role,
       permission_keys: [],
     });
@@ -325,8 +336,7 @@ export default function UserManagement({ clubId }: UserManagementProps) {
       // Non-fatal — the permission picker will just start empty.
     }
 
-    formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-  }
+    }
 
   async function handleRoleChange(roleKey: string) {
     setUserForm((prev) => ({ ...prev, role: roleKey }));
@@ -384,8 +394,16 @@ export default function UserManagement({ clubId }: UserManagementProps) {
       setFormError("A password is required for new users.");
       return;
     }
+    if (
+      userForm.password.trim() &&
+      userForm.password.trim() !== userForm.confirm_password.trim()
+    ) {
+      setFormError("Passwords do not match.");
+      return;
+    }
 
     setIsSavingUser(true);
+
     try {
       if (editingUserId) {
         const updated = await updateClubUser(clubId, editingUserId, {
@@ -650,18 +668,236 @@ export default function UserManagement({ clubId }: UserManagementProps) {
         </div>
       )}
 
-      <div className="upm-grid-top">
-        <div ref={formRef}>
-          <WorkspacePanel
-            eyebrow="User accounts"
-            title={editingUserId ? "Edit User" : "Create New User"}
-            description={
-              editingUserId
-                ? "Update this club user's details, role and permissions."
-                : "Add a new administrator, officer or coach to this club."
-            }
-          >
-            <div className="upm-form">
+   <WorkspacePanel
+        eyebrow="Access control"
+        title="User Management"
+        description={`${filteredUsers.length} user${filteredUsers.length === 1 ? "" : "s"} across this club`}
+        actions={
+          <div className="upm-toolbar">
+            <button
+              type="button"
+              className={styles.primaryButton}
+              onClick={openCreateUser}
+            >
+              <Plus size={15} /> Add User
+            </button>
+            <div className="upm-search-wrap">
+              <Search size={15} className="upm-search-icon" />
+              <input
+                className="upm-search-input"
+                type="text"
+                placeholder="Search users…"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            <select
+              className="upm-filter-select"
+              value={roleFilter}
+              onChange={(e) => setRoleFilter(e.target.value)}
+            >
+              <option value="ALL">All Roles</option>
+              {roles.map((role) => (
+                <option key={role.id} value={role.key}>
+                  {role.label}
+                </option>
+              ))}
+            </select>
+            <select
+              className="upm-filter-select"
+              value={statusFilter}
+              onChange={(e) =>
+                setStatusFilter(e.target.value as "ALL" | UserStatus)
+              }
+            >
+              {STATUS_FILTERS.map((s) => (
+                <option key={s} value={s}>
+                  {s === "ALL" ? "All Statuses" : s}
+                </option>
+              ))}
+            </select>
+          </div>
+        }
+      >
+        {pagedUsers.length === 0 ? (
+          <WorkspaceEmpty
+            title="No users found"
+            description="No club users match the current filters."
+          />
+        ) : (
+          <>
+            <div className={styles.tableShell}>
+              <table>
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>User</th>
+                    <th>Role</th>
+                    <th>Phone</th>
+                    <th>Permissions</th>
+                    <th>Status</th>
+                    <th>Last Login</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pagedUsers.map((user, index) => (
+                    <tr key={user.id}>
+                      <td>{(currentPage - 1) * PAGE_SIZE + index + 1}</td>
+                      <td>
+                        <div className="upm-user-cell">
+                          <div
+                            className="upm-user-avatar"
+                            onClick={() => void openPerformance(user)}
+                            title="View performance"
+                          >
+                            {user.avatar_url ? (
+                              <img src={user.avatar_url} alt="" />
+                            ) : (
+                              initials(user.full_name)
+                            )}
+                          </div>
+                          <div className="upm-user-name-block">
+                            <strong onClick={() => void openPerformance(user)}>
+                              {user.username}
+                            </strong>
+                            <span className={styles.tableSecondary}>
+                              {user.full_name}
+                            </span>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <span className="upm-role-badge">
+                          {user.role_display}
+                        </span>
+                      </td>
+                      <td>{user.phone_number}</td>
+                      <td>{user.permissions_count}</td>
+                      <td>
+                        <span className="upm-status-cell">
+                          <span
+                            className={`upm-status-dot ${
+                              user.status === "INACTIVE" ? "inactive" : ""
+                            }`}
+                          />
+                          {user.status === "ACTIVE" ? "Active" : "Inactive"}
+                        </span>
+                      </td>
+                      <td>
+                        {user.last_login
+                          ? formatWorkspaceDate(user.last_login)
+                          : "Never"}
+                      </td>
+                      <td>
+                        <div className="upm-row-actions">
+                          <button
+                            type="button"
+                            className="upm-icon-btn"
+                            title="View performance"
+                            onClick={() => void openPerformance(user)}
+                          >
+                            <Eye size={15} />
+                          </button>
+                          <button
+                            type="button"
+                            className="upm-icon-btn"
+                            title="Edit user"
+                            onClick={() => void beginEditUser(user)}
+                          >
+                            <Pencil size={15} />
+                          </button>
+                          <button
+                            type="button"
+                            className="upm-icon-btn warn"
+                            title={
+                              user.status === "ACTIVE"
+                                ? "Deactivate user"
+                                : "Activate user"
+                            }
+                            onClick={() => void toggleUserStatus(user)}
+                          >
+                            <Power size={15} />
+                          </button>
+                          <button
+                            type="button"
+                            className="upm-icon-btn danger"
+                            title="Delete user"
+                            onClick={() => void removeUser(user)}
+                          >
+                            <Trash2 size={15} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="upm-pagination">
+              <button
+                type="button"
+                className="upm-page-btn"
+                disabled={currentPage <= 1}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+              >
+                ‹
+              </button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                <button
+                  key={p}
+                  type="button"
+                  className={`upm-page-btn ${p === currentPage ? "active" : ""}`}
+                  onClick={() => setPage(p)}
+                >
+                  {p}
+                </button>
+              ))}
+              <button
+                type="button"
+                className="upm-page-btn"
+                disabled={currentPage >= totalPages}
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              >
+                ›
+              </button>
+            </div>
+          </>
+        )}
+      </WorkspacePanel>
+
+      {/* ---------------- Create / Edit user modal ---------------- */}
+      {showUserForm && (
+        <div className="upm-modal-overlay" onClick={resetForm}>
+          <div className="upm-modal-card" onClick={(e) => e.stopPropagation()}>
+            <div className="upm-modal-header">
+              <div>
+                <h3 style={{ margin: 0 }}>
+                  {editingUserId ? "Edit User" : "Create New User"}
+                </h3>
+                <p
+                  style={{
+                    margin: "4px 0 0",
+                    fontSize: 12.5,
+                    color: "var(--muted, #8b93a7)",
+                  }}
+                >
+                  {editingUserId
+                    ? "Update this club user's details, role and permissions."
+                    : "Add a new administrator, officer or coach to this club."}
+                </p>
+              </div>
+              <button
+                type="button"
+                className="upm-modal-close"
+                onClick={resetForm}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="upm-form" ref={formRef}>
               <div className="upm-avatar-field">
                 <div className="upm-avatar-preview">
                   {avatarPreview ? (
@@ -751,9 +987,7 @@ export default function UserManagement({ clubId }: UserManagementProps) {
               </div>
 
               <label className="upm-field upm-password-field">
-                {editingUserId
-                  ? "New Password (optional)"
-                  : "Password *"}
+                {editingUserId ? "New Password (optional)" : "Password *"}
                 <input
                   type={showPassword ? "text" : "password"}
                   value={userForm.password}
@@ -768,6 +1002,21 @@ export default function UserManagement({ clubId }: UserManagementProps) {
                 >
                   <Eye size={15} />
                 </button>
+              </label>
+
+              <label className="upm-field upm-password-field">
+                {editingUserId ? "Confirm New Password" : "Confirm Password *"}
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={userForm.confirm_password}
+                  onChange={(e) =>
+                    setUserForm({
+                      ...userForm,
+                      confirm_password: e.target.value,
+                    })
+                  }
+                  placeholder="••••••••••"
+                />
               </label>
 
               <label className="upm-field">
@@ -796,8 +1045,7 @@ export default function UserManagement({ clubId }: UserManagementProps) {
                   disabled={formPermissionModules.length === 0}
                 >
                   <span>
-                    {userForm.permission_keys.length} permissions
-                    selected
+                    {userForm.permission_keys.length} permissions selected
                   </span>
                   <span>Manage</span>
                 </button>
@@ -820,220 +1068,16 @@ export default function UserManagement({ clubId }: UserManagementProps) {
                   disabled={isSavingUser}
                 >
                   {isSavingUser
-                    ? "Saving…"
+                    ? "Saving..."
                     : editingUserId
                       ? "Save Changes"
                       : "Save User"}
                 </button>
               </div>
             </div>
-          </WorkspacePanel>
+          </div>
         </div>
-
-        <WorkspacePanel
-          eyebrow="Access control"
-          title={`User Management`}
-          description={`${filteredUsers.length} user${filteredUsers.length === 1 ? "" : "s"} across this club`}
-          actions={
-            <div className="upm-toolbar">
-              <div className="upm-search-wrap">
-                <Search size={15} className="upm-search-icon" />
-                <input
-                  className="upm-search-input"
-                  type="text"
-                  placeholder="Search users…"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
-              <select
-                className="upm-filter-select"
-                value={roleFilter}
-                onChange={(e) => setRoleFilter(e.target.value)}
-              >
-                <option value="ALL">All Roles</option>
-                {roles.map((role) => (
-                  <option key={role.id} value={role.key}>
-                    {role.label}
-                  </option>
-                ))}
-              </select>
-              <select
-                className="upm-filter-select"
-                value={statusFilter}
-                onChange={(e) =>
-                  setStatusFilter(e.target.value as "ALL" | UserStatus)
-                }
-              >
-                {STATUS_FILTERS.map((s) => (
-                  <option key={s} value={s}>
-                    {s === "ALL" ? "All Statuses" : s}
-                  </option>
-                ))}
-              </select>
-            </div>
-          }
-        >
-          {pagedUsers.length === 0 ? (
-            <WorkspaceEmpty
-              title="No users found"
-              description="No club users match the current filters."
-            />
-          ) : (
-            <>
-              <div className={styles.tableShell}>
-                <table>
-                  <thead>
-                    <tr>
-                      <th>#</th>
-                      <th>User</th>
-                      <th>Role</th>
-                      <th>Phone</th>
-                      <th>Permissions</th>
-                      <th>Status</th>
-                      <th>Last Login</th>
-                      <th></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {pagedUsers.map((user, index) => (
-                      <tr key={user.id}>
-                        <td>
-                          {(currentPage - 1) * PAGE_SIZE + index + 1}
-                        </td>
-                        <td>
-                          <div className="upm-user-cell">
-                            <div
-                              className="upm-user-avatar"
-                              onClick={() => void openPerformance(user)}
-                              title="View performance"
-                            >
-                              {user.avatar_url ? (
-                                <img src={user.avatar_url} alt="" />
-                              ) : (
-                                initials(user.full_name)
-                              )}
-                            </div>
-                            <div className="upm-user-name-block">
-                              <strong
-                                onClick={() => void openPerformance(user)}
-                              >
-                                {user.username}
-                              </strong>
-                              <span className={styles.tableSecondary}>
-                                {user.full_name}
-                              </span>
-                            </div>
-                          </div>
-                        </td>
-                        <td>
-                          <span className="upm-role-badge">
-                            {user.role_display}
-                          </span>
-                        </td>
-                        <td>{user.phone_number}</td>
-                        <td>{user.permissions_count}</td>
-                        <td>
-                          <span className="upm-status-cell">
-                            <span
-                              className={`upm-status-dot ${
-                                user.status === "INACTIVE" ? "inactive" : ""
-                              }`}
-                            />
-                            {user.status === "ACTIVE"
-                              ? "Active"
-                              : "Inactive"}
-                          </span>
-                        </td>
-                        <td>
-                          {user.last_login
-                            ? formatWorkspaceDate(user.last_login)
-                            : "Never"}
-                        </td>
-                        <td>
-                          <div className="upm-row-actions">
-                            <button
-                              type="button"
-                              className="upm-icon-btn"
-                              title="View performance"
-                              onClick={() => void openPerformance(user)}
-                            >
-                              <Eye size={15} />
-                            </button>
-                            <button
-                              type="button"
-                              className="upm-icon-btn"
-                              title="Edit user"
-                              onClick={() => void beginEditUser(user)}
-                            >
-                              <Pencil size={15} />
-                            </button>
-                            <button
-                              type="button"
-                              className="upm-icon-btn warn"
-                              title={
-                                user.status === "ACTIVE"
-                                  ? "Deactivate user"
-                                  : "Activate user"
-                              }
-                              onClick={() => void toggleUserStatus(user)}
-                            >
-                              <Power size={15} />
-                            </button>
-                            <button
-                              type="button"
-                              className="upm-icon-btn danger"
-                              title="Delete user"
-                              onClick={() => void removeUser(user)}
-                            >
-                              <Trash2 size={15} />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              <div className="upm-pagination">
-                <button
-                  type="button"
-                  className="upm-page-btn"
-                  disabled={currentPage <= 1}
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                >
-                  ‹
-                </button>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                  (p) => (
-                    <button
-                      key={p}
-                      type="button"
-                      className={`upm-page-btn ${
-                        p === currentPage ? "active" : ""
-                      }`}
-                      onClick={() => setPage(p)}
-                    >
-                      {p}
-                    </button>
-                  ),
-                )}
-                <button
-                  type="button"
-                  className="upm-page-btn"
-                  disabled={currentPage >= totalPages}
-                  onClick={() =>
-                    setPage((p) => Math.min(totalPages, p + 1))
-                  }
-                >
-                  ›
-                </button>
-              </div>
-            </>
-          )}
-        </WorkspacePanel>
-      </div>
+      )}
 
       <div className="upm-grid-bottom">
         <WorkspacePanel
