@@ -31,7 +31,6 @@ import SuperAdminTopBar from "../components/SuperAdminTopBar";
 
 
 
-
 interface Activity {
     text: string;
     meta: string;

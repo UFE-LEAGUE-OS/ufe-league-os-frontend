@@ -166,6 +166,14 @@ import ApprovalWorkflow from "../pages/super-admin/sponsorship-management/Approv
 import SponsorAudits from "../pages/super-admin/sponsorship-management/SponsorsAudit";
 import SuperAdminSettings from "../pages/super-admin/superadmin-settings/SuperAdminSettings";
 
+//club management
+import TeamsManagement from "../pages/club-admin/club-management/TeamsManagement";
+import PlayerRegistration from "../pages/club-admin/club-management/PlayerRegistration";
+import StaffOfficials from "../pages/club-admin/club-management/StaffOfficials";
+import RosterUpdate from "../pages/club-admin/club-management/RoasterUpdate";
+import SquadSubmission from "../pages/club-admin/club-management/SquadSubmision";
+
+
 
 function protectedPage(page: ReactNode) {
     return <ProtectedRoute>{page}</ProtectedRoute>;
@@ -208,7 +216,7 @@ export default function AppRoutes() {
                     element={protectedPage(<Navigate to="/dashboard/union-admin" replace />)}
                 />
 
-               
+
                 <Route
                     path="/dashboard/league-admin"
                     element={roleProtectedPage(
@@ -227,10 +235,10 @@ export default function AppRoutes() {
                 <Route
                     path="/dashboard/club-admin/membership"
                     element={roleProtectedPage(
-                       <ClubMembershipManagement />,
-                       ['CLUB_ADMIN'],
-              )}
-/>
+                        <ClubMembershipManagement />,
+                        ['CLUB_ADMIN'],
+                    )}
+                />
 
                 <Route
                     path="/dashboard/treasurer"
@@ -426,7 +434,7 @@ export default function AppRoutes() {
                 <Route path="/payments" element={<Payments />} />
 
                 {/* Super Admin routes */}
-                <Route path="/super-admin" element={roleProtectedPage(<SuperAdminDashboard />, ["SUPER_ADMIN"])}>
+                <Route path="/super-admin" element={<SuperAdminDashboard />}>
                     <Route index element={<SuperAdminHome />} />
                     <Route path="dashboard" element={<SuperAdminHome />} />
 
@@ -480,7 +488,7 @@ export default function AppRoutes() {
                     <Route path="system-messages" element={<SystemMessages />} />
                     <Route path="bulk-operations" element={<BulkOperations />} />
 
-                    
+
 
                     {/*Sponsorship Management*/}
                     <Route path="frameworks" element={<SponsorFramework />} />
@@ -494,6 +502,14 @@ export default function AppRoutes() {
 
                     {/*settings*/}
                     <Route path="settings" element={<SuperAdminSettings />} />
+                </Route>
+
+                <Route path="club-management">
+                    <Route path="teams" element={<TeamsManagement />} />
+                    <Route path="players" element={<PlayerRegistration />} />
+                    <Route path="staff" element={<StaffOfficials />} />
+                    <Route path="roster" element={<RosterUpdate />} />
+                    <Route path="squad-submission" element={<SquadSubmission />} />
                 </Route>
             </Routes>
         </Router>
