@@ -1,13 +1,22 @@
 import {
   BarChart3,
+  Building2,
   CalendarDays,
-  CheckCircle2,
+  ClipboardList,
   CreditCard,
+  Download,
+  FileBarChart,
+  Layers,
+  Megaphone,
+  MessageSquare,
   RefreshCw,
+  Settings as SettingsIcon,
   ShieldCheck,
   TicketCheck,
   Trophy,
+  UserCircle,
   Users,
+  Wallet,
 } from "lucide-react";
 import {
   useCallback,
@@ -15,7 +24,6 @@ import {
   useMemo,
   useState,
 } from "react";
-import { useNavigate } from "react-router-dom";
 import {
   Bar,
   BarChart,
@@ -28,7 +36,7 @@ import {
 } from "recharts";
 
 import AdminWorkspaceLayout, {
-  type AdminWorkspaceNavItem,
+  type AdminWorkspaceNavGroup,
   WorkspaceEmpty,
   WorkspaceError,
   WorkspaceLoading,
@@ -47,46 +55,105 @@ import {
 type TabKey =
   | "overview"
   | "membership"
-  | "fixtures"
-  | "results"
+  | "membershipDirectory"
+  | "membershipRenewals"
+  | "membershipTiers"
+  | "membershipRequests"
+  | "membershipReports"
+  | "teams"
+  | "matches"
+  | "finances"
   | "ticketing"
-  | "staff";
+  | "facilities"
+  | "profileBranding"
+  | "sponsorshipMatchday"
+  | "compliance"
+  | "reports"
+  | "communications"
+  | "clubUsers"
+  | "settings";
 
-const navItems: AdminWorkspaceNavItem<TabKey>[] = [
+const navItems: AdminWorkspaceNavGroup<TabKey>[] = [
   {
-    key: "overview",
     label: "Overview",
-    icon: BarChart3,
+    items: [
+      { key: "overview", label: "Dashboard", icon: BarChart3 },
+    ],
   },
   {
-    key: "membership",
-    label: "Membership",
-    icon: CreditCard,
+    label: "Club Operations",
+    items: [
+      {
+        key: "membership",
+        label: "Membership",
+        icon: CreditCard,
+        children: [
+          {
+            key: "membershipDirectory",
+            label: "Members Directory",
+            icon: Users,
+          },
+          {
+            key: "membershipRenewals",
+            label: "Renewals & Expiry",
+            icon: RefreshCw,
+          },
+          {
+            key: "membershipTiers",
+            label: "Tiers & Pricing",
+            icon: Layers,
+          },
+          {
+            key: "membershipRequests",
+            label: "Requests Queue",
+            icon: ClipboardList,
+          },
+          {
+            key: "membershipReports",
+            label: "Export Reports",
+            icon: Download,
+          },
+        ],
+      },
+      { key: "teams", label: "Teams", icon: Trophy },
+      { key: "matches", label: "Matches", icon: CalendarDays },
+      { key: "finances", label: "Finances", icon: Wallet },
+      { key: "ticketing", label: "Tickets", icon: TicketCheck },
+      { key: "facilities", label: "Facilities", icon: Building2 },
+    ],
   },
   {
-    key: "fixtures",
-    label: "Fixtures",
-    icon: CalendarDays,
+    label: "Governance",
+    items: [
+      {
+        key: "profileBranding",
+        label: "Profile & Branding",
+        icon: UserCircle,
+      },
+      {
+        key: "sponsorshipMatchday",
+        label: "Sponsorship & Matchday Operations",
+        icon: Megaphone,
+      },
+      { key: "compliance", label: "Compliance", icon: ShieldCheck },
+    ],
   },
   {
-    key: "results",
-    label: "Results",
-    icon: CheckCircle2,
-  },
-  {
-    key: "ticketing",
-    label: "Ticketing",
-    icon: TicketCheck,
-  },
-  {
-    key: "staff",
-    label: "Club Users",
-    icon: Users,
+    label: "Administration",
+    items: [
+      { key: "reports", label: "Reports", icon: FileBarChart },
+      {
+        key: "communications",
+        label: "Communications",
+        icon: MessageSquare,
+      },
+      { key: "clubUsers", label: "Club Users", icon: Users },
+      { key: "settings", label: "Settings", icon: SettingsIcon },
+    ],
   },
 ];
 
 export default function ClubAdminDashboard() {
-  const navigate = useNavigate();
   const [activeTab, setActiveTab] =
     useState<TabKey>("overview");
   const [data, setData] =
@@ -94,16 +161,13 @@ export default function ClubAdminDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const handleTabChange = useCallback(
-    (tab: TabKey) => {
-      if (tab === "membership") {
-        navigate("/dashboard/club-admin/membership");
-        return;
-      }
-      setActiveTab(tab);
-    },
-    [navigate],
-  );
+  // Membership's five sub-pages now render inline, in this same
+  // workspace shell, the same way "User Management" expands in the
+  // super-admin sidebar — so tab changes no longer need to navigate
+  // away to a standalone route/page.
+  const handleTabChange = useCallback((tab: TabKey) => {
+    setActiveTab(tab);
+  }, []);
 
   const loadWorkspace = useCallback(async () => {
     setIsLoading(true);
@@ -226,6 +290,46 @@ export default function ClubAdminDashboard() {
     );
   }
 
+  function renderFinancialChart() {
+    return data?.financial_overview?.length ? (
+      <div style={{ width: "100%", height: 260 }}>
+        <ResponsiveContainer>
+          <BarChart data={data.financial_overview}>
+            <CartesianGrid
+              strokeDasharray="3 3"
+              stroke="var(--border)"
+            />
+            <XAxis dataKey="month" stroke="var(--muted)" />
+            <YAxis stroke="var(--muted)" />
+            <Tooltip
+              contentStyle={{
+                background: "var(--card)",
+                border: "1px solid var(--border)",
+                color: "var(--text)",
+              }}
+            />
+            <Legend />
+            <Bar
+              dataKey="income"
+              fill="var(--green)"
+              radius={[4, 4, 0, 0]}
+            />
+            <Bar
+              dataKey="expense"
+              fill="#ef4444"
+              radius={[4, 4, 0, 0]}
+            />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+    ) : (
+      <WorkspaceEmpty
+        title="No financial data"
+        description="Income and expense records will appear here once available."
+      />
+    );
+  }
+
   function renderOverview() {
     return (
       <>
@@ -325,48 +429,17 @@ export default function ClubAdminDashboard() {
             eyebrow="Club finances"
             title="Financial overview"
             description="Income vs expense across recent months."
+            actions={
+              <button
+                type="button"
+                className={styles.publicLink}
+                onClick={() => setActiveTab("finances")}
+              >
+                View full finances
+              </button>
+            }
           >
-            {data?.financial_overview?.length ? (
-              <div style={{ width: "100%", height: 260 }}>
-                <ResponsiveContainer>
-                  <BarChart data={data.financial_overview}>
-                    <CartesianGrid
-                      strokeDasharray="3 3"
-                      stroke="var(--border)"
-                    />
-                    <XAxis
-                      dataKey="month"
-                      stroke="var(--muted)"
-                    />
-                    <YAxis stroke="var(--muted)" />
-                    <Tooltip
-                      contentStyle={{
-                        background: "var(--card)",
-                        border:
-                          "1px solid var(--border)",
-                        color: "var(--text)",
-                      }}
-                    />
-                    <Legend />
-                    <Bar
-                      dataKey="income"
-                      fill="var(--green)"
-                      radius={[4, 4, 0, 0]}
-                    />
-                    <Bar
-                      dataKey="expense"
-                      fill="#ef4444"
-                      radius={[4, 4, 0, 0]}
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            ) : (
-              <WorkspaceEmpty
-                title="No financial data"
-                description="Income and expense records will appear here once available."
-              />
-            )}
+            {renderFinancialChart()}
           </WorkspacePanel>
         </div>
 
@@ -374,6 +447,15 @@ export default function ClubAdminDashboard() {
           eyebrow="Next matches"
           title="Upcoming fixtures"
           description="The next scheduled matches involving your club."
+          actions={
+            <button
+              type="button"
+              className={styles.publicLink}
+              onClick={() => setActiveTab("matches")}
+            >
+              View all matches
+            </button>
+          }
         >
           {renderFixtureTable(
             data?.upcoming_fixtures ?? [],
@@ -381,6 +463,46 @@ export default function ClubAdminDashboard() {
           )}
         </WorkspacePanel>
       </>
+    );
+  }
+
+  function renderMatches() {
+    return (
+      <>
+        <WorkspacePanel
+          eyebrow="Club schedule"
+          title="Upcoming fixtures"
+          description="Every scheduled fixture involving this club."
+        >
+          {renderFixtureTable(
+            data?.upcoming_fixtures ?? [],
+            "fixture",
+          )}
+        </WorkspacePanel>
+
+        <WorkspacePanel
+          eyebrow="Club performance"
+          title="Recent results"
+          description="Completed match records involving this club."
+        >
+          {renderFixtureTable(
+            data?.recent_results ?? [],
+            "result",
+          )}
+        </WorkspacePanel>
+      </>
+    );
+  }
+
+  function renderFinances() {
+    return (
+      <WorkspacePanel
+        eyebrow="Club finances"
+        title="Financial overview"
+        description="Income vs expense across recent months."
+      >
+        {renderFinancialChart()}
+      </WorkspacePanel>
     );
   }
 
@@ -497,6 +619,24 @@ export default function ClubAdminDashboard() {
     );
   }
 
+  function renderPlaceholder(
+    title: string,
+    description: string,
+  ) {
+    return (
+      <WorkspacePanel
+        eyebrow="Club administration"
+        title={title}
+        description={description}
+      >
+        <WorkspaceEmpty
+          title={`${title} is not yet built out`}
+          description="This section will surface full detail here once available."
+        />
+      </WorkspacePanel>
+    );
+  }
+
   let content;
 
   if (isLoading && !data) {
@@ -510,36 +650,79 @@ export default function ClubAdminDashboard() {
         onRetry={loadWorkspace}
       />
     );
-  } else if (activeTab === "fixtures") {
-    content = (
-      <WorkspacePanel
-        eyebrow="Club schedule"
-        title="Upcoming fixtures"
-        description="Every scheduled fixture involving this club."
-      >
-        {renderFixtureTable(
-          data?.upcoming_fixtures ?? [],
-          "fixture",
-        )}
-      </WorkspacePanel>
+  } else if (activeTab === "membershipDirectory") {
+    content = renderPlaceholder(
+      "Members Directory",
+      "Browse and manage every member on your club roster.",
     );
-  } else if (activeTab === "results") {
-    content = (
-      <WorkspacePanel
-        eyebrow="Club performance"
-        title="Recent results"
-        description="Completed match records involving this club."
-      >
-        {renderFixtureTable(
-          data?.recent_results ?? [],
-          "result",
-        )}
-      </WorkspacePanel>
+  } else if (activeTab === "membershipRenewals") {
+    content = renderPlaceholder(
+      "Renewals & Expiry",
+      "Track upcoming membership renewals and lapsed accounts.",
     );
+  } else if (activeTab === "membershipTiers") {
+    content = renderPlaceholder(
+      "Tiers & Pricing",
+      "Configure membership tiers, benefits, and pricing.",
+    );
+  } else if (activeTab === "membershipRequests") {
+    content = renderPlaceholder(
+      "Requests Queue",
+      "Review pending membership applications and change requests.",
+    );
+  } else if (activeTab === "membershipReports") {
+    content = renderPlaceholder(
+      "Export Reports",
+      "Generate and download membership reports.",
+    );
+  } else if (activeTab === "teams") {
+    content = renderPlaceholder(
+      "Teams",
+      "Manage all teams belonging to this club.",
+    );
+  } else if (activeTab === "matches") {
+    content = renderMatches();
+  } else if (activeTab === "finances") {
+    content = renderFinances();
   } else if (activeTab === "ticketing") {
     content = renderTicketing();
-  } else if (activeTab === "staff") {
+  } else if (activeTab === "facilities") {
+    content = renderPlaceholder(
+      "Facilities",
+      "Manage grounds and facilities for this club.",
+    );
+  } else if (activeTab === "profileBranding") {
+    content = renderPlaceholder(
+      "Profile & Branding",
+      "Manage your club's public profile, logo, and colors.",
+    );
+  } else if (activeTab === "sponsorshipMatchday") {
+    content = renderPlaceholder(
+      "Sponsorship & Matchday Operations",
+      "Manage sponsors and matchday operational details.",
+    );
+  } else if (activeTab === "compliance") {
+    content = renderPlaceholder(
+      "Compliance",
+      "Track club compliance and regulatory requirements.",
+    );
+  } else if (activeTab === "reports") {
+    content = renderPlaceholder(
+      "Reports",
+      "Analytics and reports for this club.",
+    );
+  } else if (activeTab === "communications") {
+    content = renderPlaceholder(
+      "Communications",
+      "Messages and alerts for this club.",
+    );
+  } else if (activeTab === "clubUsers") {
     content = renderStaff();
+  } else if (activeTab === "settings") {
+    content = renderPlaceholder(
+      "Settings",
+      "Club-wide configuration and preferences.",
+    );
   } else {
     content = renderOverview();
   }

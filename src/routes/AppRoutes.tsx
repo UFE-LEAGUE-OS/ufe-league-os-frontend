@@ -150,9 +150,9 @@ import LeagueAdminDashboard from '../pages/league-admin/LeagueAdminDashboard';
 import ClubAdminDashboard from '../pages/club-admin/ClubAdminDashboard';
 import TicketingOfficerDashboard from '../pages/ticketing-officer/TicketingOfficerDashboard';
 import TreasurerDashboard from '../pages/club-admin/TreasurerDashboard';
-import ChairmanDashboard from '../pages/club-admin/ChairmannDashboard';
+import ChairmanDashboard from '../pages/club-admin/ChairmanDashboard';
 import CustomAdminDashboard from '../pages/club-admin/CustomAdminDashboard';
-import TeamManagerDashboard from '@/pages/club-admin/TeamManagerDashboard';
+import TeamManagerDashboard from '../pages/club-admin/TeamManagerDashboard';
 import ClubMembershipManagement from '../pages/club-admin/ClubMembershipManagement';
 
 //super admin sponsorship management
@@ -224,13 +224,14 @@ export default function AppRoutes() {
                         ['CLUB_ADMIN'],
                     )}
                 />
+
                 <Route
                     path="/dashboard/club-admin/membership"
                     element={roleProtectedPage(
-                       <ClubMembershipManagement />,
-                       ['CLUB_ADMIN'],
-              )}
-/>
+                        <ClubMembershipManagement />,
+                        ['CLUB_ADMIN'],
+                    )}
+                />
 
                 <Route
                     path="/dashboard/treasurer"
@@ -263,7 +264,7 @@ export default function AppRoutes() {
                         ['TEAM_MANAGER'],
                     )}
                 />
-
+ 
                 <Route
                     path="/dashboard/ticketing-officer"
                     element={roleProtectedPage(
