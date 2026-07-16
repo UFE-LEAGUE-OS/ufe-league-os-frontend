@@ -172,6 +172,14 @@ import ApprovalWorkflow from "../pages/super-admin/sponsorship-management/Approv
 import SponsorAudits from "../pages/super-admin/sponsorship-management/SponsorsAudit";
 import SuperAdminSettings from "../pages/super-admin/superadmin-settings/SuperAdminSettings";
 
+//club management
+import TeamsManagement from "../pages/club-admin/club-management/TeamsManagement";
+import PlayerRegistration from "../pages/club-admin/club-management/PlayerRegistration";
+import StaffOfficials from "../pages/club-admin/club-management/StaffOfficials";
+import RosterUpdate from "../pages/club-admin/club-management/RoasterUpdate";
+import SquadSubmission from "../pages/club-admin/club-management/SquadSubmision";
+
+
 
 function protectedPage(page: ReactNode) {
     return <ProtectedRoute>{page}</ProtectedRoute>;
@@ -465,7 +473,7 @@ export default function AppRoutes() {
                 <Route path="/payments" element={<Payments />} />
 
                 {/* Super Admin routes */}
-                <Route path="/super-admin" element={roleProtectedPage(<SuperAdminDashboard />, ["SUPER_ADMIN"])}>
+             <Route path="/super-admin" element={roleProtectedPage(<SuperAdminDashboard />, ["SUPER_ADMIN"])}>
                     <Route index element={<SuperAdminHome />} />
                     <Route path="dashboard" element={<SuperAdminHome />} />
 
@@ -533,6 +541,13 @@ export default function AppRoutes() {
                     <Route path="settings" element={<SuperAdminSettings />} />
                 </Route>
 
+                <Route path="club-management">
+                    <Route path="teams" element={<TeamsManagement />} />
+                    <Route path="players" element={<PlayerRegistration />} />
+                    <Route path="staff" element={<StaffOfficials />} />
+                    <Route path="roster" element={<RosterUpdate />} />
+                    <Route path="squad-submission" element={<SquadSubmission />} />
+                </Route>
                 {/* Catch-all — if you ever land here, a route path is wrong.
                     A visible message beats a silent blank page. */}
                 <Route
