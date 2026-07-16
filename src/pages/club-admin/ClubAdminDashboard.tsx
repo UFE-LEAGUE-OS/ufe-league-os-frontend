@@ -100,6 +100,10 @@ export default function ClubAdminDashboard() {
         navigate("/dashboard/club-admin/membership");
         return;
       }
+      if (tab === "ticketing") {
+        navigate("/dashboard/club-admin/ticketing");
+        return;
+      }
       setActiveTab(tab);
     },
     [navigate],
@@ -384,70 +388,6 @@ export default function ClubAdminDashboard() {
     );
   }
 
-  function renderTicketing() {
-    const events = data?.ticket_events ?? [];
-
-    return (
-      <WorkspacePanel
-        eyebrow="Club ticketing"
-        title="Ticketed match events"
-        description="Inventory and admission figures for matches involving this club."
-      >
-        {events.length === 0 ? (
-          <WorkspaceEmpty
-            title="No ticketed events"
-            description="No upcoming matches currently have ticket inventory configured."
-          />
-        ) : (
-          <div className={styles.tableShell}>
-            <table>
-              <thead>
-                <tr>
-                  <th>Event</th>
-                  <th>Date</th>
-                  <th>Ticket Types</th>
-                  <th>Sold</th>
-                  <th>Checked In</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {events.map((event) => (
-                  <tr key={event.id}>
-                    <td>
-                      <span className={styles.tablePrimary}>
-                        {event.label}
-                      </span>
-                      <span
-                        className={styles.tableSecondary}
-                      >
-                        {event.competition}
-                      </span>
-                    </td>
-                    <td>
-                      {formatWorkspaceDate(
-                        event.match_date,
-                      )}
-                    </td>
-                    <td>{event.ticket_types}</td>
-                    <td>{event.tickets_sold}</td>
-                    <td>{event.checked_in}</td>
-                    <td>
-                      <WorkspaceStatus
-                        value={event.status}
-                      />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </WorkspacePanel>
-    );
-  }
-
   function renderStaff() {
     const staff = data?.staff ?? [];
 
@@ -536,8 +476,6 @@ export default function ClubAdminDashboard() {
         )}
       </WorkspacePanel>
     );
-  } else if (activeTab === "ticketing") {
-    content = renderTicketing();
   } else if (activeTab === "staff") {
     content = renderStaff();
   } else {

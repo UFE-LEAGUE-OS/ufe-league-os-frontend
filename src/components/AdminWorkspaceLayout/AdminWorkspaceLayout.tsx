@@ -15,7 +15,7 @@ import {
   AdminMobileDrawer,
   AdminSidebar,
   type AdminWorkspaceNavItem,
-} from "./AdminWorkspaceSidebar";
+} from "./ClubAdminSidebar";
 import styles from "./AdminWorkspaceLayout.module.css";
 
 type LayoutProps<T extends string> = {
@@ -363,12 +363,12 @@ export {
   AdminMobileDrawer,
   getWorkspaceInitials,
   logout,
-} from "./AdminWorkspaceSidebar";
+} from "./ClubAdminSidebar";
 export type {
   AdminSidebarProps,
   AdminMobileBottomNavProps,
   AdminMobileDrawerProps,
   AdminWorkspaceNavItem,
-} from "./AdminWorkspaceSidebar";
+} from "./ClubAdminSidebar";
 
 export { styles as adminWorkspaceStyles };
