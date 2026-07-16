@@ -20,7 +20,7 @@
 .body {
   min-height: 100vh;
   display: flex;
-  align-items: stretch;
+  align-items: flex-start;
   flex: 1;
 
   background-image:
@@ -39,9 +39,9 @@
 }
 
 .sidebar {
-  position: fixed;
+  position: sticky;
   top: 0;
-  left: 0;
+  align-self: flex-start;
   z-index: 30;
 
   width: 292px;
@@ -230,10 +230,9 @@
 }
 
 /*
- * Added: section headers above clusters of nav buttons (e.g.
- * "Overview", "Club Operations"). Referenced as styles.navGroupLabel
- * in AdminWorkspaceLayout.tsx but previously had no matching rule
- * here, so it rendered as unstyled plain text.
+ * Section headers above clusters of nav buttons (e.g. "Overview",
+ * "Club Operations"). Referenced as styles.navGroupLabel in
+ * AdminWorkspaceLayout.tsx.
  */
 .navGroupLabel {
   display: block;
@@ -312,9 +311,9 @@
 }
 
 /*
- * Added: the +/− toggle icon on expandable parent items (e.g.
- * "Membership"). Pushed to the far right of the button regardless of
- * label length.
+ * The +/− toggle icon on expandable parent items (e.g.
+ * "Membership"). Pushed to the far right of the button regardless
+ * of label length.
  */
 .navToggleIcon {
   margin-left: auto;
@@ -323,11 +322,9 @@
 }
 
 /*
- * Added: indented sub-item list revealed under an expanded parent
- * (e.g. Membership -> Members Directory, Renewals & Expiry, ...).
- * A vertical stack with a left "rail" to show hierarchy — this is
- * the block that had no styling at all before, which is what caused
- * the buttons to wrap into a jumbled, unevenly-sized cluster.
+ * Indented sub-item list revealed under an expanded parent (e.g.
+ * Membership -> Members Directory, Renewals & Expiry, ...). A
+ * vertical stack with a left "rail" to show hierarchy.
  */
 .navChildren {
   display: flex;
@@ -474,7 +471,7 @@
 }
 
 /*
- * Added: a collapsed icon-only rail has no room for section headers,
+ * A collapsed icon-only rail has no room for section headers,
  * toggle icons, or an indented sub-list — hide them rather than
  * letting them render broken.
  */
@@ -514,15 +511,6 @@
   display: flex;
   flex-direction: column;
   flex: 1;
-
-  /* Matches `.sidebar`'s fixed width so content never sits under it. */
-  margin-left: 292px;
-
-  transition: margin-left 180ms ease;
-}
-
-.bodySidebarCollapsed .contentArea {
-  margin-left: 76px;
 }
 
 .main {
@@ -1178,11 +1166,6 @@
     display: none;
   }
 
-  .contentArea,
-  .bodySidebarCollapsed .contentArea {
-    margin-left: 76px;
-  }
-
   .brand,
   .bodySidebarCollapsed .brand {
     width: 48px;
@@ -1264,11 +1247,6 @@
   .sidebar,
   .sidebarToggle {
     display: none;
-  }
-
-  .contentArea,
-  .bodySidebarCollapsed .contentArea {
-    margin-left: 0;
   }
 
   .contentArea {
@@ -1530,11 +1508,11 @@
   }
 
   /*
-   * Added: indented sub-item list inside the mobile drawer, under an
+   * Indented sub-item list inside the mobile drawer, under an
    * expanded parent (e.g. Membership). Kept single-column and
-   * full-width — the drawer's default 2-column grid is what produced
-   * the jumbled look in the desktop sidebar case, so children get
-   * their own dedicated block instead of joining that grid.
+   * full-width — the drawer's default 2-column grid produced a
+   * jumbled look for children, so they get their own dedicated
+   * block instead of joining that grid.
    */
   .drawerChildren {
     grid-column: 1 / -1;
