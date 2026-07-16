@@ -45,6 +45,10 @@ import {
   type ClubBudget,
   type ClubBudgetCategoryAllocation,
 } from "../../services/adminWorkspaceService";
+import {
+  BudgetStatusBadge,
+  formatCurrency,
+} from "../../utils/ClubBudgetDisplay";
 
 type TabKey =
   | "overview"
@@ -150,66 +154,6 @@ const quickAccessItems: Array<{
     icon: MessageSquare,
   },
 ];
-
-const BUDGET_STATUS_META: Record<
-  ClubBudget["status"],
-  { label: string; color: string; background: string }
-> = {
-  DRAFT: {
-    label: "Draft",
-    color: "var(--muted)",
-    background: "rgba(148, 163, 184, 0.15)",
-  },
-  PENDING_APPROVAL: {
-    label: "Pending approval",
-    color: "#f97316",
-    background: "rgba(249, 115, 22, 0.12)",
-  },
-  APPROVED: {
-    label: "Approved",
-    color: "var(--green)",
-    background: "rgba(34, 197, 94, 0.12)",
-  },
-  REJECTED: {
-    label: "Rejected",
-    color: "#ef4444",
-    background: "rgba(239, 68, 68, 0.12)",
-  },
-};
-
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat("en-UG", {
-    style: "currency",
-    currency: "UGX",
-    maximumFractionDigits: 0,
-  }).format(value);
-}
-
-function StatusBadge({
-  status,
-}: {
-  status: ClubBudget["status"];
-}) {
-  const meta = BUDGET_STATUS_META[status];
-
-  return (
-    <span
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        gap: 6,
-        padding: "4px 10px",
-        borderRadius: 999,
-        fontSize: 12,
-        fontWeight: 600,
-        color: meta.color,
-        background: meta.background,
-      }}
-    >
-      {meta.label}
-    </span>
-  );
-}
 
 export default function ChairmanDashboard() {
   const [activeTab, setActiveTab] =
@@ -790,7 +734,7 @@ export default function ChairmanDashboard() {
         eyebrow="Season budget"
         title="Budget review"
         description="Review the treasurer's proposed allocations, approve, reject with a note, or override directly."
-        actions={<StatusBadge status={budget.status} />}
+        actions={<BudgetStatusBadge status={budget.status} />}
       >
         {budgetNotice ? (
           <div
