@@ -284,6 +284,7 @@ export default function AppRoutes() {
                 <Route path="/club-admin" element={protectedPage(<ClubAdminSubRoleShell />)}>
                     <Route index element={<ClubAdminSubRoleRedirect />} />
 
+                
                     <Route
                         path="chairman/*"
                         element={roleProtectedPage(<ChairmanDashboard />, ['CHAIRMAN'])}

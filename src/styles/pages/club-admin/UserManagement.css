@@ -1,0 +1,691 @@
+/* UserManagement.css
+   Styles for pages/club-admin/UserManagement.tsx.
+   Uses the same CSS custom properties as the rest of the club-admin
+   workspace (--card, --border, --text, --muted, --green, --red, --primary).
+   Fallback values are provided so this renders reasonably even if a
+   variable isn't defined yet in your global theme. */
+
+.upm-grid-top {
+  display: grid;
+  grid-template-columns: minmax(300px, 380px) 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.upm-grid-bottom {
+  display: grid;
+  grid-template-columns: minmax(220px, 300px) 1fr;
+  gap: 20px;
+  align-items: start;
+  margin-top: 20px;
+}
+
+@media (max-width: 1080px) {
+  .upm-grid-top,
+  .upm-grid-bottom {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------------- Create / edit user form ---------------- */
+
+.upm-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.upm-avatar-field {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.upm-avatar-preview {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--border, #2a2f3d);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted, #8b93a7);
+  font-weight: 700;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.upm-avatar-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.upm-avatar-upload {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  border: 1px dashed var(--border, #2a2f3d);
+  border-radius: 10px;
+  color: var(--muted, #8b93a7);
+  font-size: 13px;
+  cursor: pointer;
+  background: transparent;
+}
+
+.upm-avatar-upload:hover {
+  border-color: var(--primary, #6366f1);
+  color: var(--text, #f4f5f7);
+}
+
+.upm-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--muted, #8b93a7);
+}
+
+.upm-field input,
+.upm-field select,
+.upm-field textarea {
+  background: var(--card, #161b26);
+  border: 1px solid var(--border, #2a2f3d);
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: var(--text, #f4f5f7);
+  font-size: 14px;
+}
+
+.upm-field input:focus,
+.upm-field select:focus,
+.upm-field textarea:focus {
+  outline: none;
+  border-color: var(--primary, #6366f1);
+}
+
+.upm-phone-row {
+  display: grid;
+  grid-template-columns: 90px 1fr;
+  gap: 8px;
+}
+
+.upm-password-field {
+  position: relative;
+}
+
+.upm-password-field button {
+  position: absolute;
+  right: 10px;
+  top: 32px;
+  background: none;
+  border: none;
+  color: var(--muted, #8b93a7);
+  cursor: pointer;
+  padding: 4px;
+}
+
+.upm-permissions-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border: 1px solid var(--border, #2a2f3d);
+  border-radius: 8px;
+  background: var(--card, #161b26);
+  color: var(--text, #f4f5f7);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.upm-permissions-trigger:hover {
+  border-color: var(--primary, #6366f1);
+}
+
+.upm-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.upm-form-error {
+  color: #ef4444;
+  font-size: 13px;
+  margin: 0;
+}
+
+/* ---------------- User table ---------------- */
+
+.upm-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.upm-search-wrap {
+  position: relative;
+  min-width: 200px;
+  flex: 1;
+}
+
+.upm-search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted, #8b93a7);
+}
+
+.upm-search-input {
+  width: 100%;
+  padding: 8px 10px 8px 32px;
+  border-radius: 8px;
+  border: 1px solid var(--border, #2a2f3d);
+  background: var(--card, #161b26);
+  color: var(--text, #f4f5f7);
+  font-size: 13px;
+}
+
+.upm-filter-select {
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border, #2a2f3d);
+  background: var(--card, #161b26);
+  color: var(--text, #f4f5f7);
+  font-size: 13px;
+}
+
+.upm-user-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.upm-user-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--border, #2a2f3d);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted, #8b93a7);
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.upm-user-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.upm-user-name-block {
+  display: flex;
+  flex-direction: column;
+}
+
+.upm-user-name-block strong {
+  cursor: pointer;
+}
+
+.upm-user-name-block strong:hover {
+  text-decoration: underline;
+}
+
+.upm-role-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  background: rgba(99, 102, 241, 0.15);
+  color: #a5b4fc;
+  white-space: nowrap;
+}
+
+.upm-status-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.upm-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #22c55e;
+  display: inline-block;
+}
+
+.upm-status-dot.inactive {
+  background: #ef4444;
+}
+
+.upm-row-actions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.upm-icon-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  border: 1px solid var(--border, #2a2f3d);
+  background: var(--card, #161b26);
+  color: var(--muted, #8b93a7);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.upm-icon-btn:hover {
+  color: var(--text, #f4f5f7);
+  border-color: var(--primary, #6366f1);
+}
+
+.upm-icon-btn.danger:hover {
+  color: #ef4444;
+  border-color: #ef4444;
+}
+
+.upm-icon-btn.warn:hover {
+  color: #f59e0b;
+  border-color: #f59e0b;
+}
+
+.upm-pagination {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 6px;
+  margin-top: 14px;
+}
+
+.upm-page-btn {
+  min-width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  border: 1px solid var(--border, #2a2f3d);
+  background: var(--card, #161b26);
+  color: var(--muted, #8b93a7);
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.upm-page-btn.active {
+  background: var(--primary, #6366f1);
+  border-color: var(--primary, #6366f1);
+  color: #fff;
+}
+
+/* ---------------- Roles list ---------------- */
+
+.upm-roles-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.upm-role-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  color: var(--text, #f4f5f7);
+}
+
+.upm-role-item:hover {
+  background: var(--border, #2a2f3d);
+}
+
+.upm-role-item.active {
+  background: rgba(99, 102, 241, 0.12);
+  border-color: var(--primary, #6366f1);
+}
+
+.upm-role-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(99, 102, 241, 0.15);
+  color: #a5b4fc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.upm-role-item-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.upm-role-item-text strong {
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.upm-role-item-text small {
+  font-size: 11.5px;
+  color: var(--muted, #8b93a7);
+}
+
+/* ---------------- Permission editor ---------------- */
+
+.upm-permission-tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--border, #2a2f3d);
+  margin-bottom: 14px;
+}
+
+.upm-permission-tab {
+  padding: 8px 14px;
+  font-size: 13px;
+  color: var(--muted, #8b93a7);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+}
+
+.upm-permission-tab.active {
+  color: var(--text, #f4f5f7);
+  border-bottom-color: var(--primary, #6366f1);
+}
+
+.upm-permission-layout {
+  display: grid;
+  grid-template-columns: 190px 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 720px) {
+  .upm-permission-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.upm-module-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.upm-module-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: 8px;
+  background: none;
+  border: 1px solid transparent;
+  cursor: pointer;
+  color: var(--text, #f4f5f7);
+  text-align: left;
+}
+
+.upm-module-item:hover {
+  background: var(--border, #2a2f3d);
+}
+
+.upm-module-item.active {
+  background: rgba(99, 102, 241, 0.12);
+  border-color: var(--primary, #6366f1);
+}
+
+.upm-module-item-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.upm-module-item-text strong {
+  font-size: 13px;
+}
+
+.upm-module-item-text small {
+  font-size: 11px;
+  color: var(--muted, #8b93a7);
+}
+
+.upm-permission-detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.upm-permission-detail-header h4 {
+  margin: 0 0 4px;
+  font-size: 15px;
+}
+
+.upm-permission-detail-header p {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--muted, #8b93a7);
+}
+
+.upm-select-all {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  color: var(--muted, #8b93a7);
+}
+
+.upm-permission-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 4px;
+  border-bottom: 1px solid var(--border, #2a2f3d);
+}
+
+.upm-permission-row:last-child {
+  border-bottom: none;
+}
+
+.upm-permission-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.upm-permission-desc {
+  font-size: 12.5px;
+  color: var(--muted, #8b93a7);
+}
+
+/* Toggle switch */
+
+.upm-toggle {
+  position: relative;
+  width: 40px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--border, #2a2f3d);
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s ease;
+}
+
+.upm-toggle::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.15s ease;
+}
+
+.upm-toggle.on {
+  background: var(--primary, #6366f1);
+}
+
+.upm-toggle.on::after {
+  transform: translateX(18px);
+}
+
+.upm-permission-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 14px;
+}
+
+.upm-permission-footer .upm-summary {
+  font-size: 12.5px;
+  color: #22c55e;
+}
+
+/* ---------------- Performance modal ---------------- */
+
+.upm-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(6, 8, 14, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 60;
+  padding: 20px;
+}
+
+.upm-modal-card {
+  width: 100%;
+  max-width: 640px;
+  max-height: 85vh;
+  overflow-y: auto;
+  background: var(--card, #161b26);
+  border: 1px solid var(--border, #2a2f3d);
+  border-radius: 14px;
+  padding: 22px;
+}
+
+.upm-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.upm-modal-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.upm-modal-close {
+  background: none;
+  border: none;
+  color: var(--muted, #8b93a7);
+  cursor: pointer;
+}
+
+.upm-perf-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+@media (max-width: 480px) {
+  .upm-perf-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.upm-perf-card {
+  border: 1px solid var(--border, #2a2f3d);
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.upm-perf-card span {
+  display: block;
+  font-size: 11.5px;
+  color: var(--muted, #8b93a7);
+  margin-bottom: 6px;
+}
+
+.upm-perf-card strong {
+  font-size: 20px;
+}
+
+.upm-perf-section-title {
+  font-size: 13px;
+  font-weight: 700;
+  margin: 0 0 10px;
+  color: var(--muted, #8b93a7);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.upm-activity-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border, #2a2f3d);
+  font-size: 13px;
+}
+
+.upm-activity-row:last-child {
+  border-bottom: none;
+}
+
+.upm-recent-action {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border, #2a2f3d);
+}
+
+.upm-recent-action:last-child {
+  border-bottom: none;
+}
+
+.upm-recent-action p {
+  margin: 0 0 4px;
+  font-size: 13px;
+}
+
+.upm-recent-action time {
+  font-size: 11.5px;
+  color: var(--muted, #8b93a7);
+}
+
+.upm-notice-banner {
+  background: rgba(99, 102, 241, 0.1);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 12.5px;
+  color: var(--muted, #8b93a7);
+  margin-bottom: 14px;
+}
