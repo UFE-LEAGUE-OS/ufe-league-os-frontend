@@ -6,11 +6,15 @@ import {
   ClipboardList,
   CreditCard,
   Download,
+  Eye,
   FileBarChart,
+  Image as ImageIcon,
   Inbox,
   Layers,
+  MapPin,
   Megaphone,
   MessageSquare,
+  Palette,
   Plus,
   Radio,
   RefreshCw,
@@ -88,7 +92,13 @@ import {
   type TicketTypeStatus,
 } from "../../services/clubTicketingService";
 import "./ClubMembershipManagement.css";
+import "../../styles/pages/ClubAdmin.css";
+import BrandingEditor from "./BrandingEditor";
+import ClubProfileEdit from "./ClubProfileEdit";
+import MediaAssetLibrary from "./MediaAssetLibrary";
+import PublicClubPagePreview from "./PublicClubPagePreview";
 import UserManagement from "./UserManagement";
+import VenueManagement from "./VenueManagement";
 
 type TabKey =
   | "overview"
@@ -109,6 +119,11 @@ type TabKey =
   | "ticketingPerformance"
   | "facilities"
   | "profileBranding"
+  | "profileBrandingProfile"
+  | "profileBrandingBrand"
+  | "profileBrandingVenues"
+  | "profileBrandingMedia"
+  | "profileBrandingPreview"
   | "sponsorshipMatchday"
   | "compliance"
   | "reports"
@@ -203,6 +218,33 @@ const navItems: AdminWorkspaceNavGroup<TabKey>[] = [
         key: "profileBranding",
         label: "Profile & Branding",
         icon: UserCircle,
+        children: [
+          {
+            key: "profileBrandingProfile",
+            label: "Club Profile",
+            icon: Building2,
+          },
+          {
+            key: "profileBrandingBrand",
+            label: "Branding Editor",
+            icon: Palette,
+          },
+          {
+            key: "profileBrandingVenues",
+            label: "Venues",
+            icon: MapPin,
+          },
+          {
+            key: "profileBrandingMedia",
+            label: "Media Assets",
+            icon: ImageIcon,
+          },
+          {
+            key: "profileBrandingPreview",
+            label: "Public Page Preview",
+            icon: Eye,
+          },
+        ],
       },
       {
         key: "sponsorshipMatchday",
@@ -221,7 +263,11 @@ const navItems: AdminWorkspaceNavGroup<TabKey>[] = [
         label: "Communications",
         icon: MessageSquare,
       },
-      { key: "clubUsers", label: "Club Users", icon: Users },
+      {
+        key: "clubUsers",
+        label: "User & Permission Management",
+        icon: Users,
+      },
       { key: "settings", label: "Settings", icon: SettingsIcon },
     ],
   },
@@ -248,6 +294,11 @@ const TAB_TO_PATH: Record<TabKey, string> = {
   ticketingPerformance: `${CLUB_ADMIN_BASE_PATH}/ticketing/performance`,
   facilities: `${CLUB_ADMIN_BASE_PATH}/facilities`,
   profileBranding: `${CLUB_ADMIN_BASE_PATH}/profile-branding`,
+  profileBrandingProfile: `${CLUB_ADMIN_BASE_PATH}/profile-branding/profile`,
+  profileBrandingBrand: `${CLUB_ADMIN_BASE_PATH}/profile-branding/branding`,
+  profileBrandingVenues: `${CLUB_ADMIN_BASE_PATH}/profile-branding/venues`,
+  profileBrandingMedia: `${CLUB_ADMIN_BASE_PATH}/profile-branding/media`,
+  profileBrandingPreview: `${CLUB_ADMIN_BASE_PATH}/profile-branding/preview`,
   sponsorshipMatchday: `${CLUB_ADMIN_BASE_PATH}/sponsorship-matchday`,
   compliance: `${CLUB_ADMIN_BASE_PATH}/compliance`,
   reports: `${CLUB_ADMIN_BASE_PATH}/reports`,
@@ -581,7 +632,7 @@ export default function ClubAdminDashboard() {
         icon: TicketCheck,
       },
       {
-        label: "Club Users",
+        label: "User & Permission Management",
         value: data?.summary.club_users ?? 0,
         detail: "Accounts attached to the club",
         icon: Users,
@@ -2618,6 +2669,75 @@ export default function ClubAdminDashboard() {
     );
   }
 
+  function renderProfileBrandingOverview() {
+    const profileSections = [
+      {
+        key: "profileBrandingProfile" as const,
+        title: "Club Profile",
+        description: "Edit public club details, contact information, and description.",
+        icon: Building2,
+      },
+      {
+        key: "profileBrandingBrand" as const,
+        title: "Branding Editor",
+        description: "Manage logo uploads, brand colours, and kit previews.",
+        icon: Palette,
+      },
+      {
+        key: "profileBrandingVenues" as const,
+        title: "Venues",
+        description: "Maintain home venues, locations, capacity, and status.",
+        icon: MapPin,
+      },
+      {
+        key: "profileBrandingMedia" as const,
+        title: "Media Assets",
+        description: "Organize club images, documents, videos, and downloads.",
+        icon: ImageIcon,
+      },
+      {
+        key: "profileBrandingPreview" as const,
+        title: "Public Page Preview",
+        description: "Preview how fans will see the club page before publishing.",
+        icon: Eye,
+      },
+    ];
+
+    return (
+      <WorkspacePanel
+        eyebrow="Governance"
+        title="Profile & Branding"
+        description="Manage your club's public identity and page assets."
+      >
+        <div className="branding-grid">
+          {profileSections.map((section) => {
+            const Icon = section.icon;
+
+            return (
+              <button
+                type="button"
+                key={section.key}
+                className="club-panel"
+                style={{
+                  textAlign: "left",
+                  cursor: "pointer",
+                  width: "100%",
+                }}
+                onClick={() => handleTabChange(section.key)}
+              >
+                <Icon size={22} aria-hidden="true" />
+                <h2 style={{ marginTop: 12 }}>{section.title}</h2>
+                <p className="panel-desc" style={{ marginBottom: 0 }}>
+                  {section.description}
+                </p>
+              </button>
+            );
+          })}
+        </div>
+      </WorkspacePanel>
+    );
+  }
+
   let content;
 
   if (isLoading && !data) {
@@ -2670,10 +2790,17 @@ export default function ClubAdminDashboard() {
       "Manage grounds and facilities for this club.",
     );
   } else if (activeTab === "profileBranding") {
-    content = renderPlaceholder(
-      "Profile & Branding",
-      "Manage your club's public profile, logo, and colors.",
-    );
+    content = renderProfileBrandingOverview();
+  } else if (activeTab === "profileBrandingProfile") {
+    content = <ClubProfileEdit />;
+  } else if (activeTab === "profileBrandingBrand") {
+    content = <BrandingEditor />;
+  } else if (activeTab === "profileBrandingVenues") {
+    content = <VenueManagement />;
+  } else if (activeTab === "profileBrandingMedia") {
+    content = <MediaAssetLibrary />;
+  } else if (activeTab === "profileBrandingPreview") {
+    content = <PublicClubPagePreview />;
   } else if (activeTab === "sponsorshipMatchday") {
     content = renderPlaceholder(
       "Sponsorship",
