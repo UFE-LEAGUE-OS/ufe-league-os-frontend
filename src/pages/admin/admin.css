@@ -668,8 +668,135 @@
 @media (max-width: 900px) {
   .adm-impersonate-layout { grid-template-columns: 1fr; }
   .adm-matrix-table th.adm-matrix-role-col { min-width: 80px; }
+  
+  /* Stack page header on mobile */
+  .adm-page-header {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .adm-page-header h2 {
+    font-size: 20px;
+  }
+  
+  /* Full-width toolbar items */
+  .adm-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .adm-search {
+    max-width: none;
+    min-width: 0;
+  }
+  
+  .adm-select {
+    width: 100%;
+  }
+  
+  /* Make admin table rows card-like */
+  .adm-table-wrap {
+    overflow-x: auto;
+  }
+  
+  .adm-table {
+    min-width: 600px;
+  }
+  
+  /* Modal takes full width */
+  .adm-modal {
+    width: calc(100% - 20px);
+    padding: 24px 20px;
+  }
+  
+  .adm-modal-actions {
+    flex-direction: column;
+  }
+  
+  .adm-modal-actions .adm-btn {
+    width: 100%;
+    justify-content: center;
+  }
 }
 @media (max-width: 640px) {
   .adm-stats-row { grid-template-columns: 1fr 1fr; }
   .adm-cards-grid { grid-template-columns: 1fr; }
+  
+  .adm-stat-card {
+    padding: 14px;
+  }
+  
+  .adm-stat-value {
+    font-size: 22px;
+  }
+  
+  .adm-table {
+    min-width: 0;
+    font-size: 12px;
+  }
+  
+  .adm-table th,
+  .adm-table td {
+    padding: 10px 10px;
+    font-size: 10.5px;
+  }
+  
+  .adm-user-cell {
+    gap: 6px;
+  }
+  
+  .adm-avatar {
+    width: 28px;
+    height: 28px;
+    font-size: 11px;
+  }
+  
+  .adm-user-name {
+    font-size: 12px;
+  }
+  
+  .adm-user-email {
+    font-size: 10px;
+  }
+  
+  .adm-role-badge {
+    font-size: 10px;
+    padding: 2px 7px;
+  }
+  
+  .adm-page-header h2 {
+    font-size: 18px;
+  }
+  
+  .adm-page-header p {
+    font-size: 12px;
+  }
+  
+  /* Make table cells stack on very small screens */
+  .adm-table td,
+  .adm-table th {
+    white-space: nowrap;
+  }
+  
+  .adm-cards-grid {
+    gap: 12px;
+  }
+  
+  .adm-card {
+    padding: 14px;
+  }
+}
+@media (max-width: 400px) {
+  .adm-stats-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .adm-table-wrap {
+    border-radius: 10px;
+  }
+  
+  .adm-btn {
+    width: 100%;
+    justify-content: center;
+  }
 }

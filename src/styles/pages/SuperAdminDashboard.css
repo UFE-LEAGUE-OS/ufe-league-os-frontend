@@ -1,3 +1,4 @@
+
 *{
     margin:0;
     padding:0;
@@ -1353,4 +1354,295 @@
     .stat-grid{
         grid-template-columns:1fr;
     }
+}
+
+/* =============== ADDITIONAL RESPONSIVE FIXES =============== */
+
+@media (max-width: 1180px) {
+  .transfer-rules-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .main-content {
+    padding: 20px 18px 36px;
+  }
+  
+  .dashboard-header h1 {
+    font-size: 26px;
+  }
+  
+  .stat-value {
+    font-size: 24px;
+  }
+  
+  .srt-header,
+  .srt-row {
+    grid-template-columns: 20px 50px 1fr 70px 80px 40px;
+    gap: 6px;
+    padding: 8px 10px;
+    font-size: 0.78rem;
+    overflow-x: auto;
+  }
+  
+  .mapping-header,
+  .mapping-row {
+    grid-template-columns: 1fr 1fr 80px 60px 80px 70px 40px;
+    gap: 6px;
+    padding: 8px 10px;
+    font-size: 0.78rem;
+    overflow-x: auto;
+  }
+  
+  .gw-header,
+  .gw-row {
+    grid-template-columns: 30px 1fr 1fr 90px 40px;
+    gap: 6px;
+    padding: 8px 10px;
+    font-size: 0.78rem;
+  }
+  
+  .checkbox-group {
+    grid-template-columns: 1fr;
+  }
+  
+  .fantasy-sub-header h2 {
+    font-size: 1.1rem;
+  }
+  
+  .add-mapping-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .add-mapping-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .add-mapping-actions .fantasy-select,
+  .add-mapping-actions .fantasy-input {
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+  }
+  
+  .add-rule-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .add-rule-row .fantasy-select,
+  .add-rule-row .fantasy-input,
+  .add-rule-row .fantasy-input-narrow {
+    width: 100%;
+    max-width: none;
+  }
+  
+  .fantasy-input-narrow {
+    max-width: none;
+  }
+  
+  .config-field-list--horizontal {
+    flex-direction: column !important;
+    gap: 0.75rem !important;
+  }
+  
+  .config-field-list--horizontal .config-field {
+    min-width: 0 !important;
+    max-width: none !important;
+  }
+  
+  .price-structure-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .squad-limits-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .seasons-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  
+  .position-limits-table {
+    overflow-x: auto;
+  }
+  
+  .plt-header,
+  .plt-row {
+    min-width: 300px;
+  }
+}
+
+@media (max-width: 640px) {
+  .dashboard-header h1 {
+    font-size: 22px;
+  }
+  
+  .dashboard-header p {
+    font-size: 13px;
+  }
+  
+  .main-content {
+    padding: 16px 14px 28px;
+  }
+  
+  .stat-value {
+    font-size: 22px;
+  }
+  
+  .stat-tile {
+    height: auto;
+    min-height: 100px;
+    padding: 12px;
+  }
+  
+  .panel {
+    padding: 16px;
+  }
+  
+  .panel h3 {
+    font-size: 16px;
+  }
+  
+  .governance-stage {
+    min-width: 0;
+    padding: 12px;
+  }
+  
+  .srt-header,
+  .srt-row {
+    grid-template-columns: 20px 40px 1fr 60px 70px 35px;
+    font-size: 0.72rem;
+    padding: 7px 8px;
+    min-width: 500px;
+  }
+  
+  .scoring-rules-table {
+    overflow-x: auto;
+  }
+  
+  .srt-header,
+  .srt-row {
+    min-width: 500px;
+  }
+  
+  .mapping-header,
+  .mapping-row {
+    min-width: 580px;
+  }
+  
+  .mapping-table {
+    overflow-x: auto;
+  }
+  
+  .gw-header,
+  .gw-row {
+    min-width: 400px;
+  }
+  
+  .gameweeks-table {
+    overflow-x: auto;
+  }
+  
+  .fantasy-config-card {
+    padding: 1.2rem;
+  }
+  
+  .fantasy-config-card-header {
+    gap: 10px;
+  }
+  
+  .fantasy-config-icon {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .fantasy-config-card-body h3 {
+    font-size: 0.9rem;
+  }
+  
+  .season-card {
+    padding: 0.85rem;
+  }
+  
+  .seasons-grid {
+    grid-template-columns: 1fr;
+    gap: 0.6rem;
+  }
+  
+  .config-field-list {
+    gap: 0.75rem;
+  }
+  
+  .action-btn.primary,
+  .fantasy-sub-page .action-btn.primary,
+  .fantasy-sub-page .save-bar .action-btn.primary {
+    width: 100%;
+  }
+  
+  .save-bar {
+    justify-content: stretch;
+  }
+  
+  .save-bar button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 400px) {
+  .main-content {
+    padding: 12px 10px 24px;
+  }
+  
+  .dashboard-header h1 {
+    font-size: 20px;
+  }
+  
+  .stat-tile {
+    padding: 10px;
+    min-height: 90px;
+  }
+  
+  .stat-value {
+    font-size: 20px;
+  }
+  
+  .stat-label {
+    font-size: 12px;
+  }
+  
+  .fantasy-config-card {
+    padding: 1rem;
+  }
+  
+  .fantasy-config-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .fantasy-config-icon {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .panel-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  
+  .link-btn {
+    width: 100%;
+    text-align: center;
+    padding: 8px 12px;
+    background: var(--purple-tint);
+    border-radius: 8px;
+  }
 }

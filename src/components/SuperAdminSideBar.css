@@ -121,6 +121,21 @@
     display:none;
 }
 
+.sidebar.collapsed:hover {
+    width: 300px;
+}
+
+.sidebar.collapsed:hover .nav-label,
+.sidebar.collapsed:hover .sidebar-footer,
+.sidebar.collapsed:hover .nav-number {
+    display: flex;
+}
+
+.sidebar.collapsed:hover a {
+    justify-content: flex-start;
+    padding: 13px 16px;
+}
+
 .sidebar.collapsed a{
     justify-content:center;
     padding:14px 0;
@@ -185,3 +200,227 @@
   flex-shrink: 0;
   opacity: 0.85;
 }
+<<<<<<< Updated upstream
+=======
+
+.sidebar-heading {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 16px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #6B7280;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.sidebar-heading svg {
+  opacity: 0.5;
+  flex-shrink: 0;
+}
+
+.sidebar.collapsed .sidebar-heading {
+  justify-content: center;
+  padding: 14px 0;
+}
+
+/* Responsive sidebar */
+/* Sidebar group (collapsible) */
+.sidebar-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sidebar-group-toggle {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 16px;
+  border-radius: 12px;
+  color: #C7CCDB;
+  text-decoration: none;
+  cursor: pointer;
+  transition: 0.2s;
+  white-space: nowrap;
+  background: transparent;
+  border: none;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  font-size: inherit;
+}
+
+.sidebar-group-toggle:hover {
+  background: var(--navy-alt);
+  color: #fff;
+}
+
+.sidebar-group-toggle.active {
+  background: var(--purple);
+  color: #fff;
+}
+
+.sidebar-group-toggle.active svg {
+  color: #fff;
+}
+
+.group-chevron {
+  margin-left: auto;
+  transition: transform 0.25s ease;
+  opacity: 0.6;
+  flex-shrink: 0;
+}
+
+.group-chevron.open {
+  transform: rotate(180deg);
+}
+
+.sidebar-sub-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-left: 20px;
+  margin-left: 10px;
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sidebar-sub-nav a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  color: #9CA3AF;
+  text-decoration: none;
+  font-size: 13px;
+  transition: 0.2s;
+  white-space: nowrap;
+}
+
+.sidebar-sub-nav a:hover {
+  background: var(--navy-alt);
+  color: #fff;
+}
+
+.sidebar-sub-nav a.active {
+  background: rgba(124, 77, 255, 0.14);
+  color: #fff;
+  box-shadow: inset 3px 0 0 var(--purple);
+}
+
+.sidebar-sub-nav a svg {
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+.sidebar-sub-nav a.active svg {
+  opacity: 1;
+}
+
+.sidebar.collapsed .sidebar-group-toggle .group-chevron {
+  display: none;
+}
+
+.sidebar.collapsed .sidebar-sub-nav {
+  display: none;
+}
+
+.sidebar.collapsed:hover .sidebar-sub-nav {
+  display: flex;
+}
+
+.sidebar.collapsed:hover .sidebar-group-toggle .group-chevron {
+  display: block;
+}
+
+@media (max-width: 900px) {
+  .sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 1000;
+    transform: translateX(-100%);
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.5);
+  }
+
+  .sidebar:not(.collapsed) {
+    transform: translateX(0);
+  }
+
+  .sidebar.collapsed {
+    width: 300px;
+    transform: translateX(-100%);
+  }
+
+  .sidebar.collapsed:hover {
+    width: 300px;
+    transform: translateX(0);
+  }
+
+  .sidebar.collapsed .nav-label,
+  .sidebar.collapsed .sidebar-footer,
+  .sidebar.collapsed .nav-number {
+    display: flex;
+  }
+
+  .sidebar.collapsed a {
+    justify-content: flex-start;
+    padding: 13px 16px;
+  }
+
+  /* Overlay when sidebar is open */
+  .sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 999;
+  }
+
+  .sidebar-overlay.active {
+    display: block;
+  }
+}
+
+@media (max-width: 480px) {
+  .sidebar {
+    width: 280px;
+  }
+
+  .sidebar nav {
+    gap: 4px;
+  }
+
+  .sidebar a,
+  .sidebar-button,
+  .sidebar-group-toggle {
+    padding: 12px 14px;
+    font-size: 13px;
+  }
+
+  .sidebar-heading {
+    padding: 14px 14px 6px;
+    font-size: 10px;
+  }
+
+  .sidebar-footer-card {
+    padding: 12px;
+    font-size: 13px;
+  }
+
+  .sidebar-sub-nav {
+    padding-left: 14px;
+    margin-left: 8px;
+  }
+
+  .sidebar-sub-nav a {
+    padding: 9px 12px;
+    font-size: 12px;
+  }
+}
+>>>>>>> Stashed changes

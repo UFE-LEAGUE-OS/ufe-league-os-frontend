@@ -171,22 +171,22 @@ export default function SuperAdminSettings() {
     /* ---- Toast ---- */
     const [toasts, setToasts] = useState<Toast[]>([]);
 
-    /* ---- Navigate with optional toast feedback ---- */
-    const navigateTo = useCallback(
-        (path: string, label: string) => {
-            navigate(path);
-            addToast(`Navigating to ${label}…`, "info");
-        },
-        [navigate],
-    );
-
-    /* ---- Toast helpers ---- */
+   /* ---- Toast helpers ---- */
     const addToast = useCallback(
         (message: string, kind: ToastKind = "info") => {
             const id = nextToastId();
             setToasts((prev) => [...prev, { message, kind, id }]);
         },
         [],
+    );
+
+    /* ---- Navigate with optional toast feedback ---- */
+    const navigateTo = useCallback(
+        (path: string, label: string) => {
+            navigate(path);
+            addToast(`Navigating to ${label}…`, "info");
+        },
+        [navigate, addToast],
     );
 
     const dismissToast = useCallback((id: number) => {

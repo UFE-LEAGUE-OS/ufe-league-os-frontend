@@ -57,7 +57,7 @@ import {
 import {
   BudgetStatusBadge,
   formatCurrency,
-} from "../../utils/ClubBudgetDisplay";
+} from "../../utils/budgetStatusMeta";
 
 type TabKey =
   | "overview"

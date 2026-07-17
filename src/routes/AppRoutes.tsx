@@ -147,13 +147,14 @@ import SponsorProfile from '../pages/sponsor/SponsorProfile';
 
 import UnionAdminDashboard from '../pages/union-admin/UnionAdminDashboard';
 import LeagueAdminDashboard from '../pages/league-admin/LeagueAdminDashboard';
-import ClubAdminDashboard from '../pages/club-admin/ClubAdminDashboard';
+
+// Club Admin - uses ClubMembershipManagement which wraps everything in AdminWorkspaceLayout
+import ClubMembershipManagement from '../pages/club-admin/ClubMembershipManagement';
 import TicketingOfficerDashboard from '../pages/ticketing-officer/TicketingOfficerDashboard';
 import TreasurerDashboard from '../pages/club-admin/TreasurerDashboard';
 import ChairmanDashboard from '../pages/club-admin/ChairmanDashboard';
 import CustomAdminDashboard from '../pages/club-admin/CustomAdminDashboard';
 import TeamManagerDashboard from '../pages/club-admin/TeamManagerDashboard';
-import ClubMembershipManagement from '../pages/club-admin/ClubMembershipManagement';
 import ClubTicketingManagement from '../pages/club-admin/ClubTicketingManagement';
 
 // Nested club sub-role shell (Chairman / Treasurer / Custom Admin /
@@ -238,7 +239,7 @@ export default function AppRoutes() {
                 <Route
                     path="/dashboard/club-admin"
                     element={roleProtectedPage(
-                        <ClubAdminDashboard />,
+                        <CustomAdminDashboard />,
                         ['CLUB_ADMIN'],
                     )}
                 />
@@ -269,10 +270,7 @@ export default function AppRoutes() {
 
                 <Route
                     path="/dashboard/treasurer"
-                    element={roleProtectedPage(
-                        <TreasurerDashboard />,
-                        ['TREASURER'],
-                    )}
+                    element={<TreasurerDashboard />}
                 />
 
                 {/* ---- Nested club sub-role shell ----
