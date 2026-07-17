@@ -459,30 +459,49 @@ export function getApiErrorMessage(
   ) {
     const response = (
       error as {
-        response?: {
-          data?: {
-            detail?: string;
-            message?: string;
-            non_field_errors?: string[];
-          };
-        };
+        response?: { data?: unknown };
       }
     ).response;
 
-    if (response?.data?.detail) {
-      return response.data.detail;
-    }
-
-    if (response?.data?.message) {
-      return response.data.message;
-    }
-
-    if (response?.data?.non_field_errors?.length) {
-      return response.data.non_field_errors[0];
+    const message = getFirstApiMessage(response?.data);
+    if (message) {
+      return message;
     }
   }
 
   return fallback;
+}
+
+function getFirstApiMessage(value: unknown, field?: string): string | null {
+  if (typeof value === "string" && value.trim()) {
+    return field && !["detail", "message", "non_field_errors"].includes(field)
+      ? `${formatApiErrorField(field)}: ${value}`
+      : value;
+  }
+
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      const message = getFirstApiMessage(item, field);
+      if (message) return message;
+    }
+  }
+
+  if (value && typeof value === "object") {
+    for (const [key, nestedValue] of Object.entries(
+      value as Record<string, unknown>,
+    )) {
+      const message = getFirstApiMessage(nestedValue, key);
+      if (message) return message;
+    }
+  }
+
+  return null;
+}
+
+function formatApiErrorField(field: string): string {
+  return field
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
 export async function getLeagueAdminWorkspace(): Promise<LeagueAdminWorkspaceData> {

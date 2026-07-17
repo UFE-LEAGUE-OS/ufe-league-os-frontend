@@ -167,6 +167,7 @@ export async function getUserPerformance(
 /* ------------------------------------------------------------------ */
 
 export interface CreateRolePayload {
+  key?: string;
   label: string;
   description: string;
 }

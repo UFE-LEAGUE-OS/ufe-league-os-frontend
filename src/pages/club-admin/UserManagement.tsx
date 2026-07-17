@@ -121,6 +121,15 @@ function totalPermissionModules(modules: PermissionModule[]): number {
   return modules.reduce((total, mod) => total + mod.permissions.length, 0);
 }
 
+function roleKeyFromLabel(label: string): string {
+  return label
+    .trim()
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+}
+
 /* ------------------------------------------------------------------ */
 /* Shared permission toggle grid (used by both the per-user permission */
 /* picker and the role permission template editor)                    */
@@ -666,8 +675,10 @@ export default function UserManagement({ clubId }: UserManagementProps) {
     setIsSavingRole(true);
     setRoleFormError("");
     try {
+      const label = roleForm.label.trim();
       const created = await createClubRole(clubId, {
-        label: roleForm.label.trim(),
+        key: roleKeyFromLabel(label),
+        label,
         description: roleForm.description.trim(),
       });
       setRoles((prev) => [...prev, created]);
