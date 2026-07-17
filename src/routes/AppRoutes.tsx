@@ -147,15 +147,12 @@ import SponsorProfile from '../pages/sponsor/SponsorProfile';
 
 import UnionAdminDashboard from '../pages/union-admin/UnionAdminDashboard';
 import LeagueAdminDashboard from '../pages/league-admin/LeagueAdminDashboard';
-
-// Club Admin - uses ClubMembershipManagement which wraps everything in AdminWorkspaceLayout
-import ClubMembershipManagement from '../pages/club-admin/ClubMembershipManagement';
+import ClubAdminDashboard from '../pages/club-admin/ClubAdminDashboard';
 import TicketingOfficerDashboard from '../pages/ticketing-officer/TicketingOfficerDashboard';
 import TreasurerDashboard from '../pages/club-admin/TreasurerDashboard';
 import ChairmanDashboard from '../pages/club-admin/ChairmanDashboard';
 import CustomAdminDashboard from '../pages/club-admin/CustomAdminDashboard';
 import TeamManagerDashboard from '../pages/club-admin/TeamManagerDashboard';
-import ClubTicketingManagement from '../pages/club-admin/ClubTicketingManagement';
 
 // Nested club sub-role shell (Chairman / Treasurer / Custom Admin /
 // Team Manager / Ticketing Officer) — see routes/ClubAdminSubRoleRouting.tsx
@@ -226,6 +223,7 @@ export default function AppRoutes() {
                     element={protectedPage(<Navigate to="/dashboard/union-admin" replace />)}
                 />
 
+               
                 <Route
                     path="/dashboard/league-admin"
                     element={roleProtectedPage(
@@ -237,34 +235,42 @@ export default function AppRoutes() {
                 {/* Plain CLUB_ADMIN role — intentionally separate from the
                     /club-admin sub-role shell below. Untouched. */}
                 <Route
-                    path="/dashboard/club-admin"
+                    path="/dashboard/club-admin/*"
+                    element={roleProtectedPage(
+                        <ClubAdminDashboard />,
+                        ['CLUB_ADMIN'],
+                    )}
+                />
+
+                <Route
+                    path="/dashboard/treasurer"
+                    element={roleProtectedPage(
+                        <TreasurerDashboard />,
+                        ['TREASURER'],
+                    )}
+                />
+
+                <Route
+                    path="/dashboard/chairman"
+                    element={roleProtectedPage(
+                        <ChairmanDashboard />,
+                        ['CHAIRMAN'],
+                    )}
+                />
+
+                <Route
+                    path="/dashboard/custom-admin"
                     element={roleProtectedPage(
                         <CustomAdminDashboard />,
-                        ['CLUB_ADMIN'],
+                        ['CUSTOM_ADMIN'],
                     )}
                 />
 
-                {/* Membership now also renders inline as a tab inside
-                    ClubAdminDashboard. This standalone route is kept for any
-                    direct links/bookmarks, guarded the same as the parent
-                    dashboard. */}
                 <Route
-                    path="/dashboard/club-admin/membership"
+                    path="/dashboard/team-manager"
                     element={roleProtectedPage(
-                        <ClubMembershipManagement />,
-                        ['CLUB_ADMIN'],
-                    )}
-                />
-
-                {/* Ticketing now also renders inline as a tab inside
-                    ClubAdminDashboard. This standalone route is kept for any
-                    direct links/bookmarks, guarded the same as the parent
-                    dashboard. */}
-                <Route
-                    path="/dashboard/club-admin/ticketing"
-                    element={roleProtectedPage(
-                        <ClubTicketingManagement />,
-                        ['CLUB_ADMIN'],
+                        <TeamManagerDashboard />,
+                        ['CUSTOM_ADMIN'],
                     )}
                 />
 
@@ -273,20 +279,7 @@ export default function AppRoutes() {
                     element={<TreasurerDashboard />}
                 />
 
-                {/* ---- Nested club sub-role shell ----
-                    /club-admin            -> role-aware redirect into the branch below
-                    /club-admin/chairman/*          (CHAIRMAN only)
-                    /club-admin/treasurer/*         (TREASURER only)
-                    /club-admin/custom-admin/*      (CUSTOM_ADMIN only)
-                    /club-admin/team-manager/*      (TEAM_MANAGER only)
-                    /club-admin/ticketing-officer/* (TICKETING_OFFICER only)
-
-                    Each branch is independently role-guarded, so a user with
-                    the wrong sub-role hitting another branch's URL directly
-                    gets redirected by RoleProtectedRoute before that
-                    dashboard ever mounts (cross sub-role navigation blocked).
-                    Each dashboard keeps its own full AdminWorkspaceLayout —
-                    this shell renders no chrome of its own. */}
+                {/* ---- Nested club sub-role shell ---- */}
                 <Route path="/club-admin" element={protectedPage(<ClubAdminSubRoleShell />)}>
                     <Route index element={<ClubAdminSubRoleRedirect />} />
 
@@ -524,6 +517,8 @@ export default function AppRoutes() {
                     <Route path="feature-flags" element={<FeatureFlags />} />
                     <Route path="system-messages" element={<SystemMessages />} />
                     <Route path="bulk-operations" element={<BulkOperations />} />
+
+                    
 
                     {/*Sponsorship Management*/}
                     <Route path="frameworks" element={<SponsorFramework />} />

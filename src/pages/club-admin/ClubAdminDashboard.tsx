@@ -32,6 +32,10 @@ import {
   useState,
 } from "react";
 import {
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
+import {
   Bar,
   BarChart,
   CartesianGrid,
@@ -223,6 +227,54 @@ const navItems: AdminWorkspaceNavGroup<TabKey>[] = [
   },
 ];
 
+const CLUB_ADMIN_BASE_PATH = "/dashboard/club-admin";
+
+const TAB_TO_PATH: Record<TabKey, string> = {
+  overview: CLUB_ADMIN_BASE_PATH,
+  membership: `${CLUB_ADMIN_BASE_PATH}/membership`,
+  membershipDirectory: `${CLUB_ADMIN_BASE_PATH}/membership/directory`,
+  membershipRenewals: `${CLUB_ADMIN_BASE_PATH}/membership/renewals`,
+  membershipTiers: `${CLUB_ADMIN_BASE_PATH}/membership/tiers`,
+  membershipRequests: `${CLUB_ADMIN_BASE_PATH}/membership/requests`,
+  membershipReports: `${CLUB_ADMIN_BASE_PATH}/membership/reports`,
+  teams: `${CLUB_ADMIN_BASE_PATH}/teams`,
+  matches: `${CLUB_ADMIN_BASE_PATH}/matches`,
+  finances: `${CLUB_ADMIN_BASE_PATH}/finances`,
+  ticketing: `${CLUB_ADMIN_BASE_PATH}/ticketing`,
+  ticketingGames: `${CLUB_ADMIN_BASE_PATH}/ticketing/games`,
+  ticketingPricing: `${CLUB_ADMIN_BASE_PATH}/ticketing/pricing`,
+  ticketingInventory: `${CLUB_ADMIN_BASE_PATH}/ticketing/inventory`,
+  ticketingPublish: `${CLUB_ADMIN_BASE_PATH}/ticketing/publish`,
+  ticketingPerformance: `${CLUB_ADMIN_BASE_PATH}/ticketing/performance`,
+  facilities: `${CLUB_ADMIN_BASE_PATH}/facilities`,
+  profileBranding: `${CLUB_ADMIN_BASE_PATH}/profile-branding`,
+  sponsorshipMatchday: `${CLUB_ADMIN_BASE_PATH}/sponsorship-matchday`,
+  compliance: `${CLUB_ADMIN_BASE_PATH}/compliance`,
+  reports: `${CLUB_ADMIN_BASE_PATH}/reports`,
+  communications: `${CLUB_ADMIN_BASE_PATH}/communications`,
+  clubUsers: `${CLUB_ADMIN_BASE_PATH}/users`,
+  settings: `${CLUB_ADMIN_BASE_PATH}/settings`,
+};
+
+const PATH_TO_TAB = new Map<string, TabKey>(
+  Object.entries(TAB_TO_PATH).map(([tab, path]) => [
+    path,
+    tab as TabKey,
+  ]),
+);
+
+function normalizePath(pathname: string) {
+  if (pathname.length > 1) {
+    return pathname.replace(/\/+$/, "");
+  }
+
+  return pathname;
+}
+
+function getTabFromPath(pathname: string): TabKey | null {
+  return PATH_TO_TAB.get(normalizePath(pathname)) ?? null;
+}
+
 const STATUS_FILTERS = [
   "ALL",
   "ACTIVE",
@@ -371,8 +423,13 @@ function InventoryRow({
 }
 
 export default function ClubAdminDashboard() {
-  const [activeTab, setActiveTab] =
-    useState<TabKey>("overview");
+  const location = useLocation();
+  const navigate = useNavigate();
+  const routeTab = useMemo(
+    () => getTabFromPath(location.pathname),
+    [location.pathname],
+  );
+  const activeTab = routeTab ?? "overview";
   const [data, setData] =
     useState<ClubAdminWorkspaceData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -426,13 +483,18 @@ export default function ClubAdminDashboard() {
   const [isLoadingSales, setIsLoadingSales] = useState(false);
   const [salesError, setSalesError] = useState("");
 
+  useEffect(() => {
+    if (!routeTab) {
+      navigate(CLUB_ADMIN_BASE_PATH, { replace: true });
+    }
+  }, [location.pathname, navigate, routeTab]);
+
   // Membership's five sub-pages, and ticketing's five sub-pages,
-  // render inline in this same workspace shell, the same way "User
-  // Management" expands in the super-admin sidebar — so tab changes
-  // no longer need to navigate away to a standalone route/page.
+  // render inline in this same workspace shell. The URL now carries
+  // the active location, while the shell keeps the existing content.
   const handleTabChange = useCallback((tab: TabKey) => {
-    setActiveTab(tab);
-  }, []);
+    navigate(TAB_TO_PATH[tab]);
+  }, [navigate]);
 
   const loadWorkspace = useCallback(async () => {
     setIsLoading(true);
@@ -657,7 +719,7 @@ export default function ClubAdminDashboard() {
 
   function goToPricingForMatch(matchId: number) {
     setSelectedMatchId(matchId);
-    setActiveTab("ticketingPricing");
+    handleTabChange("ticketingPricing");
   }
 
   const selectedTicketTypes = selectedMatchId
@@ -1073,7 +1135,7 @@ export default function ClubAdminDashboard() {
               <button
                 type="button"
                 className={styles.publicLink}
-                onClick={() => setActiveTab("finances")}
+                onClick={() => handleTabChange("finances")}
               >
                 View full finances
               </button>
@@ -1091,7 +1153,7 @@ export default function ClubAdminDashboard() {
             <button
               type="button"
               className={styles.publicLink}
-              onClick={() => setActiveTab("matches")}
+              onClick={() => handleTabChange("matches")}
             >
               View all matches
             </button>
