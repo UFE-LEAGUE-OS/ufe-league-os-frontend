@@ -7,19 +7,29 @@ import {
   Search,
   Plus,
   X,
+  Building2,
+  Palette,
+  MapPin,
+  Image,
+  Eye,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import AdminWorkspaceLayout, {
   type AdminWorkspaceNavItem,
   WorkspaceEmpty,
-  WorkspaceError,
-  WorkspaceLoading,
   WorkspacePanel,
   WorkspaceStatGrid,
   WorkspaceStatus,
   adminWorkspaceStyles as styles,
   formatWorkspaceDate,
 } from "../../components/AdminWorkspaceLayout/AdminWorkspaceLayout";
+
+import ClubProfileEdit from "./ClubProfileEdit";
+import BrandingEditor from "./BrandingEditor";
+import VenueManagement from "./VenueManagement";
+import MediaAssetLibrary from "./MediaAssetLibrary";
+import PublicClubPagePreview from "./PublicClubPagePreview";
 import {
   getApiErrorMessage,
   getClubAdminWorkspace,
@@ -35,10 +45,16 @@ import {
   type BackendMembershipPlan,
 } from "../../services/membershipService";
 import "./ClubMembershipManagement.css";
+import "../../styles/pages/ClubAdmin.css";
 
-type TabKey = "directory" | "renewals" | "tiers" | "requests" | "reports";
+type TabKey = "profile" | "branding" | "venues" | "media" | "preview" | "directory" | "renewals" | "tiers" | "requests" | "reports";
 
 const navItems: AdminWorkspaceNavItem<TabKey>[] = [
+  { key: "profile", label: "Club Profile", icon: Building2 },
+  { key: "branding", label: "Branding", icon: Palette },
+  { key: "venues", label: "Venues", icon: MapPin },
+  { key: "media", label: "Media Assets", icon: Image },
+  { key: "preview", label: "Public Page Preview", icon: Eye },
   { key: "directory", label: "Members Directory", icon: Users },
   { key: "renewals", label: "Renewals & Expiry", icon: RefreshCw },
   { key: "tiers", label: "Tiers & Pricing", icon: Layers },
@@ -105,8 +121,28 @@ const emptyPlanForm: {
   is_visible: true,
 };
 
+const PATH_TO_TAB: Record<string, TabKey> = {
+  profile: "profile",
+  branding: "branding",
+  venues: "venues",
+  media: "media",
+  preview: "preview",
+  members: "directory",
+};
+
+function pathToTab(pathname: string): TabKey {
+  const segments = pathname.split("/").filter(Boolean);
+  const last = segments[segments.length - 1];
+  if (last === "membership") return "directory";
+  return (PATH_TO_TAB[last] as TabKey) ?? "directory";
+}
+
 export default function ClubMembershipManagement() {
-  const [activeTab, setActiveTab] = useState<TabKey>("directory");
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [activeTab, setActiveTabState] = useState<TabKey>(() =>
+    pathToTab(location.pathname),
+  );
 
   const [workspace, setWorkspace] = useState<ClubAdminWorkspaceData | null>(null);
   const [subscriptions, setSubscriptions] = useState<BackendMembershipSubscription[]>([]);
@@ -123,6 +159,36 @@ export default function ClubMembershipManagement() {
   const [planForm, setPlanForm] = useState(emptyPlanForm);
   const [planFormError, setPlanFormError] = useState("");
   const [isSavingPlan, setIsSavingPlan] = useState(false);
+
+  // Sync activeTab from URL
+  useEffect(() => {
+    const tabFromPath = pathToTab(location.pathname);
+    setActiveTabState(tabFromPath);
+  }, [location.pathname]);
+
+  const handleTabChange = useCallback(
+    (tab: TabKey) => {
+      setActiveTabState(tab);
+      // Navigate to the correct URL for profile/branding/venues/media/preview/directory
+      const tabToPath: Partial<Record<TabKey, string>> = {
+        profile: "profile",
+        branding: "branding",
+        venues: "venues",
+        media: "media",
+        preview: "preview",
+        directory: "members",
+      };
+      const path = tabToPath[tab];
+      if (path) {
+        navigate(`/dashboard/club-admin/membership/${path}`, {
+          replace: true,
+        });
+      } else {
+        navigate("/dashboard/club-admin/membership", { replace: true });
+      }
+    },
+    [navigate],
+  );
 
   const loadData = useCallback(async () => {
     setIsLoading(true);
@@ -317,10 +383,17 @@ export default function ClubMembershipManagement() {
 
   let content: React.ReactNode = null;
 
-  if (isLoading) {
-    content = <WorkspaceLoading />;
-  } else if (error) {
-    content = <WorkspaceError message={error} onRetry={loadData} />;
+  // For simple content pages, render them immediately regardless of API state
+  if (activeTab === "profile") {
+    content = <ClubProfileEdit />;
+  } else if (activeTab === "branding") {
+    content = <BrandingEditor />;
+  } else if (activeTab === "venues") {
+    content = <VenueManagement />;
+  } else if (activeTab === "media") {
+    content = <MediaAssetLibrary />;
+  } else if (activeTab === "preview") {
+    content = <PublicClubPagePreview />;
   } else if (activeTab === "directory") {
     content = (
       <WorkspacePanel
@@ -747,16 +820,16 @@ export default function ClubMembershipManagement() {
       workspaceSubtitle={
         workspace ? `${workspace.club.sport_display} membership management` : "Club-scoped access"
       }
-      eyebrow="Membership Management"
-      title="Club Membership Management"
-      description="Manage members, requests, renewals, tiers and reports for your club."
+      eyebrow="Club Workspace"
+      title="Club Administration"
+      description="Manage your club profile, branding, venues, media assets, public page, and memberships."
       navItems={navItems}
       activeTab={activeTab}
-      onTabChange={setActiveTab}
+      onTabChange={handleTabChange}
       publicPath={workspace ? `/clubs/${workspace.club.slug}` : "/clubs"}
       publicLabel="View club page"
     >
-      {!isLoading && !error && <WorkspaceStatGrid stats={stats} />}
+      {!isLoading && !error && workspace && activeTab === "directory" && <WorkspaceStatGrid stats={stats} />}
       {content}
     </AdminWorkspaceLayout>
   );

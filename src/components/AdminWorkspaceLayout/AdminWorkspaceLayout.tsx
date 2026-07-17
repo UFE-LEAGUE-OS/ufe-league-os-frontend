@@ -35,6 +35,7 @@ type LayoutProps<T extends string> = {
   publicPath?: string;
   publicLabel?: string;
   headerActions?: ReactNode;
+  hideAdminSidebar?: boolean;
   children: ReactNode;
 };
 
@@ -59,6 +60,7 @@ export default function AdminWorkspaceLayout<
   publicPath,
   publicLabel,
   headerActions,
+  hideAdminSidebar,
   children,
 }: LayoutProps<T>) {
   const [isSidebarCollapsed, setIsSidebarCollapsed] =
@@ -132,21 +134,23 @@ export default function AdminWorkspaceLayout<
             : ""
         }`}
       >
-        <AdminSidebar
-          workspaceTitle={workspaceTitle}
-          workspaceSubtitle={workspaceSubtitle}
-          navGroups={navGroups}
-          activeTab={activeTab}
-          onTabChange={handleTabChange}
-          expandedKeys={expandedKeys}
-          onToggleExpand={toggleExpanded}
-          isCollapsed={isSidebarCollapsed}
-          onToggleCollapse={() =>
-            setIsSidebarCollapsed(
-              (currentValue) => !currentValue,
-            )
-          }
-        />
+        {!hideAdminSidebar && (
+          <AdminSidebar
+            workspaceTitle={workspaceTitle}
+            workspaceSubtitle={workspaceSubtitle}
+            navGroups={navGroups}
+            activeTab={activeTab}
+            onTabChange={handleTabChange}
+            expandedKeys={expandedKeys}
+            onToggleExpand={toggleExpanded}
+            isCollapsed={isSidebarCollapsed}
+            onToggleCollapse={() =>
+              setIsSidebarCollapsed(
+                (currentValue) => !currentValue,
+              )
+            }
+          />
+        )}
 
         <div className={styles.contentArea}>
           <main className={styles.main}>
@@ -193,7 +197,7 @@ export default function AdminWorkspaceLayout<
 
       <AuthenticatedFooter />
 
-      {isMobileMenuOpen ? (
+      {!hideAdminSidebar && isMobileMenuOpen ? (
         <AdminMobileDrawer
           workspaceTitle={workspaceTitle}
           navGroups={navGroups}
@@ -207,18 +211,20 @@ export default function AdminWorkspaceLayout<
         />
       ) : null}
 
-      <AdminMobileBottomNav
-        navItems={flatNavItems}
-        activeTab={activeTab}
-        onTabChange={handleTabChange}
-        isMenuOpen={isMobileMenuOpen}
-        onToggleMenu={() =>
-          setIsMobileMenuOpen(
-            (currentValue) => !currentValue,
-          )
-        }
-        onOpenMenu={() => setIsMobileMenuOpen(true)}
-      />
+      {!hideAdminSidebar && (
+        <AdminMobileBottomNav
+          navItems={flatNavItems}
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
+          isMenuOpen={isMobileMenuOpen}
+          onToggleMenu={() =>
+            setIsMobileMenuOpen(
+              (currentValue) => !currentValue,
+            )
+          }
+          onOpenMenu={() => setIsMobileMenuOpen(true)}
+        />
+      )}
     </div>
   );
 }

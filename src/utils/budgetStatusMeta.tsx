@@ -1,3 +1,4 @@
+import React from "react";
 import type { ClubBudget } from "../services/adminWorkspaceService";
 
 /**
@@ -43,7 +44,7 @@ export function BudgetStatusBadge({
   status,
 }: {
   status: ClubBudget["status"];
-}) {
+}): React.ReactNode {
   const meta = BUDGET_STATUS_META[status];
 
   return (
