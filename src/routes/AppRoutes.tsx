@@ -235,7 +235,7 @@ export default function AppRoutes() {
                 {/* Plain CLUB_ADMIN role — intentionally separate from the
                     /club-admin sub-role shell below. Untouched. */}
 
-                <Route path="/dashboard/club-admin" element={ <ClubAdminDashboard />}
+                <Route path="/dashboard/club-admin" element={roleProtectedPage( <ClubAdminDashboard />, ['CLUB_ADMIN'], )}
                 />
 
                 <Route
