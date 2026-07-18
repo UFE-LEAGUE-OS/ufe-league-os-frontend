@@ -234,12 +234,8 @@ export default function AppRoutes() {
 
                 {/* Plain CLUB_ADMIN role — intentionally separate from the
                     /club-admin sub-role shell below. Untouched. */}
-                <Route
-                    path="/dashboard/club-admin/*"
-                    element={roleProtectedPage(
-                        <ClubAdminDashboard />,
-                        ['CLUB_ADMIN'],
-                    )}
+
+                <Route path="/dashboard/club-admin" element={ <ClubAdminDashboard />}
                 />
 
                 <Route
@@ -280,9 +276,15 @@ export default function AppRoutes() {
                 />
 
                 {/* ---- Nested club sub-role shell ---- */}
+                    {/*Each branch is independently role-guarded, so a user with
+                    the wrong sub-role hitting another branch's URL directly
+                    gets redirected by RoleProtectedRoute before that
+                    dashboard ever mounts (cross sub-role navigation blocked).
+                    Each dashboard keeps its own full AdminWorkspaceLayout —
+                    this shell renders no chrome of its own. */}
+
                 <Route path="/club-admin" element={protectedPage(<ClubAdminSubRoleShell />)}>
                     <Route index element={<ClubAdminSubRoleRedirect />} />
-
                 
                     <Route
                         path="chairman/*"
@@ -304,6 +306,14 @@ export default function AppRoutes() {
                         path="ticketing-officer/*"
                         element={roleProtectedPage(<TicketingOfficerDashboard />, ['TICKETING_OFFICER'])}
                     />
+                </Route>
+                {/*Club admin part */}
+                <Route path="club-management">
+                    <Route path="teams" element={<TeamsManagement />} />
+                    <Route path="players" element={<PlayerRegistration />} />
+                    <Route path="staff" element={<StaffOfficials />} />
+                    <Route path="roster" element={<RosterUpdate />} />
+                    <Route path="squad-submission" element={<SquadSubmission />} />
                 </Route>
 
                 {/* Backward-compat: old flat paths now just forward into the
@@ -534,13 +544,7 @@ export default function AppRoutes() {
                     <Route path="settings" element={<SuperAdminSettings />} />
                 </Route>
 
-                <Route path="club-management">
-                    <Route path="teams" element={<TeamsManagement />} />
-                    <Route path="players" element={<PlayerRegistration />} />
-                    <Route path="staff" element={<StaffOfficials />} />
-                    <Route path="roster" element={<RosterUpdate />} />
-                    <Route path="squad-submission" element={<SquadSubmission />} />
-                </Route>
+                
                 {/* Catch-all — if you ever land here, a route path is wrong.
                     A visible message beats a silent blank page. */}
                 <Route

@@ -243,9 +243,9 @@ export function AdminSidebar<T extends string>({
     <>
       <aside className={styles.sidebar}>
         <Link
-          to="/dashboard/fan"
+          to="/dashboard/club-admin"
           className={styles.brand}
-          aria-label="Open Fan Dashboard"
+          aria-label="Open club Dashboard"
         >
           <img
             className={styles.logoHorizontal}
@@ -275,12 +275,12 @@ export function AdminSidebar<T extends string>({
         </div>
 
         <Link
-          to="/dashboard/fan"
+          to="/dashboard/club-admin"
           className={styles.workspaceSwitchLink}
-          title="Back to Fan Dashboard"
+          title="Back to Club Admin Dashboard"
         >
           <Home size={19} strokeWidth={2.2} aria-hidden="true" />
-          <span>Fan Dashboard</span>
+          <span> Dashboard</span>
         </Link>
 
         <nav
