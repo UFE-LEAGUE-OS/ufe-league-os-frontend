@@ -55,6 +55,7 @@ export type AdminWorkspaceNavGroup<T extends string> = {
 export type NavItemsProp<T extends string> =
   | AdminWorkspaceNavItem<T>[]
   | AdminWorkspaceNavGroup<T>[];
+  
 
 function isGroupedNavItems<T extends string>(
   navItems: NavItemsProp<T>,
@@ -245,7 +246,7 @@ export function AdminSidebar<T extends string>({
         <Link
           to="/dashboard/fan"
           className={styles.brand}
-          aria-label="Open Fan Dashboard"
+          aria-label="Open fan Dashboard"
         >
           <img
             className={styles.logoHorizontal}
@@ -277,10 +278,10 @@ export function AdminSidebar<T extends string>({
         <Link
           to="/dashboard/fan"
           className={styles.workspaceSwitchLink}
-          title="Back to Fan Dashboard"
+          title="Back to fan Admin Dashboard"
         >
           <Home size={19} strokeWidth={2.2} aria-hidden="true" />
-          <span>Fan Dashboard</span>
+          <span> Fan Dashboard</span>
         </Link>
 
         <nav
@@ -574,7 +575,7 @@ export function AdminMobileDrawer<T extends string>({
                 onClick={onClose}
               >
                 <Home size={19} strokeWidth={2.2} aria-hidden="true" />
-                Back to Fan Dashboard
+                Back to fan Dashboard
               </Link>
 
               {publicPath && publicLabel ? (

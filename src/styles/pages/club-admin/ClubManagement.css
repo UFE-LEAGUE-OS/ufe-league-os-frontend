@@ -1030,3 +1030,178 @@ justify-content:space-between;
 margin-top:30px;
 
 }
+
+/*
+  Append these rules to styles/pages/club-admin/ClubManagement.css.
+  They extend the existing design system (club-page, club-card, primary-btn, etc.)
+  with classes used by the new membership pages:
+  MembersDirectory, MembershipRequests, RenewalsDashboard,
+  TierPricingConfig, ReportsExport.
+*/
+
+/* Extra status variants (Active/Inactive already exist in the base sheet) */
+.status.pending {
+  background: #fff4e0;
+  color: #b26a00;
+}
+
+.status.expired {
+  background: #fde2e2;
+  color: #b3261e;
+}
+
+.status.suspended {
+  background: #ece9f7;
+  color: #5b4b9c;
+}
+
+/* Empty state row in tables */
+.empty-row {
+  text-align: center;
+  color: #8a8a8a;
+  padding: 24px 0;
+}
+
+/* Small inline confirmation text next to action buttons */
+.inline-hint {
+  display: inline-block;
+  margin-top: 6px;
+  font-size: 0.8rem;
+  color: #2f7a3d;
+}
+
+/* Tabs used on the Membership Requests queue */
+.tab-row {
+  display: flex;
+  gap: 8px;
+  margin: 16px 0;
+  border-bottom: 1px solid #e6e6e6;
+}
+
+.tab-btn {
+  background: none;
+  border: none;
+  padding: 10px 16px;
+  font-size: 0.9rem;
+  color: #6b6b6b;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+}
+
+.tab-btn.active {
+  color: #1f1f1f;
+  border-bottom: 2px solid #2f6feb;
+  font-weight: 600;
+}
+
+/* Labeled form fields (used in date pickers etc.) */
+.field-label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.85rem;
+  color: #4a4a4a;
+}
+
+.field-label input,
+.field-label select {
+  padding: 8px 10px;
+  border: 1px solid #d9d9d9;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+/* Tier & pricing cards */
+.tier-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.tier-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.tier-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tier-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: #eef2ff;
+  color: #2f6feb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tier-price {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #1f1f1f;
+}
+
+.tier-price span {
+  font-size: 0.85rem;
+  font-weight: 400;
+  color: #8a8a8a;
+}
+
+.tier-benefits {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.85rem;
+  color: #4a4a4a;
+}
+
+.tier-benefits li::before {
+  content: "\2713  ";
+  color: #2f7a3d;
+}
+
+/* Report type selector cards */
+.report-type-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.report-type-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 16px;
+  border-radius: 10px;
+  border: 1px solid #e6e6e6;
+  background: #fff;
+  cursor: pointer;
+  text-align: left;
+}
+
+.report-type-card strong {
+  font-size: 0.95rem;
+  color: #1f1f1f;
+}
+
+.report-type-card span {
+  font-size: 0.8rem;
+  color: #8a8a8a;
+}
+
+.report-type-card.active {
+  border-color: #2f6feb;
+  box-shadow: 0 0 0 1px #2f6feb inset;
+}

@@ -1,765 +1,333 @@
 import { useState } from "react";
-import {
-  Plus,
-  Search,
-  Pencil,
-  Trash2,
-  ArrowRightLeft,
-  X,
-} from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Plus, Search, Pencil, Trash2, ArrowRightLeft, X } from "lucide-react";
 
 import "../../../styles/pages/club-admin/ClubManagement.css";
-
+import AdminWorkspaceLayout from "../../../components/AdminWorkspaceLayout/AdminWorkspaceLayout";
+import { clubAdminNavItems } from "./clubAdminNav";
 
 interface Player {
-
-  id:number;
-
-  clubId:number;
-
-  name:string;
-
-  team:string;
-
-  position:string;
-
-  jersey:number;
-
-  status:"Active" | "Inactive";
-
+  id: number;
+  clubId: number;
+  name: string;
+  team: string;
+  position: string;
+  jersey: number;
+  status: "Active" | "Inactive";
 }
-
-
-
 
 // Example data from KCCA FC only
-
-const playersData:Player[]=[
-
-{
- id:1,
- clubId:1,
- name:"John Okello",
- team:"Senior Men",
- position:"Midfielder",
- jersey:8,
- status:"Active"
-},
-
-
-{
- id:2,
- clubId:1,
- name:"Allan Okello",
- team:"Senior Men",
- position:"Forward",
- jersey:9,
- status:"Active"
-},
-
-
-{
- id:3,
- clubId:1,
- name:"Faith Nankya",
- team:"Senior Women",
- position:"Forward",
- jersey:11,
- status:"Active"
-}
-
-
+const playersData: Player[] = [
+  { id: 1, clubId: 1, name: "John Okello", team: "Senior Men", position: "Midfielder", jersey: 8, status: "Active" },
+  { id: 2, clubId: 1, name: "Allan Okello", team: "Senior Men", position: "Forward", jersey: 9, status: "Active" },
+  { id: 3, clubId: 1, name: "Faith Nankya", team: "Senior Women", position: "Forward", jersey: 11, status: "Active" },
 ];
 
-
-
-
-
-const PlayerRegistration =()=>{
-
-
-const [players,setPlayers]=
-useState<Player[]>(playersData);
-
-
-
-const [search,setSearch]=
-useState("");
-
-
-
-// This will come from authentication later
-
-const loggedInClub={
-
-id:1,
-
-name:"KCCA FC",
-
-sport:"Football"
-
+const emptyForm = {
+  name: "",
+  team: "",
+  position: "",
+  jersey: 0,
+  status: "Active" as "Active" | "Inactive",
 };
 
+const emptyTransferForm = { playerName: "", transferTo: "", reason: "" };
 
+const PlayerRegistration = () => {
+  const navigate = useNavigate();
 
+  const [players, setPlayers] = useState<Player[]>(playersData);
+  const [search, setSearch] = useState("");
 
+  // This will come from authentication later
+  const loggedInClub = {
+    id: 1,
+    name: "KCCA FC",
+    sport: "Football",
+  };
 
-const [showForm,setShowForm]=
-useState(false);
+  const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [form, setForm] = useState(emptyForm);
 
+  const [showTransfer, setShowTransfer] = useState(false);
+  const [transferringPlayer, setTransferringPlayer] = useState<Player | null>(null);
+  const [transferForm, setTransferForm] = useState(emptyTransferForm);
 
+  // Only this club's players
+  const filteredPlayers = players.filter((player) => {
+    return (
+      player.clubId === loggedInClub.id &&
+      player.name.toLowerCase().includes(search.toLowerCase())
+    );
+  });
 
-const [showTransfer,setShowTransfer]=
-useState(false);
+  const openRegister = () => {
+    setEditingId(null);
+    setForm(emptyForm);
+    setShowForm(true);
+  };
 
+  const openEdit = (player: Player) => {
+    setEditingId(player.id);
+    setForm({
+      name: player.name,
+      team: player.team,
+      position: player.position,
+      jersey: player.jersey,
+      status: player.status,
+    });
+    setShowForm(true);
+  };
 
+  const savePlayer = () => {
+    if (!form.name.trim()) return;
 
+    if (editingId) {
+      setPlayers(
+        players.map((p) =>
+          p.id === editingId
+            ? {
+                ...p,
+                name: form.name,
+                team: form.team,
+                position: form.position,
+                jersey: form.jersey,
+                status: form.status,
+              }
+            : p
+        )
+      );
+    } else {
+      const newPlayer: Player = {
+        id: Math.max(0, ...players.map((p) => p.id)) + 1,
+        clubId: loggedInClub.id,
+        name: form.name,
+        team: form.team || "Unassigned",
+        position: form.position || "Unassigned",
+        jersey: form.jersey,
+        status: form.status,
+      };
+      setPlayers([...players, newPlayer]);
+    }
 
+    setShowForm(false);
+  };
 
+  const deletePlayer = (id: number) => {
+    setPlayers(players.filter((player) => player.id !== id));
+  };
 
-// Only this club's players
+  const openTransfer = (player: Player) => {
+    setTransferringPlayer(player);
+    setTransferForm({ playerName: player.name, transferTo: "", reason: "" });
+    setShowTransfer(true);
+  };
 
-const filteredPlayers = players.filter((player)=>{
+  const confirmTransfer = () => {
+    if (!transferringPlayer || !transferForm.transferTo.trim()) return;
+    setPlayers(players.filter((p) => p.id !== transferringPlayer.id));
+    setShowTransfer(false);
+    setTransferringPlayer(null);
+  };
 
+  return (
+    <AdminWorkspaceLayout
+      workspaceTitle={loggedInClub.name}
+      workspaceSubtitle={`${loggedInClub.sport} Club`}
+      eyebrow="Club Management"
+      title="Player Registration"
+      description="Register, edit and transfer players for your club."
+      navItems={clubAdminNavItems}
+      activeTab="teams"
+      onTabChange={(key) => {
+        const item = clubAdminNavItems.find((i) => i.key === key);
+        if (item) navigate(item.path);
+      }}
+    >
+      <div className="club-page">
+        <div className="club-header">
+          <div>
+            <h1>{loggedInClub.name}</h1>
+            <p>{loggedInClub.sport} Player Registration</p>
+          </div>
 
-return (
+          <button className="primary-btn" onClick={openRegister}>
+            <Plus size={18} />
+            Register Player
+          </button>
+        </div>
 
-player.clubId === loggedInClub.id &&
+        <div className="club-toolbar">
+          <div className="search-box">
+            <Search size={18} />
+            <input
+              placeholder="Search players..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+        </div>
 
-player.name
-.toLowerCase()
-.includes(search.toLowerCase())
+        <div className="club-card">
+          <div className="table-wrapper">
+            <table className="club-table">
+              <thead>
+                <tr>
+                  <th>Player</th>
+                  <th>Team</th>
+                  <th>Position</th>
+                  <th>Jersey</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
 
-);
+              <tbody>
+                {filteredPlayers.length === 0 && (
+                  <tr>
+                    <td colSpan={6} className="empty-row">
+                      No players match your search.
+                    </td>
+                  </tr>
+                )}
+                {filteredPlayers.map((player) => (
+                  <tr key={player.id}>
+                    <td>
+                      <strong>{player.name}</strong>
+                    </td>
+                    <td>{player.team}</td>
+                    <td>{player.position}</td>
+                    <td>{player.jersey}</td>
+                    <td>
+                      <span
+                        className={player.status === "Active" ? "status active" : "status expired"}
+                      >
+                        {player.status}
+                      </span>
+                    </td>
+                    <td>
+                      <div className="action-buttons">
+                        <button title="Edit" onClick={() => openEdit(player)}>
+                          <Pencil size={16} />
+                        </button>
+                        <button title="Transfer" onClick={() => openTransfer(player)}>
+                          <ArrowRightLeft size={16} />
+                        </button>
+                        <button title="Delete" onClick={() => deletePlayer(player.id)}>
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
 
+        {showForm && (
+          <div className="modal-overlay">
+            <div className="club-modal">
+              <div className="modal-header">
+                <h2>{editingId ? "Edit Player" : "Register Player"}</h2>
+                <button onClick={() => setShowForm(false)}>
+                  <X />
+                </button>
+              </div>
 
-});
+              <div className="form-grid">
+                <input
+                  placeholder="Player Name"
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                />
 
+                <div className="readonly-field">Club: {loggedInClub.name}</div>
+                <div className="readonly-field">Sport: {loggedInClub.sport}</div>
 
+                <input
+                  placeholder="Team"
+                  value={form.team}
+                  onChange={(e) => setForm({ ...form, team: e.target.value })}
+                />
 
+                <input
+                  placeholder="Position"
+                  value={form.position}
+                  onChange={(e) => setForm({ ...form, position: e.target.value })}
+                />
 
+                <input
+                  type="number"
+                  placeholder="Jersey Number"
+                  value={form.jersey}
+                  onChange={(e) => setForm({ ...form, jersey: Number(e.target.value) })}
+                />
 
+                <select
+                  value={form.status}
+                  onChange={(e) =>
+                    setForm({ ...form, status: e.target.value as "Active" | "Inactive" })
+                  }
+                >
+                  <option>Active</option>
+                  <option>Inactive</option>
+                </select>
+              </div>
 
+              <div className="modal-actions">
+                <button className="secondary-btn" onClick={() => setShowForm(false)}>
+                  Cancel
+                </button>
+                <button className="primary-btn" onClick={savePlayer}>
+                  Save Player
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
-const deletePlayer=(id:number)=>{
+        {showTransfer && transferringPlayer && (
+          <div className="modal-overlay">
+            <div className="club-modal">
+              <div className="modal-header">
+                <h2>Transfer Player</h2>
+                <button onClick={() => setShowTransfer(false)}>
+                  <X />
+                </button>
+              </div>
 
+              <div className="form-grid">
+                <div className="readonly-field">Player: {transferringPlayer.name}</div>
 
-setPlayers(
+                <input
+                  placeholder="Transfer To"
+                  value={transferForm.transferTo}
+                  onChange={(e) => setTransferForm({ ...transferForm, transferTo: e.target.value })}
+                />
 
-players.filter(
+                <textarea
+                  placeholder="Reason"
+                  value={transferForm.reason}
+                  onChange={(e) => setTransferForm({ ...transferForm, reason: e.target.value })}
+                />
+              </div>
 
-(player)=>
-player.id !== id
-
-)
-
-);
-
-
+              <div className="modal-actions">
+                <button className="secondary-btn" onClick={() => setShowTransfer(false)}>
+                  Cancel
+                </button>
+                <button className="primary-btn" onClick={confirmTransfer}>
+                  Transfer
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </AdminWorkspaceLayout>
+  );
 };
-
-
-
-
-
-
-return (
-
-<div className="club-page">
-
-
-
-
-
-<div className="club-header">
-
-
-<div>
-
-
-<h1>
-
-{loggedInClub.name}
-
-</h1>
-
-
-<p>
-
-{loggedInClub.sport} Player Registration
-
-</p>
-
-
-</div>
-
-
-
-
-<button
-
-className="primary-btn"
-
-onClick={()=>setShowForm(true)}
-
->
-
-<Plus size={18}/>
-
-Register Player
-
-</button>
-
-
-
-</div>
-
-
-
-
-
-
-
-<div className="club-toolbar">
-
-
-<div className="search-box">
-
-
-<Search size={18}/>
-
-
-<input
-
-placeholder="Search players..."
-
-value={search}
-
-onChange={(e)=>
-setSearch(e.target.value)
-}
-
-/>
-
-
-</div>
-
-
-</div>
-
-
-
-
-
-
-
-
-
-<div className="club-card">
-
-
-<div className="table-wrapper">
-
-
-
-<table className="club-table">
-
-
-<thead>
-
-<tr>
-
-<th>
-Player
-</th>
-
-
-<th>
-Team
-</th>
-
-
-<th>
-Position
-</th>
-
-
-<th>
-Jersey
-</th>
-
-
-<th>
-Status
-</th>
-
-
-<th>
-Actions
-</th>
-
-
-</tr>
-
-
-</thead>
-
-
-
-
-
-<tbody>
-
-
-{
-
-filteredPlayers.map((player)=>(
-
-
-<tr key={player.id}>
-
-
-<td>
-
-<strong>
-
-{player.name}
-
-</strong>
-
-</td>
-
-
-
-<td>
-
-{player.team}
-
-</td>
-
-
-
-
-<td>
-
-{player.position}
-
-</td>
-
-
-
-
-<td>
-
-{player.jersey}
-
-</td>
-
-
-
-
-<td>
-
-
-<span className="status active">
-
-{player.status}
-
-</span>
-
-
-</td>
-
-
-
-
-
-<td>
-
-
-<div className="action-buttons">
-
-
-<button>
-
-<Pencil size={16}/>
-
-</button>
-
-
-
-<button
-
-onClick={()=>setShowTransfer(true)}
-
->
-
-<ArrowRightLeft size={16}/>
-
-</button>
-
-
-
-
-<button
-
-onClick={()=>deletePlayer(player.id)}
-
->
-
-<Trash2 size={16}/>
-
-</button>
-
-
-
-</div>
-
-
-</td>
-
-
-
-
-</tr>
-
-
-))
-
-
-}
-
-
-
-</tbody>
-
-
-
-</table>
-
-
-
-</div>
-
-
-
-</div>
-
-
-
-
-
-
-
-
-
-{
-showForm && (
-
-<div className="modal-overlay">
-
-
-<div className="club-modal">
-
-
-
-<div className="modal-header">
-
-
-<h2>
-Register Player
-</h2>
-
-
-<button
-
-onClick={()=>setShowForm(false)}
-
->
-
-<X/>
-
-</button>
-
-
-</div>
-
-
-
-
-
-<div className="form-grid">
-
-
-<input
-
-placeholder="Player Name"
-
-/>
-
-
-
-
-<div className="readonly-field">
-
-Club: {loggedInClub.name}
-
-</div>
-
-
-
-<div className="readonly-field">
-
-Sport: {loggedInClub.sport}
-
-</div>
-
-
-
-
-<input
-
-placeholder="Team"
-
-/>
-
-
-
-
-<input
-
-placeholder="Position"
-
-/>
-
-
-
-
-<input
-
-type="number"
-
-placeholder="Jersey Number"
-
-/>
-
-
-
-
-<select>
-
-
-<option>
-
-Active
-
-</option>
-
-
-<option>
-
-Inactive
-
-</option>
-
-
-</select>
-
-
-
-</div>
-
-
-
-
-
-
-
-<div className="modal-actions">
-
-
-<button
-
-className="secondary-btn"
-
-onClick={()=>setShowForm(false)}
-
->
-
-Cancel
-
-</button>
-
-
-
-<button
-
-className="primary-btn"
-
->
-
-Save Player
-
-</button>
-
-
-
-</div>
-
-
-
-
-</div>
-
-
-</div>
-
-
-)
-
-}
-
-
-
-
-
-
-
-
-
-{
-showTransfer && (
-
-<div className="modal-overlay">
-
-
-<div className="club-modal">
-
-
-<div className="modal-header">
-
-
-<h2>
-
-Transfer Player
-
-</h2>
-
-
-
-<button
-
-onClick={()=>setShowTransfer(false)}
-
->
-
-<X/>
-
-</button>
-
-
-
-</div>
-
-
-
-
-
-<div className="form-grid">
-
-
-<input
-
-placeholder="Player Name"
-
-/>
-
-
-
-<input
-
-placeholder="Transfer To"
-
-/>
-
-
-
-
-<textarea
-
-placeholder="Reason"
-
-/>
-
-
-
-
-</div>
-
-
-
-
-
-
-
-<div className="modal-actions">
-
-
-<button
-
-className="secondary-btn"
-
-onClick={()=>setShowTransfer(false)}
-
->
-
-Cancel
-
-</button>
-
-
-
-
-<button
-
-className="primary-btn"
-
->
-
-Transfer
-
-</button>
-
-
-
-</div>
-
-
-
-
-
-</div>
-
-
-</div>
-
-
-)
-
-}
-
-
-
-
-
-
-</div>
-
-
-);
-
-
-};
-
 
 export default PlayerRegistration;
