@@ -1,0 +1,99 @@
+.access-unavailable-page {
+  align-items: center;
+  background:
+    radial-gradient(circle at top, rgba(124, 58, 237, 0.2), transparent 42%),
+    #070b17;
+  color: #f8fafc;
+  display: flex;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem;
+}
+
+.access-unavailable-card {
+  background: rgba(15, 23, 42, 0.94);
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 1.5rem;
+  box-shadow: 0 1.5rem 4rem rgba(0, 0, 0, 0.35);
+  max-width: 38rem;
+  padding: clamp(2rem, 6vw, 3.5rem);
+  text-align: center;
+}
+
+.access-unavailable-logo {
+  height: auto;
+  margin-bottom: 2rem;
+  max-width: min(16rem, 75%);
+}
+
+.access-unavailable-eyebrow {
+  color: #a78bfa;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  margin: 0 0 0.7rem;
+  text-transform: uppercase;
+}
+
+.access-unavailable-card h1 {
+  font-size: clamp(1.8rem, 5vw, 2.6rem);
+  line-height: 1.12;
+  margin: 0;
+}
+
+.access-unavailable-card > p:not(.access-unavailable-eyebrow) {
+  color: #cbd5e1;
+  line-height: 1.7;
+  margin: 1.25rem auto 0;
+  max-width: 32rem;
+}
+
+.access-unavailable-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.access-unavailable-actions a,
+.access-unavailable-actions button {
+  background: transparent;
+  border: 1px solid rgba(167, 139, 250, 0.7);
+  border-radius: 999px;
+  color: #f8fafc;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  padding: 0.75rem 1.2rem;
+  text-decoration: none;
+}
+
+.access-unavailable-actions a:first-child {
+  background: #7c3aed;
+  border-color: #7c3aed;
+}
+
+.access-unavailable-actions a:hover,
+.access-unavailable-actions a:focus-visible,
+.access-unavailable-actions button:hover,
+.access-unavailable-actions button:focus-visible {
+  background: #8b5cf6;
+  border-color: #8b5cf6;
+  outline: none;
+}
+
+@media (max-width: 520px) {
+  .access-unavailable-page {
+    padding: 1rem;
+  }
+
+  .access-unavailable-card {
+    padding: 2rem 1.25rem;
+  }
+
+  .access-unavailable-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

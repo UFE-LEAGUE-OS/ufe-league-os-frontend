@@ -22,13 +22,16 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { useAuthStore } from "../../store/authStore";
 import {
     getMyUnionWorkspaces,
     getUnionDashboardOverview,
     getUnionFinanceDashboard,
     getUnionOperationsDashboard,
     getUnionWorkspaceUsers,
+    intersectUnionWorkspaceOptions,
     switchUnionWorkspace,
+    type AuthorizedUnionWorkspaceOption,
     type UnionDashboardOverview,
     type UnionFinanceDashboard,
     type UnionOperationsDashboard,
@@ -45,6 +48,8 @@ import UnionAdminClubsPanel from "../../components/UnionAdminClubsPanel/UnionAdm
 import UnionAdminRefereesPanel from "../../components/UnionAdminRefereesPanel/UnionAdminRefereesPanel";
 import OfficialAppointmentsPanel from "../../components/OfficialAppointmentsPanel/OfficialAppointmentsPanel";
 import LeagueAdminScopesPanel from "../../components/LeagueAdminScopesPanel/LeagueAdminScopesPanel";
+import { useCurrentUser } from "../../hooks/useCurrentUser";
+import { getEntitlementsForDashboard } from "../../utils/dashboardAccess.js";
 import logoHorizontal from "../../assets/logos/league-os-horizontal.png";
 import logoMark from "../../assets/league-os-mark.svg";
 import styles from "./UnionAdminDashboard.module.css";
@@ -141,26 +146,6 @@ type ClubRecord = {
     admin: string;
 };
 
-type RefereeRecord = {
-    name: string;
-    role: string;
-    grade: string;
-    status: string;
-    competitions: string;
-    nextMatch: string;
-};
-
-type AppointmentRecord = {
-    id?: number;
-    match: string;
-    competition: string;
-    date: string;
-    venue: string;
-    role: string;
-    status?: string;
-    report: string;
-};
-
 type RegistrationRecord = {
     applicant: string;
     club: string;
@@ -170,45 +155,13 @@ type RegistrationRecord = {
     reviewer: string;
 };
 
-const fallbackPermissions: UnionWorkspacePermission[] = [
-    "union.dashboard.view",
-    "union.competitions.manage",
-    "union.clubs.manage",
-    "union.players.approve",
-    "union.referees.manage",
-    "union.finance.view",
-    "union.reports.view",
-    "union.communications.manage",
-    "union.users.manage",
-    "union.official.appointments.view",
-    "union.official.reports.manage",
-    "union.official.availability.manage",
-    "union.official.documents.view",
-    "union.official.payments.view",
-    "union.ticketing.manage",
-    "union.ticketing.scan",
-    "union.teams.manage",
-];
-
-const fallbackWorkspaces: UnionWorkspaceOption[] = [
-    {
-        id: 0,
-        name: "Workspace Preview",
-        slug: "workspace-preview",
-        acronym: "WORK",
-        sport: "Multi-sport",
-        workspaceType: "Preview Workspace",
-        description:
-            "Neutral fallback workspace used only when live workspace access is unavailable.",
-        primaryColor: "#7b3ff2",
-        role: "OWNER",
-        roleDisplay: "Workspace Owner",
-        permissions: fallbackPermissions,
-    },
-];
-
 const tabs: TabDefinition[] = [
-    { key: "overview", label: "Overview", icon: BarChart3 },
+    {
+        key: "overview",
+        label: "Overview",
+        icon: BarChart3,
+        permission: "union.dashboard.view",
+    },
     {
         key: "competitions",
         label: "Competitions",
@@ -345,8 +298,6 @@ const tabs: TabDefinition[] = [
     },
 ];
 
-const UNION_WORKSPACE_STORAGE_KEY = "league_os_selected_union_workspace";
-
 const competitions: CompetitionRecord[] = [
     {
         id: "nile-special",
@@ -465,67 +416,16 @@ const registrations: RegistrationRecord[] = [
     },
 ];
 
-const referees: RefereeRecord[] = [
-    {
-        name: "John Referee",
-        role: "Centre Referee",
-        grade: "Level 2",
-        status: "Available",
-        competitions: "League, Cup, 7s",
-        nextMatch: "KOBS vs Heathens",
-    },
-    {
-        name: "Amina Official",
-        role: "Assistant Referee",
-        grade: "Level 1",
-        status: "Available",
-        competitions: "League, Women’s League",
-        nextMatch: "Pirates vs Rhinos",
-    },
-    {
-        name: "Michael Assessor",
-        role: "Match Assessor",
-        grade: "Assessor",
-        status: "Restricted",
-        competitions: "League",
-        nextMatch: "Pending assignment",
-    },
-];
-
-const appointments: AppointmentRecord[] = [
-    {
-        match: "KOBS vs Heathens",
-        competition: "Nile Special Rugby League",
-        date: "Sat 18 Jul, 4:00 PM",
-        venue: "Legends Rugby Grounds",
-        role: "Centre Referee",
-        report: "Due after match",
-    },
-    {
-        match: "Pirates vs Rhinos",
-        competition: "Nile Special Rugby League",
-        date: "Sun 19 Jul, 3:00 PM",
-        venue: "Kings Park Arena",
-        role: "Assistant Referee",
-        report: "Not started",
-    },
-    {
-        match: "Uganda 7s Trial",
-        competition: "Rugby 7s Series",
-        date: "Wed 22 Jul, 10:00 AM",
-        venue: "Kyadondo Rugby Club",
-        role: "Match Commissioner",
-        report: "Pending",
-    },
-];
-
 function canAccessTab(workspace: UnionWorkspaceOption, tab: TabDefinition) {
-    const hasPermission = tab.permission ? workspace.permissions.includes(tab.permission) : false;
-    const hasRole = tab.roles?.includes(workspace.role) ?? false;
+    if (tab.permission) {
+        return workspace.permissions.includes(tab.permission);
+    }
 
-    if (!tab.permission && !tab.roles?.length) return true;
+    if (tab.roles?.length) {
+        return tab.roles.includes(workspace.role);
+    }
 
-    return hasPermission || hasRole;
+    return true;
 }
 
 function getSummary(overview: UnionDashboardOverview | null): Summary {
@@ -536,16 +436,6 @@ function getSummary(overview: UnionDashboardOverview | null): Summary {
         referees: overview?.summary.referees ?? 0,
         upcomingMatches: overview?.summary.upcoming_matches ?? 0,
     };
-}
-
-function resolvePreferredWorkspaceSlug(workspaces: UnionWorkspaceOption[]) {
-    const savedSlug = localStorage.getItem(UNION_WORKSPACE_STORAGE_KEY);
-
-    if (savedSlug && workspaces.some((workspace) => workspace.slug === savedSlug)) {
-        return savedSlug;
-    }
-
-    return workspaces[0]?.slug ?? "";
 }
 
 function isMatchOfficialWorkspace(workspace: UnionWorkspaceOption) {
@@ -934,14 +824,31 @@ function ModuleButton({
 }
 
 export default function UnionAdminDashboard() {
-    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-    const [workspaces, setWorkspaces] = useState<UnionWorkspaceOption[]>(fallbackWorkspaces);
-    const [activeWorkspaceSlug, setActiveWorkspaceSlug] = useState(() =>
-        resolvePreferredWorkspaceSlug(fallbackWorkspaces),
+    const { isLoading: isLoadingProfile } = useCurrentUser();
+    const authenticatedUser = useAuthStore((state) => state.user);
+    const dashboardAccess = authenticatedUser?.dashboard_access;
+    const unionEntitlements = useMemo(
+        () =>
+            getEntitlementsForDashboard(
+                dashboardAccess,
+                "UNION_WORKSPACE",
+            ),
+        [dashboardAccess],
     );
+    const fanDashboardRoute = useMemo(
+        () =>
+            getEntitlementsForDashboard(
+                dashboardAccess,
+                "FAN",
+            )[0]?.route,
+        [dashboardAccess],
+    );
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+    const [workspaces, setWorkspaces] = useState<AuthorizedUnionWorkspaceOption[]>([]);
+    const [activeWorkspaceSlug, setActiveWorkspaceSlug] = useState("");
     const [activeTab, setActiveTab] = useState<TabKey>("overview");
-    const [isApiBacked, setIsApiBacked] = useState(false);
     const [isLoadingWorkspaces, setIsLoadingWorkspaces] = useState(true);
+    const [isSwitchingWorkspace, setIsSwitchingWorkspace] = useState(false);
     const [workspaceError, setWorkspaceError] = useState("");
     const [overview, setOverview] = useState<UnionDashboardOverview | null>(null);
     const [workspaceUsers, setWorkspaceUsers] = useState<UnionWorkspaceUser[]>([]);
@@ -965,29 +872,65 @@ export default function UnionAdminDashboard() {
         let isMounted = true;
 
         async function loadWorkspaces() {
+            if (isLoadingProfile && unionEntitlements.length === 0) {
+                return;
+            }
+
+            setIsLoadingWorkspaces(true);
+            setWorkspaceError("");
+
+            if (unionEntitlements.length === 0) {
+                setWorkspaces([]);
+                setActiveWorkspaceSlug("");
+                setWorkspaceError(
+                    "This account does not have an active Union workspace entitlement.",
+                );
+                setIsLoadingWorkspaces(false);
+                return;
+            }
+
             try {
                 const apiWorkspaces = await getMyUnionWorkspaces();
 
                 if (!isMounted) return;
 
-                if (apiWorkspaces.length > 0) {
-                    setWorkspaces(apiWorkspaces);
-                    setActiveWorkspaceSlug(resolvePreferredWorkspaceSlug(apiWorkspaces));
-                    setIsApiBacked(true);
+                const authorizedWorkspaces = intersectUnionWorkspaceOptions(
+                    apiWorkspaces,
+                    dashboardAccess,
+                );
+
+                setWorkspaces(authorizedWorkspaces);
+
+                if (authorizedWorkspaces.length > 0) {
+                    setActiveWorkspaceSlug((currentSlug) => {
+                        if (
+                            currentSlug &&
+                            authorizedWorkspaces.some(
+                                (workspace) => workspace.slug === currentSlug,
+                            )
+                        ) {
+                            return currentSlug;
+                        }
+
+                        return authorizedWorkspaces.length === 1
+                            ? authorizedWorkspaces[0].slug
+                            : "";
+                    });
                     setWorkspaceError("");
                 } else {
-                    setWorkspaces(fallbackWorkspaces);
-                    setActiveWorkspaceSlug(resolvePreferredWorkspaceSlug(fallbackWorkspaces));
-                    setIsApiBacked(false);
-                    setWorkspaceError("No union workspaces are attached to this account yet.");
+                    setActiveWorkspaceSlug("");
+                    setWorkspaceError(
+                        "No active Union membership matches this account's dashboard entitlements.",
+                    );
                 }
             } catch {
                 if (!isMounted) return;
 
-                setWorkspaces(fallbackWorkspaces);
-                setActiveWorkspaceSlug(resolvePreferredWorkspaceSlug(fallbackWorkspaces));
-                setIsApiBacked(false);
-                setWorkspaceError("Using preview data because workspace access could not be loaded.");
+                setWorkspaces([]);
+                setActiveWorkspaceSlug("");
+                setWorkspaceError(
+                    "Union workspace access could not be verified. Try again when the service is available.",
+                );
             } finally {
                 if (isMounted) setIsLoadingWorkspaces(false);
             }
@@ -998,12 +941,14 @@ export default function UnionAdminDashboard() {
         return () => {
             isMounted = false;
         };
-    }, []);
+    }, [dashboardAccess, isLoadingProfile, unionEntitlements]);
 
     const activeWorkspace =
-        workspaces.find((workspace) => workspace.slug === activeWorkspaceSlug) ?? workspaces[0];
+        workspaces.find((workspace) => workspace.slug === activeWorkspaceSlug);
 
     const availableTabs = useMemo(() => {
+        if (!activeWorkspace) return [];
+
         return tabs.filter((tab) => canAccessTab(activeWorkspace, tab));
     }, [activeWorkspace]);
 
@@ -1128,16 +1073,52 @@ export default function UnionAdminDashboard() {
     }, [activeTab, activeWorkspace?.acronym, activeWorkspace?.slug, activeWorkspace?.permissions, isLoadingWorkspaces]);
 
     async function handleWorkspaceChange(nextSlug: string) {
-        localStorage.setItem(UNION_WORKSPACE_STORAGE_KEY, nextSlug);
-        setActiveWorkspaceSlug(nextSlug);
-        setActiveTab("overview");
-        setCompetitionView("list");
-        setClubView("directory");
+        const requestedWorkspace = workspaces.find(
+            (workspace) => workspace.slug === nextSlug,
+        );
+
+        if (!requestedWorkspace) return;
+
+        setIsSwitchingWorkspace(true);
+        setWorkspaceError("");
 
         try {
-            await switchUnionWorkspace(nextSlug);
+            const result = await switchUnionWorkspace(nextSlug);
+
+            if (
+                result.selectedEntitlementId !==
+                    requestedWorkspace.entitlementId ||
+                String(result.workspace.scopeId) !==
+                    String(requestedWorkspace.scopeId) ||
+                result.workspace.role !== requestedWorkspace.role
+            ) {
+                throw new Error("The selected workspace access changed.");
+            }
+
+            setOverview(null);
+            setWorkspaceUsers([]);
+            setWorkspaceDataError("");
+            setOperationsData(null);
+            setOperationsError("");
+            setFinanceData(null);
+            setFinanceError("");
+            setWorkspaces((currentWorkspaces) =>
+                currentWorkspaces.map((workspace) =>
+                    workspace.entitlementId === result.selectedEntitlementId
+                        ? result.workspace
+                        : workspace,
+                ),
+            );
+            setActiveWorkspaceSlug(result.workspace.slug);
+            setActiveTab("overview");
+            setCompetitionView("list");
+            setClubView("directory");
         } catch {
-            // The local switch still works; protected endpoints will validate access.
+            setWorkspaceError(
+                "That Union workspace could not be verified. Your current workspace has not changed.",
+            );
+        } finally {
+            setIsSwitchingWorkspace(false);
         }
     }
 
@@ -1156,24 +1137,118 @@ export default function UnionAdminDashboard() {
         window.location.assign("/login");
     }
 
+    if (!activeWorkspace) {
+        const isWaitingForAccess =
+            isLoadingProfile || isLoadingWorkspaces;
+        const requiresWorkspaceSelection =
+            !isWaitingForAccess && workspaces.length > 1;
+
+        return (
+            <main className={styles.pageShell}>
+                <section className={styles.contentArea}>
+                    <header className={styles.heroHeader}>
+                        <div className={styles.heroIdentity}>
+                            <div className={styles.heroMetaRow}>
+                                <span className={styles.liveBadge}>
+                                    <Building2
+                                        size={14}
+                                        strokeWidth={2.4}
+                                        aria-hidden="true"
+                                    />
+                                    Union Workspace
+                                </span>
+                            </div>
+                            <h1>
+                                {isWaitingForAccess
+                                    ? "Verifying workspace access"
+                                    : requiresWorkspaceSelection
+                                      ? "Select a Union workspace"
+                                      : "Union workspace unavailable"}
+                            </h1>
+                            <p>
+                                {requiresWorkspaceSelection
+                                    ? "Choose one of your entitled workspaces to continue."
+                                    : "League OS only opens workspaces confirmed by your dashboard access contract and active membership."}
+                            </p>
+                        </div>
+                        <div className={styles.headerActions}>
+                            <Link
+                                className={styles.headerActionPrimary}
+                                to="/unions"
+                            >
+                                View Unions
+                            </Link>
+                            {fanDashboardRoute ? (
+                                <Link
+                                    className={styles.headerActionSecondary}
+                                    to={fanDashboardRoute}
+                                >
+                                    Open Fan Dashboard
+                                </Link>
+                            ) : null}
+                        </div>
+                    </header>
+
+                    {workspaceError ? (
+                        <div className={styles.alertBanner}>
+                            {workspaceError}
+                        </div>
+                    ) : null}
+
+                    {requiresWorkspaceSelection ? (
+                        <label
+                            className={styles.workspaceSelectLabel}
+                            htmlFor="workspace-access-select"
+                        >
+                            Union workspace
+                            <select
+                                id="workspace-access-select"
+                                className={styles.workspaceSelect}
+                                value=""
+                                disabled={isSwitchingWorkspace}
+                                onChange={(event) =>
+                                    void handleWorkspaceChange(
+                                        event.target.value,
+                                    )
+                                }
+                            >
+                                <option value="" disabled>
+                                    Select a workspace
+                                </option>
+                                {workspaces.map((workspace) => (
+                                    <option
+                                        key={workspace.entitlementId}
+                                        value={workspace.slug}
+                                    >
+                                        {workspace.acronym} -{" "}
+                                        {workspace.roleDisplay}
+                                    </option>
+                                ))}
+                            </select>
+                        </label>
+                    ) : null}
+
+                    <div className={styles.dashboardFooterWrap}>
+                        <AuthenticatedFooter />
+                    </div>
+                </section>
+            </main>
+        );
+    }
+
     const summary = getSummary(overview);
     const workspaceCompetitions =
-        operationsData?.competitions ??
-        (isApiBacked ? [] : competitions);
+        operationsData?.competitions ?? [];
     const workspaceClubs =
-        operationsData?.clubs ??
-        (isApiBacked ? [] : clubs);
+        operationsData?.clubs ?? [];
     const workspaceNationalTeams =
         operationsData?.national_teams ?? [];
     const workspaceRegistrations =
-        operationsData?.registrations ??
-        (isApiBacked ? [] : registrations);
+        operationsData?.registrations ?? [];
     const workspaceReferees =
-        operationsData?.referees ??
-        (isApiBacked ? [] : referees);
+        operationsData?.referees ?? [];
     const workspaceAppointments =
-        operationsData?.appointments ??
-        (isApiBacked ? [] : appointments);
+        operationsData?.appointments ?? [];
     const workspacePlayerPositions = operationsData?.player_positions?.length
         ? operationsData.player_positions
         : getSportPositionGroups(activeWorkspace.sport);
@@ -1344,7 +1419,7 @@ export default function UnionAdminDashboard() {
         ],
         settings: [
             { label: "Workspace", value: activeWorkspace.acronym, detail: activeWorkspace.workspaceType, icon: ShieldCheck },
-            { label: "Profile", value: isApiBacked ? "Live" : "Preview", detail: "Public directory state", icon: Layers3 },
+            { label: "Profile", value: "Live", detail: "Public directory state", icon: Layers3 },
             { label: "Rules", value: 7, detail: "Configured defaults", icon: ClipboardCheck },
             { label: "Roles", value: 9, detail: "Permission templates", icon: Users },
         ],
@@ -3335,8 +3410,12 @@ export default function UnionAdminDashboard() {
 
                 <Link
                     className={styles.logoLink}
-                    to="/dashboard/fan"
-                    aria-label="Open Fan Dashboard"
+                    to={fanDashboardRoute ?? "/"}
+                    aria-label={
+                        fanDashboardRoute
+                            ? "Open Fan Dashboard"
+                            : "Open League OS home"
+                    }
                 >
                     <img
                         className={styles.logoHorizontal}
@@ -3368,10 +3447,11 @@ export default function UnionAdminDashboard() {
                     id="workspace-select"
                     className={styles.workspaceSelect}
                     value={activeWorkspaceSlug}
+                    disabled={isSwitchingWorkspace}
                     onChange={(event) => void handleWorkspaceChange(event.target.value)}
                 >
                     {workspaces.map((workspace) => (
-                        <option key={workspace.slug} value={workspace.slug}>
+                        <option key={workspace.entitlementId} value={workspace.slug}>
                             {workspace.acronym} - {workspace.roleDisplay}
                         </option>
                     ))}
@@ -3432,9 +3512,14 @@ export default function UnionAdminDashboard() {
                         <Link className={styles.headerActionPrimary} to={pageHeader.publicPath}>
                             {pageHeader.publicLabel}
                         </Link>
-                        <Link className={styles.headerActionSecondary} to="/dashboard/fan">
-                            Back to Fan Dashboard
-                        </Link>
+                        {fanDashboardRoute ? (
+                            <Link
+                                className={styles.headerActionSecondary}
+                                to={fanDashboardRoute}
+                            >
+                                Open Fan Dashboard
+                            </Link>
+                        ) : null}
                     </div>
                 </header>
 
@@ -3462,7 +3547,8 @@ export default function UnionAdminDashboard() {
                     icon: tab.icon,
                 }))}
                 workspaceName={activeWorkspace.name}
-                workspaceRole={activeWorkspace.roleDisplay || formatRole(activeWorkspace.role)}
+                workspaceRole={activeWorkspace.role}
+                fanDashboardRoute={fanDashboardRoute}
                 onTabChange={(key) => resetSearch(key as TabKey)}
                 onLogout={handleLogout}
             />

@@ -15,7 +15,11 @@ import { Link, NavLink, useNavigate } from "react-router-dom";
 import leagueLogo from "../../assets/logos/league-os-horizontal.png";
 import { useAuth } from "../../hooks/useAuth.js";
 import { useCurrentUser } from "../../hooks/useCurrentUser";
-import { getMyUnionWorkspaces } from "../../services/unionAdminService";
+import { useAuthStore } from "../../store/authStore";
+import {
+    getDefaultEntitlement,
+    getEntitlementsForDashboard,
+} from "../../utils/dashboardAccess.js";
 import styles from "./LoggedInHeader.module.css";
 
 const navItems = [
@@ -31,13 +35,14 @@ const navItems = [
 
 const dropdownNavItems = new Set(["Sport", "Leagues", "Clubs", "Competitions"]);
 
+const fanDashboardSearchItem = {
+    title: "Fan Dashboard",
+    description: "View your memberships, tickets, matches and rewards.",
+    href: "/dashboard/fan",
+    type: "Page",
+};
+
 const searchableItems = [
-    {
-        title: "Fan Dashboard",
-        description: "View your memberships, tickets, matches and rewards.",
-        href: "/dashboard/fan",
-        type: "Page",
-    },
     {
         title: "Profile Overview",
         description: "Manage your League OS profile and settings.",
@@ -121,6 +126,7 @@ const searchableItems = [
 
 function LoggedInHeader() {
     const { currentUser } = useCurrentUser();
+    const authenticatedUser = useAuthStore((state) => state.user);
     const { logout } = useAuth();
     const navigate = useNavigate();
     const userMenuRef = useRef<HTMLDivElement>(null);
@@ -128,46 +134,49 @@ function LoggedInHeader() {
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
-    const [unionWorkspaceCount, setUnionWorkspaceCount] = useState(0);
+    const dashboardAccess = authenticatedUser?.dashboard_access;
+    const defaultEntitlement = useMemo(
+        () => getDefaultEntitlement(dashboardAccess),
+        [dashboardAccess],
+    );
+    const fanEntitlement = useMemo(
+        () => getEntitlementsForDashboard(dashboardAccess, "FAN")[0] ?? null,
+        [dashboardAccess],
+    );
+    const sponsorEntitlement = useMemo(
+        () => getEntitlementsForDashboard(dashboardAccess, "SPONSOR")[0] ?? null,
+        [dashboardAccess],
+    );
+    const unionEntitlement = useMemo(
+        () =>
+            getEntitlementsForDashboard(
+                dashboardAccess,
+                "UNION_WORKSPACE",
+            )[0] ?? null,
+        [dashboardAccess],
+    );
+    const availableSearchItems = useMemo(
+        () =>
+            fanEntitlement
+                ? [fanDashboardSearchItem, ...searchableItems]
+                : searchableItems,
+        [fanEntitlement],
+    );
     const normalizedQuery = searchQuery.trim().toLowerCase();
 
     const filteredSearchResults = useMemo(() => {
         if (!normalizedQuery) {
-            return searchableItems.slice(0, 6);
+            return availableSearchItems.slice(0, 6);
         }
 
-        return searchableItems
+        return availableSearchItems
             .filter((item) => {
                 const searchableText = `${item.title} ${item.description} ${item.type}`;
 
                 return searchableText.toLowerCase().includes(normalizedQuery);
             })
             .slice(0, 8);
-    }, [normalizedQuery]);
-
-    useEffect(() => {
-        let isMounted = true;
-
-        async function loadUnionWorkspaceCount() {
-            try {
-                const workspaces = await getMyUnionWorkspaces();
-
-                if (isMounted) {
-                    setUnionWorkspaceCount(workspaces.length);
-                }
-            } catch {
-                if (isMounted) {
-                    setUnionWorkspaceCount(0);
-                }
-            }
-        }
-
-        void loadUnionWorkspaceCount();
-
-        return () => {
-            isMounted = false;
-        };
-    }, []);
+    }, [availableSearchItems, normalizedQuery]);
 
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
@@ -281,29 +290,63 @@ function LoggedInHeader() {
 
                     {isUserMenuOpen ? (
                         <div className={styles.userDropdown} role="menu">
-                            <button
-                                type="button"
-                                role="menuitem"
-                                onClick={() => {
-                                    setIsUserMenuOpen(false);
-                                    navigate("/dashboard/fan");
-                                }}
-                            >
-                                <LayoutDashboard size={16} strokeWidth={2.4} />
-                                Dashboard
-                            </button>
-
-                            {unionWorkspaceCount > 0 ? (
+                            {defaultEntitlement ? (
                                 <button
                                     type="button"
                                     role="menuitem"
                                     onClick={() => {
                                         setIsUserMenuOpen(false);
-                                        navigate("/dashboard/union-admin");
+                                        navigate(defaultEntitlement.route);
+                                    }}
+                                >
+                                    <LayoutDashboard size={16} strokeWidth={2.4} />
+                                    Dashboard
+                                </button>
+                            ) : null}
+
+                            {unionEntitlement &&
+                            defaultEntitlement?.dashboard !== "UNION_WORKSPACE" ? (
+                                <button
+                                    type="button"
+                                    role="menuitem"
+                                    onClick={() => {
+                                        setIsUserMenuOpen(false);
+                                        navigate(unionEntitlement.route);
                                     }}
                                 >
                                     <Building2 size={16} strokeWidth={2.4} />
                                     Union Workspace
+                                </button>
+                            ) : null}
+
+                            {fanEntitlement &&
+                            defaultEntitlement?.dashboard !== "FAN" ? (
+                                <button
+                                    type="button"
+                                    role="menuitem"
+                                    onClick={() => {
+                                        setIsUserMenuOpen(false);
+                                        navigate(fanEntitlement.route);
+                                    }}
+                                >
+                                    <LayoutDashboard size={16} strokeWidth={2.4} />
+                                    Fan Dashboard
+                                </button>
+                            ) : null}
+
+                            {fanEntitlement &&
+                            sponsorEntitlement &&
+                            defaultEntitlement?.dashboard !== "SPONSOR" ? (
+                                <button
+                                    type="button"
+                                    role="menuitem"
+                                    onClick={() => {
+                                        setIsUserMenuOpen(false);
+                                        navigate(sponsorEntitlement.route);
+                                    }}
+                                >
+                                    <LayoutDashboard size={16} strokeWidth={2.4} />
+                                    Sponsor Dashboard
                                 </button>
                             ) : null}
 

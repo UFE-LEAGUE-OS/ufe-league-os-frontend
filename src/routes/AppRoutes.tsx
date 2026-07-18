@@ -65,7 +65,7 @@ import MyMembershipsPage from '../pages/memberships/MyMembershipsPage';
 import MyTicketsPage from '../pages/fan/MyTicketsPage';
 import TicketDetailPage from '../pages/fan/TicketDetailPage';
 import ProtectedRoute from './ProtectedRoute';
-import RoleProtectedRoute from './RoleProtectedRoute';
+import DashboardEntitlementRoute from './DashboardEntitlementRoute';
 import Payments from '../pages/PaymentPage';
 import FanPollsPage from '../pages/fan/FanPollsPage';
 import TicketCheckoutPage from '../pages/tickets/TicketCheckoutPage';
@@ -148,15 +148,13 @@ import SponsorProfile from '../pages/sponsor/SponsorProfile';
 import UnionAdminDashboard from '../pages/union-admin/UnionAdminDashboard';
 import LeagueAdminDashboard from '../pages/league-admin/LeagueAdminDashboard';
 import ClubAdminDashboard from '../pages/club-admin/ClubAdminDashboard';
-import TicketingOfficerDashboard from '../pages/ticketing-officer/TicketingOfficerDashboard';
-import TreasurerDashboard from '../pages/club-admin/TreasurerDashboard';
-import ChairmanDashboard from '../pages/club-admin/ChairmanDashboard';
-import CustomAdminDashboard from '../pages/club-admin/CustomAdminDashboard';
-import TeamManagerDashboard from '../pages/club-admin/TeamManagerDashboard';
+import AccessUnavailablePage from '../pages/account/AccessUnavailablePage';
+import type { DashboardIdentifier } from '../types/dashboardAccess';
 
-// Nested club sub-role shell (Chairman / Treasurer / Custom Admin /
-// Team Manager / Ticketing Officer) — see routes/ClubAdminSubRoleRouting.tsx
-import { ClubAdminSubRoleShell, ClubAdminSubRoleRedirect } from '../routes/ClubAdminSubRoleRouting';
+import {
+    ClubAdminLegacyAliasRedirect,
+    ClubAdminSubRoleRedirect,
+} from '../routes/ClubAdminSubRoleRouting';
 import DefaultDashboardRedirect from '../components/DefaultDashboardRedirect';
 
 //super admin sponsorship management
@@ -183,11 +181,22 @@ function protectedPage(page: ReactNode) {
     return <ProtectedRoute>{page}</ProtectedRoute>;
 }
 
-function roleProtectedPage(page: ReactNode, allowedRoles: string[], redirectTo?: string) {
+function dashboardProtectedPage(
+    page: ReactNode,
+    dashboard: DashboardIdentifier,
+    workspaceRole?: string | readonly string[],
+    permission?: string,
+    scopeType?: string,
+) {
     return (
-        <RoleProtectedRoute allowedRoles={allowedRoles} redirectTo={redirectTo}>
+        <DashboardEntitlementRoute
+            dashboard={dashboard}
+            workspaceRole={workspaceRole}
+            permission={permission}
+            scopeType={scopeType}
+        >
             {page}
-        </RoleProtectedRoute>
+        </DashboardEntitlementRoute>
     );
 }
 
@@ -209,180 +218,240 @@ export default function AppRoutes() {
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/personalize" element={<Personalize />} />
                 <Route path="/verify-email" element={<VerifyEmail />} />
-                <Route path="/fan/mvp-voting" element={<MVPVotingPage />} />
+                <Route
+                    path="/account/access-unavailable"
+                    element={protectedPage(<AccessUnavailablePage />)}
+                />
+                <Route
+                    path="/fan/mvp-voting"
+                    element={dashboardProtectedPage(<MVPVotingPage />, 'FAN')}
+                />
                 <Route path="/join-fantasy" element={<Navigate to="/fantasy" replace />} />
 
-                {/* Role-aware — sends each logged-in user to their own
-                    workspace (fan, club-admin, or, via getDefaultDashboardRoute,
-                    the correct /club-admin/<sub-role> branch). Only true fans
-                    with no elevated role land on /dashboard/fan. */}
+                {/* The backend entitlement contract owns the default route. */}
                 <Route path="/dashboard" element={protectedPage(<DefaultDashboardRedirect />)} />
 
                 <Route
                     path="/union-admin"
-                    element={protectedPage(<Navigate to="/dashboard/union-admin" replace />)}
+                    element={dashboardProtectedPage(
+                        <Navigate to="/dashboard/union-admin" replace />,
+                        'UNION_WORKSPACE',
+                    )}
                 />
 
-               
                 <Route
                     path="/dashboard/league-admin"
-                    element={roleProtectedPage(
+                    element={dashboardProtectedPage(
                         <LeagueAdminDashboard />,
-                        ['LEAGUE_ADMIN'],
-                    )}
-                />
-
-                {/* Plain CLUB_ADMIN role — intentionally separate from the
-                    /club-admin sub-role shell below. Untouched. */}
-
-                <Route path="/dashboard/club-admin" element={roleProtectedPage( <ClubAdminDashboard />, ['CLUB_ADMIN'], )}
-                />
-
-                <Route
-                    path="/dashboard/treasurer"
-                    element={roleProtectedPage(
-                        <TreasurerDashboard />,
-                        ['TREASURER'],
+                        'LEAGUE_ADMIN',
                     )}
                 />
 
                 <Route
-                    path="/dashboard/chairman"
-                    element={roleProtectedPage(
-                        <ChairmanDashboard />,
-                        ['CHAIRMAN'],
+                    path="/dashboard/club-admin/*"
+                    element={dashboardProtectedPage(
+                        <ClubAdminDashboard />,
+                        'CLUB_ADMIN',
+                        undefined,
+                        undefined,
+                        'CLUB',
                     )}
                 />
 
                 <Route
-                    path="/dashboard/custom-admin"
-                    element={roleProtectedPage(
-                        <CustomAdminDashboard />,
-                        ['CUSTOM_ADMIN'],
+                    path="/dashboard/ticketing-officer/*"
+                    element={dashboardProtectedPage(
+                        <ClubAdminDashboard />,
+                        'TICKETING_OFFICER',
+                        'TICKETING_OFFICER',
+                        undefined,
+                        'CLUB',
                     )}
                 />
 
+                {/* Entitlement-aware aliases for retired sub-role routes. */}
                 <Route
-                    path="/dashboard/team-manager"
-                    element={roleProtectedPage(
-                        <TeamManagerDashboard />,
-                        ['CUSTOM_ADMIN'],
-                    )}
+                    path="/club-admin"
+                    element={<ClubAdminSubRoleRedirect />}
+                />
+                <Route
+                    path="/club-admin/chairman/*"
+                    element={
+                        <ClubAdminLegacyAliasRedirect workspaceRole="CHAIRMAN" />
+                    }
+                />
+                <Route
+                    path="/club-admin/treasurer/*"
+                    element={
+                        <ClubAdminLegacyAliasRedirect workspaceRole="TREASURER" />
+                    }
+                />
+                <Route
+                    path="/club-admin/custom-admin/*"
+                    element={
+                        <ClubAdminLegacyAliasRedirect
+                            workspaceRole={['CUSTOM', 'CUSTOM_ADMIN']}
+                        />
+                    }
+                />
+                <Route
+                    path="/club-admin/team-manager/*"
+                    element={
+                        <ClubAdminLegacyAliasRedirect workspaceRole="TEAM_MANAGER" />
+                    }
+                />
+                <Route
+                    path="/club-admin/ticketing-officer/*"
+                    element={
+                        <ClubAdminLegacyAliasRedirect
+                            dashboard="TICKETING_OFFICER"
+                            workspaceRole="TICKETING_OFFICER"
+                        />
+                    }
                 />
 
-                <Route
-                    path="/dashboard/treasurer"
-                    element={<TreasurerDashboard />}
-                />
-
-                {/* ---- Nested club sub-role shell ---- */}
-                    {/*Each branch is independently role-guarded, so a user with
-                    the wrong sub-role hitting another branch's URL directly
-                    gets redirected by RoleProtectedRoute before that
-                    dashboard ever mounts (cross sub-role navigation blocked).
-                    Each dashboard keeps its own full AdminWorkspaceLayout —
-                    this shell renders no chrome of its own. */}
-
-                <Route path="/club-admin" element={protectedPage(<ClubAdminSubRoleShell />)}>
-                    <Route index element={<ClubAdminSubRoleRedirect />} />
-                
-                    <Route
-                        path="chairman/*"
-                        element={roleProtectedPage(<ChairmanDashboard />, ['CHAIRMAN'])}
-                    />
-                    <Route
-                        path="treasurer/*"
-                        element={roleProtectedPage(<TreasurerDashboard />, ['TREASURER'])}
-                    />
-                    <Route
-                        path="custom-admin/*"
-                        element={roleProtectedPage(<CustomAdminDashboard />, ['CUSTOM_ADMIN'])}
-                    />
-                    <Route
-                        path="team-manager/*"
-                        element={roleProtectedPage(<TeamManagerDashboard />, ['TEAM_MANAGER'])}
-                    />
-                    <Route
-                        path="ticketing-officer/*"
-                        element={roleProtectedPage(<TicketingOfficerDashboard />, ['TICKETING_OFFICER'])}
-                    />
-                </Route>
-                {/*Club admin part */}
                 <Route path="club-management">
-                    <Route path="teams" element={<TeamsManagement />} />
-                    <Route path="players" element={<PlayerRegistration />} />
-                    <Route path="staff" element={<StaffOfficials />} />
-                    <Route path="roster" element={<RosterUpdate />} />
-                    <Route path="squad-submission" element={<SquadSubmission />} />
+                    <Route
+                        path="teams"
+                        element={dashboardProtectedPage(
+                            <TeamsManagement />,
+                            'CLUB_ADMIN',
+                            undefined,
+                            undefined,
+                            'CLUB',
+                        )}
+                    />
+                    <Route
+                        path="players"
+                        element={dashboardProtectedPage(
+                            <PlayerRegistration />,
+                            'CLUB_ADMIN',
+                            undefined,
+                            undefined,
+                            'CLUB',
+                        )}
+                    />
+                    <Route
+                        path="staff"
+                        element={dashboardProtectedPage(
+                            <StaffOfficials />,
+                            'CLUB_ADMIN',
+                            undefined,
+                            undefined,
+                            'CLUB',
+                        )}
+                    />
+                    <Route
+                        path="roster"
+                        element={dashboardProtectedPage(
+                            <RosterUpdate />,
+                            'CLUB_ADMIN',
+                            undefined,
+                            undefined,
+                            'CLUB',
+                        )}
+                    />
+                    <Route
+                        path="squad-submission"
+                        element={dashboardProtectedPage(
+                            <SquadSubmission />,
+                            'CLUB_ADMIN',
+                            undefined,
+                            undefined,
+                            'CLUB',
+                        )}
+                    />
                 </Route>
 
-                {/* Backward-compat: old flat paths now just forward into the
-                    nested shell, so any existing links/bookmarks still work. */}
-                <Route path="/dashboard/chairman" element={<Navigate to="/club-admin/chairman" replace />} />
-                <Route path="/dashboard/treasurer" element={<Navigate to="/club-admin/treasurer" replace />} />
-                <Route path="/dashboard/custom-admin" element={<Navigate to="/club-admin/custom-admin" replace />} />
-                <Route path="/dashboard/team-manager" element={<Navigate to="/club-admin/team-manager" replace />} />
-                <Route path="/dashboard/ticketing-officer" element={<Navigate to="/club-admin/ticketing-officer" replace />} />
+                <Route
+                    path="/dashboard/chairman/*"
+                    element={
+                        <ClubAdminLegacyAliasRedirect workspaceRole="CHAIRMAN" />
+                    }
+                />
+                <Route
+                    path="/dashboard/treasurer/*"
+                    element={
+                        <ClubAdminLegacyAliasRedirect workspaceRole="TREASURER" />
+                    }
+                />
+                <Route
+                    path="/dashboard/custom-admin/*"
+                    element={
+                        <ClubAdminLegacyAliasRedirect
+                            workspaceRole={['CUSTOM', 'CUSTOM_ADMIN']}
+                        />
+                    }
+                />
+                <Route
+                    path="/dashboard/team-manager/*"
+                    element={
+                        <ClubAdminLegacyAliasRedirect workspaceRole="TEAM_MANAGER" />
+                    }
+                />
 
                 <Route
                     path="/dashboard/union-admin"
-                    element={roleProtectedPage(
+                    element={dashboardProtectedPage(
                         <UnionAdminDashboard />,
-                        ['UNION_ADMIN'],
+                        'UNION_WORKSPACE',
                     )}
                 />
 
                 <Route
                     path="/dashboard/referee"
-                    element={roleProtectedPage(
+                    element={dashboardProtectedPage(
                         <UnionAdminDashboard />,
-                        ['REFEREE', 'MATCH_OFFICIAL'],
+                        'UNION_WORKSPACE',
+                        'MATCH_OFFICIAL',
                     )}
                 />
 
                 <Route
                     path="/dashboard/match-official"
-                    element={roleProtectedPage(
+                    element={dashboardProtectedPage(
                         <UnionAdminDashboard />,
-                        ['REFEREE', 'MATCH_OFFICIAL'],
+                        'UNION_WORKSPACE',
+                        'MATCH_OFFICIAL',
                     )}
                 />
 
                 <Route element={protectedPage(<AuthenticatedLayout />)}>
-                    <Route path="/dashboard/fan" element={<Dashboard />} />
                     <Route path="/profile" element={<Profile />} />
                     <Route path="/profile/edit" element={<Navigate to="/profile" replace />} />
                     <Route path="/profile/interests" element={<ProfileInterests />} />
                     <Route path="/profile/clubs" element={<ProfileClubs />} />
-                    <Route path="/profile/payments" element={<ProfilePayments />} />
-                    <Route path="/dashboard/wallet" element={<ProfilePayments />} />
                     <Route path="/profile/notifications" element={<ProfileNotifications />} />
                     <Route path="/profile/privacy" element={<ProfilePrivacy />} />
                     <Route path="/profile/support" element={<ProfileSupport />} />
 
-                    <Route path="/memberships" element={<ExploreMembershipsPage />} />
-                    <Route path="/memberships/:clubSlug" element={<ClubMembershipDetailPage />} />
-                    <Route path="/memberships/:clubSlug/checkout" element={<MembershipCheckoutPage />} />
-                    <Route path="/memberships/:clubSlug/success" element={<MembershipSuccessPage />} />
-                    <Route path="/memberships/:clubSlug/failed" element={<MembershipFailedPage />} />
-                    <Route path="/memberships/payment/processing" element={<MembershipPaymentProcessingPage />} />
-                    <Route path="/dashboard/memberships" element={<MyMembershipsPage />} />
+                    <Route element={<DashboardEntitlementRoute dashboard="FAN" />}>
+                        <Route path="/dashboard/fan" element={<Dashboard />} />
+                        <Route path="/profile/payments" element={<ProfilePayments />} />
+                        <Route path="/dashboard/wallet" element={<ProfilePayments />} />
 
-                    {/* Fan Interaction */}
-                    <Route path="/fan/polls" element={<FanPollsPage />} />
-                    <Route path="/dashboard/tickets" element={<MyTicketsPage />} />
-                    <Route path="/dashboard/tickets/:ticketId" element={<TicketDetailPage />} />
-                    <Route path="/tickets/:matchId/checkout" element={<TicketCheckoutPage />} />
-                    <Route path="/tickets/payment/processing" element={<TicketPaymentProcessingPage />} />
-                    <Route path="/tickets/payment/success" element={<TicketPaymentSuccessPage />} />
-                    <Route path="/tickets/payment/failed" element={<TicketPaymentFailedPage />} />
+                        <Route path="/memberships" element={<ExploreMembershipsPage />} />
+                        <Route path="/memberships/:clubSlug" element={<ClubMembershipDetailPage />} />
+                        <Route path="/memberships/:clubSlug/checkout" element={<MembershipCheckoutPage />} />
+                        <Route path="/memberships/:clubSlug/success" element={<MembershipSuccessPage />} />
+                        <Route path="/memberships/:clubSlug/failed" element={<MembershipFailedPage />} />
+                        <Route path="/memberships/payment/processing" element={<MembershipPaymentProcessingPage />} />
+                        <Route path="/dashboard/memberships" element={<MyMembershipsPage />} />
 
-                    {/* Fantasy — protected, requires login */}
-                    <Route path="/fantasy" element={<FantasyPage />} />
-                    <Route path="/fantasy/select" element={<FantasySportSelect />} />
-                    <Route path="/fantasy/create-league" element={<FantasyCreateJoin />} />
-                    <Route path="/fantasy/team-builder" element={<FantasyTeamBuilder />} />
-                    <Route path="/fantasy/player-market" element={<FantasyPlayerMarket />} />
+                        <Route path="/fan/polls" element={<FanPollsPage />} />
+                        <Route path="/dashboard/tickets" element={<MyTicketsPage />} />
+                        <Route path="/dashboard/tickets/:ticketId" element={<TicketDetailPage />} />
+                        <Route path="/tickets/:matchId/checkout" element={<TicketCheckoutPage />} />
+                        <Route path="/tickets/payment/processing" element={<TicketPaymentProcessingPage />} />
+                        <Route path="/tickets/payment/success" element={<TicketPaymentSuccessPage />} />
+                        <Route path="/tickets/payment/failed" element={<TicketPaymentFailedPage />} />
+
+                        <Route path="/fantasy" element={<FantasyPage />} />
+                        <Route path="/fantasy/select" element={<FantasySportSelect />} />
+                        <Route path="/fantasy/create-league" element={<FantasyCreateJoin />} />
+                        <Route path="/fantasy/team-builder" element={<FantasyTeamBuilder />} />
+                        <Route path="/fantasy/player-market" element={<FantasyPlayerMarket />} />
+                    </Route>
                 </Route>
 
                 <Route path="/edit-profile" element={protectedPage(<Navigate to="/profile" replace />)} />
@@ -425,56 +494,142 @@ export default function AppRoutes() {
                 <Route path="/sponsor/corporatesetup/review" element={<CorporateSponsorReview />} />
                 <Route path="/sponsor/corporatesetup/complete" element={<CorporateSponsorComplete />} />
                 <Route
-                    path="/sponsor/dashboard"
-                    element={protectedPage(<CorporateSponsorDashboard />)}
-                />
-                <Route
-                    path="/sponsor/team"
-                    element={protectedPage(<CorporateTeamManagement />)}
-                />
-                <Route
-                    path="/sponsor/payments"
-                    element={protectedPage(<SponsorPayments />)}
-                />
-                <Route
                     path="/sponsor/payment/processing"
                     element={<SponsorPaymentProcessing />}
                 />
-                <Route path="/sponsor/permissions" element={<SponsorPermissions />} />
+                <Route
+                    path="/dashboard/sponsor"
+                    element={dashboardProtectedPage(
+                        <Navigate to="/sponsor/dashboard" replace />,
+                        'SPONSOR',
+                    )}
+                />
+                <Route
+                    path="/sponsor/dashboard"
+                    element={dashboardProtectedPage(
+                        <CorporateSponsorDashboard />,
+                        'SPONSOR',
+                    )}
+                />
+                <Route
+                    path="/sponsor/team"
+                    element={dashboardProtectedPage(
+                        <CorporateTeamManagement />,
+                        'SPONSOR',
+                    )}
+                />
+                <Route
+                    path="/sponsor/payments"
+                    element={dashboardProtectedPage(
+                        <SponsorPayments />,
+                        'SPONSOR',
+                    )}
+                />
+                <Route
+                    path="/sponsor/permissions"
+                    element={dashboardProtectedPage(
+                        <SponsorPermissions />,
+                        'SPONSOR',
+                    )}
+                />
                 <Route
                     path="/sponsor/packages"
-                    element={protectedPage(<SponsorPackages />)}
+                    element={dashboardProtectedPage(
+                        <SponsorPackages />,
+                        'SPONSOR',
+                    )}
                 />
                 <Route
                     path="/sponsor/packages/:packageId"
-                    element={protectedPage(<SponsorPackageDetail />)}
+                    element={dashboardProtectedPage(
+                        <SponsorPackageDetail />,
+                        'SPONSOR',
+                    )}
                 />
-                <Route path="/sponsor/campaigns/new" element={<CampaignCreation />} />
+                <Route
+                    path="/sponsor/campaigns/new"
+                    element={dashboardProtectedPage(
+                        <CampaignCreation />,
+                        'SPONSOR',
+                    )}
+                />
                 <Route
                     path="/sponsor/analytics"
-                    element={protectedPage(<CampaignAnalytics />)}
+                    element={dashboardProtectedPage(
+                        <CampaignAnalytics />,
+                        'SPONSOR',
+                    )}
                 />
-                <Route path="/sponsor/campaigns/preview" element={<CampaignPlacementPreview />} />
+                <Route
+                    path="/sponsor/campaigns/preview"
+                    element={dashboardProtectedPage(
+                        <CampaignPlacementPreview />,
+                        'SPONSOR',
+                    )}
+                />
                 <Route
                     path="/sponsor/activations"
-                    element={protectedPage(<SponsorCampaigns />)}
+                    element={dashboardProtectedPage(
+                        <SponsorCampaigns />,
+                        'SPONSOR',
+                    )}
                 />
                 <Route
                     path="/sponsor/campaigns"
-                    element={<Navigate to="/sponsor/activations" replace />}
+                    element={dashboardProtectedPage(
+                        <Navigate to="/sponsor/activations" replace />,
+                        'SPONSOR',
+                    )}
                 />
-                <Route path="/sponsor/settings" element={<SponsorSettings />} />
-                <Route path="/sponsor/support" element={<SponsorHelp />} />
-                <Route path="/sponsor/campaigns/new/targeting" element={<CampaignTargeting />} />
-                <Route path="/sponsor/campaigns/new/budget" element={<CampaignBudget />} />
-                <Route path="/sponsor/campaigns/new/review" element={<CampaignReview />} />
-                <Route path="/sponsor/campaigns/new/launch" element={<CampaignLaunch />} />
-                <Route path="/sponsor/profile" element={<SponsorProfile />} />
+                <Route
+                    path="/sponsor/settings"
+                    element={dashboardProtectedPage(<SponsorSettings />, 'SPONSOR')}
+                />
+                <Route
+                    path="/sponsor/support"
+                    element={dashboardProtectedPage(<SponsorHelp />, 'SPONSOR')}
+                />
+                <Route
+                    path="/sponsor/campaigns/new/targeting"
+                    element={dashboardProtectedPage(<CampaignTargeting />, 'SPONSOR')}
+                />
+                <Route
+                    path="/sponsor/campaigns/new/budget"
+                    element={dashboardProtectedPage(<CampaignBudget />, 'SPONSOR')}
+                />
+                <Route
+                    path="/sponsor/campaigns/new/review"
+                    element={dashboardProtectedPage(<CampaignReview />, 'SPONSOR')}
+                />
+                <Route
+                    path="/sponsor/campaigns/new/launch"
+                    element={dashboardProtectedPage(<CampaignLaunch />, 'SPONSOR')}
+                />
+                <Route
+                    path="/sponsor/profile"
+                    element={dashboardProtectedPage(<SponsorProfile />, 'SPONSOR')}
+                />
 
-                <Route path="/payments" element={<Payments />} />
+                <Route
+                    path="/payments"
+                    element={dashboardProtectedPage(<Payments />, 'FAN')}
+                />
 
                 {/* Super Admin routes */}
-             <Route path="/super-admin" element={roleProtectedPage(<SuperAdminDashboard />, ["SUPER_ADMIN"])}>
+                <Route
+                    path="/dashboard/super-admin"
+                    element={dashboardProtectedPage(
+                        <Navigate to="/super-admin" replace />,
+                        'SUPER_ADMIN',
+                    )}
+                />
+                <Route
+                    path="/super-admin"
+                    element={dashboardProtectedPage(
+                        <SuperAdminDashboard />,
+                        'SUPER_ADMIN',
+                    )}
+                >
                     <Route index element={<SuperAdminHome />} />
                     <Route path="dashboard" element={<SuperAdminHome />} />
 

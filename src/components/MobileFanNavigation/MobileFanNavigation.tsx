@@ -23,13 +23,15 @@ import {
 import type { LucideIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { getMyUnionWorkspaces } from "../../services/unionAdminService";
+import { useAuthStore } from "../../store/authStore";
+import { getEntitlementsForDashboard } from "../../utils/dashboardAccess.js";
 import styles from "./MobileFanNavigation.module.css";
 
 interface MobileNavLink {
     label: string;
     href: string;
     icon: LucideIcon;
+    requiresFan?: boolean;
 }
 
 interface MobileNavSection {
@@ -38,7 +40,7 @@ interface MobileNavSection {
 }
 
 const mainLinks: MobileNavLink[] = [
-    { label: "Home", href: "/dashboard/fan", icon: Home },
+    { label: "Home", href: "/dashboard/fan", icon: Home, requiresFan: true },
     { label: "Browse", href: "/clubs", icon: Compass },
     { label: "Tickets", href: "/dashboard/tickets", icon: Ticket },
     { label: "Profile", href: "/profile", icon: UserRound },
@@ -48,10 +50,10 @@ const drawerSections: MobileNavSection[] = [
     {
         title: "Main",
         links: [
-            { label: "Dashboard", href: "/dashboard/fan", icon: Home },
+            { label: "Dashboard", href: "/dashboard/fan", icon: Home, requiresFan: true },
             { label: "My Clubs", href: "/profile/clubs", icon: ShieldCheck },
-            { label: "My Tickets", href: "/dashboard/tickets", icon: Ticket },
-            { label: "My Memberships", href: "/dashboard/memberships", icon: Trophy },
+            { label: "My Tickets", href: "/dashboard/tickets", icon: Ticket, requiresFan: true },
+            { label: "My Memberships", href: "/dashboard/memberships", icon: Trophy, requiresFan: true },
             { label: "Payments", href: "/profile/payments", icon: CreditCard },
         ],
     },
@@ -70,9 +72,9 @@ const drawerSections: MobileNavSection[] = [
     {
         title: "Engage",
         links: [
-            { label: "Fantasy", href: "/fantasy", icon: Swords },
-            { label: "Polls Hub", href: "/fan/polls", icon: BarChart3 },
-            { label: "MVP Voting", href: "/fan/mvp-voting", icon: Goal },
+            { label: "Fantasy", href: "/fantasy", icon: Swords, requiresFan: true },
+            { label: "Polls Hub", href: "/fan/polls", icon: BarChart3, requiresFan: true },
+            { label: "MVP Voting", href: "/fan/mvp-voting", icon: Goal, requiresFan: true },
             { label: "Become a Sponsor", href: "/sponsor/apply", icon: Handshake },
         ],
     },
@@ -88,32 +90,16 @@ const drawerSections: MobileNavSection[] = [
 
 function MobileFanNavigation() {
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-    const [unionWorkspaceCount, setUnionWorkspaceCount] = useState(0);
+    const authenticatedUser = useAuthStore((state) => state.user);
     const location = useLocation();
-
-    useEffect(() => {
-        let isMounted = true;
-
-        async function loadUnionWorkspaceCount() {
-            try {
-                const workspaces = await getMyUnionWorkspaces();
-
-                if (isMounted) {
-                    setUnionWorkspaceCount(workspaces.length);
-                }
-            } catch {
-                if (isMounted) {
-                    setUnionWorkspaceCount(0);
-                }
-            }
-        }
-
-        void loadUnionWorkspaceCount();
-
-        return () => {
-            isMounted = false;
-        };
-    }, []);
+    const dashboardAccess = authenticatedUser?.dashboard_access;
+    const fanEntitlement =
+        getEntitlementsForDashboard(dashboardAccess, "FAN")[0] ?? null;
+    const unionEntitlement =
+        getEntitlementsForDashboard(
+            dashboardAccess,
+            "UNION_WORKSPACE",
+        )[0] ?? null;
 
     useEffect(() => {
         setIsDrawerOpen(false);
@@ -150,12 +136,12 @@ function MobileFanNavigation() {
                 </div>
 
                 <div className={styles.drawerContent}>
-                    {unionWorkspaceCount > 0 ? (
+                    {unionEntitlement ? (
                         <section className={styles.drawerSection}>
                             <h2>Admin workspace</h2>
                             <div className={styles.drawerLinks}>
                                 <NavLink
-                                    to="/dashboard/union-admin"
+                                    to={unionEntitlement.route}
                                     className={({ isActive }) =>
                                         isActive
                                             ? `${styles.drawerLink} ${styles.activeDrawerLink}`
@@ -175,12 +161,20 @@ function MobileFanNavigation() {
 
                             <div className={styles.drawerLinks}>
                                 {section.links.map((link) => {
+                                    if (link.requiresFan && !fanEntitlement) {
+                                        return null;
+                                    }
+
                                     const Icon = link.icon;
+                                    const href =
+                                        link.href === "/dashboard/fan"
+                                            ? fanEntitlement?.route ?? link.href
+                                            : link.href;
 
                                     return (
                                         <NavLink
-                                            key={link.href}
-                                            to={link.href}
+                                            key={href}
+                                            to={href}
                                             className={({ isActive }) =>
                                                 isActive
                                                     ? `${styles.drawerLink} ${styles.activeDrawerLink}`
@@ -199,13 +193,19 @@ function MobileFanNavigation() {
             </aside>
 
             <nav className={styles.mobileNav} aria-label="Mobile fan navigation">
-                {mainLinks.map((link) => {
+                {mainLinks
+                    .filter((link) => !link.requiresFan || fanEntitlement)
+                    .map((link) => {
                     const Icon = link.icon;
+                    const href =
+                        link.href === "/dashboard/fan"
+                            ? fanEntitlement?.route ?? link.href
+                            : link.href;
 
                     return (
                         <NavLink
-                            key={link.href}
-                            to={link.href}
+                            key={href}
+                            to={href}
                             className={({ isActive }) =>
                                 isActive
                                     ? `${styles.mobileNavLink} ${styles.activeMobileNavLink}`

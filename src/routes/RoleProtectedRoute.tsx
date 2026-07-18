@@ -8,6 +8,7 @@ import {
   getNormalizedRoles,
   userHasAnyRole,
 } from '../utils/roleRoutes.js';
+import { ACCESS_UNAVAILABLE_ROUTE } from '../utils/dashboardAccess.js';
 
 interface RoleProtectedRouteProps {
   children: ReactNode;
@@ -53,7 +54,12 @@ export default function RoleProtectedRoute({
   }
 
   if (!userHasAnyRole(user, allowedRoles)) {
-    return <Navigate to={redirectTo ?? getDefaultDashboardRoute(user)} replace />;
+    return (
+      <Navigate
+        to={redirectTo ?? getDefaultDashboardRoute(user) ?? ACCESS_UNAVAILABLE_ROUTE}
+        replace
+      />
+    );
   }
 
   return children;

@@ -19,10 +19,10 @@ import {
     LogOut,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { useCurrentUser } from "../../hooks/useCurrentUser";
-import { getMyUnionWorkspaces } from "../../services/unionAdminService";
+import { useAuthStore } from "../../store/authStore";
+import { getEntitlementsForDashboard } from "../../utils/dashboardAccess.js";
 import logoHorizontal from "../../assets/logos/league-os-horizontal.png";
 import styles from "./UserSidebar.module.css";
 
@@ -30,6 +30,7 @@ interface SidebarLink {
     label: string;
     href: string;
     icon: LucideIcon;
+    requiresFan?: boolean;
 }
 
 interface SidebarSection {
@@ -41,11 +42,11 @@ const sidebarSections: SidebarSection[] = [
     {
         title: "Main",
         links: [
-            { label: "Dashboard", href: "/dashboard/fan", icon: Home },
+            { label: "Dashboard", href: "/dashboard/fan", icon: Home, requiresFan: true },
             { label: "Profile", href: "/profile", icon: Grid2X2 },
             { label: "My Clubs", href: "/profile/clubs", icon: ShieldCheck },
-            { label: "My Tickets", href: "/dashboard/tickets", icon: Ticket },
-            { label: "My Memberships", href: "/dashboard/memberships", icon: Trophy },
+            { label: "My Tickets", href: "/dashboard/tickets", icon: Ticket, requiresFan: true },
+            { label: "My Memberships", href: "/dashboard/memberships", icon: Trophy, requiresFan: true },
             { label: "Payments", href: "/profile/payments", icon: CreditCard },
         ],
     },
@@ -64,9 +65,9 @@ const sidebarSections: SidebarSection[] = [
     {
         title: "Engage",
         links: [
-            { label: "Fantasy", href: "/fantasy", icon: Swords },
-            { label: "Polls Hub", href: "/fan/polls", icon: BarChart3 },
-            { label: "MVP Voting", href: "/fan/mvp-voting", icon: Goal },
+            { label: "Fantasy", href: "/fantasy", icon: Swords, requiresFan: true },
+            { label: "Polls Hub", href: "/fan/polls", icon: BarChart3, requiresFan: true },
+            { label: "MVP Voting", href: "/fan/mvp-voting", icon: Goal, requiresFan: true },
             { label: "Become a Sponsor", href: "/sponsorhub", icon: Handshake },
         ],
     },
@@ -85,7 +86,16 @@ interface UserSidebarProps {
 }
 
 function UserSidebar({ isCollapsed = false }: UserSidebarProps) {
-    const { currentUser, profile } = useCurrentUser();
+    const { currentUser } = useCurrentUser();
+    const authenticatedUser = useAuthStore((state) => state.user);
+    const dashboardAccess = authenticatedUser?.dashboard_access;
+    const fanEntitlement =
+        getEntitlementsForDashboard(dashboardAccess, "FAN")[0] ?? null;
+    const unionEntitlement =
+        getEntitlementsForDashboard(
+            dashboardAccess,
+            "UNION_WORKSPACE",
+        )[0] ?? null;
 
     function handleLogout() {
         [
@@ -101,43 +111,6 @@ function UserSidebar({ isCollapsed = false }: UserSidebarProps) {
 
         window.location.assign("/login");
     }
-
-    const [unionWorkspaceCount, setUnionWorkspaceCount] = useState(0);
-
-    const profileRoles = useMemo(() => {
-        return Array.isArray(profile?.roles)
-            ? profile.roles.map((role) => String(role).toUpperCase())
-            : [];
-    }, [profile?.roles]);
-
-    const hasUnionWorkspaceAccess =
-        unionWorkspaceCount > 0 ||
-        String(profile?.role ?? "").toUpperCase() === "UNION_ADMIN" ||
-        profileRoles.includes("UNION_ADMIN");
-
-    useEffect(() => {
-        let isMounted = true;
-
-        async function loadUnionWorkspaceCount() {
-            try {
-                const workspaces = await getMyUnionWorkspaces();
-
-                if (isMounted) {
-                    setUnionWorkspaceCount(workspaces.length);
-                }
-            } catch {
-                if (isMounted) {
-                    setUnionWorkspaceCount(0);
-                }
-            }
-        }
-
-        void loadUnionWorkspaceCount();
-
-        return () => {
-            isMounted = false;
-        };
-    }, []);
 
     return (
         <aside className={`${styles.sidebar} ${isCollapsed ? styles.collapsedSidebar : ""}`}>
@@ -173,8 +146,8 @@ function UserSidebar({ isCollapsed = false }: UserSidebarProps) {
                 View Profile
             </NavLink>
 
-            {hasUnionWorkspaceAccess ? (
-                <NavLink to="/dashboard/union-admin" className={styles.workspaceButton}>
+            {unionEntitlement ? (
+                <NavLink to={unionEntitlement.route} className={styles.workspaceButton}>
                     <Building2 size={18} strokeWidth={2.3} aria-hidden="true" />
                     <span>Union Workspace</span>
                 </NavLink>
@@ -187,12 +160,20 @@ function UserSidebar({ isCollapsed = false }: UserSidebarProps) {
 
                         <ul>
                             {section.links.map((link) => {
+                                if (link.requiresFan && !fanEntitlement) {
+                                    return null;
+                                }
+
                                 const Icon = link.icon;
+                                const href =
+                                    link.href === "/dashboard/fan"
+                                        ? fanEntitlement?.route ?? link.href
+                                        : link.href;
 
                                 return (
-                                    <li key={link.href}>
+                                    <li key={href}>
                                         <NavLink
-                                            to={link.href}
+                                            to={href}
                                             className={({ isActive }) =>
                                                 isActive
                                                     ? `${styles.navLink} ${styles.activeNavLink}`

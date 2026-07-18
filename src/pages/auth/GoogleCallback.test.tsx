@@ -36,7 +36,19 @@ function renderGoogleCallback() {
 
 describe('GoogleCallback page', () => {
   it('stores returning OAuth tokens and routes to the dashboard', async () => {
-    const user = { id: 7, email: 'fan@example.com' }
+    const user = {
+      id: 7,
+      email: 'fan@example.com',
+      dashboard_access: {
+        version: 1,
+        default_entitlement_id: 'fan',
+        entitlements: [{
+          id: 'fan', dashboard: 'FAN', route: '/dashboard/fan',
+          scope_type: 'ACCOUNT', scope_id: 7, workspace_role: null,
+          permissions: [],
+        }],
+      },
+    }
     window.history.replaceState(
       {},
       '',
@@ -46,7 +58,7 @@ describe('GoogleCallback page', () => {
     renderGoogleCallback()
 
     await waitFor(() => {
-      expect(navigateMock).toHaveBeenCalledWith('/dashboard', { replace: true })
+      expect(navigateMock).toHaveBeenCalledWith('/dashboard/fan', { replace: true })
     })
 
     expect(localStorage.getItem('league_os_access_token')).toBe('access-123')
@@ -60,7 +72,19 @@ describe('GoogleCallback page', () => {
   })
 
   it('routes new OAuth users to personalization', async () => {
-    const user = { id: 8, email: 'newfan@example.com' }
+    const user = {
+      id: 8,
+      email: 'newfan@example.com',
+      dashboard_access: {
+        version: 1,
+        default_entitlement_id: 'fan',
+        entitlements: [{
+          id: 'fan', dashboard: 'FAN', route: '/dashboard/fan',
+          scope_type: 'ACCOUNT', scope_id: 8, workspace_role: null,
+          permissions: [],
+        }],
+      },
+    }
     window.history.replaceState(
       {},
       '',
@@ -104,5 +128,23 @@ describe('GoogleCallback page', () => {
     expect(
       await screen.findByText(/google sign-in could not be completed/i),
     ).toBeInTheDocument()
+  })
+
+  it('fails closed when returning OAuth data has no dashboard access', async () => {
+    const user = { id: 7, email: 'official@example.com' }
+    window.history.replaceState(
+      {},
+      '',
+      `/google-callback#access=access-123&refresh=refresh-456&requires_email_verification=false&is_new_user=false&user=${encodeURIComponent(JSON.stringify(user))}`,
+    )
+
+    renderGoogleCallback()
+
+    await waitFor(() => {
+      expect(navigateMock).toHaveBeenCalledWith(
+        '/account/access-unavailable',
+        { replace: true },
+      )
+    })
   })
 })

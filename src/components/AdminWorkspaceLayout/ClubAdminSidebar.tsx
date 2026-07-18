@@ -14,6 +14,10 @@ import { Link } from "react-router-dom";
 
 import logoMark from "../../assets/league-os-mark.svg";
 import logoHorizontal from "../../assets/logos/league-os-horizontal.png";
+import type {
+  ActiveClubWorkspace,
+  ClubWorkspaceDashboard,
+} from "../../utils/clubWorkspace";
 import styles from "./AdminWorkspaceLayout.module.css";
 
 /* eslint-disable react-refresh/only-export-components */
@@ -24,10 +28,47 @@ import styles from "./AdminWorkspaceLayout.module.css";
 // Shared types
 // ---------------------------------------------------------------------------
 
+export type ClubWorkspacePermission =
+  | "club.profile.view"
+  | "club.profile.edit"
+  | "club.squad.manage"
+  | "club.members.manage"
+  | "club.ticketing.manage"
+  | "club.events.manage"
+  | "club.reports.view"
+  | "club.finance.view"
+  | "club.finance.manage"
+  | "club.admin.manage"
+  | "club.settings.manage"
+  | "club.transfers.manage"
+  | "club.sponsorship.manage"
+  | "club.sponsorship.view"
+  | "club.training.manage"
+  | "club.matches.manage"
+  | "club.ticketing.validate"
+  | "dashboard.club_admin"
+  | "dashboard.ticketing_officer"
+  | "dashboard.me";
+
 export type AdminWorkspaceNavItem<T extends string> = {
   key: T;
   label: string;
   icon: LucideIcon;
+  /**
+   * Exact effective permissions supplied by the selected Club entitlement.
+   * Missing metadata and empty lists fail closed whenever a Club context is
+   * active; generic layouts remain unchanged when no Club context is passed.
+   */
+  requiredClubPermissions?: readonly ClubWorkspacePermission[];
+  clubPermissionMode?: "any" | "all";
+  /**
+   * Normal items are Club Admin only. Ticketing items opt into both families
+   * so a normal administrator can manage tickets while the restricted
+   * Ticketing Officer family cannot see non-ticketing modules.
+   */
+  clubWorkspaceFamily?:
+    | ClubWorkspaceDashboard
+    | readonly ClubWorkspaceDashboard[];
   /**
    * Optional sub-pages rendered indented beneath this item once
    * expanded (e.g. "Membership" revealing "Members Directory",
@@ -77,6 +118,117 @@ export function asNavGroups<T extends string>(
   return isGroupedNavItems(navItems)
     ? navItems
     : [{ label: "", items: navItems }];
+}
+
+function clubAccessAllows<T extends string>(
+  item: AdminWorkspaceNavItem<T>,
+  workspace: ActiveClubWorkspace,
+) {
+  const configuredFamily =
+    item.clubWorkspaceFamily ?? "CLUB_ADMIN";
+  const families: readonly ClubWorkspaceDashboard[] =
+    typeof configuredFamily === "string"
+      ? [configuredFamily]
+      : configuredFamily;
+
+  if (!families.includes(workspace.dashboard)) {
+    return false;
+  }
+
+  if (!item.requiredClubPermissions?.length) {
+    return false;
+  }
+
+  const effectivePermissions = new Set(
+    workspace.permissions,
+  );
+  const hasPermission = (
+    permission: ClubWorkspacePermission,
+  ) => effectivePermissions.has(permission);
+
+  return item.clubPermissionMode === "all"
+    ? item.requiredClubPermissions.every(hasPermission)
+    : item.requiredClubPermissions.some(hasPermission);
+}
+
+function filterNavItemForClubWorkspace<T extends string>(
+  item: AdminWorkspaceNavItem<T>,
+  workspace: ActiveClubWorkspace,
+): AdminWorkspaceNavItem<T> | null {
+  if (!clubAccessAllows(item, workspace)) {
+    return null;
+  }
+
+  const children = item.children
+    ?.map((child) =>
+      filterNavItemForClubWorkspace(child, workspace),
+    )
+    .filter(
+      (
+        child,
+      ): child is AdminWorkspaceNavItem<T> => child !== null,
+    );
+
+  if (item.children) {
+    if (!children?.length) return null;
+
+    return { ...item, children };
+  }
+
+  return item;
+}
+
+export function filterNavGroupsForClubWorkspace<
+  T extends string,
+>(
+  navItems: NavItemsProp<T>,
+  workspace?: ActiveClubWorkspace | null,
+): AdminWorkspaceNavGroup<T>[] {
+  const groups = asNavGroups(navItems);
+
+  if (!workspace) {
+    return groups;
+  }
+
+  return groups
+    .map((group) => ({
+      ...group,
+      items: group.items
+        .map((item) =>
+          filterNavItemForClubWorkspace(item, workspace),
+        )
+        .filter(
+          (
+            item,
+          ): item is AdminWorkspaceNavItem<T> => item !== null,
+        ),
+    }))
+    .filter((group) => group.items.length > 0);
+}
+
+export function formatClubWorkspaceRole(role: string) {
+  const normalizedRole = role.trim().toUpperCase();
+  const labels: Record<string, string> = {
+    CLUB_ADMIN: "Club Administrator",
+    CHAIRMAN: "Chairman",
+    TREASURER: "Treasurer",
+    TEAM_MANAGER: "Team Manager",
+    CUSTOM: "Custom Admin",
+    CUSTOM_ADMIN: "Custom Admin",
+    TICKETING_OFFICER: "Ticketing Officer",
+  };
+
+  return (
+    labels[normalizedRole] ??
+    normalizedRole
+      .toLowerCase()
+      .split("_")
+      .map(
+        (part) =>
+          part.charAt(0).toUpperCase() + part.slice(1),
+      )
+      .join(" ")
+  );
 }
 
 export function findOwningParent<T extends string>(
@@ -142,6 +294,8 @@ export type AdminSidebarProps<T extends string> = {
   isCollapsed: boolean;
   /** Toggle collapse state */
   onToggleCollapse: () => void;
+  /** Fan route supplied only when the access contract includes FAN. */
+  fanDashboardRoute?: string;
 };
 
 export function AdminSidebar<T extends string>({
@@ -154,6 +308,7 @@ export function AdminSidebar<T extends string>({
   onToggleExpand,
   isCollapsed,
   onToggleCollapse,
+  fanDashboardRoute,
 }: AdminSidebarProps<T>) {
   function renderNavItem(item: AdminWorkspaceNavItem<T>) {
     const Icon = item.icon;
@@ -244,9 +399,13 @@ export function AdminSidebar<T extends string>({
     <>
       <aside className={styles.sidebar}>
         <Link
-          to="/dashboard/fan"
+          to={fanDashboardRoute ?? "/"}
           className={styles.brand}
-          aria-label="Open fan Dashboard"
+          aria-label={
+            fanDashboardRoute
+              ? "Open Fan Dashboard"
+              : "Open League OS home"
+          }
         >
           <img
             className={styles.logoHorizontal}
@@ -275,14 +434,16 @@ export function AdminSidebar<T extends string>({
           </div>
         </div>
 
-        <Link
-          to="/dashboard/fan"
-          className={styles.workspaceSwitchLink}
-          title="Back to fan Admin Dashboard"
-        >
-          <Home size={19} strokeWidth={2.2} aria-hidden="true" />
-          <span> Fan Dashboard</span>
-        </Link>
+        {fanDashboardRoute ? (
+          <Link
+            to={fanDashboardRoute}
+            className={styles.workspaceSwitchLink}
+            title="Open Fan Dashboard"
+          >
+            <Home size={19} strokeWidth={2.2} aria-hidden="true" />
+            <span>Fan Dashboard</span>
+          </Link>
+        ) : null}
 
         <nav
           className={styles.nav}
@@ -407,6 +568,7 @@ export function AdminMobileBottomNav<T extends string>({
 
 export type AdminMobileDrawerProps<T extends string> = {
   workspaceTitle: string;
+  workspaceSubtitle?: string;
   navGroups: AdminWorkspaceNavGroup<T>[];
   activeTab: T;
   onTabChange: (tab: T) => void;
@@ -415,10 +577,12 @@ export type AdminMobileDrawerProps<T extends string> = {
   onClose: () => void;
   publicPath?: string;
   publicLabel?: string;
+  fanDashboardRoute?: string;
 };
 
 export function AdminMobileDrawer<T extends string>({
   workspaceTitle,
+  workspaceSubtitle,
   navGroups,
   activeTab,
   onTabChange,
@@ -427,6 +591,7 @@ export function AdminMobileDrawer<T extends string>({
   onClose,
   publicPath,
   publicLabel,
+  fanDashboardRoute,
 }: AdminMobileDrawerProps<T>) {
   function handleTabChange(tab: T) {
     onTabChange(tab);
@@ -538,7 +703,11 @@ export function AdminMobileDrawer<T extends string>({
       >
         <header className={styles.drawerHeader}>
           <div>
-            <span>{workspaceTitle}</span>
+            <span>
+              {workspaceSubtitle
+                ? `${workspaceTitle} · ${workspaceSubtitle}`
+                : workspaceTitle}
+            </span>
             <strong>Workspace Menu</strong>
           </div>
 
@@ -569,14 +738,16 @@ export function AdminMobileDrawer<T extends string>({
             <h2>Quick links</h2>
 
             <div className={styles.drawerLinks}>
-              <Link
-                to="/dashboard/fan"
-                className={styles.drawerLink}
-                onClick={onClose}
-              >
-                <Home size={19} strokeWidth={2.2} aria-hidden="true" />
-                Back to fan Dashboard
-              </Link>
+              {fanDashboardRoute ? (
+                <Link
+                  to={fanDashboardRoute}
+                  className={styles.drawerLink}
+                  onClick={onClose}
+                >
+                  <Home size={19} strokeWidth={2.2} aria-hidden="true" />
+                  Open Fan Dashboard
+                </Link>
+              ) : null}
 
               {publicPath && publicLabel ? (
                 <Link

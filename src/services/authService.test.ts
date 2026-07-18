@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from 'vitest'
 import {
   fetchProfile,
+  fetchCurrentUser,
+  googleLogin,
   login,
   register,
   removeAvatar,
@@ -32,6 +34,7 @@ describe('authService', () => {
     await resendOtp({ email: 'fan@example.com' })
     await requestPasswordReset({ email: 'fan@example.com' })
     await resetPassword({ code: '123456' })
+    await googleLogin({ token: 'google-credential' })
 
     expect(axiosMock.post).toHaveBeenNthCalledWith(1, '/accounts/register/', { email: 'new@example.com' })
     expect(axiosMock.post).toHaveBeenNthCalledWith(2, '/accounts/login/', { email: 'fan@example.com' })
@@ -41,6 +44,9 @@ describe('authService', () => {
       email: 'fan@example.com',
     })
     expect(axiosMock.post).toHaveBeenNthCalledWith(6, '/accounts/password-reset/confirm/', { code: '123456' })
+    expect(axiosMock.post).toHaveBeenNthCalledWith(7, '/accounts/google/', {
+      token: 'google-credential',
+    })
   })
 
   it('routes profile management calls to the expected backend endpoints', async () => {
@@ -49,10 +55,12 @@ describe('authService', () => {
     axiosMock.delete.mockResolvedValue({ data: {} })
 
     await fetchProfile()
+    await fetchCurrentUser()
     await updateProfile({ display_name: 'Amina' })
     await removeAvatar()
 
     expect(axiosMock.get).toHaveBeenCalledWith('/accounts/profile/')
+    expect(axiosMock.get).toHaveBeenCalledWith('/accounts/me/')
     expect(axiosMock.patch).toHaveBeenCalledWith('/accounts/profile/', { display_name: 'Amina' })
     expect(axiosMock.delete).toHaveBeenCalledWith('/accounts/profile/avatar/')
   })

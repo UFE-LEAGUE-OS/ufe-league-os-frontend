@@ -1,31 +1,54 @@
-import { Navigate, Outlet } from 'react-router-dom';
-import { useAuthStore } from '../store/authStore.js';
-import { getDefaultDashboardRoute } from '../utils/roleRoutes.js';
+import { Navigate } from 'react-router-dom';
+
+import DashboardEntitlementRoute from './DashboardEntitlementRoute.js';
+import {
+  CLUB_ADMIN_ROUTE,
+  CLUB_TICKETING_ROUTE,
+  type ClubWorkspaceDashboard,
+} from '../utils/clubWorkspace.js';
+
+type ClubAdminLegacyAliasRedirectProps = {
+  dashboard?: ClubWorkspaceDashboard;
+  workspaceRole: string | readonly string[];
+};
 
 /**
- * Mounted at /club-admin/*. Purely a routing junction — renders no chrome
- * of its own. Each sub-role (Chairman, Treasurer, Custom Admin, Team
- * Manager, Ticketing Officer) keeps its own full AdminWorkspaceLayout,
- * matching the mockup's "separate layout per role" diagram rather than
- * one shared shell UI wrapping all five.
+ * Entitlement-aware compatibility layer for retired Club sub-role routes.
+ * The alias renders no workspace UI; an exact scoped entitlement is checked
+ * before navigation continues to the shared Club shell.
  */
-export function ClubAdminSubRoleShell() {
-  return <Outlet />;
+export function ClubAdminLegacyAliasRedirect({
+  dashboard = 'CLUB_ADMIN',
+  workspaceRole,
+}: ClubAdminLegacyAliasRedirectProps) {
+  const destination =
+    dashboard === 'TICKETING_OFFICER'
+      ? CLUB_TICKETING_ROUTE
+      : CLUB_ADMIN_ROUTE;
+
+  return (
+    <DashboardEntitlementRoute
+      dashboard={dashboard}
+      scopeType="CLUB"
+      workspaceRole={workspaceRole}
+    >
+      <Navigate replace to={destination} />
+    </DashboardEntitlementRoute>
+  );
 }
 
-/**
- * Handles the bare /club-admin hit (no sub-role segment yet). Delegates
- * to getDefaultDashboardRoute — the same utility RoleProtectedRoute uses
- * — so there is exactly one place that decides "where does this user's
- * role actually send them", instead of two competing lists of role
- * checks drifting out of sync.
- *
- * If the resolved user isn't actually one of the five club sub-roles
- * (e.g. a plain CLUB_ADMIN, or a fan with no club role), this correctly
- * lands them wherever getDefaultDashboardRoute says they belong instead
- * of leaving them on a broken/empty /club-admin page.
- */
+/** Backward-compatible bare /club-admin redirect. */
 export function ClubAdminSubRoleRedirect() {
-  const user = useAuthStore((state) => state.user);
-  return <Navigate to={getDefaultDashboardRoute(user)} replace />;
+  return (
+    <ClubAdminLegacyAliasRedirect
+      workspaceRole={[
+        'CLUB_ADMIN',
+        'CHAIRMAN',
+        'TREASURER',
+        'TEAM_MANAGER',
+        'CUSTOM',
+        'CUSTOM_ADMIN',
+      ]}
+    />
+  );
 }
