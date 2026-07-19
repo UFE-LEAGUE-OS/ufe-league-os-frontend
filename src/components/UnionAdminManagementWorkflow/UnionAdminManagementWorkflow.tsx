@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import {
   createUnionAdminCompetition,
   bulkAddUnionAdminLeagueClubMemberships,
   createUnionAdminSeason,
   generateUnionAdminFixtures,
+  getUnionAdminClubs,
   getUnionAdminLeagueClubMemberships,
   getUnionAdminManagementCompetitions,
   getUnionAdminManagementLeagues,
@@ -34,7 +35,6 @@ type ClubOption = {
 type Props = {
   workspaceSlug: string;
   workspaceLabel: string;
-  clubs: ClubOption[];
 };
 
 const statusOptions: UnionAdminClubMembershipStatus[] = [
@@ -134,12 +134,17 @@ function competitionLabel(competition: UnionAdminCompetitionRecord) {
   return `${competition.name} • ${competition.season}`;
 }
 
-export default function UnionAdminManagementWorkflow({ workspaceSlug, workspaceLabel, clubs }: Props) {
+export default function UnionAdminManagementWorkflow({ workspaceSlug, workspaceLabel }: Props) {
+  const workspaceGenerationRef = useRef(0);
+  const requestGenerationRef = useRef(0);
+  const workspaceSlugRef = useRef(workspaceSlug);
+  workspaceSlugRef.current = workspaceSlug;
   const [mode, setMode] = useState<WorkflowMode>("competition");
   const [leagues, setLeagues] = useState<UnionAdminLeagueOption[]>([]);
   const [seasons, setSeasons] = useState<UnionAdminSeasonRecord[]>([]);
   const [competitions, setCompetitions] = useState<UnionAdminCompetitionRecord[]>([]);
   const [memberships, setMemberships] = useState<UnionAdminLeagueClubMembership[]>([]);
+  const [clubOptions, setClubOptions] = useState<ClubOption[]>([]);
   const [generatedFixtures, setGeneratedFixtures] = useState<UnionAdminGeneratedFixture[]>([]);
   const [selectedFixture, setSelectedFixture] = useState<UnionAdminGeneratedFixture | null>(null);
   const [rescheduleForm, setRescheduleForm] = useState({
@@ -207,12 +212,6 @@ export default function UnionAdminManagementWorkflow({ workspaceSlug, workspaceL
     excludedDates: "",
   });
 
-  const clubOptions = useMemo(() => {
-    return Array.from(
-      new Map(clubs.filter((club) => club.id && club.name).map((club) => [club.id, club])).values(),
-    );
-  }, [clubs]);
-
   const activeSeasonMembershipClubIds = useMemo(() => {
     return new Set(
       memberships
@@ -253,78 +252,106 @@ export default function UnionAdminManagementWorkflow({ workspaceSlug, workspaceL
     nextLeagues: UnionAdminLeagueOption[],
     nextSeasons: UnionAdminSeasonRecord[],
     nextCompetitions: UnionAdminCompetitionRecord[],
+    nextClubs: ClubOption[],
   ) {
     const defaultLeague = String(nextLeagues[0]?.id ?? "");
     const defaultSeason = String(nextSeasons[0]?.id ?? "");
     const defaultCompetition = String(nextCompetitions[0]?.id ?? "");
-    const defaultClub = clubOptions[0]?.id ?? "";
+    const defaultClub = nextClubs[0]?.id ?? "";
+    const leagueIds = new Set(nextLeagues.map((item) => String(item.id)));
+    const seasonIds = new Set(nextSeasons.map((item) => String(item.id)));
+    const competitionIds = new Set(nextCompetitions.map((item) => String(item.id)));
+    const clubIds = new Set(nextClubs.map((item) => item.id));
 
     setCompetitionForm((current) => ({
       ...current,
-      league: current.league || defaultLeague,
-      season: current.season || defaultSeason,
+      league: leagueIds.has(current.league) ? current.league : defaultLeague,
+      season: seasonIds.has(current.season) ? current.season : defaultSeason,
       name: current.name || (nextLeagues[0] ? `${nextLeagues[0].name} ${current.seasonLabel}` : ""),
     }));
 
     setSeasonForm((current) => ({
       ...current,
-      league: current.league || defaultLeague,
+      league: leagueIds.has(current.league) ? current.league : defaultLeague,
     }));
 
     setClubForm((current) => ({
       ...current,
-      league: current.league || defaultLeague,
-      season: current.season || defaultSeason,
-      club: current.club || defaultClub,
+      league: leagueIds.has(current.league) ? current.league : defaultLeague,
+      season: seasonIds.has(current.season) ? current.season : defaultSeason,
+      club: clubIds.has(current.club) ? current.club : defaultClub,
     }));
 
     setMovementForm((current) => ({
       ...current,
-      club: current.club || defaultClub,
-      fromLeague: current.fromLeague || defaultLeague,
-      toLeague: current.toLeague || String(nextLeagues[1]?.id ?? ""),
-      season: current.season || defaultSeason,
-      targetSeason: current.targetSeason || defaultSeason,
+      club: clubIds.has(current.club) ? current.club : defaultClub,
+      fromLeague: leagueIds.has(current.fromLeague) ? current.fromLeague : defaultLeague,
+      toLeague: leagueIds.has(current.toLeague) ? current.toLeague : String(nextLeagues[1]?.id ?? ""),
+      season: seasonIds.has(current.season) ? current.season : defaultSeason,
+      targetSeason: seasonIds.has(current.targetSeason) ? current.targetSeason : defaultSeason,
     }));
 
     setFixtureForm((current) => ({
       ...current,
-      competition: current.competition || defaultCompetition,
+      competition: competitionIds.has(current.competition) ? current.competition : defaultCompetition,
     }));
   }
 
   async function refreshManagementData() {
+    const requestWorkspace = workspaceSlug;
+    const workspaceGeneration = workspaceGenerationRef.current;
+    const requestGeneration = ++requestGenerationRef.current;
+    const isCurrent = () =>
+      workspaceSlugRef.current === requestWorkspace &&
+      workspaceGenerationRef.current === workspaceGeneration &&
+      requestGenerationRef.current === requestGeneration;
     setIsLoading(true);
 
     try {
-      const [nextLeagues, nextSeasons, nextCompetitions, nextMemberships] = await Promise.all([
-        getUnionAdminManagementLeagues(workspaceSlug),
-        getUnionAdminManagementSeasons(workspaceSlug),
-        getUnionAdminManagementCompetitions(workspaceSlug),
-        getUnionAdminLeagueClubMemberships(workspaceSlug),
+      const [nextLeagues, nextSeasons, nextCompetitions, nextMemberships, nextClubs] = await Promise.all([
+        getUnionAdminManagementLeagues(requestWorkspace),
+        getUnionAdminManagementSeasons(requestWorkspace),
+        getUnionAdminManagementCompetitions(requestWorkspace),
+        getUnionAdminLeagueClubMemberships(requestWorkspace),
+        getUnionAdminClubs(requestWorkspace),
       ]);
+      if (!isCurrent()) return;
 
       setLeagues(nextLeagues);
       setSeasons(nextSeasons);
       setCompetitions(nextCompetitions);
       setMemberships(nextMemberships);
-      applyDefaults(nextLeagues, nextSeasons, nextCompetitions);
+      setClubOptions(nextClubs.map((club) => ({ id: String(club.id), name: club.name })));
+      applyDefaults(nextLeagues, nextSeasons, nextCompetitions, nextClubs.map((club) => ({ id: String(club.id), name: club.name })));
       setFailureMessage("");
     } catch (error) {
+      if (!isCurrent()) return;
       setFailureMessage(getErrorMessage(error));
     } finally {
-      setIsLoading(false);
+      if (isCurrent()) setIsLoading(false);
     }
   }
 
   useEffect(() => {
     if (!workspaceSlug) return;
-
+    workspaceGenerationRef.current += 1;
+    setLeagues([]); setSeasons([]); setCompetitions([]); setMemberships([]); setClubOptions([]);
+    setGeneratedFixtures([]); setSelectedFixture(null); setSelectedClubIds([]);
+    setSuccessMessage(""); setFailureMessage(""); setIsSaving(false); setMode("competition");
+    setCompetitionForm((current) => ({ ...current, league: "", season: "", name: "" }));
+    setSeasonForm((current) => ({ ...current, league: "" }));
+    setClubForm((current) => ({ ...current, league: "", season: "", club: "" }));
+    setMovementForm((current) => ({ ...current, club: "", fromLeague: "", toLeague: "", season: "", targetSeason: "" }));
+    setFixtureForm((current) => ({ ...current, competition: "" }));
     void refreshManagementData();
+    return () => { workspaceGenerationRef.current += 1; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [workspaceSlug]);
 
   async function handleSubmit(action: () => Promise<string>, nextMode?: WorkflowMode) {
+    const mutationWorkspace = workspaceSlug;
+    const mutationGeneration = workspaceGenerationRef.current;
+    const isCurrent = () => workspaceSlugRef.current === mutationWorkspace && workspaceGenerationRef.current === mutationGeneration;
     setIsSaving(true);
     setSuccessMessage("");
     setFailureMessage("");
@@ -332,12 +359,14 @@ export default function UnionAdminManagementWorkflow({ workspaceSlug, workspaceL
     try {
       const message = await action();
       await refreshManagementData();
+      if (!isCurrent()) return;
       setSuccessMessage(message);
       if (nextMode) setMode(nextMode);
     } catch (error) {
+      if (!isCurrent()) return;
       setFailureMessage(getErrorMessage(error));
     } finally {
-      setIsSaving(false);
+      if (isCurrent()) setIsSaving(false);
     }
   }
 

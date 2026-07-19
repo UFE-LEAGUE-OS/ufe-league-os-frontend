@@ -10,7 +10,7 @@ import {
   UserRoundCheck,
   X,
 } from "lucide-react";
-import { type FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { type FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   createUnionAdminMatchOfficial,
   deleteUnionAdminMatchOfficial,
@@ -26,6 +26,7 @@ type Props = {
   workspaceSlug: string;
   workspaceName: string;
   workspaceSport: string;
+  canManageOfficials: boolean;
 };
 
 type OfficialForm = {
@@ -92,7 +93,12 @@ export default function UnionAdminRefereesPanel({
   workspaceSlug,
   workspaceName,
   workspaceSport,
+  canManageOfficials,
 }: Props) {
+  const workspaceSlugRef = useRef(workspaceSlug);
+  const workspaceGenerationRef = useRef(0);
+  const requestGenerationRef = useRef(0);
+  workspaceSlugRef.current = workspaceSlug;
   const [directory, setDirectory] = useState<UnionAdminMatchOfficialsResponse | null>(null);
   const [query, setQuery] = useState("");
   const [form, setForm] = useState<OfficialForm>(EMPTY_FORM);
@@ -106,13 +112,25 @@ export default function UnionAdminRefereesPanel({
 
   const loadOfficials = useCallback(
     async (search = "") => {
+      const requestWorkspaceSlug = workspaceSlug;
+      const workspaceGeneration = workspaceGenerationRef.current;
+      const requestGeneration = ++requestGenerationRef.current;
+      const isCurrentRequest = () =>
+        workspaceSlugRef.current === requestWorkspaceSlug &&
+        workspaceGenerationRef.current === workspaceGeneration &&
+        requestGenerationRef.current === requestGeneration;
+
       setIsLoading(true);
       setError("");
 
       try {
-        const data = await getUnionAdminMatchOfficials(workspaceSlug, search);
+        const data = await getUnionAdminMatchOfficials(requestWorkspaceSlug, search);
+        if (!isCurrentRequest()) return;
+
         setDirectory(data);
       } catch (loadError) {
+        if (!isCurrentRequest()) return;
+
         setDirectory(null);
         setError(
           messageFromError(
@@ -121,19 +139,26 @@ export default function UnionAdminRefereesPanel({
           ),
         );
       } finally {
-        setIsLoading(false);
+        if (isCurrentRequest()) setIsLoading(false);
       }
     },
     [workspaceSlug],
   );
 
   useEffect(() => {
+    workspaceGenerationRef.current += 1;
     setQuery("");
     setForm(EMPTY_FORM);
     setEditingOfficial(null);
     setIsFormOpen(false);
     setNotice("");
+    setIsSaving(false);
+    setDeletingId(null);
     void loadOfficials();
+
+    return () => {
+      workspaceGenerationRef.current += 1;
+    };
   }, [loadOfficials]);
 
   const roleOptions = useMemo(
@@ -174,6 +199,7 @@ export default function UnionAdminRefereesPanel({
   }
 
   function beginCreate() {
+    if (!canManageOfficials) return;
     resetForm();
     setIsFormOpen(true);
     setError("");
@@ -181,6 +207,7 @@ export default function UnionAdminRefereesPanel({
   }
 
   function beginEdit(official: UnionAdminMatchOfficial) {
+    if (!canManageOfficials) return;
     setIsFormOpen(true);
     setEditingOfficial(official);
     setForm({
@@ -199,6 +226,7 @@ export default function UnionAdminRefereesPanel({
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!canManageOfficials) return;
     setError("");
     setNotice("");
 
@@ -212,8 +240,6 @@ export default function UnionAdminRefereesPanel({
       return;
     }
 
-    setIsSaving(true);
-
     const payload = {
       workspace: workspaceSlug,
       full_name: form.fullName.trim(),
@@ -226,19 +252,32 @@ export default function UnionAdminRefereesPanel({
       status: form.status,
       notes: form.notes.trim(),
     };
+    const mutationWorkspaceSlug = workspaceSlug;
+    const mutationGeneration = workspaceGenerationRef.current;
+    const isCurrentMutation = () =>
+      workspaceSlugRef.current === mutationWorkspaceSlug &&
+      workspaceGenerationRef.current === mutationGeneration;
+
+    setIsSaving(true);
 
     try {
       if (editingOfficial) {
         await updateUnionAdminMatchOfficial(editingOfficial.id, payload);
+        if (!isCurrentMutation()) return;
+
         setNotice(`${form.fullName.trim()} was updated successfully.`);
       } else {
         await createUnionAdminMatchOfficial(payload);
+        if (!isCurrentMutation()) return;
+
         setNotice(`${form.fullName.trim()} was added to ${workspaceName}.`);
       }
 
       resetForm(true);
       await loadOfficials(query);
     } catch (saveError) {
+      if (!isCurrentMutation()) return;
+
       setError(
         messageFromError(
           saveError,
@@ -248,11 +287,12 @@ export default function UnionAdminRefereesPanel({
         ),
       );
     } finally {
-      setIsSaving(false);
+      if (isCurrentMutation()) setIsSaving(false);
     }
   }
 
   async function handleDelete(official: UnionAdminMatchOfficial) {
+    if (!canManageOfficials) return;
     const confirmed = window.confirm(
       `Remove ${official.full_name} from this union's match-official directory?`,
     );
@@ -262,9 +302,16 @@ export default function UnionAdminRefereesPanel({
     setDeletingId(official.id);
     setError("");
     setNotice("");
+    const mutationWorkspaceSlug = workspaceSlug;
+    const mutationGeneration = workspaceGenerationRef.current;
+    const isCurrentMutation = () =>
+      workspaceSlugRef.current === mutationWorkspaceSlug &&
+      workspaceGenerationRef.current === mutationGeneration;
 
     try {
       await deleteUnionAdminMatchOfficial(official.id, workspaceSlug);
+      if (!isCurrentMutation()) return;
+
       setNotice(`${official.full_name} was removed from the directory.`);
 
       if (editingOfficial?.id === official.id) {
@@ -273,6 +320,8 @@ export default function UnionAdminRefereesPanel({
 
       await loadOfficials(query);
     } catch (deleteError) {
+      if (!isCurrentMutation()) return;
+
       setError(
         messageFromError(
           deleteError,
@@ -280,7 +329,7 @@ export default function UnionAdminRefereesPanel({
         ),
       );
     } finally {
-      setDeletingId(null);
+      if (isCurrentMutation()) setDeletingId(null);
     }
   }
 
@@ -300,10 +349,12 @@ export default function UnionAdminRefereesPanel({
             Roles are restricted to the workspace sport by the backend.
           </p>
         </div>
-        <button className={styles.primaryButton} type="button" onClick={beginCreate}>
-          <Plus size={17} aria-hidden="true" />
-          Create official
-        </button>
+        {canManageOfficials ? (
+          <button className={styles.primaryButton} type="button" onClick={beginCreate}>
+            <Plus size={17} aria-hidden="true" />
+            Create official
+          </button>
+        ) : null}
       </header>
 
       <div className={styles.statsGrid}>
@@ -404,23 +455,25 @@ export default function UnionAdminRefereesPanel({
                       </td>
                       <td><span className={styles.statusPill}>{official.status_display}</span></td>
                       <td>
-                        <div className={styles.rowActions}>
-                          <button type="button" onClick={() => beginEdit(official)} aria-label={`Edit ${official.full_name}`}>
-                            <Pencil size={15} aria-hidden="true" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => void handleDelete(official)}
-                            disabled={deletingId === official.id}
-                            aria-label={`Remove ${official.full_name}`}
-                          >
-                            {deletingId === official.id ? (
-                              <LoaderCircle className={styles.spinner} size={15} aria-hidden="true" />
-                            ) : (
-                              <Trash2 size={15} aria-hidden="true" />
-                            )}
-                          </button>
-                        </div>
+                        {canManageOfficials ? (
+                          <div className={styles.rowActions}>
+                            <button type="button" onClick={() => beginEdit(official)} aria-label={`Edit ${official.full_name}`}>
+                              <Pencil size={15} aria-hidden="true" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => void handleDelete(official)}
+                              disabled={deletingId === official.id}
+                              aria-label={`Remove ${official.full_name}`}
+                            >
+                              {deletingId === official.id ? (
+                                <LoaderCircle className={styles.spinner} size={15} aria-hidden="true" />
+                              ) : (
+                                <Trash2 size={15} aria-hidden="true" />
+                              )}
+                            </button>
+                          </div>
+                        ) : null}
                       </td>
                     </tr>
                   ))}
@@ -430,7 +483,7 @@ export default function UnionAdminRefereesPanel({
           )}
         </div>
 
-        {isFormOpen ? (
+        {isFormOpen && canManageOfficials ? (
           <form className={styles.formPanel} onSubmit={handleSubmit}>
           <div className={styles.formHeader}>
             <div>

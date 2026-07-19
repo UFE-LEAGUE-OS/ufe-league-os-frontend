@@ -1,5 +1,5 @@
 import { LoaderCircle, Plus, RefreshCw, ShieldCheck, Trash2 } from "lucide-react";
-import { type FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { type FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   getUnionAdminManagementCompetitions,
   getUnionAdminManagementLeagues,
@@ -36,6 +36,10 @@ function getErrorMessage(error: unknown, fallback: string) {
 }
 
 export default function LeagueAdminScopesPanel({ workspaceSlug }: Props) {
+  const workspaceGenerationRef = useRef(0);
+  const requestGenerationRef = useRef(0);
+  const workspaceSlugRef = useRef(workspaceSlug);
+  workspaceSlugRef.current = workspaceSlug;
   const [scopes, setScopes] = useState<LeagueAdminScope[]>([]);
   const [leagues, setLeagues] = useState<UnionAdminLeagueOption[]>([]);
   const [competitions, setCompetitions] = useState<UnionAdminCompetitionRecord[]>([]);
@@ -50,30 +54,37 @@ export default function LeagueAdminScopesPanel({ workspaceSlug }: Props) {
   const [notice, setNotice] = useState("");
 
   const load = useCallback(async () => {
+    const requestedWorkspace = workspaceSlug;
+    const workspaceGeneration = workspaceGenerationRef.current;
+    const requestGeneration = ++requestGenerationRef.current;
+    const isCurrent = () => workspaceSlugRef.current === requestedWorkspace && workspaceGenerationRef.current === workspaceGeneration && requestGenerationRef.current === requestGeneration;
     setIsLoading(true);
     setError("");
     try {
       const [scopeRows, leagueRows, competitionRows] = await Promise.all([
-        getUnionAdminLeagueScopes(workspaceSlug),
-        getUnionAdminManagementLeagues(workspaceSlug),
-        getUnionAdminManagementCompetitions(workspaceSlug),
+        getUnionAdminLeagueScopes(requestedWorkspace),
+        getUnionAdminManagementLeagues(requestedWorkspace),
+        getUnionAdminManagementCompetitions(requestedWorkspace),
       ]);
+      if (!isCurrent()) return;
       setScopes(scopeRows);
       setLeagues(leagueRows);
       setCompetitions(competitionRows);
-      setLeagueId((current) => current || String(leagueRows[0]?.id ?? ""));
+      setLeagueId((current) => leagueRows.some((league) => String(league.id) === current) ? current : String(leagueRows[0]?.id ?? ""));
     } catch (loadError) {
+      if (!isCurrent()) return;
       setError(getErrorMessage(loadError, "League administration scopes could not be loaded."));
     } finally {
-      setIsLoading(false);
+      if (isCurrent()) setIsLoading(false);
     }
   }, [workspaceSlug]);
 
   useEffect(() => {
-    setEmail("");
-    setCompetitionId("");
-    setNotice("");
+    workspaceGenerationRef.current += 1;
+    setScopes([]); setLeagues([]); setCompetitions([]); setEmail(""); setLeagueId(""); setCompetitionId("");
+    setRole("LEAGUE_ADMIN"); setNotice(""); setError(""); setIsSaving(false); setBusyId(null);
     void load();
+    return () => { workspaceGenerationRef.current += 1; };
   }, [load]);
 
   const availableCompetitions = useMemo(

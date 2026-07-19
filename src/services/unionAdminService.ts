@@ -126,7 +126,7 @@ export interface UnionWorkspaceUser {
   updated_at: string;
 }
 
-interface UnionWorkspaceUsersResponse {
+export interface UnionWorkspaceUsersResult {
   count: number;
   workspace: string;
   results: UnionWorkspaceUser[];
@@ -324,12 +324,12 @@ export async function getUnionDashboardOverview(
 
 export async function getUnionWorkspaceUsers(
   workspaceSlug: string,
-): Promise<UnionWorkspaceUser[]> {
-  const response = await apiClient.get<UnionWorkspaceUsersResponse>(
+): Promise<UnionWorkspaceUsersResult> {
+  const response = await apiClient.get<UnionWorkspaceUsersResult>(
     `/dashboards/union-admin/workspace-users/?workspace=${encodeURIComponent(workspaceSlug)}`,
   );
 
-  return response.data.results ?? [];
+  return response.data;
 }
 
 export async function createUnionWorkspaceUser(

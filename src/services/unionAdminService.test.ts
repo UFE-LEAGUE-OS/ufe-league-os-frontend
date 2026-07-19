@@ -2,7 +2,11 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   createUnionAdminMatchOfficial,
   deleteUnionAdminMatchOfficial,
+  getUnionDashboardOverview,
+  getUnionFinanceDashboard,
   getUnionAdminMatchOfficials,
+  getUnionOperationsDashboard,
+  getUnionWorkspaceUsers,
   intersectUnionWorkspaceOptions,
   switchUnionWorkspace,
   updateUnionAdminMatchOfficial,
@@ -211,5 +215,69 @@ describe("unionAdminService dashboard access", () => {
     await expect(switchUnionWorkspace("uru")).rejects.toThrow(
       "selected workspace is not authorized",
     );
+  });
+});
+
+describe("unionAdminService workspace-scoped dashboards", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("uses the selected workspace slug for every overview, operations, finance and users request", async () => {
+    apiMock.get
+      .mockResolvedValueOnce({
+        data: {
+          workspace: {
+            id: 1,
+            role: "VIEWER",
+            role_display: "Viewer",
+            effective_permissions: [],
+            workspace: {
+              id: 1,
+              name: "Union",
+              slug: "union & league",
+              acronym: "UL",
+              sport: "RUGBY",
+              workspace_type: "UNION",
+              description: "",
+              primary_color: "",
+            },
+          },
+          summary: {},
+          permissions: [],
+        },
+      })
+      .mockResolvedValueOnce({ data: {} })
+      .mockResolvedValueOnce({ data: {} })
+      .mockResolvedValueOnce({
+        data: { count: 0, workspace: "union & league", results: [] },
+      });
+
+    await getUnionDashboardOverview("union & league");
+    await getUnionOperationsDashboard("union & league");
+    await getUnionFinanceDashboard("union & league");
+    const users = await getUnionWorkspaceUsers("union & league");
+
+    expect(apiMock.get).toHaveBeenNthCalledWith(
+      1,
+      "/dashboards/union-admin/workspace/?workspace=union%20%26%20league",
+    );
+    expect(apiMock.get).toHaveBeenNthCalledWith(
+      2,
+      "/dashboards/union-admin/operations/?workspace=union%20%26%20league",
+    );
+    expect(apiMock.get).toHaveBeenNthCalledWith(
+      3,
+      "/dashboards/union-admin/finance/?workspace=union%20%26%20league",
+    );
+    expect(apiMock.get).toHaveBeenNthCalledWith(
+      4,
+      "/dashboards/union-admin/workspace-users/?workspace=union%20%26%20league",
+    );
+    expect(users).toEqual({
+      count: 0,
+      workspace: "union & league",
+      results: [],
+    });
   });
 });

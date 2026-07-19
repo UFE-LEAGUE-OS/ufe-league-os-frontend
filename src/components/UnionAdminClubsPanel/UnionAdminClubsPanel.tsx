@@ -1,5 +1,5 @@
 import { Building2, RefreshCw, Search, X } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import {
   createUnionAdminClub,
@@ -15,15 +15,7 @@ type Props = {
   workspaceSlug: string;
   workspaceLabel: string;
   sport: string;
-  fallbackClubs: Array<{
-    id: string | number;
-    name: string;
-    category?: string;
-    teams?: number;
-    players?: number;
-    compliance?: string;
-    admin?: string;
-  }>;
+  canManageClubs: boolean;
 };
 
 const sportOptions = [
@@ -68,30 +60,16 @@ function initials(name: string) {
     .join("");
 }
 
-function fallbackToClubRecord(club: Props["fallbackClubs"][number], sport: string): UnionAdminClubRecord {
-  return {
-    id: Number(club.id),
-    name: club.name,
-    slug: club.name.toLowerCase().replace(/\s+/g, "-"),
-    short_name: "",
-    sport: normaliseSport(sport),
-    sport_display: club.category ?? sport,
-    logo_url: null,
-    banner_url: null,
-    primary_color: "",
-    secondary_color: "",
-    admin: null,
-    admin_name: club.admin ?? "",
-    admin_email: "",
-    teams: club.teams ?? 0,
-    players: club.players ?? 0,
-    compliance: club.compliance ?? "Review",
-    memberships: [],
-    created_at: "",
-  };
-}
-
-export default function UnionAdminClubsPanel({ workspaceSlug, workspaceLabel, sport, fallbackClubs }: Props) {
+export default function UnionAdminClubsPanel({
+  workspaceSlug,
+  workspaceLabel,
+  sport,
+  canManageClubs,
+}: Props) {
+  const workspaceSlugRef = useRef(workspaceSlug);
+  const workspaceGenerationRef = useRef(0);
+  const requestGenerationRef = useRef(0);
+  workspaceSlugRef.current = workspaceSlug;
   const [clubs, setClubs] = useState<UnionAdminClubRecord[]>([]);
   const [selectedClubId, setSelectedClubId] = useState<number | null>(null);
   const [query, setQuery] = useState("");
@@ -110,23 +88,16 @@ export default function UnionAdminClubsPanel({ workspaceSlug, workspaceLabel, sp
     admin_email: "",
   });
 
-  const fallbackRecords = useMemo(
-    () => fallbackClubs.map((club) => fallbackToClubRecord(club, sport)),
-    [fallbackClubs, sport],
-  );
-
-  const visibleClubs = clubs.length > 0 ? clubs : fallbackRecords;
-
-  const filteredClubs = visibleClubs.filter((club) =>
+  const filteredClubs = clubs.filter((club) =>
     `${club.name} ${club.short_name} ${club.sport_display} ${club.admin_name} ${club.compliance}`
       .toLowerCase()
       .includes(query.toLowerCase()),
   );
 
   const selectedClub =
-    visibleClubs.find((club) => club.id === selectedClubId) ??
+    clubs.find((club) => club.id === selectedClubId) ??
     filteredClubs[0] ??
-    visibleClubs[0] ??
+    clubs[0] ??
     null;
 
   function resetForm(nextSport = sport) {
@@ -154,10 +125,20 @@ export default function UnionAdminClubsPanel({ workspaceSlug, workspaceLabel, sp
   }
 
   async function refreshClubs(searchValue = query) {
+    const requestWorkspaceSlug = workspaceSlug;
+    const workspaceGeneration = workspaceGenerationRef.current;
+    const requestGeneration = ++requestGenerationRef.current;
+    const isCurrentRequest = () =>
+      workspaceSlugRef.current === requestWorkspaceSlug &&
+      workspaceGenerationRef.current === workspaceGeneration &&
+      requestGenerationRef.current === requestGeneration;
+
     setIsLoading(true);
 
     try {
-      const nextClubs = await getUnionAdminClubs(workspaceSlug, searchValue);
+      const nextClubs = await getUnionAdminClubs(requestWorkspaceSlug, searchValue);
+      if (!isCurrentRequest()) return;
+
       setClubs(nextClubs);
       setFailureMessage("");
 
@@ -165,22 +146,38 @@ export default function UnionAdminClubsPanel({ workspaceSlug, workspaceLabel, sp
         setSelectedClubId(nextClubs[0].id);
       }
     } catch (error) {
+      if (!isCurrentRequest()) return;
+
       setFailureMessage(getErrorMessage(error));
     } finally {
-      setIsLoading(false);
+      if (isCurrentRequest()) setIsLoading(false);
     }
   }
 
   useEffect(() => {
     if (!workspaceSlug) return;
 
+    workspaceGenerationRef.current += 1;
     resetForm(sport);
+    setIsSaving(false);
+    setSuccessMessage("");
+    setFailureMessage("");
     void refreshClubs("");
+
+    return () => {
+      workspaceGenerationRef.current += 1;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [workspaceSlug, sport]);
 
   function submitClub(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const mutationWorkspaceSlug = workspaceSlug;
+    const mutationGeneration = workspaceGenerationRef.current;
+    const isCurrentMutation = () =>
+      workspaceSlugRef.current === mutationWorkspaceSlug &&
+      workspaceGenerationRef.current === mutationGeneration;
+
     setIsSaving(true);
     setSuccessMessage("");
     setFailureMessage("");
@@ -201,6 +198,8 @@ export default function UnionAdminClubsPanel({ workspaceSlug, workspaceLabel, sp
 
     void request
       .then((club) => {
+        if (!isCurrentMutation()) return;
+
         setSelectedClubId(club.id);
         setSuccessMessage(`${club.name} saved successfully.`);
         setShowForm(false);
@@ -208,15 +207,23 @@ export default function UnionAdminClubsPanel({ workspaceSlug, workspaceLabel, sp
         return refreshClubs();
       })
       .catch((error: unknown) => {
+        if (!isCurrentMutation()) return;
+
         setFailureMessage(getErrorMessage(error));
       })
       .finally(() => {
-        setIsSaving(false);
+        if (isCurrentMutation()) setIsSaving(false);
       });
   }
 
   function deleteSelectedClub() {
     if (!selectedClub) return;
+
+    const mutationWorkspaceSlug = workspaceSlug;
+    const mutationGeneration = workspaceGenerationRef.current;
+    const isCurrentMutation = () =>
+      workspaceSlugRef.current === mutationWorkspaceSlug &&
+      workspaceGenerationRef.current === mutationGeneration;
 
     setIsSaving(true);
     setSuccessMessage("");
@@ -224,15 +231,19 @@ export default function UnionAdminClubsPanel({ workspaceSlug, workspaceLabel, sp
 
     void deleteUnionAdminClub(selectedClub.id, workspaceSlug)
       .then(() => {
+        if (!isCurrentMutation()) return;
+
         setSuccessMessage(`${selectedClub.name} deleted.`);
         setSelectedClubId(null);
         return refreshClubs();
       })
       .catch((error: unknown) => {
+        if (!isCurrentMutation()) return;
+
         setFailureMessage(getErrorMessage(error));
       })
       .finally(() => {
-        setIsSaving(false);
+        if (isCurrentMutation()) setIsSaving(false);
       });
   }
 
@@ -257,17 +268,19 @@ export default function UnionAdminClubsPanel({ workspaceSlug, workspaceLabel, sp
             <RefreshCw size={16} aria-hidden="true" />
             {isLoading ? "Refreshing..." : "Refresh"}
           </button>
-          <button
-            className={styles.primaryButton}
-            type="button"
-            onClick={() => {
-              setSelectedClubId(null);
-              resetForm();
-              setShowForm(true);
-            }}
-          >
-            Add Club
-          </button>
+          {canManageClubs ? (
+            <button
+              className={styles.primaryButton}
+              type="button"
+              onClick={() => {
+                setSelectedClubId(null);
+                resetForm();
+                setShowForm(true);
+              }}
+            >
+              Add Club
+            </button>
+          ) : null}
         </div>
       </div>
 
@@ -329,7 +342,7 @@ export default function UnionAdminClubsPanel({ workspaceSlug, workspaceLabel, sp
         </div>
 
         <aside className={styles.card}>
-          {showForm ? (
+          {showForm && canManageClubs ? (
             <form className={styles.formGrid} onSubmit={submitClub}>
               <label className={styles.fullWidth}>
                 Club name
@@ -467,14 +480,16 @@ export default function UnionAdminClubsPanel({ workspaceSlug, workspaceLabel, sp
                 ) : null}
               </div>
 
-              <div className={styles.actions}>
-                <button className={styles.secondaryButton} type="button" onClick={() => loadClubIntoForm(selectedClub)}>
-                  Edit Club
-                </button>
-                <button className={styles.dangerButton} type="button" onClick={deleteSelectedClub} disabled={isSaving}>
-                  Delete if unattached
-                </button>
-              </div>
+              {canManageClubs ? (
+                <div className={styles.actions}>
+                  <button className={styles.secondaryButton} type="button" onClick={() => loadClubIntoForm(selectedClub)}>
+                    Edit Club
+                  </button>
+                  <button className={styles.dangerButton} type="button" onClick={deleteSelectedClub} disabled={isSaving}>
+                    Delete if unattached
+                  </button>
+                </div>
+              ) : null}
             </>
           ) : (
             <div className={styles.empty}>Select a club to view details.</div>
