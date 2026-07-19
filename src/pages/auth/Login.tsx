@@ -10,19 +10,19 @@ import EmojiEventsOutlinedIcon from '@mui/icons-material/EmojiEventsOutlined';
 import EventNoteOutlinedIcon from '@mui/icons-material/EventNoteOutlined';
 import { GlassCard, PageShell } from '../../components/site/LeagueUI.js';
 import { useAuth } from '../../hooks/useAuth.js';
-import apiClient from '../../services/apiClient.js';
 import {
     getSafeAuthRedirect,
     VERIFY_EMAIL_ROUTE,
     type AuthFlowState,
 } from '../../utils/authFlow.js';
 import BackButton from '../../components/BackButton.js';
-import { getMyUnionWorkspaces } from '../../services/unionAdminService';
 import {
-    canRoleAccessRedirect,
+    ACCESS_UNAVAILABLE_ROUTE,
+    canAccessDashboardRoute,
     getDefaultDashboardRoute,
-    getNormalizedRoles,
-} from '../../utils/roleRoutes.js';
+    validateDashboardAccess,
+} from '../../utils/dashboardAccess.js';
+import type { AuthenticatedUser } from '../../types/dashboardAccess.js';
 
 import '../../styles/pages/auth/login.css';
 
@@ -33,17 +33,9 @@ type LoginErrors = {
 };
 
 type LoginResult = {
-    frontend_dashboard_route?: unknown;
-    dashboard_route?: unknown;
     requires_email_verification?: boolean;
     is_new_user?: boolean;
-    user?: {
-        email?: unknown;
-        role?: unknown;
-        roles?: unknown;
-        frontend_dashboard_route?: unknown;
-        dashboard_route?: unknown;
-    };
+    user?: AuthenticatedUser | null;
 };
 
 type ApiError = {
@@ -114,73 +106,25 @@ function getLoginErrorMessage(error: unknown) {
   );
 }
 
-function safeDashboardRoute(value: unknown) {
-    return typeof value === 'string' && value.startsWith('/') ? value : null;
-}
-
-function resolveDashboardRoute(result: LoginResult) {
-    return (
-        safeDashboardRoute(result.user?.frontend_dashboard_route) ||
-        safeDashboardRoute(result.frontend_dashboard_route) ||
-        safeDashboardRoute(result.user?.dashboard_route) ||
-        safeDashboardRoute(result.dashboard_route) ||
-        '/dashboard'
-    );
-}
-
-async function resolvePostLoginRoute(
+function resolvePostLoginRoute(
     result: LoginResult,
     postLoginRedirect?: string | null,
 ) {
-    const backendRoute = resolveDashboardRoute(result);
-    const userContext =
-        result.user ??
-        result.user?.roles ??
-        result.user?.role ??
-        'FAN';
-
-    const userRoles = getNormalizedRoles(userContext);
+    const dashboardAccess = validateDashboardAccess(
+        result.user?.dashboard_access,
+    );
 
     if (
         postLoginRedirect &&
-        canRoleAccessRedirect(userContext, postLoginRedirect)
+        canAccessDashboardRoute(dashboardAccess, postLoginRedirect)
     ) {
         return postLoginRedirect;
     }
 
-    if (userRoles.includes('SUPER_ADMIN')) {
-        return getDefaultDashboardRoute(userContext);
-    }
-
-    if (userRoles.includes('UNION_ADMIN')) {
-        return '/dashboard/union-admin';
-    }
-
-    if (
-        backendRoute !== '/dashboard' &&
-        backendRoute !== '/dashboard/fan'
-    ) {
-        return backendRoute;
-    }
-
-    if (
-        backendRoute === '/dashboard/fan' &&
-        userRoles.includes('FAN')
-    ) {
-        return backendRoute;
-    }
-
-    try {
-        const workspaces = await getMyUnionWorkspaces();
-
-        if (workspaces.length > 0) {
-            return '/dashboard/union-admin';
-        }
-    } catch {
-        // Fall back to the effective role-based dashboard.
-    }
-
-    return getDefaultDashboardRoute(userContext);
+    return (
+        getDefaultDashboardRoute(dashboardAccess) ??
+        ACCESS_UNAVAILABLE_ROUTE
+    );
 }
 
 function getUserEmail(value: unknown) {
@@ -190,7 +134,7 @@ function getUserEmail(value: unknown) {
 export default function Login() {
     const location = useLocation();
     const navigate = useNavigate();
-    const { login } = useAuth();
+    const { googleLogin, login } = useAuth();
 
     const [showPassword, setShowPassword] = useState(false);
     const [googleLoginMessage, setGoogleLoginMessage] = useState('');
@@ -257,13 +201,13 @@ export default function Login() {
                             getUserEmail(result.user?.email) ??
                             getUserEmail(identifier.trim()),
                         message: 'Please verify your email address before continuing.',
-                        postLoginRedirect: await resolvePostLoginRoute(result, postLoginRedirect),
+                        postLoginRedirect: resolvePostLoginRoute(result, postLoginRedirect),
                     },
                 });
                 return;
             }
 
-            const redirectRoute = await resolvePostLoginRoute(
+            const redirectRoute = resolvePostLoginRoute(
                     result,
                     postLoginRedirect,
                 );
@@ -299,10 +243,9 @@ export default function Login() {
         }
 
         try {
-            const { data: result } = await apiClient.post<LoginResult>(
-                `/accounts/google/`,
-                { token: credentialResponse.credential }
-            );
+            const result = await googleLogin({
+                token: credentialResponse.credential,
+            });
 
             if (result.requires_email_verification) {
                 navigate(VERIFY_EMAIL_ROUTE, {
@@ -310,7 +253,7 @@ export default function Login() {
                     state: {
                         email: getUserEmail(result.user?.email),
                         message: 'Please verify your email address before continuing.',
-                        postLoginRedirect: await resolvePostLoginRoute(result, postLoginRedirect),
+                        postLoginRedirect: resolvePostLoginRoute(result, postLoginRedirect),
                     },
                 });
                 return;
@@ -319,7 +262,7 @@ export default function Login() {
             if (result.is_new_user) {
                 navigate('/personalize', { replace: true });
             } else {
-                const redirectRoute = await resolvePostLoginRoute(
+                const redirectRoute = resolvePostLoginRoute(
                     result,
                     postLoginRedirect,
                 );

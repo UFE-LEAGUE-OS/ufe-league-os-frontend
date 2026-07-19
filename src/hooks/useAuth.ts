@@ -1,14 +1,17 @@
 import { useAuthStore } from '../store/authStore.js';
 import * as authApi from '../services/authService.js';
-import type { AuthPayload } from '../services/authService.js';
+import type {
+  AuthenticationResponse,
+  GoogleLoginPayload,
+  LoginPayload,
+} from '../services/authService.js';
 
 export function useAuth() {
   const setAuth = useAuthStore((state) => state.setAuth);
   const clearAuth = useAuthStore((state) => state.clearAuth);
 
-  const login = async (payload: AuthPayload) => {
-    const response = await authApi.login(payload);
-    const { user, access, refresh, requires_email_verification } = response.data;
+  const completeAuthentication = (result: AuthenticationResponse) => {
+    const { user, access, refresh, requires_email_verification } = result;
 
     setAuth({
       user,
@@ -17,12 +20,24 @@ export function useAuth() {
       requiresEmailVerification: Boolean(requires_email_verification),
     });
 
-    return response.data;
+    return result;
+  };
+
+  const login = async (payload: LoginPayload) => {
+    const response = await authApi.login(payload);
+
+    return completeAuthentication(response.data);
+  };
+
+  const googleLogin = async (payload: GoogleLoginPayload) => {
+    const response = await authApi.googleLogin(payload);
+
+    return completeAuthentication(response.data);
   };
 
   const logout = () => {
     clearAuth();
   };
 
-  return { login, logout };
+  return { googleLogin, login, logout };
 }

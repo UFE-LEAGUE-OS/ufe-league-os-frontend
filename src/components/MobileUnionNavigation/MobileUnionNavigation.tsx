@@ -2,6 +2,9 @@ import type { LucideIcon } from "lucide-react";
 import { Building2, Home, LogOut, Menu, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
+import type { UnionWorkspaceRole } from "../../services/unionAdminService";
+import { useAuthStore } from "../../store/authStore";
+import { getEntitlementsForDashboard } from "../../utils/dashboardAccess";
 import styles from "./MobileUnionNavigation.module.css";
 
 export interface MobileUnionNavItem {
@@ -27,34 +30,25 @@ function findPreferredItem(items: MobileUnionNavItem[], preference: string) {
     });
 }
 
-function getRolePreferredKeys(workspaceRole: string) {
-    const role = workspaceRole.toUpperCase();
-
-    if (role.includes("TICKETING")) {
-        return ["overview", "ticketing", "entrylogs", "finance"];
+function getRolePreferredKeys(workspaceRole: UnionWorkspaceRole) {
+    switch (workspaceRole) {
+        case "TICKETING_OFFICER":
+            return ["overview", "ticketing", "entrylogs", "scanner"];
+        case "MATCH_OFFICIAL":
+            return ["overview", "appointments", "matchreports", "availability"];
+        case "REGISTRAR":
+            return ["overview", "registrations", "clubs", "competitions"];
+        case "FINANCE_OFFICER":
+            return ["overview", "finance", "competitions", "clubs"];
+        case "COMMUNICATIONS_OFFICER":
+            return ["overview", "comms", "clubs", "competitions"];
+        case "COMPETITIONS_MANAGER":
+            return ["overview", "competitions", "clubs", "appointments"];
+        case "REFEREE_MANAGER":
+            return ["overview", "referees", "appointments", "matchreports"];
+        default:
+            return ["overview", "competitions", "clubs", "finance"];
     }
-
-    if (role.includes("MATCH") || role.includes("OFFICIAL") || role.includes("REFEREE")) {
-        return ["overview", "appointments", "matchreports", "referees"];
-    }
-
-    if (role.includes("REGISTRAR")) {
-        return ["overview", "registrations", "clubs", "competitions"];
-    }
-
-    if (role.includes("FINANCE")) {
-        return ["overview", "finance", "competitions", "clubs"];
-    }
-
-    if (role.includes("COMMUNICATION") || role.includes("COMMS")) {
-        return ["overview", "comms", "clubs", "competitions"];
-    }
-
-    if (role.includes("COMPETITION")) {
-        return ["overview", "competitions", "clubs", "appointments"];
-    }
-
-    return ["overview", "competitions", "clubs", "finance"];
 }
 
 
@@ -63,7 +57,8 @@ interface MobileUnionNavigationProps {
     activeKey: string;
     items: MobileUnionNavItem[];
     workspaceName: string;
-    workspaceRole: string;
+    workspaceRole: UnionWorkspaceRole;
+    fanDashboardRoute?: string;
     onTabChange: (key: string) => void;
     onLogout: () => void;
 }
@@ -77,6 +72,12 @@ function MobileUnionNavigation({
     onLogout,
 }: MobileUnionNavigationProps) {
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+    const user = useAuthStore((state) => state.user);
+    const explicitFanRoute = getEntitlementsForDashboard(
+        user?.dashboard_access,
+        "FAN",
+    )[0]?.route;
+    const effectiveFanDashboardRoute = explicitFanRoute ?? undefined;
 
     const visibleItems = useMemo(() => {
         const preferredKeys = getRolePreferredKeys(workspaceRole);
@@ -178,10 +179,12 @@ function MobileUnionNavigation({
                         <h2>Quick links</h2>
 
                         <div className={styles.drawerLinks}>
-                            <Link className={styles.drawerLink} to="/dashboard/fan">
-                                <Home size={19} strokeWidth={2.25} aria-hidden="true" />
-                                <span>Fan Dashboard</span>
-                            </Link>
+                            {effectiveFanDashboardRoute ? (
+                                <Link className={styles.drawerLink} to={effectiveFanDashboardRoute}>
+                                    <Home size={19} strokeWidth={2.25} aria-hidden="true" />
+                                    <span>Fan Dashboard</span>
+                                </Link>
+                            ) : null}
                             <Link className={styles.drawerLink} to="/unions">
                                 <Building2 size={19} strokeWidth={2.25} aria-hidden="true" />
                                 <span>Public Unions Page</span>

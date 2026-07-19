@@ -9,15 +9,19 @@ import {
   useState,
 } from "react";
 import { Link } from "react-router-dom";
+import { useAuthStore } from "../../store/authStore";
+import { getEntitlementsForDashboard } from "../../utils/dashboardAccess";
+import type { ActiveClubWorkspace } from "../../utils/clubWorkspace";
 
 import AuthenticatedFooter from "../AuthenticatedFooter/AuthenticatedFooter";
 import {
   AdminMobileBottomNav,
   AdminMobileDrawer,
   AdminSidebar,
-  asNavGroups,
+  filterNavGroupsForClubWorkspace,
   findOwningParent,
   flattenNavItems,
+  formatClubWorkspaceRole,
   type AdminWorkspaceNavItem,
   type NavItemsProp,
 } from "./ClubAdminSidebar";
@@ -36,6 +40,7 @@ type LayoutProps<T extends string> = {
   publicLabel?: string;
   headerActions?: ReactNode;
   hideAdminSidebar?: boolean;
+  activeClubWorkspace?: ActiveClubWorkspace | null;
   children: ReactNode;
 };
 
@@ -61,6 +66,7 @@ export default function AdminWorkspaceLayout<
   publicLabel,
   headerActions,
   hideAdminSidebar,
+  activeClubWorkspace,
   children,
 }: LayoutProps<T>) {
   const [isSidebarCollapsed, setIsSidebarCollapsed] =
@@ -73,15 +79,32 @@ export default function AdminWorkspaceLayout<
     () => new Set(),
   );
 
-  const flatNavItems = useMemo(
-    () => flattenNavItems(navItems),
-    [navItems],
-  );
+  const user = useAuthStore((state) => state.user);
+  const fanEntitlement = getEntitlementsForDashboard(
+    user?.dashboard_access,
+    "FAN",
+  )[0];
+  const resolvedFanDashboardRoute = fanEntitlement?.route;
 
   const navGroups = useMemo(
-    () => asNavGroups(navItems),
-    [navItems],
+    () =>
+      filterNavGroupsForClubWorkspace(
+        navItems,
+        activeClubWorkspace,
+      ),
+    [activeClubWorkspace, navItems],
   );
+
+  const flatNavItems = useMemo(
+    () => flattenNavItems(navGroups),
+    [navGroups],
+  );
+
+  const resolvedWorkspaceSubtitle = activeClubWorkspace
+    ? `${formatClubWorkspaceRole(
+        activeClubWorkspace.workspace_role,
+      )} · ${workspaceSubtitle}`
+    : workspaceSubtitle;
 
   useEffect(() => {
     setIsMobileMenuOpen(false);
@@ -137,7 +160,7 @@ export default function AdminWorkspaceLayout<
         {!hideAdminSidebar && (
           <AdminSidebar
             workspaceTitle={workspaceTitle}
-            workspaceSubtitle={workspaceSubtitle}
+            workspaceSubtitle={resolvedWorkspaceSubtitle}
             navGroups={navGroups}
             activeTab={activeTab}
             onTabChange={handleTabChange}
@@ -149,6 +172,7 @@ export default function AdminWorkspaceLayout<
                 (currentValue) => !currentValue,
               )
             }
+            fanDashboardRoute={resolvedFanDashboardRoute}
           />
         )}
 
@@ -162,7 +186,7 @@ export default function AdminWorkspaceLayout<
                   </span>
 
                   <span className={styles.workspaceContext}>
-                    {workspaceSubtitle}
+                    {resolvedWorkspaceSubtitle}
                   </span>
                 </div>
 
@@ -200,6 +224,7 @@ export default function AdminWorkspaceLayout<
       {!hideAdminSidebar && isMobileMenuOpen ? (
         <AdminMobileDrawer
           workspaceTitle={workspaceTitle}
+          workspaceSubtitle={resolvedWorkspaceSubtitle}
           navGroups={navGroups}
           activeTab={activeTab}
           onTabChange={handleTabChange}
@@ -208,6 +233,7 @@ export default function AdminWorkspaceLayout<
           onClose={() => setIsMobileMenuOpen(false)}
           publicPath={publicPath}
           publicLabel={publicLabel}
+          fanDashboardRoute={resolvedFanDashboardRoute}
         />
       ) : null}
 
@@ -433,6 +459,7 @@ export type {
   AdminMobileDrawerProps,
   AdminWorkspaceNavItem,
   AdminWorkspaceNavGroup,
+  ClubWorkspacePermission,
 } from "./ClubAdminSidebar";
 
 export { styles as adminWorkspaceStyles };

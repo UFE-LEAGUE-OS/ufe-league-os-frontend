@@ -1,3 +1,7 @@
+import {
+  canAccessDashboardRoute,
+} from './dashboardAccess.js';
+
 export function normalizeRole(value: unknown) {
   return typeof value === 'string'
     ? value.trim().toUpperCase().replace(/[\s-]+/g, '_')
@@ -41,12 +45,18 @@ export function userHasAnyRole(userOrRole: unknown, allowedRoles: unknown[]) {
   return userRoles.some((role) => normalizedAllowedRoles.includes(role));
 }
 
-// Ordered by priority: if a user carries more than one role, the first
-// match here wins. The five club sub-roles (CHAIRMAN, TREASURER,
-// CUSTOM_ADMIN, TEAM_MANAGER, TICKETING_OFFICER) are checked before the
-// plain CLUB_ADMIN fallback, since a sub-role is more specific and should
-// route into its own /club-admin/<sub-role> branch rather than the
-// generic club-admin dashboard.
+const CLUB_WORKSPACE_ROLES = new Set([
+  'CLUB_ADMIN',
+  'CHAIRMAN',
+  'TREASURER',
+  'CUSTOM',
+  'CUSTOM_ADMIN',
+  'TEAM_MANAGER',
+  'TICKETING_OFFICER',
+]);
+
+// This priority list is retained only for legacy callers. Entitlement-aware
+// routing remains authoritative whenever dashboard_access is present.
 function getPreferredDashboardRole(value: unknown) {
   const roles = getNormalizedRoles(value);
 
@@ -56,6 +66,7 @@ function getPreferredDashboardRole(value: unknown) {
       'UNION_ADMIN',
       'CHAIRMAN',
       'TREASURER',
+      'CUSTOM',
       'CUSTOM_ADMIN',
       'TEAM_MANAGER',
       'TICKETING_OFFICER',
@@ -78,23 +89,15 @@ export function getDefaultDashboardRoute(role: unknown) {
     case 'UNION_ADMIN':
       return '/dashboard/union-admin';
 
-    // Club sub-roles nest under /club-admin (see ClubAdminSubRoleRouting).
-    case 'CHAIRMAN':
-      return '/club-admin/chairman';
-    case 'TREASURER':
-      return '/club-admin/treasurer';
-    case 'CUSTOM_ADMIN':
-      return '/club-admin/custom-admin';
-    case 'TEAM_MANAGER':
-      return '/club-admin/team-manager';
-    case 'TICKETING_OFFICER':
-      // Was '/dashboard/ticketing-officer' — updated to land directly in
-      // the nested shell instead of bouncing through the backward-compat
-      // redirect in AppRoutes.tsx.
-      return '/club-admin/ticketing-officer';
-
     case 'CLUB_ADMIN':
+    case 'CHAIRMAN':
+    case 'TREASURER':
+    case 'CUSTOM':
+    case 'CUSTOM_ADMIN':
+    case 'TEAM_MANAGER':
       return '/dashboard/club-admin';
+    case 'TICKETING_OFFICER':
+      return '/dashboard/ticketing-officer';
     case 'LEAGUE_ADMIN':
       return '/dashboard/league-admin';
     case 'REFEREE':
@@ -103,8 +106,9 @@ export function getDefaultDashboardRoute(role: unknown) {
     case 'SPONSOR':
       return '/dashboard/sponsor';
     case 'FAN':
-    default:
       return '/dashboard/fan';
+    default:
+      return null;
   }
 }
 
@@ -126,21 +130,43 @@ export function isUnionAdminRoute(pathname: string) {
 }
 
 export function canRoleAccessRedirect(userOrRole: unknown, pathname: string) {
+  if (
+    userOrRole &&
+    typeof userOrRole === 'object' &&
+    Object.prototype.hasOwnProperty.call(userOrRole, 'dashboard_access')
+  ) {
+    return canAccessDashboardRoute(
+      (userOrRole as { dashboard_access?: unknown }).dashboard_access,
+      pathname,
+    );
+  }
+
   const roles = getNormalizedRoles(userOrRole);
 
   if (roles.length === 0) return false;
 
-  if (roles.includes('SUPER_ADMIN')) {
+  const preferredRole = getPreferredDashboardRole(roles);
+  const defaultRoute = getDefaultDashboardRoute(roles);
+
+  if (!defaultRoute) return false;
+
+  // Club route authorization always requires a scoped entitlement. Legacy
+  // User.role values may supply display/redirect hints, never access.
+  if (CLUB_WORKSPACE_ROLES.has(preferredRole)) {
+    return false;
+  }
+
+  if (preferredRole === 'SUPER_ADMIN') {
     return isSuperAdminRoute(pathname);
   }
 
-  if (roles.includes('UNION_ADMIN') && isUnionAdminRoute(pathname)) {
-    return true;
+  if (preferredRole === 'UNION_ADMIN') {
+    return isUnionAdminRoute(pathname);
   }
 
-  if (roles.includes('FAN') && !isSuperAdminRoute(pathname) && !isUnionAdminRoute(pathname)) {
-    return true;
+  if (preferredRole === 'FAN') {
+    return isFanDashboardRoute(pathname);
   }
 
-  return !isSuperAdminRoute(pathname) && !isFanDashboardRoute(pathname);
+  return pathname === defaultRoute || pathname.startsWith(`${defaultRoute}/`);
 }

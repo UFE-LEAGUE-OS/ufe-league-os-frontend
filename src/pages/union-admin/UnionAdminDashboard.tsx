@@ -12,7 +12,6 @@ import {
     Megaphone,
     PanelLeftClose,
     PanelLeftOpen,
-    RefreshCw,
     Search,
     ShieldCheck,
     TicketCheck,
@@ -20,15 +19,19 @@ import {
     UserCheck,
     Users,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { useAuthStore } from "../../store/authStore";
 import {
     getMyUnionWorkspaces,
+    createUnionWorkspaceUser,
     getUnionDashboardOverview,
     getUnionFinanceDashboard,
     getUnionOperationsDashboard,
     getUnionWorkspaceUsers,
+    intersectUnionWorkspaceOptions,
     switchUnionWorkspace,
+    type AuthorizedUnionWorkspaceOption,
     type UnionDashboardOverview,
     type UnionFinanceDashboard,
     type UnionOperationsDashboard,
@@ -37,6 +40,7 @@ import {
     type UnionWorkspacePermission,
     type UnionWorkspaceRole,
     type UnionWorkspaceUser,
+    type UnionWorkspaceUsersResult,
 } from "../../services/unionAdminService";
 import AuthenticatedFooter from "../../components/AuthenticatedFooter/AuthenticatedFooter";
 import MobileUnionNavigation from "../../components/MobileUnionNavigation/MobileUnionNavigation";
@@ -45,6 +49,8 @@ import UnionAdminClubsPanel from "../../components/UnionAdminClubsPanel/UnionAdm
 import UnionAdminRefereesPanel from "../../components/UnionAdminRefereesPanel/UnionAdminRefereesPanel";
 import OfficialAppointmentsPanel from "../../components/OfficialAppointmentsPanel/OfficialAppointmentsPanel";
 import LeagueAdminScopesPanel from "../../components/LeagueAdminScopesPanel/LeagueAdminScopesPanel";
+import { useCurrentUser } from "../../hooks/useCurrentUser";
+import { getEntitlementsForDashboard } from "../../utils/dashboardAccess.js";
 import logoHorizontal from "../../assets/logos/league-os-horizontal.png";
 import logoMark from "../../assets/league-os-mark.svg";
 import styles from "./UnionAdminDashboard.module.css";
@@ -80,10 +86,11 @@ type TabDefinition = {
     label: string;
     icon: typeof BarChart3;
     permission?: UnionWorkspacePermission;
-    roles?: UnionWorkspaceRole[];
+    matchOfficialOnly?: boolean;
 };
 
 type Summary = {
+    leagues: number;
     activeCompetitions: number;
     memberClubs: number;
     pendingApprovals: number;
@@ -112,440 +119,194 @@ type TableColumn<T> = {
     render: (item: T) => string | number | JSX.Element;
 };
 
-type CompetitionRecord = {
-    id: string;
-    name: string;
-    type?: string;
-    format: string;
-    season: string;
-    clubs: number;
-    matches: number;
-    status: string;
-    phase?: string;
-    entryWindow?: string;
-    registrationStatus?: string;
-    fixtureStatus?: string;
-    nextFixture?: string;
-    officialsNeeded?: number;
-    reportsDue?: number;
-    nextAction: string;
-};
+function assertWorkspaceUsersResult(
+    result: UnionWorkspaceUsersResult,
+    workspaceSlug: string,
+) {
+    if (
+        !result ||
+        typeof result !== "object" ||
+        typeof result.workspace !== "string" ||
+        result.workspace !== workspaceSlug ||
+        !Array.isArray(result.results) ||
+        !Number.isInteger(result.count) ||
+        result.count < 0 ||
+        result.results.some(
+            (user) =>
+                !user ||
+                typeof user.workspace_slug !== "string" ||
+                user.workspace_slug !== workspaceSlug,
+        )
+    ) {
+        throw new Error("Workspace users response belongs to a different workspace.");
+    }
 
-type ClubRecord = {
-    id: string;
-    name: string;
-    category: string;
-    teams: number;
-    players: number;
-    compliance: string;
-    admin: string;
-};
+    return result.results;
+}
 
-type RefereeRecord = {
-    name: string;
-    role: string;
-    grade: string;
-    status: string;
-    competitions: string;
-    nextMatch: string;
-};
-
-type AppointmentRecord = {
-    id?: number;
-    match: string;
-    competition: string;
-    date: string;
-    venue: string;
-    role: string;
-    status?: string;
-    report: string;
-};
-
-type RegistrationRecord = {
-    applicant: string;
-    club: string;
-    type: string;
-    submitted: string;
-    status: string;
-    reviewer: string;
-};
-
-const fallbackPermissions: UnionWorkspacePermission[] = [
-    "union.dashboard.view",
-    "union.competitions.manage",
-    "union.clubs.manage",
-    "union.players.approve",
-    "union.referees.manage",
-    "union.finance.view",
-    "union.reports.view",
-    "union.communications.manage",
-    "union.users.manage",
-    "union.official.appointments.view",
-    "union.official.reports.manage",
-    "union.official.availability.manage",
-    "union.official.documents.view",
-    "union.official.payments.view",
-    "union.ticketing.manage",
-    "union.ticketing.scan",
-    "union.teams.manage",
-];
-
-const fallbackWorkspaces: UnionWorkspaceOption[] = [
-    {
-        id: 0,
-        name: "Workspace Preview",
-        slug: "workspace-preview",
-        acronym: "WORK",
-        sport: "Multi-sport",
-        workspaceType: "Preview Workspace",
-        description:
-            "Neutral fallback workspace used only when live workspace access is unavailable.",
-        primaryColor: "#7b3ff2",
-        role: "OWNER",
-        roleDisplay: "Workspace Owner",
-        permissions: fallbackPermissions,
+function assertCreatedWorkspaceUser(
+    result: {
+        workspace: string;
+        membership: UnionWorkspaceUser;
     },
-];
+    workspaceSlug: string,
+) {
+    if (
+        !result ||
+        result.workspace !== workspaceSlug ||
+        !result.membership ||
+        result.membership.workspace_slug !== workspaceSlug
+    ) {
+        throw new Error("Workspace user creation response belongs to a different workspace.");
+    }
+}
 
 const tabs: TabDefinition[] = [
-    { key: "overview", label: "Overview", icon: BarChart3 },
+    {
+        key: "overview",
+        label: "Overview",
+        icon: BarChart3,
+        permission: "union.dashboard.view",
+    },
     {
         key: "competitions",
         label: "Competitions",
         icon: Trophy,
         permission: "union.competitions.manage",
-        roles: ["OWNER", "UNION_ADMIN", "COMPETITIONS_MANAGER"],
     },
     {
         key: "clubs",
         label: "Clubs",
         icon: Building2,
         permission: "union.clubs.manage",
-        roles: ["OWNER", "UNION_ADMIN", "COMPETITIONS_MANAGER", "REGISTRAR"],
     },
     {
         key: "nationalTeams",
         label: "National Teams",
         icon: Users,
         permission: "union.teams.manage",
-        roles: ["OWNER", "UNION_ADMIN", "COMPETITIONS_MANAGER"],
     },
     {
         key: "registrations",
         label: "Registrations",
         icon: ClipboardCheck,
         permission: "union.players.approve",
-        roles: ["OWNER", "UNION_ADMIN", "REGISTRAR"],
     },
     {
         key: "referees",
         label: "Referees",
         icon: BadgeCheck,
         permission: "union.referees.manage",
-        roles: ["OWNER", "UNION_ADMIN", "REFEREE_MANAGER"],
     },
     {
         key: "appointments",
         label: "Appointments",
         icon: CalendarDays,
         permission: "union.official.appointments.view",
-        roles: ["OWNER", "UNION_ADMIN", "REFEREE_MANAGER", "MATCH_OFFICIAL"],
     },
     {
         key: "availability",
         label: "Availability",
         icon: UserCheck,
         permission: "union.official.availability.manage",
-        roles: ["REFEREE_MANAGER", "MATCH_OFFICIAL"],
     },
     {
         key: "matchReports",
         label: "Match Reports",
         icon: FileText,
         permission: "union.official.reports.manage",
-        roles: ["OWNER", "UNION_ADMIN", "REFEREE_MANAGER", "MATCH_OFFICIAL"],
     },
     {
         key: "documents",
         label: "Documents",
         icon: FileText,
         permission: "union.official.documents.view",
-        roles: ["REFEREE_MANAGER", "MATCH_OFFICIAL"],
     },
     {
         key: "allowances",
         label: "Allowances",
         icon: DollarSign,
         permission: "union.official.payments.view",
-        roles: ["MATCH_OFFICIAL", "FINANCE_OFFICER"],
     },
-    { key: "profile", label: "Profile", icon: UserCheck, roles: ["MATCH_OFFICIAL"] },
+    {
+        key: "profile",
+        label: "Profile",
+        icon: UserCheck,
+        permission: "union.dashboard.view",
+        matchOfficialOnly: true,
+    },
     {
         key: "ticketing",
         label: "Ticketing",
         icon: TicketCheck,
         permission: "union.ticketing.manage",
-        roles: ["OWNER", "UNION_ADMIN", "TICKETING_OFFICER"],
     },
     {
         key: "scanner",
         label: "Scanner",
         icon: TicketCheck,
         permission: "union.ticketing.scan",
-        roles: ["TICKETING_OFFICER"],
     },
     {
         key: "entryLogs",
         label: "Entry Logs",
         icon: FileText,
         permission: "union.ticketing.manage",
-        roles: ["OWNER", "UNION_ADMIN", "TICKETING_OFFICER"],
     },
     {
         key: "finance",
         label: "Finance",
         icon: DollarSign,
         permission: "union.finance.view",
-        roles: ["OWNER", "UNION_ADMIN", "FINANCE_OFFICER"],
     },
     {
         key: "sponsors",
         label: "Sponsors",
         icon: Layers3,
         permission: "union.reports.view",
-        roles: ["OWNER", "UNION_ADMIN", "FINANCE_OFFICER"],
     },
     {
         key: "comms",
         label: "Comms",
         icon: Megaphone,
         permission: "union.communications.manage",
-        roles: ["OWNER", "UNION_ADMIN", "COMMUNICATIONS_OFFICER"],
     },
     {
         key: "users",
         label: "Users",
         icon: Users,
         permission: "union.users.manage",
-        roles: ["OWNER", "UNION_ADMIN"],
     },
     {
         key: "audit",
         label: "Audit Logs",
         icon: FileText,
         permission: "union.reports.view",
-        roles: ["OWNER", "UNION_ADMIN"],
     },
     {
         key: "settings",
         label: "Settings",
         icon: ShieldCheck,
         permission: "union.users.manage",
-        roles: ["OWNER", "UNION_ADMIN"],
-    },
-];
-
-const UNION_WORKSPACE_STORAGE_KEY = "league_os_selected_union_workspace";
-
-const competitions: CompetitionRecord[] = [
-    {
-        id: "nile-special",
-        name: "Nile Special Rugby League",
-        format: "15s league",
-        season: "2026",
-        clubs: 12,
-        matches: 66,
-        status: "Active",
-        nextAction: "Assign officials",
-    },
-    {
-        id: "uganda-cup",
-        name: "Uganda Cup",
-        format: "Knockout",
-        season: "2026",
-        clubs: 16,
-        matches: 15,
-        status: "Draft",
-        nextAction: "Open entries",
-    },
-    {
-        id: "rugby-sevens",
-        name: "Rugby 7s Series",
-        format: "Multi-round 7s",
-        season: "2026",
-        clubs: 12,
-        matches: 84,
-        status: "Planning",
-        nextAction: "Generate rounds",
-    },
-    {
-        id: "womens-league",
-        name: "Women’s Rugby League",
-        format: "15s league",
-        season: "2026",
-        clubs: 8,
-        matches: 28,
-        status: "Review",
-        nextAction: "Eligibility checks",
-    },
-];
-
-const clubs: ClubRecord[] = [
-    {
-        id: "kobs",
-        name: "KOBS Rugby Club",
-        category: "Senior club",
-        teams: 3,
-        players: 68,
-        compliance: "Ready",
-        admin: "Club Secretary",
-    },
-    {
-        id: "heathens",
-        name: "Heathens RFC",
-        category: "Senior club",
-        teams: 4,
-        players: 74,
-        compliance: "Ready",
-        admin: "Team Manager",
-    },
-    {
-        id: "pirates",
-        name: "Black Pirates",
-        category: "Senior club",
-        teams: 3,
-        players: 61,
-        compliance: "Missing docs",
-        admin: "Club Admin",
-    },
-    {
-        id: "rhinos",
-        name: "Rhinos Rugby Club",
-        category: "Senior club",
-        teams: 2,
-        players: 44,
-        compliance: "Review",
-        admin: "Registrar",
-    },
-    {
-        id: "impis",
-        name: "Makerere Impis",
-        category: "University club",
-        teams: 2,
-        players: 52,
-        compliance: "Ready",
-        admin: "Sports Tutor",
-    },
-];
-
-const registrations: RegistrationRecord[] = [
-    {
-        applicant: "Daniel Okello",
-        club: "KOBS Rugby Club",
-        type: "New player",
-        submitted: "Today",
-        status: "Needs review",
-        reviewer: "Registrar",
-    },
-    {
-        applicant: "Patrick Ocen",
-        club: "Black Pirates",
-        type: "Transfer",
-        submitted: "Yesterday",
-        status: "Documents missing",
-        reviewer: "Registrar",
-    },
-    {
-        applicant: "Sarah Namutebi",
-        club: "Women’s Rugby League",
-        type: "Squad registration",
-        submitted: "2 days ago",
-        status: "Ready to approve",
-        reviewer: "Union Admin",
-    },
-];
-
-const referees: RefereeRecord[] = [
-    {
-        name: "John Referee",
-        role: "Centre Referee",
-        grade: "Level 2",
-        status: "Available",
-        competitions: "League, Cup, 7s",
-        nextMatch: "KOBS vs Heathens",
-    },
-    {
-        name: "Amina Official",
-        role: "Assistant Referee",
-        grade: "Level 1",
-        status: "Available",
-        competitions: "League, Women’s League",
-        nextMatch: "Pirates vs Rhinos",
-    },
-    {
-        name: "Michael Assessor",
-        role: "Match Assessor",
-        grade: "Assessor",
-        status: "Restricted",
-        competitions: "League",
-        nextMatch: "Pending assignment",
-    },
-];
-
-const appointments: AppointmentRecord[] = [
-    {
-        match: "KOBS vs Heathens",
-        competition: "Nile Special Rugby League",
-        date: "Sat 18 Jul, 4:00 PM",
-        venue: "Legends Rugby Grounds",
-        role: "Centre Referee",
-        report: "Due after match",
-    },
-    {
-        match: "Pirates vs Rhinos",
-        competition: "Nile Special Rugby League",
-        date: "Sun 19 Jul, 3:00 PM",
-        venue: "Kings Park Arena",
-        role: "Assistant Referee",
-        report: "Not started",
-    },
-    {
-        match: "Uganda 7s Trial",
-        competition: "Rugby 7s Series",
-        date: "Wed 22 Jul, 10:00 AM",
-        venue: "Kyadondo Rugby Club",
-        role: "Match Commissioner",
-        report: "Pending",
     },
 ];
 
 function canAccessTab(workspace: UnionWorkspaceOption, tab: TabDefinition) {
-    const hasPermission = tab.permission ? workspace.permissions.includes(tab.permission) : false;
-    const hasRole = tab.roles?.includes(workspace.role) ?? false;
-
-    if (!tab.permission && !tab.roles?.length) return true;
-
-    return hasPermission || hasRole;
+    return (
+        (!tab.permission || workspace.permissions.includes(tab.permission)) &&
+        (!tab.matchOfficialOnly || isMatchOfficialWorkspace(workspace))
+    );
 }
 
 function getSummary(overview: UnionDashboardOverview | null): Summary {
     return {
+        leagues: overview?.summary.leagues ?? 0,
         activeCompetitions: overview?.summary.active_competitions ?? 0,
         memberClubs: overview?.summary.member_clubs ?? 0,
         pendingApprovals: overview?.summary.pending_approvals ?? 0,
         referees: overview?.summary.referees ?? 0,
         upcomingMatches: overview?.summary.upcoming_matches ?? 0,
     };
-}
-
-function resolvePreferredWorkspaceSlug(workspaces: UnionWorkspaceOption[]) {
-    const savedSlug = localStorage.getItem(UNION_WORKSPACE_STORAGE_KEY);
-
-    if (savedSlug && workspaces.some((workspace) => workspace.slug === savedSlug)) {
-        return savedSlug;
-    }
-
-    return workspaces[0]?.slug ?? "";
 }
 
 function isMatchOfficialWorkspace(workspace: UnionWorkspaceOption) {
@@ -934,60 +695,116 @@ function ModuleButton({
 }
 
 export default function UnionAdminDashboard() {
-    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-    const [workspaces, setWorkspaces] = useState<UnionWorkspaceOption[]>(fallbackWorkspaces);
-    const [activeWorkspaceSlug, setActiveWorkspaceSlug] = useState(() =>
-        resolvePreferredWorkspaceSlug(fallbackWorkspaces),
+    const { isLoading: isLoadingProfile } = useCurrentUser();
+    const authenticatedUser = useAuthStore((state) => state.user);
+    const dashboardAccess = authenticatedUser?.dashboard_access;
+    const unionEntitlements = useMemo(
+        () =>
+            getEntitlementsForDashboard(
+                dashboardAccess,
+                "UNION_WORKSPACE",
+            ),
+        [dashboardAccess],
     );
+    const fanDashboardRoute = useMemo(
+        () =>
+            getEntitlementsForDashboard(
+                dashboardAccess,
+                "FAN",
+            )[0]?.route,
+        [dashboardAccess],
+    );
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+    const [workspaces, setWorkspaces] = useState<AuthorizedUnionWorkspaceOption[]>([]);
+    const [activeWorkspaceSlug, setActiveWorkspaceSlug] = useState("");
     const [activeTab, setActiveTab] = useState<TabKey>("overview");
-    const [isApiBacked, setIsApiBacked] = useState(false);
     const [isLoadingWorkspaces, setIsLoadingWorkspaces] = useState(true);
+    const [isSwitchingWorkspace, setIsSwitchingWorkspace] = useState(false);
     const [workspaceError, setWorkspaceError] = useState("");
     const [overview, setOverview] = useState<UnionDashboardOverview | null>(null);
     const [workspaceUsers, setWorkspaceUsers] = useState<UnionWorkspaceUser[]>([]);
-    const [workspaceDataError, setWorkspaceDataError] = useState("");
+    const [overviewError, setOverviewError] = useState("");
     const [isLoadingOverview, setIsLoadingOverview] = useState(false);
+    const [workspaceUsersError, setWorkspaceUsersError] = useState("");
+    const [isLoadingWorkspaceUsers, setIsLoadingWorkspaceUsers] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [competitionView, setCompetitionView] = useState<CompetitionView>("list");
-    const [selectedCompetitionId, setSelectedCompetitionId] = useState(competitions[0].id);
+    const [selectedCompetitionId, setSelectedCompetitionId] = useState("");
     const [clubView, setClubView] = useState<ClubView>("directory");
-    const [selectedClubId, setSelectedClubId] = useState(clubs[0].id);
+    const [selectedClubId, setSelectedClubId] = useState("");
     const [fixtureStep, setFixtureStep] = useState(3);
-    const [reportNotes, setReportNotes] = useState("");
-    const [messageDraft, setMessageDraft] = useState("");
     const [financeData, setFinanceData] = useState<UnionFinanceDashboard | null>(null);
     const [isLoadingFinance, setIsLoadingFinance] = useState(false);
     const [financeError, setFinanceError] = useState("");
     const [operationsData, setOperationsData] = useState<UnionOperationsDashboard | null>(null);
-    const [operationsError, setOperationsError] = useState("");
+    const [workspaceUserEmail, setWorkspaceUserEmail] = useState("");
+    const [workspaceUserRole, setWorkspaceUserRole] = useState<UnionWorkspaceRole>("VIEWER");
+    const [isCreatingWorkspaceUser, setIsCreatingWorkspaceUser] = useState(false);
+    const [workspaceUserNotice, setWorkspaceUserNotice] = useState("");
 
     useEffect(() => {
         let isMounted = true;
 
         async function loadWorkspaces() {
+            if (isLoadingProfile && unionEntitlements.length === 0) {
+                return;
+            }
+
+            setIsLoadingWorkspaces(true);
+            setWorkspaceError("");
+
+            if (unionEntitlements.length === 0) {
+                setWorkspaces([]);
+                setActiveWorkspaceSlug("");
+                setWorkspaceError(
+                    "This account does not have an active Union workspace entitlement.",
+                );
+                setIsLoadingWorkspaces(false);
+                return;
+            }
+
             try {
                 const apiWorkspaces = await getMyUnionWorkspaces();
 
                 if (!isMounted) return;
 
-                if (apiWorkspaces.length > 0) {
-                    setWorkspaces(apiWorkspaces);
-                    setActiveWorkspaceSlug(resolvePreferredWorkspaceSlug(apiWorkspaces));
-                    setIsApiBacked(true);
+                const authorizedWorkspaces = intersectUnionWorkspaceOptions(
+                    apiWorkspaces,
+                    dashboardAccess,
+                );
+
+                setWorkspaces(authorizedWorkspaces);
+
+                if (authorizedWorkspaces.length > 0) {
+                    setActiveWorkspaceSlug((currentSlug) => {
+                        if (
+                            currentSlug &&
+                            authorizedWorkspaces.some(
+                                (workspace) => workspace.slug === currentSlug,
+                            )
+                        ) {
+                            return currentSlug;
+                        }
+
+                        return authorizedWorkspaces.length === 1
+                            ? authorizedWorkspaces[0].slug
+                            : "";
+                    });
                     setWorkspaceError("");
                 } else {
-                    setWorkspaces(fallbackWorkspaces);
-                    setActiveWorkspaceSlug(resolvePreferredWorkspaceSlug(fallbackWorkspaces));
-                    setIsApiBacked(false);
-                    setWorkspaceError("No union workspaces are attached to this account yet.");
+                    setActiveWorkspaceSlug("");
+                    setWorkspaceError(
+                        "No active Union membership matches this account's dashboard entitlements.",
+                    );
                 }
             } catch {
                 if (!isMounted) return;
 
-                setWorkspaces(fallbackWorkspaces);
-                setActiveWorkspaceSlug(resolvePreferredWorkspaceSlug(fallbackWorkspaces));
-                setIsApiBacked(false);
-                setWorkspaceError("Using preview data because workspace access could not be loaded.");
+                setWorkspaces([]);
+                setActiveWorkspaceSlug("");
+                setWorkspaceError(
+                    "Union workspace access could not be verified. Try again when the service is available.",
+                );
             } finally {
                 if (isMounted) setIsLoadingWorkspaces(false);
             }
@@ -998,12 +815,30 @@ export default function UnionAdminDashboard() {
         return () => {
             isMounted = false;
         };
-    }, []);
+    }, [dashboardAccess, isLoadingProfile, unionEntitlements]);
 
     const activeWorkspace =
-        workspaces.find((workspace) => workspace.slug === activeWorkspaceSlug) ?? workspaces[0];
+        workspaces.find((workspace) => workspace.slug === activeWorkspaceSlug);
+    const activeWorkspaceRef = useRef<AuthorizedUnionWorkspaceOption | undefined>(
+        activeWorkspace,
+    );
+    const workspaceGenerationRef = useRef(0);
+    const workspaceUserSubmissionRef = useRef<number | null>(null);
+    const latestSwitchRequestRef = useRef(0);
+    activeWorkspaceRef.current = activeWorkspace;
+
+    useEffect(() => {
+        workspaceGenerationRef.current += 1;
+        workspaceUserSubmissionRef.current = null;
+
+        return () => {
+            workspaceGenerationRef.current += 1;
+        };
+    }, [activeWorkspace?.slug, activeWorkspace?.entitlementId]);
 
     const availableTabs = useMemo(() => {
+        if (!activeWorkspace) return [];
+
         return tabs.filter((tab) => canAccessTab(activeWorkspace, tab));
     }, [activeWorkspace]);
 
@@ -1016,40 +851,81 @@ export default function UnionAdminDashboard() {
     useEffect(() => {
         let isMounted = true;
 
-        async function loadWorkspaceData() {
+        async function loadOverview() {
             if (isLoadingWorkspaces || !activeWorkspace?.slug) return;
 
             setIsLoadingOverview(true);
+            setOverviewError("");
 
             try {
                 const nextOverview = await getUnionDashboardOverview(activeWorkspace.slug);
 
                 if (!isMounted) return;
 
-                setOverview(nextOverview);
-                setWorkspaceDataError("");
-
-                if (activeWorkspace.permissions.includes("union.users.manage")) {
-                    const users = await getUnionWorkspaceUsers(activeWorkspace.slug);
-
-                    if (!isMounted) return;
-
-                    setWorkspaceUsers(users);
-                } else {
-                    setWorkspaceUsers([]);
+                if (nextOverview.workspace.slug !== activeWorkspace.slug) {
+                    throw new Error("Overview response belongs to a different workspace.");
                 }
+
+                setOverview(nextOverview);
             } catch {
                 if (!isMounted) return;
 
                 setOverview(null);
-                setWorkspaceUsers([]);
-                setWorkspaceDataError("Workspace data could not be loaded. Showing safe values.");
+                setOverviewError("Workspace overview could not be loaded.");
             } finally {
                 if (isMounted) setIsLoadingOverview(false);
             }
         }
 
-        void loadWorkspaceData();
+        void loadOverview();
+
+        return () => {
+            isMounted = false;
+        };
+    }, [activeWorkspace?.slug, activeWorkspace?.permissions, isLoadingWorkspaces]);
+
+    useEffect(() => {
+        let isMounted = true;
+
+        async function loadWorkspaceUsers() {
+            if (isLoadingWorkspaces || !activeWorkspace?.slug) return;
+
+            if (!activeWorkspace.permissions.includes("union.users.manage")) {
+                setWorkspaceUsers([]);
+                setWorkspaceUsersError("");
+                setIsLoadingWorkspaceUsers(false);
+                return;
+            }
+
+            setIsLoadingWorkspaceUsers(true);
+            setWorkspaceUsersError("");
+
+            try {
+                const result = await getUnionWorkspaceUsers(activeWorkspace.slug);
+
+                if (!isMounted) return;
+
+                const users = assertWorkspaceUsersResult(result, activeWorkspace.slug);
+
+                setWorkspaceUsers(users);
+            } catch (error) {
+                if (!isMounted) return;
+
+                setWorkspaceUsers([]);
+                const detail =
+                    typeof error === "object" &&
+                    error !== null &&
+                    "response" in error &&
+                    typeof (error as { response?: { data?: { detail?: unknown } } }).response?.data?.detail === "string"
+                        ? (error as { response: { data: { detail: string } } }).response.data.detail
+                        : "Workspace users could not be loaded.";
+                setWorkspaceUsersError(detail);
+            } finally {
+                if (isMounted) setIsLoadingWorkspaceUsers(false);
+            }
+        }
+
+        void loadWorkspaceUsers();
 
         return () => {
             isMounted = false;
@@ -1060,22 +936,25 @@ export default function UnionAdminDashboard() {
         let isMounted = true;
 
         async function loadOperationsData() {
-            if (isLoadingWorkspaces || !activeWorkspace?.slug) return;
+            if (isLoadingWorkspaces || !activeWorkspace?.slug || !isMatchOfficialWorkspace(activeWorkspace)) {
+                setOperationsData(null);
+                return;
+            }
 
             try {
-                const data = await getUnionOperationsDashboard(activeWorkspace.acronym || activeWorkspace.slug);
+                const data = await getUnionOperationsDashboard(activeWorkspace.slug);
 
                 if (!isMounted) return;
 
+                if (data.workspace.slug !== activeWorkspace.slug) {
+                    throw new Error("Operations response belongs to a different workspace.");
+                }
+
                 setOperationsData(data);
-                setOperationsError("");
             } catch {
                 if (!isMounted) return;
 
                 setOperationsData(null);
-                setOperationsError(
-                    "Live workspace operations could not be loaded. Retry after confirming that the backend is available.",
-                );
             }
         }
 
@@ -1084,7 +963,7 @@ export default function UnionAdminDashboard() {
         return () => {
             isMounted = false;
         };
-    }, [activeWorkspace?.acronym, activeWorkspace?.slug, isLoadingWorkspaces]);
+    }, [activeWorkspace, isLoadingWorkspaces]);
 
     useEffect(() => {
         let isMounted = true;
@@ -1102,9 +981,13 @@ export default function UnionAdminDashboard() {
             setIsLoadingFinance(true);
 
             try {
-                const data = await getUnionFinanceDashboard(activeWorkspace.acronym || activeWorkspace.slug);
+                const data = await getUnionFinanceDashboard(activeWorkspace.slug);
 
                 if (!isMounted) return;
+
+                if (data.workspace.slug !== activeWorkspace.slug) {
+                    throw new Error("Finance response belongs to a different workspace.");
+                }
 
                 setFinanceData(data);
                 setFinanceError("");
@@ -1125,19 +1008,135 @@ export default function UnionAdminDashboard() {
         return () => {
             isMounted = false;
         };
-    }, [activeTab, activeWorkspace?.acronym, activeWorkspace?.slug, activeWorkspace?.permissions, isLoadingWorkspaces]);
+    }, [activeTab, activeWorkspace?.slug, activeWorkspace?.permissions, isLoadingWorkspaces]);
 
     async function handleWorkspaceChange(nextSlug: string) {
-        localStorage.setItem(UNION_WORKSPACE_STORAGE_KEY, nextSlug);
-        setActiveWorkspaceSlug(nextSlug);
-        setActiveTab("overview");
-        setCompetitionView("list");
-        setClubView("directory");
+        const requestedWorkspace = workspaces.find(
+            (workspace) => workspace.slug === nextSlug,
+        );
+
+        if (!requestedWorkspace) return;
+
+        workspaceGenerationRef.current += 1;
+        const switchRequest = ++latestSwitchRequestRef.current;
+        workspaceUserSubmissionRef.current = null;
+        setIsCreatingWorkspaceUser(false);
+        setIsSwitchingWorkspace(true);
+        setWorkspaceError("");
 
         try {
-            await switchUnionWorkspace(nextSlug);
+            const result = await switchUnionWorkspace(nextSlug);
+
+            if (latestSwitchRequestRef.current !== switchRequest) return;
+
+            if (
+                result.selectedEntitlementId !==
+                    requestedWorkspace.entitlementId ||
+                String(result.workspace.scopeId) !==
+                    String(requestedWorkspace.scopeId) ||
+                result.workspace.role !== requestedWorkspace.role
+                || result.workspace.slug !== requestedWorkspace.slug
+            ) {
+                throw new Error("The selected workspace access changed.");
+            }
+
+            setOverview(null);
+            setWorkspaceUsers([]);
+            setOverviewError("");
+            setWorkspaceUsersError("");
+            setIsLoadingWorkspaceUsers(false);
+            setWorkspaceUserEmail("");
+            setWorkspaceUserRole("VIEWER");
+            setWorkspaceUserNotice("");
+            setIsCreatingWorkspaceUser(false);
+            setOperationsData(null);
+            setFinanceData(null);
+            setFinanceError("");
+            setWorkspaces((currentWorkspaces) =>
+                currentWorkspaces.map((workspace) =>
+                    workspace.entitlementId === result.selectedEntitlementId
+                        ? result.workspace
+                        : workspace,
+                ),
+            );
+            setActiveWorkspaceSlug(result.workspace.slug);
+            setActiveTab("overview");
+            setCompetitionView("list");
+            setClubView("directory");
         } catch {
-            // The local switch still works; protected endpoints will validate access.
+            if (latestSwitchRequestRef.current !== switchRequest) return;
+            setWorkspaceError(
+                "That Union workspace could not be verified. Your current workspace has not changed.",
+            );
+        } finally {
+            if (latestSwitchRequestRef.current === switchRequest) setIsSwitchingWorkspace(false);
+        }
+    }
+
+    async function handleCreateWorkspaceUser(event: FormEvent<HTMLFormElement>) {
+        event.preventDefault();
+        if (
+            !activeWorkspace ||
+            !workspaceUserEmail.trim() ||
+            isSwitchingWorkspace ||
+            workspaceUserSubmissionRef.current !== null
+        ) {
+            return;
+        }
+
+        const submittedWorkspaceSlug = activeWorkspace.slug;
+        const submittedEntitlementId = activeWorkspace.entitlementId;
+        const submittedGeneration = workspaceGenerationRef.current;
+        workspaceUserSubmissionRef.current = submittedGeneration;
+        const remainsActive = () => {
+            const current = activeWorkspaceRef.current;
+            return (
+                current?.slug === submittedWorkspaceSlug &&
+                current.entitlementId === submittedEntitlementId &&
+                workspaceGenerationRef.current === submittedGeneration
+            );
+        };
+
+        setIsCreatingWorkspaceUser(true);
+        setWorkspaceUserNotice("");
+
+        try {
+            const created = await createUnionWorkspaceUser({
+                workspace: submittedWorkspaceSlug,
+                email: workspaceUserEmail.trim(),
+                role: workspaceUserRole,
+            });
+
+            if (!remainsActive()) return;
+
+            assertCreatedWorkspaceUser(created, submittedWorkspaceSlug);
+
+            const usersResult = await getUnionWorkspaceUsers(submittedWorkspaceSlug);
+
+            if (!remainsActive()) return;
+
+            const users = assertWorkspaceUsersResult(usersResult, submittedWorkspaceSlug);
+
+            setWorkspaceUsers(users);
+            setWorkspaceUserEmail("");
+            setWorkspaceUserRole("VIEWER");
+            setWorkspaceUserNotice("Workspace user access was added.");
+        } catch (error) {
+            if (!remainsActive()) return;
+
+            const detail =
+                typeof error === "object" &&
+                error !== null &&
+                "response" in error &&
+                typeof (error as { response?: { data?: { detail?: unknown } } }).response?.data?.detail === "string"
+                    ? (error as { response: { data: { detail: string } } }).response.data.detail
+                    : "The workspace user could not be added.";
+            setWorkspaceUserNotice(detail);
+        } finally {
+            if (remainsActive()) setIsCreatingWorkspaceUser(false);
+            if (workspaceUserSubmissionRef.current === submittedGeneration) {
+                workspaceUserSubmissionRef.current = null;
+            }
         }
     }
 
@@ -1156,43 +1155,119 @@ export default function UnionAdminDashboard() {
         window.location.assign("/login");
     }
 
+    if (!activeWorkspace) {
+        const isWaitingForAccess =
+            isLoadingProfile || isLoadingWorkspaces;
+        const requiresWorkspaceSelection =
+            !isWaitingForAccess && workspaces.length > 1;
+
+        return (
+            <main className={styles.pageShell}>
+                <section className={styles.contentArea}>
+                    <header className={styles.heroHeader}>
+                        <div className={styles.heroIdentity}>
+                            <div className={styles.heroMetaRow}>
+                                <span className={styles.liveBadge}>
+                                    <Building2
+                                        size={14}
+                                        strokeWidth={2.4}
+                                        aria-hidden="true"
+                                    />
+                                    Union Workspace
+                                </span>
+                            </div>
+                            <h1>
+                                {isWaitingForAccess
+                                    ? "Verifying workspace access"
+                                    : requiresWorkspaceSelection
+                                      ? "Select a Union workspace"
+                                      : "Union workspace unavailable"}
+                            </h1>
+                            <p>
+                                {requiresWorkspaceSelection
+                                    ? "Choose one of your entitled workspaces to continue."
+                                    : "League OS only opens workspaces confirmed by your dashboard access contract and active membership."}
+                            </p>
+                        </div>
+                        <div className={styles.headerActions}>
+                            <Link
+                                className={styles.headerActionPrimary}
+                                to="/unions"
+                            >
+                                View Unions
+                            </Link>
+                            {fanDashboardRoute ? (
+                                <Link
+                                    className={styles.headerActionSecondary}
+                                    to={fanDashboardRoute}
+                                >
+                                    Open Fan Dashboard
+                                </Link>
+                            ) : null}
+                        </div>
+                    </header>
+
+                    {workspaceError ? (
+                        <div className={styles.alertBanner}>
+                            {workspaceError}
+                        </div>
+                    ) : null}
+
+                    {requiresWorkspaceSelection ? (
+                        <label
+                            className={styles.workspaceSelectLabel}
+                            htmlFor="workspace-access-select"
+                        >
+                            Union workspace
+                            <select
+                                id="workspace-access-select"
+                                className={styles.workspaceSelect}
+                                value=""
+                                disabled={isSwitchingWorkspace}
+                                onChange={(event) =>
+                                    void handleWorkspaceChange(
+                                        event.target.value,
+                                    )
+                                }
+                            >
+                                <option value="" disabled>
+                                    Select a workspace
+                                </option>
+                                {workspaces.map((workspace) => (
+                                    <option
+                                        key={workspace.entitlementId}
+                                        value={workspace.slug}
+                                    >
+                                        {workspace.acronym} -{" "}
+                                        {workspace.roleDisplay}
+                                    </option>
+                                ))}
+                            </select>
+                        </label>
+                    ) : null}
+
+                    <div className={styles.dashboardFooterWrap}>
+                        <AuthenticatedFooter />
+                    </div>
+                </section>
+            </main>
+        );
+    }
+
     const summary = getSummary(overview);
-    const workspaceCompetitions =
-        operationsData?.competitions ??
-        (isApiBacked ? [] : competitions);
-    const workspaceClubs =
-        operationsData?.clubs ??
-        (isApiBacked ? [] : clubs);
-    const workspaceNationalTeams =
-        operationsData?.national_teams ?? [];
-    const workspaceRegistrations =
-        operationsData?.registrations ??
-        (isApiBacked ? [] : registrations);
-    const workspaceReferees =
-        operationsData?.referees ??
-        (isApiBacked ? [] : referees);
-    const workspaceAppointments =
-        operationsData?.appointments ??
-        (isApiBacked ? [] : appointments);
-    const workspacePlayerPositions = operationsData?.player_positions?.length
-        ? operationsData.player_positions
-        : getSportPositionGroups(activeWorkspace.sport);
+    // The operations endpoint currently contains generated operational rows. Do
+    // not present those rows, counts, or labels as workspace data.
+    const workspaceCompetitions: UnionOperationsDashboard["competitions"] = [];
+    const workspaceClubs: UnionOperationsDashboard["clubs"] = [];
+    const workspaceRegistrations: UnionOperationsDashboard["registrations"] = [];
+    const workspaceReferees: UnionOperationsDashboard["referees"] = [];
+    const workspaceAppointments: UnionOperationsDashboard["appointments"] = [];
+    const workspacePlayerPositions = getSportPositionGroups(activeWorkspace.sport);
     const currentOfficial = operationsData?.current_official ?? null;
 
     const selectedCompetition =
         workspaceCompetitions.find((competition) => competition.id === selectedCompetitionId) ?? workspaceCompetitions[0];
     const selectedClub = workspaceClubs.find((club) => club.id === selectedClubId) ?? workspaceClubs[0];
-
-    const totalCompetitionMatches = workspaceCompetitions.reduce(
-        (total, competition) => total + Number(competition.matches || 0),
-        0,
-    );
-
-    const totalCompetitionActions = workspaceCompetitions.filter((competition) =>
-        `${competition.nextAction} ${competition.fixtureStatus ?? ""} ${competition.registrationStatus ?? ""}`
-            .toLowerCase()
-            .match(/generate|assign|review|open|pending|need/),
-    ).length;
 
     const filteredCompetitions = workspaceCompetitions.filter((competition) =>
         `${competition.name} ${competition.type ?? ""} ${competition.format} ${competition.season} ${competition.status} ${competition.fixtureStatus ?? ""}`
@@ -1201,153 +1276,50 @@ export default function UnionAdminDashboard() {
     );
 
 
-    const statsByTab: Record<TabKey, StatCard[]> = {
-        overview: [
-            {
-                label: "Active Competitions",
-                value: summary.activeCompetitions,
-                detail: `${activeWorkspace.sport} competitions`,
-                icon: Trophy,
-            },
-            {
-                label: "Clubs / Teams",
-                value: summary.memberClubs,
-                detail: "Registered members",
-                icon: Building2,
-            },
-            {
-                label: "Pending Approvals",
-                value: summary.pendingApprovals,
-                detail: "Need admin action",
-                icon: ClipboardCheck,
-            },
-            {
-                label: "Officials",
-                value: summary.referees,
-                detail: "Referees and match officials",
-                icon: BadgeCheck,
-            },
-        ],
-        competitions: [
-            { label: "Competitions", value: workspaceCompetitions.length, detail: "League, cup and series records", icon: Trophy },
-            { label: "Matches", value: totalCompetitionMatches, detail: "Total planned match records", icon: CalendarDays },
-            { label: "Club Entries", value: summary.memberClubs, detail: "Eligible competition entries", icon: Building2 },
-            { label: "Actions", value: totalCompetitionActions, detail: "Fixture, result and report queues", icon: ClipboardCheck },
-        ],
-        clubs: [
-            { label: "Clubs / Teams", value: summary.memberClubs, detail: "Live backend count", icon: Building2 },
-            { label: "Club Admins", value: 12, detail: "Workspace-linked contacts", icon: Users },
-            { label: "Compliance", value: "9/12", detail: "Ready for competition entry", icon: ShieldCheck },
-            { label: "Players", value: 299, detail: "Sample registered player pool", icon: UserCheck },
-        ],
-        nationalTeams: [
-            { label: "Teams", value: 4, detail: "Senior, women, sevens, U20", icon: Users },
-            { label: "Player Pool", value: 52, detail: "Eligible selected athletes", icon: UserCheck },
-            { label: "Fixtures", value: 3, detail: "Union-owned events", icon: CalendarDays },
-            { label: "Staff", value: 11, detail: "Coaches and officials", icon: BadgeCheck },
-        ],
-        registrations: [
-            { label: "Pending", value: registrations.length, detail: "Needs registrar review", icon: ClipboardCheck },
-            { label: "Transfers", value: 1, detail: "Inter-club requests", icon: RefreshCw },
-            { label: "Documents", value: 5, detail: "Missing or expiring", icon: FileText },
-            { label: "Approvals", value: 18, detail: "Approved this month", icon: CheckCircle2 },
-        ],
-        referees: [
-            { label: "Officials", value: summary.referees || workspaceReferees.length, detail: "Union-managed official pool", icon: BadgeCheck },
-            { label: "Available", value: 2, detail: "Ready for appointment", icon: UserCheck },
-            { label: "Assignments", value: workspaceAppointments.length, detail: "Upcoming matches", icon: CalendarDays },
-            { label: "Reports", value: 2, detail: "Due after matchday", icon: FileText },
-        ],
-        appointments: [
-            { label: "Appointments", value: workspaceAppointments.length, detail: "Upcoming assignments", icon: CalendarDays },
-            { label: "Competitions", value: summary.activeCompetitions || 3, detail: "Assignment pools", icon: Trophy },
-            { label: "Accepted", value: 2, detail: "Confirmed officials", icon: CheckCircle2 },
-            { label: "Reports Due", value: 2, detail: "Post-match duties", icon: FileText },
-        ],
-        availability: [
-            { label: "Available Slots", value: 6, detail: "This week", icon: UserCheck },
-            { label: "Blocked Dates", value: 2, detail: "Unavailable windows", icon: CalendarDays },
-            { label: "Travel Zones", value: 3, detail: "Preferred assignment areas", icon: Layers3 },
-            { label: "Status", value: "Open", detail: "Can receive appointments", icon: BadgeCheck },
-        ],
-        matchReports: [
-            { label: "Reports Due", value: 2, detail: "Awaiting submission", icon: FileText },
-            { label: "Reviewed", value: 6, detail: "Approved this month", icon: CheckCircle2 },
-            { label: "Incidents", value: 1, detail: "Disciplinary follow-up", icon: ClipboardCheck },
-            { label: "Returned", value: 0, detail: "Needs correction", icon: RefreshCw },
-        ],
-        documents: [
-            { label: "Documents", value: 5, detail: "Official records", icon: FileText },
-            { label: "Certifications", value: 3, detail: "Level and licence", icon: BadgeCheck },
-            { label: "Expiring", value: 1, detail: "Renewal needed", icon: ClipboardCheck },
-            { label: "Eligibility", value: "Valid", detail: "Can be appointed", icon: ShieldCheck },
-        ],
-        allowances: [
-            { label: "Pending", value: 2, detail: "Awaiting finance", icon: DollarSign },
-            { label: "Paid", value: 5, detail: "Confirmed records", icon: CheckCircle2 },
-            { label: "Claims", value: 3, detail: "Upcoming appointments", icon: CalendarDays },
-            { label: "Receipts", value: 4, detail: "Downloadable", icon: FileText },
-        ],
-        profile: [
-            { label: "Role", value: "Referee", detail: "Primary official type", icon: BadgeCheck },
-            { label: "Grade", value: "Level 2", detail: "Certification level", icon: ShieldCheck },
-            { label: "Pools", value: 3, detail: "Allowed competitions", icon: Trophy },
-            { label: "Status", value: "Active", detail: "Appointment eligible", icon: UserCheck },
-        ],
-        ticketing: [
-            { label: "Assigned Events", value: 2, detail: "Union-owned matches", icon: CalendarDays },
-            { label: "Tickets Sold", value: 1280, detail: "Sample matchday volume", icon: TicketCheck },
-            { label: "Gate Officers", value: 6, detail: "Assigned scanners", icon: Users },
-            { label: "Entry Logs", value: 0, detail: "Today", icon: FileText },
-        ],
-        scanner: [
-            { label: "Mode", value: "QR", detail: "Scanner ready", icon: TicketCheck },
-            { label: "Valid", value: 0, detail: "Accepted entries", icon: CheckCircle2 },
-            { label: "Rejected", value: 0, detail: "Invalid scans", icon: FileText },
-            { label: "Sync", value: "Online", detail: "Ready to record", icon: BadgeCheck },
-        ],
-        entryLogs: [
-            { label: "Entries", value: 0, detail: "Recorded admissions", icon: FileText },
-            { label: "Manual Checks", value: 0, detail: "Fallback validations", icon: ClipboardCheck },
-            { label: "Events", value: 2, detail: "Assigned matches", icon: CalendarDays },
-            { label: "Audit", value: "On", detail: "Gate actions tracked", icon: ShieldCheck },
-        ],
-        finance: [
-            { label: "Revenue Streams", value: 5, detail: "Fees, tickets, sponsors", icon: DollarSign },
-            { label: "Pending Payouts", value: 2, detail: "Needs review", icon: ClipboardCheck },
-            { label: "Receipts", value: 12, detail: "This month", icon: FileText },
-            { label: "Audit Checks", value: 3, detail: "Finance trail", icon: ShieldCheck },
-        ],
-        sponsors: [
-            { label: "Packages", value: 4, detail: "Available inventory", icon: Layers3 },
-            { label: "Campaigns", value: 3, detail: "Active placements", icon: Megaphone },
-            { label: "Beneficiaries", value: summary.memberClubs, detail: "Clubs and teams", icon: Building2 },
-            { label: "Reports", value: 6, detail: "ROI summaries", icon: BarChart3 },
-        ],
-        comms: [
-            { label: "Audiences", value: 6, detail: "Clubs, fans, officials", icon: Users },
-            { label: "Drafts", value: 2, detail: "Pending review", icon: FileText },
-            { label: "Sent", value: 18, detail: "This month", icon: Megaphone },
-            { label: "Match Alerts", value: 3, detail: "Upcoming fixtures", icon: CalendarDays },
-        ],
-        users: [
-            { label: "Workspace Users", value: workspaceUsers.length, detail: "Returned by backend", icon: Users },
-            { label: "Roles", value: 9, detail: "Workspace role types", icon: ShieldCheck },
-            { label: "Permissions", value: activeWorkspace.permissions.length, detail: "Current user", icon: CheckCircle2 },
-            { label: "Owner", value: activeWorkspace.acronym, detail: activeWorkspace.roleDisplay, icon: UserCheck },
-        ],
-        audit: [
-            { label: "Events", value: 24, detail: "Recent workspace actions", icon: FileText },
-            { label: "Modules", value: 8, detail: "Tracked areas", icon: Layers3 },
-            { label: "User Actions", value: workspaceUsers.length, detail: "Access changes", icon: Users },
-            { label: "Exports", value: 3, detail: "Governance reports", icon: BarChart3 },
-        ],
-        settings: [
-            { label: "Workspace", value: activeWorkspace.acronym, detail: activeWorkspace.workspaceType, icon: ShieldCheck },
-            { label: "Profile", value: isApiBacked ? "Live" : "Preview", detail: "Public directory state", icon: Layers3 },
-            { label: "Rules", value: 7, detail: "Configured defaults", icon: ClipboardCheck },
-            { label: "Roles", value: 9, detail: "Permission templates", icon: Users },
-        ],
+    const statsByTab: Record<TabKey, StatCard[] | null> = {
+        overview: overview
+            ? [
+                  { label: "Active Competitions", value: summary.activeCompetitions, detail: `${activeWorkspace.sport} competitions`, icon: Trophy },
+                  { label: "Upcoming Matches", value: summary.upcomingMatches, detail: "Scheduled matches", icon: CalendarDays },
+              ]
+            : null,
+        competitions: null,
+        clubs: null,
+        nationalTeams: null,
+        registrations: null,
+        referees: null,
+        appointments: null,
+        profile: currentOfficial
+            ? [
+                  { label: "Role", value: currentOfficial.role, detail: "Current official profile", icon: BadgeCheck },
+                  { label: "Grade", value: currentOfficial.grade, detail: "Current official profile", icon: ShieldCheck },
+                  { label: "Status", value: currentOfficial.status, detail: "Current official profile", icon: UserCheck },
+              ]
+            : null,
+        finance: financeData
+            ? [
+                  { label: "Transactions", value: financeData.kpis.transaction_count, detail: "Returned by finance", icon: DollarSign },
+                  { label: "Payouts", value: financeData.kpis.payout_count, detail: "Returned by finance", icon: ClipboardCheck },
+              ]
+            : null,
+        users:
+            !isLoadingWorkspaceUsers && !workspaceUsersError
+                ? [
+                      { label: "Workspace Users", value: workspaceUsers.length, detail: "Returned by backend", icon: Users },
+                      { label: "Permissions", value: activeWorkspace.permissions.length, detail: "Current entitlement", icon: CheckCircle2 },
+                  ]
+                : null,
+        availability: null,
+        matchReports: null,
+        documents: null,
+        allowances: null,
+        ticketing: null,
+        scanner: null,
+        entryLogs: null,
+        sponsors: null,
+        comms: null,
+        audit: null,
+        settings: null,
     };
 
     const activeStats = statsByTab[activeTab];
@@ -1358,6 +1330,57 @@ export default function UnionAdminDashboard() {
     }
 
     function renderOverview() {
+        if (isLoadingOverview) {
+            return <div className={styles.emptyState}>Loading workspace overview…</div>;
+        }
+
+        if (overviewError) {
+            return <div className={styles.emptyState}>{overviewError}</div>;
+        }
+
+        if (!overview) {
+            return <div className={styles.emptyState}>Workspace overview is unavailable.</div>;
+        }
+
+        if (!isMatchOfficialWorkspace(activeWorkspace)) {
+            return (
+                <div className={styles.overviewLayout}>
+                    <section className={styles.panelLarge}>
+                        <SectionHeader
+                            eyebrow="Workspace overview"
+                            title={activeWorkspace.name}
+                            description="This overview shows only workspace-scoped metrics returned by the overview endpoint."
+                        />
+                        <div className={styles.approvalSummaryGrid}>
+                            <article>
+                                <span>Leagues</span>
+                                <strong>{summary.leagues}</strong>
+                                <small>Returned by overview</small>
+                            </article>
+                            <article>
+                                <span>Active competitions</span>
+                                <strong>{summary.activeCompetitions}</strong>
+                                <small>Returned by overview</small>
+                            </article>
+                            <article>
+                                <span>Upcoming matches</span>
+                                <strong>{summary.upcomingMatches}</strong>
+                                <small>Scheduled matches</small>
+                            </article>
+                        </div>
+                    </section>
+                    <aside className={styles.sidePanel}>
+                        <SectionHeader
+                            eyebrow="Approvals"
+                            title="Approval queue unavailable"
+                            description="A maintained approval query is required before approval counts or records can be shown."
+                        />
+                        <div className={styles.emptyState}>No approval data is currently available for this workspace.</div>
+                    </aside>
+                </div>
+            );
+        }
+
         if (isMatchOfficialWorkspace(activeWorkspace)) {
             const nextAppointment = workspaceAppointments[0] ?? null;
 
@@ -1556,8 +1579,8 @@ export default function UnionAdminDashboard() {
             ? `${activeCompetition.matches} fixtures • ${activeCompetition.status}`
             : "Fixtures will appear once competitions are connected";
 
-        const financeGross = financeData?.kpis.gross_receipts.display ?? "UGX 0";
-        const financePending = financeData?.kpis.pending_payouts.display ?? "UGX 0";
+        const financeGross = financeData?.kpis.gross_receipts.display ?? "Not loaded";
+        const financePending = financeData?.kpis.pending_payouts.display ?? "Not loaded";
 
         const recommendedActions = [
             {
@@ -1594,7 +1617,7 @@ export default function UnionAdminDashboard() {
                 action: "Open finance",
                 tab: "finance" as TabKey,
             },
-        ];
+        ].filter((item) => availableTabs.some((tab) => tab.key === item.tab));
 
         return (
             <div className={styles.overviewLayout}>
@@ -1816,6 +1839,20 @@ export default function UnionAdminDashboard() {
     }
 
     function renderCompetitions() {
+        return (
+            <section className={styles.panelLarge}>
+                <SectionHeader
+                    eyebrow={`${activeWorkspace.acronym} competitions`}
+                    title="Competition management"
+                    description="Competition, season, membership and fixture workflows use maintained management APIs. Generated operations summaries are not displayed."
+                />
+                <UnionAdminManagementWorkflow
+                    workspaceSlug={activeWorkspace.slug}
+                    workspaceLabel={activeWorkspace.name}
+                />
+            </section>
+        );
+
         if (competitionView === "fixtures") return renderFixtureGenerator();
         if (competitionView === "detail") return renderCompetitionDetail();
 
@@ -1878,15 +1915,9 @@ export default function UnionAdminDashboard() {
                     }
                 />
 
-                {operationsError ? <div className={styles.alertBanner}>{operationsError}</div> : null}
-
                 <UnionAdminManagementWorkflow
                     workspaceSlug={activeWorkspace.slug}
                     workspaceLabel={activeWorkspace.name}
-                    clubs={workspaceClubs.map((club) => ({
-                        id: String(club.id),
-                        name: club.name,
-                    }))}
                 />
 
                 <div className={styles.competitionCommandGrid}>
@@ -2363,7 +2394,7 @@ export default function UnionAdminDashboard() {
                     workspaceSlug={activeWorkspace.slug}
                     workspaceLabel={activeWorkspace.name}
                     sport={activeWorkspace.sport}
-                    fallbackClubs={workspaceClubs}
+                    canManageClubs={activeWorkspace.permissions.includes("union.clubs.manage")}
                 />
             </section>
         );
@@ -2461,29 +2492,9 @@ export default function UnionAdminDashboard() {
                 <SectionHeader
                     eyebrow="Union-owned teams"
                     title="National teams"
-                    description="Manage national teams as union-owned teams, not normal clubs."
-                    actions={<button className={styles.primaryButton} type="button">Create Team</button>}
+                    description="National-team records are unavailable until a maintained workspace-scoped team contract is available."
                 />
-                <div className={styles.contentSplit}>
-                    <DataTable
-                        columns={[
-                            { key: "team", label: "Team", render: (item) => item.team },
-                            { key: "category", label: "Category", render: (item) => item.category },
-                            { key: "players", label: "Players", render: (item) => item.players },
-                            { key: "staff", label: "Staff", render: (item) => item.staff },
-                            { key: "status", label: "Status", render: (item) => <StatusPill label={item.status} /> },
-                        ]}
-                        data={workspaceNationalTeams}
-                    />
-                    <aside className={styles.actionRail}>
-                        <h3>National team structure</h3>
-                        <p>
-                            Teams belong to the union workspace and can use union ticketing, union officials,
-                            sponsor inventory and public profiles.
-                        </p>
-                        <ModuleButton label="Open player pool" icon={UserCheck} detail="Select from eligible clubs" />
-                    </aside>
-                </div>
+                <div className={styles.emptyState}>No maintained National Team management API is available for this workspace.</div>
             </section>
         );
     }
@@ -2494,39 +2505,9 @@ export default function UnionAdminDashboard() {
                 <SectionHeader
                     eyebrow="Approval centre"
                     title="Registrations"
-                    description="Review player registrations, transfers, squad submissions and document checks."
+                    description="Registration records are unavailable until a maintained workspace-scoped approvals contract is available."
                 />
-                <div className={styles.contentSplit}>
-                    <DataTable
-                        columns={[
-                            { key: "applicant", label: "Applicant", render: (item) => item.applicant },
-                            { key: "club", label: "Club", render: (item) => item.club },
-                            { key: "type", label: "Type", render: (item) => item.type },
-                            { key: "submitted", label: "Submitted", render: (item) => item.submitted },
-                            { key: "status", label: "Status", render: (item) => <StatusPill label={item.status} /> },
-                            { key: "reviewer", label: "Reviewer", render: (item) => item.reviewer },
-                        ]}
-                        data={workspaceRegistrations}
-                    />
-                    <form className={styles.formPanel}>
-                        <h3>Review decision</h3>
-                        <label>
-                            Decision
-                            <select>
-                                <option>Approve</option>
-                                <option>Request changes</option>
-                                <option>Reject</option>
-                            </select>
-                        </label>
-                        <label>
-                            Notes to club
-                            <textarea placeholder="Add registrar notes" />
-                        </label>
-                        <button className={styles.primaryButton} type="button">
-                            Save Decision
-                        </button>
-                    </form>
-                </div>
+                <div className={styles.emptyState}>No maintained registration approval API is available for this workspace.</div>
             </section>
         );
     }
@@ -2537,6 +2518,7 @@ export default function UnionAdminDashboard() {
                 workspaceSlug={activeWorkspace.slug}
                 workspaceName={activeWorkspace.name}
                 workspaceSport={activeWorkspace.sport}
+                canManageOfficials={activeWorkspace.permissions.includes("union.referees.manage")}
             />
         );
     }
@@ -2552,34 +2534,14 @@ export default function UnionAdminDashboard() {
     }
 
     function renderAvailability() {
-        const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-        const slots = ["Morning", "Afternoon", "Evening"];
-
         return (
             <section className={styles.panelLarge}>
                 <SectionHeader
                     eyebrow="Availability"
                     title="Official availability"
-                    description="Officials can mark when they are available. Referee managers use this to assign matches."
+                    description="Availability will be shown when the backend provides a workspace-scoped availability contract."
                 />
-                <div className={styles.availabilityGrid}>
-                    <div />
-                    {days.map((day) => <strong key={day}>{day}</strong>)}
-                    {slots.map((slot) => (
-                        <>
-                            <strong key={`${slot}-label`}>{slot}</strong>
-                            {days.map((day, index) => (
-                                <button
-                                    key={`${slot}-${day}`}
-                                    className={(slot === "Afternoon" && index > 4) || (slot === "Evening" && index === 2) ? styles.availableSlot : ""}
-                                    type="button"
-                                >
-                                    {(slot === "Afternoon" && index > 4) || (slot === "Evening" && index === 2) ? "Available" : "—"}
-                                </button>
-                            ))}
-                        </>
-                    ))}
-                </div>
+                <div className={styles.emptyState}>No availability records or local-only availability controls are shown.</div>
             </section>
         );
     }
@@ -2602,24 +2564,10 @@ export default function UnionAdminDashboard() {
                         ]}
                         data={workspaceAppointments}
                     />
-                    <form className={styles.formPanel}>
-                        <h3>Submit match report</h3>
-                        <label>
-                            Final score
-                            <input placeholder="KOBS 24 - 18 Heathens" />
-                        </label>
-                        <label>
-                            Incidents / cards / injuries
-                            <textarea
-                                value={reportNotes}
-                                onChange={(event) => setReportNotes(event.target.value)}
-                                placeholder="Enter report notes"
-                            />
-                        </label>
-                        <button className={styles.primaryButton} type="button">
-                            Save Report Draft
-                        </button>
-                    </form>
+                    <div className={styles.formPanel}>
+                        <h3>Read-only report status</h3>
+                        <p>Report submission is unavailable until the backend provides an authorised report mutation endpoint.</p>
+                    </div>
                 </div>
             </section>
         );
@@ -2631,22 +2579,9 @@ export default function UnionAdminDashboard() {
                 <SectionHeader
                     eyebrow="Documents"
                     title="Documents and certification"
-                    description="Manage official licences, identity documents, safeguarding certificates and expiry status."
-                    actions={<button className={styles.primaryButton} type="button">Upload Document</button>}
+                    description="Document records are unavailable until a maintained official-document endpoint is provided."
                 />
-                <DataTable
-                    columns={[
-                        { key: "doc", label: "Document", render: (item) => item.doc },
-                        { key: "owner", label: "Owner", render: (item) => item.owner },
-                        { key: "expires", label: "Expires", render: (item) => item.expires },
-                        { key: "status", label: "Status", render: (item) => <StatusPill label={item.status} /> },
-                    ]}
-                    data={[
-                        { doc: "Referee Level 2 Certificate", owner: "John Referee", expires: "2027", status: "Valid" },
-                        { doc: "Safeguarding Certificate", owner: "Amina Official", expires: "2 months", status: "Expiring soon" },
-                        { doc: "National ID", owner: "Michael Assessor", expires: "Verified", status: "Valid" },
-                    ]}
-                />
+                <div className={styles.emptyState}>No official-document API is available for this workspace.</div>
             </section>
         );
     }
@@ -2657,56 +2592,46 @@ export default function UnionAdminDashboard() {
                 <SectionHeader
                     eyebrow="Allowances"
                     title="Payments and allowances"
-                    description="Track match official allowances, payment status, receipts and finance review."
+                    description="Official allowance records are unavailable until a maintained, authorised payment endpoint is provided."
                 />
-                <DataTable
-                    columns={[
-                        { key: "match", label: "Match", render: (item) => item.match },
-                        { key: "official", label: "Official", render: (item) => item.official },
-                        { key: "amount", label: "Amount", render: (item) => item.amount },
-                        { key: "status", label: "Status", render: (item) => <StatusPill label={item.status} /> },
-                    ]}
-                    data={[
-                        { match: "KOBS vs Heathens", official: "John Referee", amount: "UGX 150,000", status: "Pending" },
-                        { match: "Pirates vs Rhinos", official: "Amina Official", amount: "UGX 90,000", status: "Approved" },
-                        { match: "Mongers vs Impis", official: "Michael Assessor", amount: "UGX 120,000", status: "Paid" },
-                    ]}
-                />
+                <div className={styles.emptyState}>No official-payment API is available for this workspace.</div>
             </section>
         );
     }
 
     function renderProfile() {
+        if (!currentOfficial) {
+            return (
+                <section className={styles.panelLarge}>
+                    <SectionHeader
+                        eyebrow="Official profile"
+                        title="Match official profile"
+                        description="No active Match Official profile was returned for this selected workspace."
+                    />
+                    <div className={styles.emptyState}>Profile details are unavailable until the workspace links an official record to this account.</div>
+                </section>
+            );
+        }
+
         return (
             <section className={styles.panelLarge}>
                 <SectionHeader
                     eyebrow="Official profile"
                     title="Match official profile"
-                    description="The same user account can keep a fan profile and access a restricted official workspace."
+                    description="Your active Match Official profile for this selected workspace. Profile editing is not exposed by a maintained self-service API."
                 />
                 <div className={styles.profileGrid}>
                     <div className={styles.profileCard}>
-                        <div className={styles.avatarLarge}>JR</div>
-                        <h3>John Referee</h3>
-                        <p>Centre Referee • Level 2 • Uganda Rugby Union</p>
-                        <StatusPill label="Active" />
+                        <div className={styles.avatarLarge}>{getWorkspaceInitials(activeWorkspace)}</div>
+                        <h3>{currentOfficial.name}</h3>
+                        <p>{currentOfficial.role} • {currentOfficial.grade} • {activeWorkspace.name}</p>
+                        <StatusPill label={currentOfficial.status} />
                     </div>
-                    <form className={styles.formPanel}>
-                        <label>
-                            Role type
-                            <select defaultValue="Centre Referee">
-                                <option>Centre Referee</option>
-                                <option>Assistant Referee</option>
-                                <option>Match Commissioner</option>
-                                <option>Assessor</option>
-                            </select>
-                        </label>
-                        <label>
-                            Assigned competition pools
-                            <textarea defaultValue="Nile Special Rugby League, Uganda Cup, Rugby 7s Series" />
-                        </label>
-                        <button className={styles.primaryButton} type="button">Save Profile</button>
-                    </form>
+                    <div className={styles.formPanel}>
+                        <h3>Current assignment information</h3>
+                        <p>Email: {currentOfficial.email}</p>
+                        <p>Competitions: {currentOfficial.competitions || "Not recorded"}</p>
+                    </div>
                 </div>
             </section>
         );
@@ -2718,23 +2643,9 @@ export default function UnionAdminDashboard() {
                 <SectionHeader
                     eyebrow="Union ticketing"
                     title="Union-owned event ticketing"
-                    description="Ticketing officers can support national team games and union-owned events in the same workspace."
+                    description="Ticketing data is available only when a maintained Union ticketing API is supplied for this workspace."
                 />
-                <div className={styles.contentSplit}>
-                    <DataTable
-                        columns={[
-                            { key: "event", label: "Event", render: (item) => item.event },
-                            { key: "date", label: "Date", render: (item) => item.date },
-                            { key: "sold", label: "Sold", render: (item) => item.sold },
-                            { key: "status", label: "Status", render: (item) => <StatusPill label={item.status} /> },
-                        ]}
-                        data={[
-                            { event: "Uganda Rugby Cranes vs Kenya", date: "Sat 25 Jul", sold: 1280, status: "Scanner ready" },
-                            { event: "Uganda 7s Trial Day", date: "Wed 22 Jul", sold: 420, status: "Setup" },
-                        ]}
-                    />
-                    <ModuleButton label="Open Scanner" icon={TicketCheck} variant="primary" onClick={() => setActiveTab("scanner")} />
-                </div>
+                <div className={styles.emptyState}>No Union ticketing events are shown because there is no maintained workspace-scoped ticketing endpoint.</div>
             </section>
         );
     }
@@ -2745,24 +2656,9 @@ export default function UnionAdminDashboard() {
                 <SectionHeader
                     eyebrow="Scanner"
                     title="Ticket scanner"
-                    description="Validate QR tickets, wrong-match tickets, already-used tickets and manual fallback checks."
+                    description="A scanner will be enabled when the Union ticketing backend provides an authorised event and validation contract."
                 />
-                <div className={styles.scannerLayout}>
-                    <div className={styles.scannerBox}>
-                        <TicketCheck size={64} strokeWidth={2.2} />
-                        <strong>Ready to scan</strong>
-                        <span>Camera scanner placeholder for assigned union events.</span>
-                        <button className={styles.primaryButton} type="button">Start Scan</button>
-                    </div>
-                    <form className={styles.formPanel}>
-                        <h3>Manual check-in</h3>
-                        <label>
-                            Ticket code
-                            <input placeholder="LOS-TKT-0001" />
-                        </label>
-                        <button className={styles.secondaryButton} type="button">Search Ticket</button>
-                    </form>
-                </div>
+                <div className={styles.emptyState}>Ticket validation is not available yet for this Union workspace.</div>
             </section>
         );
     }
@@ -2773,76 +2669,83 @@ export default function UnionAdminDashboard() {
                 <SectionHeader
                     eyebrow="Gate activity"
                     title="Entry logs"
-                    description="Every scan, manual check and override should be auditable by match, officer and timestamp."
-                    actions={<button className={styles.secondaryButton} type="button">Export Logs</button>}
+                    description="Entry logs will appear when the backend exposes a selected-workspace ticketing audit endpoint."
                 />
-                <DataTable
-                    columns={[
-                        { key: "time", label: "Time", render: (item) => item.time },
-                        { key: "gate", label: "Gate", render: (item) => item.gate },
-                        { key: "ticket", label: "Ticket", render: (item) => item.ticket },
-                        { key: "officer", label: "Officer", render: (item) => item.officer },
-                        { key: "result", label: "Result", render: (item) => <StatusPill label={item.result} /> },
-                    ]}
-                    data={[
-                        { time: "Not started", gate: "Main", ticket: "—", officer: "Ticketing Officer", result: "Awaiting scans" },
-                    ]}
-                />
+                <div className={styles.emptyState}>No Union entry-log API is available.</div>
             </section>
         );
     }
 
     function renderFinance() {
+        if (isLoadingFinance) {
+            return (
+                <section className={styles.panelLarge}>
+                    <SectionHeader
+                        eyebrow={`${activeWorkspace.acronym} finance`}
+                        title="Finance Dashboard"
+                        description="Loading workspace-scoped finance data."
+                    />
+                    <div className={styles.emptyState}>Loading finance data…</div>
+                </section>
+            );
+        }
+
+        if (financeError || !financeData) {
+            return (
+                <section className={styles.panelLarge}>
+                    <SectionHeader
+                        eyebrow={`${activeWorkspace.acronym} finance`}
+                        title="Finance Dashboard"
+                        description="Finance records are only shown after the workspace finance endpoint returns an authorised response."
+                    />
+                    <div className={styles.emptyState}>
+                        {financeError || "No finance records are available for this workspace."}
+                    </div>
+                </section>
+            );
+        }
+
         const financeKpis = [
             {
                 label: "Gross Receipts",
-                value: financeData?.kpis.gross_receipts.display ?? "UGX 0",
-                change: `${financeData?.kpis.transaction_count ?? 0} transaction(s)`,
+                value: financeData.kpis.gross_receipts.display,
+                change: `${financeData.kpis.transaction_count} transaction(s)`,
                 detail: "Total successful and pending income before failed or reversed payments.",
                 tone: "positive",
             },
             {
                 label: "Net Settled",
-                value: financeData?.kpis.net_settled.display ?? "UGX 0",
+                value: financeData.kpis.net_settled.display,
                 change: "Settled",
                 detail: "Confirmed cleared funds from completed payment records.",
                 tone: "positive",
             },
             {
                 label: "Pending Payouts",
-                value: financeData?.kpis.pending_payouts.display ?? "UGX 0",
-                change: `${financeData?.kpis.payout_count ?? 0} payout item(s)`,
+                value: financeData.kpis.pending_payouts.display,
+                change: `${financeData.kpis.payout_count} payout item(s)`,
                 detail: "Pending finance reviews, reconciliations and settlement items.",
                 tone: "warning",
             },
             {
                 label: "Failed / Reversed",
-                value: financeData?.kpis.failed_reversed.display ?? "UGX 0",
+                value: financeData.kpis.failed_reversed.display,
                 change: "Needs review",
                 detail: "Failed, reversed or disputed payment records.",
                 tone: "danger",
             },
         ];
 
-        const monthlyTrend =
-            financeData?.monthly_trend && financeData.monthly_trend.length > 0
-                ? financeData.monthly_trend
-                : [
-                      {
-                          label: "No data",
-                          value: 1,
-                          amount: { raw: "0.00", display: "UGX 0" },
-                      },
-                  ];
+        const monthlyTrend = financeData.monthly_trend;
 
         const maxFinanceTrend = Math.max(
             1,
             ...monthlyTrend.map((item) => Number(item.value || 0)),
         );
 
-        const revenueMix = financeData?.revenue_mix ?? [];
-        const transactions = financeData?.recent_transactions ?? [];
-        const payouts = financeData?.payout_queue ?? [];
+        const revenueMix = financeData.revenue_mix;
+        const transactions = financeData.recent_transactions;
+        const payouts = financeData.payout_queue;
 
         return (
             <section className={styles.financeDashboard}>
@@ -2850,25 +2753,7 @@ export default function UnionAdminDashboard() {
                     eyebrow={`${activeWorkspace.acronym} finance`}
                     title="Finance Dashboard"
                     description="Track revenue, settlements, payouts, reconciliation items and audit activity for this union workspace."
-                    actions={
-                        <div className={styles.sectionActions}>
-                            <button className={styles.secondaryButton} type="button">
-                                Export CSV
-                            </button>
-                            <button className={styles.primaryButton} type="button">
-                                Review Payouts
-                            </button>
-                        </div>
-                    }
                 />
-
-                {financeError ? (
-                    <div className={styles.alertBanner}>{financeError}</div>
-                ) : null}
-
-                {isLoadingFinance ? (
-                    <div className={styles.alertBanner}>Loading finance data…</div>
-                ) : null}
 
                 <div className={styles.financeKpiGrid}>
                     {financeKpis.map((item) => (
@@ -2899,12 +2784,12 @@ export default function UnionAdminDashboard() {
                                 <h3>Revenue Growth</h3>
                             </div>
                             <strong>
-                                {financeData?.kpis.gross_receipts.display ?? "UGX 0"}
+                                {financeData.kpis.gross_receipts.display}
                             </strong>
                         </div>
 
                         <div className={styles.financeBarChart}>
-                            {monthlyTrend.map((item) => (
+                            {monthlyTrend.length > 0 ? monthlyTrend.map((item) => (
                                 <div className={styles.financeBarItem} key={item.label}>
                                     <div className={styles.financeBarTrack}>
                                         <span
@@ -2919,7 +2804,7 @@ export default function UnionAdminDashboard() {
                                     </div>
                                     <small>{item.label}</small>
                                 </div>
-                            ))}
+                            )) : <div className={styles.financeEmptyState}>No monthly trend records are available.</div>}
                         </div>
                     </article>
 
@@ -3031,7 +2916,7 @@ export default function UnionAdminDashboard() {
                             <span>Connected backend endpoint</span>
                             <h3>/dashboards/union-admin/finance/</h3>
                         </div>
-                        <strong>{financeData?.currency ?? "UGX"}</strong>
+                        <strong>{financeData.currency}</strong>
                     </div>
 
                     <div className={styles.financeConnectionGrid}>
@@ -3068,23 +2953,12 @@ export default function UnionAdminDashboard() {
             <section className={styles.panelLarge}>
                 <SectionHeader
                     eyebrow="Sponsors"
-                    title="Sponsor management"
-                    description="Manage sponsor packages, campaigns, placements, assets, beneficiary mapping and ROI reports."
-                    actions={<button className={styles.primaryButton} type="button">Create Package</button>}
+                    title="Sponsor workspace integration"
+                    description="Union sponsorship management is not available in this workspace yet. Corporate Sponsor accounts are not used as a substitute for a Union sponsorship relationship."
                 />
-                <DataTable
-                    columns={[
-                        { key: "package", label: "Package", render: (item) => item.package },
-                        { key: "inventory", label: "Inventory", render: (item) => item.inventory },
-                        { key: "beneficiary", label: "Beneficiary", render: (item) => item.beneficiary },
-                        { key: "status", label: "Status", render: (item) => <StatusPill label={item.status} /> },
-                    ]}
-                    data={[
-                        { package: "League Title Sponsor", inventory: "Fixtures, standings, tickets", beneficiary: "Union", status: "Available" },
-                        { package: "National Team Partner", inventory: "Team profile, matchday, banners", beneficiary: "National Teams", status: "Draft" },
-                        { package: "Club Support Campaign", inventory: "Club pages and match placements", beneficiary: "Clubs", status: "Active" },
-                    ]}
-                />
+                <div className={styles.emptyState}>
+                    No maintained Union-specific sponsorship API is available.
+                </div>
             </section>
         );
     }
@@ -3094,67 +2968,24 @@ export default function UnionAdminDashboard() {
             <section className={styles.panelLarge}>
                 <SectionHeader
                     eyebrow="Communications"
-                    title="Communications centre"
-                    description="Send announcements, circulars, matchday updates and targeted notifications."
+                    title="Communications integration"
+                    description="Announcements and workspace messaging will appear here when a maintained Union communications API is available."
                 />
-                <div className={styles.contentSplit}>
-                    <form className={styles.formPanel}>
-                        <h3>Create announcement</h3>
-                        <label>
-                            Audience
-                            <select>
-                                <option>All clubs</option>
-                                <option>Club admins</option>
-                                <option>Officials</option>
-                                <option>Fans</option>
-                                <option>Sponsors</option>
-                            </select>
-                        </label>
-                        <label>
-                            Message
-                            <textarea
-                                value={messageDraft}
-                                onChange={(event) => setMessageDraft(event.target.value)}
-                                placeholder="Write announcement"
-                            />
-                        </label>
-                        <button className={styles.primaryButton} type="button">Send Preview</button>
-                    </form>
-                    <DataTable
-                        columns={[
-                            { key: "title", label: "Message", render: (item) => item.title },
-                            { key: "audience", label: "Audience", render: (item) => item.audience },
-                            { key: "status", label: "Status", render: (item) => <StatusPill label={item.status} /> },
-                        ]}
-                        data={[
-                            { title: "Fixture change notice", audience: "Club admins", status: "Sent" },
-                            { title: "Registration reminder", audience: "Clubs", status: "Draft" },
-                            { title: "Matchday gate update", audience: "Ticketing officers", status: "Scheduled" },
-                        ]}
-                    />
+                <div className={styles.emptyState}>
+                    No communications records or send action are shown until the backend contract exists.
                 </div>
             </section>
         );
     }
 
     function renderUsers() {
-        const userRows = workspaceUsers.length > 0
-            ? workspaceUsers.map((user) => ({
+        const userRows = workspaceUsers.map((user) => ({
                 name: user.user_full_name || user.user_email,
                 email: user.user_email,
                 role: user.role_display,
                 permissions: user.effective_permissions.length,
                 status: user.is_active ? "Active" : "Inactive",
-            }))
-            : [
-                {
-                    name: "No live workspace users returned yet",
-                    email: "Attach users through backend API",
-                    role: activeWorkspace.roleDisplay,
-                    permissions: activeWorkspace.permissions.length,
-                    status: "Preview",
-                },
-            ];
+            }));
 
         return (
             <>
@@ -3162,29 +2993,62 @@ export default function UnionAdminDashboard() {
                 <SectionHeader
                     eyebrow="Users"
                     title="Workspace users and permissions"
-                    description="Invite users, assign roles, review permissions and deactivate access without adding extra dashboards."
-                    actions={<button className={styles.primaryButton} type="button">Invite User</button>}
+                    description="Add a user to this workspace and review the backend-provided effective permissions. Updates, removal and ownership transfer are not exposed because their maintained API contracts are unavailable to Union administrators."
                 />
                 <div className={styles.contentSplit}>
-                    <DataTable
-                        columns={[
-                            { key: "name", label: "User", render: (item) => item.name },
-                            { key: "email", label: "Email", render: (item) => item.email },
-                            { key: "role", label: "Role", render: (item) => item.role },
-                            { key: "permissions", label: "Permissions", render: (item) => item.permissions },
-                            { key: "status", label: "Status", render: (item) => <StatusPill label={item.status} /> },
-                        ]}
-                        data={userRows}
-                    />
-                    <aside className={styles.actionRail}>
-                        <h3>Role templates</h3>
-                        {[
-                            "Registrar → Registrations only",
-                            "Referee Manager → Officials and reports",
-                            "Match Official → Appointments, reports, profile",
-                            "Ticketing Officer → Scanner and logs",
-                        ].map((item) => <p key={item}>{item}</p>)}
-                    </aside>
+                    {isLoadingWorkspaceUsers ? (
+                        <div className={styles.emptyState}>Loading workspace users…</div>
+                    ) : workspaceUsersError ? (
+                        <div className={styles.emptyState}>{workspaceUsersError}</div>
+                    ) : (
+                        <DataTable
+                            columns={[
+                                { key: "name", label: "User", render: (item) => item.name },
+                                { key: "email", label: "Email", render: (item) => item.email },
+                                { key: "role", label: "Role", render: (item) => item.role },
+                                { key: "permissions", label: "Permissions", render: (item) => item.permissions },
+                                { key: "status", label: "Status", render: (item) => <StatusPill label={item.status} /> },
+                            ]}
+                            data={userRows}
+                            emptyLabel="No active workspace users were returned."
+                        />
+                    )}
+                    <form className={styles.formPanel} onSubmit={(event) => void handleCreateWorkspaceUser(event)}>
+                        <h3>Add workspace user</h3>
+                        <label>
+                            Email
+                            <input
+                                required
+                                type="email"
+                                value={workspaceUserEmail}
+                                onChange={(event) => setWorkspaceUserEmail(event.target.value)}
+                                placeholder="user@example.com"
+                            />
+                        </label>
+                        <label>
+                            Workspace role
+                            <select
+                                value={workspaceUserRole}
+                                onChange={(event) => setWorkspaceUserRole(event.target.value as UnionWorkspaceRole)}
+                            >
+                                {[
+                                    "VIEWER",
+                                    "REGISTRAR",
+                                    "COMPETITIONS_MANAGER",
+                                    "REFEREE_MANAGER",
+                                    "MATCH_OFFICIAL",
+                                    "FINANCE_OFFICER",
+                                    "COMMUNICATIONS_OFFICER",
+                                    "TICKETING_OFFICER",
+                                    "UNION_ADMIN",
+                                ].map((role) => <option key={role} value={role}>{formatRole(role as UnionWorkspaceRole)}</option>)}
+                            </select>
+                        </label>
+                        {workspaceUserNotice ? <p>{workspaceUserNotice}</p> : null}
+                        <button className={styles.primaryButton} type="submit" disabled={isCreatingWorkspaceUser}>
+                            {isCreatingWorkspaceUser ? "Adding user..." : "Add user"}
+                        </button>
+                    </form>
                 </div>
             </section>
             <section className={styles.panelLarge}>
@@ -3200,23 +3064,9 @@ export default function UnionAdminDashboard() {
                 <SectionHeader
                     eyebrow="Governance"
                     title="Audit logs"
-                    description="Track sensitive workspace actions across users, finance, registrations, ticketing and settings."
-                    actions={<button className={styles.secondaryButton} type="button">Export Audit</button>}
+                    description="Workspace audit records will be shown when a maintained Union audit-log API is available."
                 />
-                <DataTable
-                    columns={[
-                        { key: "time", label: "Time", render: (item) => item.time },
-                        { key: "module", label: "Module", render: (item) => item.module },
-                        { key: "action", label: "Action", render: (item) => item.action },
-                        { key: "actor", label: "Actor", render: (item) => item.actor },
-                        { key: "status", label: "Status", render: (item) => <StatusPill label={item.status} /> },
-                    ]}
-                    data={[
-                        { time: "Today", module: "Competitions", action: "Fixture draft created", actor: "Competitions Manager", status: "Recorded" },
-                        { time: "Yesterday", module: "Users", action: "Role permissions reviewed", actor: "Workspace Owner", status: "Recorded" },
-                        { time: "2 days ago", module: "Registrations", action: "Player approved", actor: "Registrar", status: "Recorded" },
-                    ]}
-                />
+                <div className={styles.emptyState}>No workspace audit-log API is available.</div>
             </section>
         );
     }
@@ -3227,27 +3077,13 @@ export default function UnionAdminDashboard() {
                 <SectionHeader
                     eyebrow="Settings"
                     title="Workspace settings"
-                    description="Manage public profile, role defaults, governance rules and module behaviour."
+                    description="Workspace settings are read-only until a maintained Union settings update endpoint is available."
                 />
                 <div className={styles.contentSplit}>
-                    <form className={styles.formPanel}>
-                        <label>
-                            Workspace name
-                            <input defaultValue={activeWorkspace.name} />
-                        </label>
-                        <label>
-                            Public description
-                            <textarea defaultValue={activeWorkspace.description} />
-                        </label>
-                        <label>
-                            Public profile visibility
-                            <select defaultValue="public">
-                                <option value="public">Public</option>
-                                <option value="hidden">Hidden</option>
-                            </select>
-                        </label>
-                        <button className={styles.primaryButton} type="button">Save Settings</button>
-                    </form>
+                    <div className={styles.formPanel}>
+                        <h3>{activeWorkspace.name}</h3>
+                        <p>{activeWorkspace.description || "No workspace description is available."}</p>
+                    </div>
                     <aside className={styles.actionRail}>
                         <h3>Default rules</h3>
                         <p>National teams belong under the union workspace.</p>
@@ -3335,8 +3171,12 @@ export default function UnionAdminDashboard() {
 
                 <Link
                     className={styles.logoLink}
-                    to="/dashboard/fan"
-                    aria-label="Open Fan Dashboard"
+                    to={fanDashboardRoute ?? "/"}
+                    aria-label={
+                        fanDashboardRoute
+                            ? "Open Fan Dashboard"
+                            : "Open League OS home"
+                    }
                 >
                     <img
                         className={styles.logoHorizontal}
@@ -3368,10 +3208,11 @@ export default function UnionAdminDashboard() {
                     id="workspace-select"
                     className={styles.workspaceSelect}
                     value={activeWorkspaceSlug}
+                    disabled={isSwitchingWorkspace}
                     onChange={(event) => void handleWorkspaceChange(event.target.value)}
                 >
                     {workspaces.map((workspace) => (
-                        <option key={workspace.slug} value={workspace.slug}>
+                        <option key={workspace.entitlementId} value={workspace.slug}>
                             {workspace.acronym} - {workspace.roleDisplay}
                         </option>
                     ))}
@@ -3432,18 +3273,31 @@ export default function UnionAdminDashboard() {
                         <Link className={styles.headerActionPrimary} to={pageHeader.publicPath}>
                             {pageHeader.publicLabel}
                         </Link>
-                        <Link className={styles.headerActionSecondary} to="/dashboard/fan">
-                            Back to Fan Dashboard
-                        </Link>
+                        {fanDashboardRoute ? (
+                            <Link
+                                className={styles.headerActionSecondary}
+                                to={fanDashboardRoute}
+                            >
+                                Open Fan Dashboard
+                            </Link>
+                        ) : null}
                     </div>
                 </header>
 
                 {workspaceError ? <div className={styles.alertBanner}>{workspaceError}</div> : null}
-                {workspaceDataError ? <div className={styles.alertBanner}>{workspaceDataError}</div> : null}
-                {operationsError ? <div className={styles.alertBanner}>{operationsError}</div> : null}
-
-                {activeTab !== "referees" ? (
-                    <StatGrid stats={activeStats} loading={isLoadingOverview} />
+                {activeStats ? (
+                    <StatGrid
+                        stats={activeStats}
+                        loading={
+                            activeTab === "overview"
+                                ? isLoadingOverview
+                                : activeTab === "finance"
+                                  ? isLoadingFinance
+                                  : activeTab === "users"
+                                    ? isLoadingWorkspaceUsers
+                                    : false
+                        }
+                    />
                 ) : null}
 
                 {renderActiveTab()}
@@ -3462,7 +3316,8 @@ export default function UnionAdminDashboard() {
                     icon: tab.icon,
                 }))}
                 workspaceName={activeWorkspace.name}
-                workspaceRole={activeWorkspace.roleDisplay || formatRole(activeWorkspace.role)}
+                workspaceRole={activeWorkspace.role}
+                fanDashboardRoute={fanDashboardRoute}
                 onTabChange={(key) => resetSearch(key as TabKey)}
                 onLogout={handleLogout}
             />

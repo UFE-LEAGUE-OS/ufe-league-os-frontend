@@ -6,15 +6,11 @@ import { beforeEach, describe, expect, it, vi, afterEach } from 'vitest'
 import Login from './Login'
 import { useAuthStore } from '../../store/authStore.js'
 
-const apiClientPostMock = vi.hoisted(() => vi.fn())
 const navigateMock = vi.hoisted(() => vi.fn())
-const loginMock = vi.hoisted(() => vi.fn())
-
-vi.mock('../../services/apiClient.js', () => ({
-  default: {
-    post: apiClientPostMock,
-  },
-}));
+const authMocks = vi.hoisted(() => ({
+  login: vi.fn(),
+  googleLogin: vi.fn(),
+}))
 
 vi.mock('@react-oauth/google', () => ({
   GoogleOAuthProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
@@ -47,12 +43,9 @@ vi.mock('react-router-dom', async () => {
   }
 })
 
-vi.mock('../../services/unionAdminService', () => ({
-  getMyUnionWorkspaces: vi.fn().mockResolvedValue([]),
-}))
-
 vi.mock('../../services/authService.js', () => ({
-  login: loginMock,
+  login: authMocks.login,
+  googleLogin: authMocks.googleLogin,
 }))
 
 function renderLogin(initialEntries?: { pathname: string; state?: object }[]) {
@@ -65,6 +58,38 @@ function renderLogin(initialEntries?: { pathname: string; state?: object }[]) {
   )
 }
 
+function entitlement(
+  id: string,
+  dashboard: 'FAN' | 'SPONSOR' | 'UNION_WORKSPACE',
+  route: string,
+  workspaceRole: string | null = null,
+) {
+  return {
+    id,
+    dashboard,
+    route,
+    scope_type: dashboard === 'UNION_WORKSPACE' ? 'UNION_WORKSPACE' : 'ACCOUNT',
+    scope_id: dashboard === 'UNION_WORKSPACE' ? 9 : 14,
+    workspace_role: workspaceRole,
+    permissions: [],
+  }
+}
+
+function access(
+  defaultEntitlementId: string | null,
+  entitlements: ReturnType<typeof entitlement>[],
+) {
+  return {
+    version: 1 as const,
+    default_entitlement_id: defaultEntitlementId,
+    entitlements,
+  }
+}
+
+const fanAccess = access('fan', [
+  entitlement('fan', 'FAN', '/dashboard/fan'),
+])
+
 const verifiedLoginResponse = {
   data: {
     access: 'access-token',
@@ -73,7 +98,7 @@ const verifiedLoginResponse = {
     user: {
       email: 'fan@example.com',
       role: 'FAN',
-      frontend_dashboard_route: '/dashboard/fan',
+      dashboard_access: fanAccess,
     },
   },
 }
@@ -86,22 +111,22 @@ const verificationRequiredResponse = {
     user: {
       email: 'fan@example.com',
       role: 'FAN',
-      frontend_dashboard_route: '/dashboard/fan',
+      dashboard_access: fanAccess,
     },
   },
 }
 
 describe('Login page', () => {
   beforeEach(() => {
-    apiClientPostMock.mockClear();
-
     navigateMock.mockClear()
-    loginMock.mockReset()
+    authMocks.login.mockReset()
+    authMocks.googleLogin.mockReset()
     useAuthStore.setState({
       user: null,
       accessToken: null,
       refreshToken: null,
       requiresEmailVerification: false,
+      accessStatus: 'unauthenticated',
     })
   })
 
@@ -135,7 +160,7 @@ describe('Login page', () => {
   it('redirects users who still need email verification to the OTP page', async () => {
     const user = userEvent.setup()
 
-    loginMock.mockResolvedValueOnce(verificationRequiredResponse)
+    authMocks.login.mockResolvedValueOnce(verificationRequiredResponse)
 
     renderLogin([{ pathname: '/login', state: { postLoginRedirect: '/profile' } }])
 
@@ -158,7 +183,7 @@ describe('Login page', () => {
   it('redirects backend verification-required errors to the OTP page', async () => {
     const user = userEvent.setup()
 
-    loginMock.mockRejectedValueOnce({
+    authMocks.login.mockRejectedValueOnce({
       response: {
         data: {
           requires_email_verification: true,
@@ -192,7 +217,7 @@ describe('Login page', () => {
 
     await user.click(screen.getByRole('button', { name: /^log in$/i }))
 
-    expect(loginMock).not.toHaveBeenCalled()
+    expect(authMocks.login).not.toHaveBeenCalled()
     expect(navigateMock).not.toHaveBeenCalled()
     expect(screen.getByText(/phone number, email, or username is required/i)).toBeInTheDocument()
     expect(screen.getByText(/password is required/i)).toBeInTheDocument()
@@ -201,7 +226,7 @@ describe('Login page', () => {
   it('shows backend errors and does not redirect for invalid credentials', async () => {
     const user = userEvent.setup()
 
-    loginMock.mockRejectedValueOnce({
+    authMocks.login.mockRejectedValueOnce({
       response: {
         data: {
           detail: 'No active account found with the given credentials.',
@@ -215,7 +240,7 @@ describe('Login page', () => {
     await user.type(screen.getByPlaceholderText('Enter your password'), 'WrongPassword123')
     await user.click(screen.getByRole('button', { name: /^log in$/i }))
 
-    expect(loginMock).toHaveBeenCalledWith({
+    expect(authMocks.login).toHaveBeenCalledWith({
       identifier: 'wrong@example.com',
       password: 'WrongPassword123',
     })
@@ -223,10 +248,10 @@ describe('Login page', () => {
     expect(navigateMock).not.toHaveBeenCalled()
   })
 
-  it('submits valid credentials and redirects to the backend dashboard route', async () => {
+  it('submits valid credentials and redirects to the explicit backend default', async () => {
     const user = userEvent.setup()
 
-    loginMock.mockResolvedValueOnce(verifiedLoginResponse)
+    authMocks.login.mockResolvedValueOnce(verifiedLoginResponse)
 
     renderLogin()
 
@@ -234,7 +259,7 @@ describe('Login page', () => {
     await user.type(screen.getByPlaceholderText('Enter your password'), 'StrongPassword123')
     await user.click(screen.getByRole('button', { name: /^log in$/i }))
 
-    expect(loginMock).toHaveBeenCalledWith({
+    expect(authMocks.login).toHaveBeenCalledWith({
       identifier: 'fan@example.com',
       password: 'StrongPassword123',
     })
@@ -244,10 +269,10 @@ describe('Login page', () => {
     })
   })
 
-  it('redirects a multi-role workspace user to the union dashboard', async () => {
+  it('routes an operational user from the Union entitlement, not legacy roles', async () => {
     const user = userEvent.setup()
 
-    loginMock.mockResolvedValueOnce({
+    authMocks.login.mockResolvedValueOnce({
       data: {
         access: 'access-token',
         refresh: 'refresh-token',
@@ -256,7 +281,14 @@ describe('Login page', () => {
           email: 'uru.owner@leagueos.test',
           role: 'FAN',
           roles: ['FAN', 'UNION_ADMIN'],
-          frontend_dashboard_route: '/dashboard/fan',
+          dashboard_access: access('union-workspace-9', [
+            entitlement(
+              'union-workspace-9',
+              'UNION_WORKSPACE',
+              '/dashboard/union-admin',
+              'OWNER',
+            ),
+          ]),
         },
       },
     })
@@ -286,7 +318,7 @@ describe('Login page', () => {
   it('returns verified users to their requested protected page', async () => {
     const user = userEvent.setup()
 
-    loginMock.mockResolvedValueOnce(verifiedLoginResponse)
+    authMocks.login.mockResolvedValueOnce(verifiedLoginResponse)
 
     renderLogin([{ pathname: '/login', state: { postLoginRedirect: '/memberships' } }])
 
@@ -299,9 +331,115 @@ describe('Login page', () => {
     })
   })
 
+  it('rejects a saved Fan redirect for an operational user', async () => {
+    const user = userEvent.setup()
+
+    authMocks.login.mockResolvedValueOnce({
+      data: {
+        access: 'access-token',
+        refresh: 'refresh-token',
+        requires_email_verification: false,
+        user: {
+          email: 'official@example.com',
+          dashboard_access: access('union-workspace-9', [
+            entitlement(
+              'union-workspace-9',
+              'UNION_WORKSPACE',
+              '/dashboard/union-admin',
+              'MATCH_OFFICIAL',
+            ),
+          ]),
+        },
+      },
+    })
+
+    renderLogin([{
+      pathname: '/login',
+      state: { postLoginRedirect: '/dashboard/fan' },
+    }])
+
+    await user.type(
+      screen.getByPlaceholderText('Enter phone number, email, or username'),
+      'official@example.com',
+    )
+    await user.type(
+      screen.getByPlaceholderText('Enter your password'),
+      'StrongPassword123',
+    )
+    await user.click(screen.getByRole('button', { name: /^log in$/i }))
+
+    await waitFor(() => {
+      expect(navigateMock).toHaveBeenCalledWith(
+        '/dashboard/union-admin',
+        { replace: true },
+      )
+    })
+  })
+
+  it('rejects a saved Union redirect for a Fan', async () => {
+    const user = userEvent.setup()
+
+    authMocks.login.mockResolvedValueOnce(verifiedLoginResponse)
+    renderLogin([{
+      pathname: '/login',
+      state: { postLoginRedirect: '/dashboard/union-admin' },
+    }])
+
+    await user.type(
+      screen.getByPlaceholderText('Enter phone number, email, or username'),
+      'fan@example.com',
+    )
+    await user.type(
+      screen.getByPlaceholderText('Enter your password'),
+      'StrongPassword123',
+    )
+    await user.click(screen.getByRole('button', { name: /^log in$/i }))
+
+    await waitFor(() => {
+      expect(navigateMock).toHaveBeenCalledWith('/dashboard/fan', {
+        replace: true,
+      })
+    })
+  })
+
+  it('fails closed when the authenticated response has no usable access', async () => {
+    const user = userEvent.setup()
+
+    authMocks.login.mockResolvedValueOnce({
+      data: {
+        access: 'access-token',
+        refresh: 'refresh-token',
+        requires_email_verification: false,
+        user: {
+          email: 'unscoped@example.com',
+          role: 'LEAGUE_ADMIN',
+          dashboard_access: access(null, []),
+        },
+      },
+    })
+
+    renderLogin()
+    await user.type(
+      screen.getByPlaceholderText('Enter phone number, email, or username'),
+      'unscoped@example.com',
+    )
+    await user.type(
+      screen.getByPlaceholderText('Enter your password'),
+      'StrongPassword123',
+    )
+    await user.click(screen.getByRole('button', { name: /^log in$/i }))
+
+    await waitFor(() => {
+      expect(navigateMock).toHaveBeenCalledWith(
+        '/account/access-unavailable',
+        { replace: true },
+      )
+    })
+  })
+
   it('handles Google Sign-In success and navigation for a new user', async () => {
     const user = userEvent.setup()
-    apiClientPostMock.mockResolvedValueOnce({
+    authMocks.googleLogin.mockResolvedValueOnce({
       data: {
         access: 'google-access-token',
         refresh: 'google-refresh-token',
@@ -309,6 +447,7 @@ describe('Login page', () => {
         is_new_user: true,
         user: {
           email: 'new.google.user@example.com',
+          dashboard_access: fanAccess,
         },
       },
     })
@@ -318,7 +457,7 @@ describe('Login page', () => {
     await user.click(screen.getByRole('button', { name: /google login/i }));
 
     await waitFor(() => {
-      expect(apiClientPostMock).toHaveBeenCalledWith('/accounts/google/', {
+      expect(authMocks.googleLogin).toHaveBeenCalledWith({
         token: 'test-credential',
       });
     });
@@ -327,9 +466,47 @@ describe('Login page', () => {
     })
   })
 
+  it('stores returning Google auth and uses the explicit Sponsor default', async () => {
+    const user = userEvent.setup()
+    const sponsorAccess = access('sponsor', [
+      entitlement('sponsor', 'SPONSOR', '/dashboard/sponsor', 'OWNER'),
+      entitlement('fan', 'FAN', '/dashboard/fan'),
+    ])
+
+    authMocks.googleLogin.mockResolvedValueOnce({
+      data: {
+        access: 'google-access-token',
+        refresh: 'google-refresh-token',
+        requires_email_verification: false,
+        is_new_user: false,
+        user: {
+          email: 'sponsor@example.com',
+          dashboard_access: sponsorAccess,
+        },
+      },
+    })
+
+    renderLogin()
+    await user.click(screen.getByRole('button', { name: /google login/i }))
+
+    await waitFor(() => {
+      expect(navigateMock).toHaveBeenCalledWith('/dashboard/sponsor', {
+        replace: true,
+      })
+    })
+    expect(useAuthStore.getState()).toMatchObject({
+      accessToken: 'google-access-token',
+      refreshToken: 'google-refresh-token',
+      user: {
+        email: 'sponsor@example.com',
+        dashboard_access: sponsorAccess,
+      },
+    })
+  })
+
   it('shows an error message when Google Sign-In fails', async () => {
     const user = userEvent.setup()
-    apiClientPostMock.mockRejectedValueOnce({
+    authMocks.googleLogin.mockRejectedValueOnce({
       response: { data: { detail: 'Invalid Google token.' } },
     })
 
@@ -338,7 +515,7 @@ describe('Login page', () => {
     await user.click(screen.getByRole('button', { name: /google login/i }))
 
     await waitFor(() => {
-      expect(apiClientPostMock).toHaveBeenCalledWith('/accounts/google/', {
+      expect(authMocks.googleLogin).toHaveBeenCalledWith({
         token: 'test-credential',
       })
     })

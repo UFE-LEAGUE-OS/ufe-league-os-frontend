@@ -1,4 +1,9 @@
 import apiClient from "./apiClient";
+import type { DashboardAccess } from "../types/dashboardAccess.js";
+import {
+  getEntitlementsForDashboard,
+  validateDashboardAccess,
+} from "../utils/dashboardAccess.js";
 
 export type UnionWorkspacePermission =
   | "union.dashboard.view"
@@ -17,7 +22,8 @@ export type UnionWorkspacePermission =
   | "union.official.payments.view"
   | "union.ticketing.manage"
   | "union.ticketing.scan"
-  | "union.teams.manage";
+  | "union.teams.manage"
+  | (string & {});
 
 export type UnionWorkspaceRole =
   | "OWNER"
@@ -45,6 +51,13 @@ export interface UnionWorkspaceOption {
   permissions: UnionWorkspacePermission[];
 }
 
+export interface AuthorizedUnionWorkspaceOption
+  extends UnionWorkspaceOption {
+  entitlementId: string;
+  entitlementRoute: string;
+  scopeId: string | number;
+}
+
 interface BackendUnionWorkspace {
   id: number;
   name: string;
@@ -60,8 +73,14 @@ interface BackendUnionWorkspaceMembership {
   id: number;
   role: UnionWorkspaceRole;
   role_display: string;
-  effective_permissions: UnionWorkspacePermission[];
+  effective_permissions: string[];
   workspace: BackendUnionWorkspace;
+}
+
+interface BackendUnionWorkspaceSwitchResponse
+  extends BackendUnionWorkspaceMembership {
+  selected_entitlement_id: unknown;
+  dashboard_access: unknown;
 }
 
 interface BackendUnionWorkspacesResponse {
@@ -107,7 +126,7 @@ export interface UnionWorkspaceUser {
   updated_at: string;
 }
 
-interface UnionWorkspaceUsersResponse {
+export interface UnionWorkspaceUsersResult {
   count: number;
   workspace: string;
   results: UnionWorkspaceUser[];
@@ -131,7 +150,40 @@ export interface CreateUnionWorkspaceUserResponse {
   membership: UnionWorkspaceUser;
 }
 
-function mapMembership(item: BackendUnionWorkspaceMembership): UnionWorkspaceOption {
+function sortedPermissions(values: unknown): UnionWorkspacePermission[] {
+  if (!Array.isArray(values)) return [];
+
+  return Array.from(
+    new Set(
+      values.filter(
+        (permission): permission is string =>
+          typeof permission === "string" && Boolean(permission),
+      ),
+    ),
+  ).sort();
+}
+
+function isUnionWorkspaceRole(value: unknown): value is UnionWorkspaceRole {
+  return (
+    typeof value === "string" &&
+    [
+      "OWNER",
+      "UNION_ADMIN",
+      "COMPETITIONS_MANAGER",
+      "REGISTRAR",
+      "REFEREE_MANAGER",
+      "FINANCE_OFFICER",
+      "COMMUNICATIONS_OFFICER",
+      "MATCH_OFFICIAL",
+      "TICKETING_OFFICER",
+      "VIEWER",
+    ].includes(value)
+  );
+}
+
+function mapMembership(
+  item: BackendUnionWorkspaceMembership,
+): UnionWorkspaceOption {
   return {
     id: item.workspace.id,
     name: item.workspace.name,
@@ -143,8 +195,66 @@ function mapMembership(item: BackendUnionWorkspaceMembership): UnionWorkspaceOpt
     primaryColor: item.workspace.primary_color || "#7b3ff2",
     role: item.role,
     roleDisplay: item.role_display,
-    permissions: item.effective_permissions ?? [],
+    permissions: sortedPermissions(item.effective_permissions),
   };
+}
+
+export function intersectUnionWorkspaceOptions(
+  workspaces: UnionWorkspaceOption[],
+  dashboardAccess: unknown,
+): AuthorizedUnionWorkspaceOption[] {
+  const workspacesById = new Map(
+    workspaces.map((workspace) => [String(workspace.id), workspace]),
+  );
+  const seenScopes = new Set<string>();
+
+  return getEntitlementsForDashboard(
+    dashboardAccess,
+    "UNION_WORKSPACE",
+  )
+    .filter(
+      (entitlement) =>
+        entitlement.scope_type === "UNION_WORKSPACE" &&
+        entitlement.scope_id !== null,
+    )
+    .sort((left, right) =>
+      String(left.scope_id).localeCompare(String(right.scope_id), undefined, {
+        numeric: true,
+      }),
+    )
+    .flatMap((entitlement) => {
+      const scopeKey = String(entitlement.scope_id);
+      const workspace = workspacesById.get(scopeKey);
+
+      if (
+        seenScopes.has(scopeKey) ||
+        !workspace ||
+        !isUnionWorkspaceRole(entitlement.workspace_role) ||
+        entitlement.workspace_role !== workspace.role
+      ) {
+        return [];
+      }
+
+      seenScopes.add(scopeKey);
+
+      const membershipPermissions = new Set(workspace.permissions);
+      const permissions = sortedPermissions(
+        entitlement.permissions.filter((permission) =>
+          membershipPermissions.has(permission),
+        ),
+      );
+
+      return [
+        {
+          ...workspace,
+          role: entitlement.workspace_role,
+          permissions,
+          entitlementId: entitlement.id,
+          entitlementRoute: entitlement.route,
+          scopeId: entitlement.scope_id as string | number,
+        },
+      ];
+    });
 }
 
 export async function getMyUnionWorkspaces(): Promise<UnionWorkspaceOption[]> {
@@ -155,13 +265,47 @@ export async function getMyUnionWorkspaces(): Promise<UnionWorkspaceOption[]> {
   return response.data.results.map(mapMembership);
 }
 
-export async function switchUnionWorkspace(workspaceSlug: string): Promise<UnionWorkspaceOption> {
-  const response = await apiClient.post<BackendUnionWorkspaceMembership>(
+export interface UnionWorkspaceSwitchResult {
+  workspace: AuthorizedUnionWorkspaceOption;
+  selectedEntitlementId: string;
+  dashboardAccess: DashboardAccess;
+}
+
+export async function switchUnionWorkspace(
+  workspaceSlug: string,
+): Promise<UnionWorkspaceSwitchResult> {
+  const response = await apiClient.post<BackendUnionWorkspaceSwitchResponse>(
     "/dashboards/union-admin/switch-workspace/",
     { workspace: workspaceSlug },
   );
 
-  return mapMembership(response.data);
+  const dashboardAccess = validateDashboardAccess(
+    response.data.dashboard_access,
+  );
+  const selectedEntitlementId = response.data.selected_entitlement_id;
+
+  if (
+    !dashboardAccess ||
+    typeof selectedEntitlementId !== "string" ||
+    !selectedEntitlementId
+  ) {
+    throw new Error("The workspace switch response did not include valid access.");
+  }
+
+  const workspace = intersectUnionWorkspaceOptions(
+    [mapMembership(response.data)],
+    dashboardAccess,
+  ).find((option) => option.entitlementId === selectedEntitlementId);
+
+  if (!workspace) {
+    throw new Error("The selected workspace is not authorized by dashboard access.");
+  }
+
+  return {
+    workspace,
+    selectedEntitlementId,
+    dashboardAccess,
+  };
 }
 
 export async function getUnionDashboardOverview(
@@ -180,12 +324,12 @@ export async function getUnionDashboardOverview(
 
 export async function getUnionWorkspaceUsers(
   workspaceSlug: string,
-): Promise<UnionWorkspaceUser[]> {
-  const response = await apiClient.get<UnionWorkspaceUsersResponse>(
+): Promise<UnionWorkspaceUsersResult> {
+  const response = await apiClient.get<UnionWorkspaceUsersResult>(
     `/dashboards/union-admin/workspace-users/?workspace=${encodeURIComponent(workspaceSlug)}`,
   );
 
-  return response.data.results ?? [];
+  return response.data;
 }
 
 export async function createUnionWorkspaceUser(

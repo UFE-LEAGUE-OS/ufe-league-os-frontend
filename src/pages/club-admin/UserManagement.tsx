@@ -57,6 +57,7 @@ import "../../styles/pages/club-admin/UserManagement.css";
 /* ------------------------------------------------------------------ */
 
 const PAGE_SIZE = 8;
+const USER_MANAGEMENT_PERMISSION = "club.admin.manage";
 
 const STATUS_FILTERS: Array<"ALL" | UserStatus> = [
   "ALL",
@@ -183,43 +184,39 @@ function PermissionToggleList({
 
 export interface UserManagementProps {
   clubId: number;
+  permissions: readonly string[];
 }
 
-export default function UserManagement({ clubId }: UserManagementProps) {
+export default function UserManagement({
+  clubId,
+  permissions,
+}: UserManagementProps) {
   /* ---------------- Users & roles data ---------------- */
+
+  const permissionKey = useMemo(
+    () => [...permissions].sort().join("\u0000"),
+    [permissions],
+  );
+  const canManageUsers = permissions.includes(USER_MANAGEMENT_PERMISSION);
+  const activeContextKey = `${clubId}:${permissionKey}`;
+  const activeContextRef = useRef({
+    canManageUsers,
+    key: activeContextKey,
+  });
+  activeContextRef.current = {
+    canManageUsers,
+    key: activeContextKey,
+  };
+  const loadRequestRef = useRef(0);
 
   const [users, setUsers] = useState<ManagedUser[]>([]);
   const [roles, setRoles] = useState<RoleSummary[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [loadedContextKey, setLoadedContextKey] = useState<string | null>(
+    null,
+  );
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadError, setLoadError] = useState("");
   const [error, setError] = useState("");
-
-  const loadUsersAndRoles = useCallback(async () => {
-    setIsLoading(true);
-    setError("");
-    try {
-      const [usersResult, rolesResult] = await Promise.all([
-        getClubManagedUsers(clubId),
-        getClubRoles(clubId),
-      ]);
-      setUsers(usersResult);
-      setRoles(rolesResult);
-      setSelectedRoleId((prev) => prev ?? rolesResult[0]?.id ?? null);
-    } catch (loadError) {
-      setError(
-        getApiErrorMessage(
-          loadError,
-          "Club users and roles could not be loaded.",
-        ),
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  }, [clubId]);
-
-  useEffect(() => {
-    void loadUsersAndRoles();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [clubId]);
 
   /* ---------------- Table filters / pagination ---------------- */
 
@@ -287,6 +284,7 @@ export default function UserManagement({ clubId }: UserManagementProps) {
   }
 
   function openCreateUser() {
+    if (!canManageUsers) return;
     resetForm();
     setShowUserForm(true);
   }
@@ -298,10 +296,13 @@ export default function UserManagement({ clubId }: UserManagementProps) {
   }
 
   async function beginEditUser(user: ManagedUser) {
+    if (!canManageUsers) return;
+    const requestContextKey = activeContextKey;
     setEditingUserId(user.id);
     setFormError("");
     setAvatarFile(null);
     setAvatarPreview(user.avatar_url);
+    setFormPermissionModules([]);
     setShowUserForm(true);
 
     const [code, ...rest] =
@@ -333,6 +334,12 @@ export default function UserManagement({ clubId }: UserManagementProps) {
       const role = roles.find((r) => r.key === user.role);
       if (role) {
         const modules = await getRolePermissionModules(clubId, role.id);
+        if (
+          !activeContextRef.current.canManageUsers ||
+          activeContextRef.current.key !== requestContextKey
+        ) {
+          return;
+        }
         setFormPermissionModules(modules);
         setUserForm((prev) => ({
           ...prev,
@@ -343,16 +350,29 @@ export default function UserManagement({ clubId }: UserManagementProps) {
         }));
       }
     } catch {
-      // Non-fatal — the permission picker will just start empty.
+      if (activeContextRef.current.key === requestContextKey) {
+        setFormPermissionModules([]);
+        setUserForm((prev) => ({ ...prev, permission_keys: [] }));
+      }
     }
   }
 
   async function handleRoleChange(roleKey: string) {
+    if (!canManageUsers) return;
+    const requestContextKey = activeContextKey;
     setUserForm((prev) => ({ ...prev, role: roleKey }));
+    setFormPermissionModules([]);
+    setUserForm((prev) => ({ ...prev, permission_keys: [] }));
     const role = roles.find((r) => r.key === roleKey);
     if (!role) return;
     try {
       const modules = await getRolePermissionModules(clubId, role.id);
+      if (
+        !activeContextRef.current.canManageUsers ||
+        activeContextRef.current.key !== requestContextKey
+      ) {
+        return;
+      }
       setFormPermissionModules(modules);
       setUserForm((prev) => ({
         ...prev,
@@ -362,7 +382,10 @@ export default function UserManagement({ clubId }: UserManagementProps) {
           .map((p) => p.key),
       }));
     } catch {
-      // Leave permissions as-is if the template can't be loaded.
+      if (activeContextRef.current.key === requestContextKey) {
+        setFormPermissionModules([]);
+        setUserForm((prev) => ({ ...prev, permission_keys: [] }));
+      }
     }
   }
 
@@ -387,6 +410,8 @@ export default function UserManagement({ clubId }: UserManagementProps) {
   }
 
   async function submitUserForm() {
+    if (!canManageUsers) return;
+    const requestContextKey = activeContextKey;
     setFormError("");
 
     if (
@@ -427,6 +452,12 @@ export default function UserManagement({ clubId }: UserManagementProps) {
             : {}),
           avatar: avatarFile,
         });
+        if (
+          !activeContextRef.current.canManageUsers ||
+          activeContextRef.current.key !== requestContextKey
+        ) {
+          return;
+        }
         setUsers((prev) =>
           prev.map((u) => (u.id === updated.id ? updated : u)),
         );
@@ -442,13 +473,21 @@ export default function UserManagement({ clubId }: UserManagementProps) {
           permission_keys: userForm.permission_keys,
           avatar: avatarFile,
         });
+        if (
+          !activeContextRef.current.canManageUsers ||
+          activeContextRef.current.key !== requestContextKey
+        ) {
+          return;
+        }
         setUsers((prev) => [created, ...prev]);
       }
       resetForm();
     } catch (saveError) {
-      setFormError(
-        getApiErrorMessage(saveError, "The user could not be saved."),
-      );
+      if (activeContextRef.current.key === requestContextKey) {
+        setFormError(
+          getApiErrorMessage(saveError, "The user could not be saved."),
+        );
+      }
     } finally {
       setIsSavingUser(false);
     }
@@ -457,35 +496,55 @@ export default function UserManagement({ clubId }: UserManagementProps) {
   /* ---------------- Row actions: status toggle / delete ---------------- */
 
   async function toggleUserStatus(user: ManagedUser) {
+    if (!canManageUsers) return;
+    const requestContextKey = activeContextKey;
     const nextStatus: UserStatus =
       user.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
     try {
       const updated = await setClubUserStatus(clubId, user.id, nextStatus);
+      if (
+        !activeContextRef.current.canManageUsers ||
+        activeContextRef.current.key !== requestContextKey
+      ) {
+        return;
+      }
       setUsers((prev) =>
         prev.map((u) => (u.id === updated.id ? updated : u)),
       );
     } catch (statusError) {
-      setError(
-        getApiErrorMessage(
-          statusError,
-          "The user status could not be updated.",
-        ),
-      );
+      if (activeContextRef.current.key === requestContextKey) {
+        setError(
+          getApiErrorMessage(
+            statusError,
+            "The user status could not be updated.",
+          ),
+        );
+      }
     }
   }
 
   async function removeUser(user: ManagedUser) {
+    if (!canManageUsers) return;
+    const requestContextKey = activeContextKey;
     const confirmed = window.confirm(
       `Remove ${user.full_name}? This cannot be undone.`,
     );
     if (!confirmed) return;
     try {
       await deleteClubUser(clubId, user.id);
+      if (
+        !activeContextRef.current.canManageUsers ||
+        activeContextRef.current.key !== requestContextKey
+      ) {
+        return;
+      }
       setUsers((prev) => prev.filter((u) => u.id !== user.id));
     } catch (deleteError) {
-      setError(
-        getApiErrorMessage(deleteError, "The user could not be removed."),
-      );
+      if (activeContextRef.current.key === requestContextKey) {
+        setError(
+          getApiErrorMessage(deleteError, "The user could not be removed."),
+        );
+      }
     }
   }
 
@@ -500,20 +559,30 @@ export default function UserManagement({ clubId }: UserManagementProps) {
   const [performanceError, setPerformanceError] = useState("");
 
   async function openPerformance(user: ManagedUser) {
+    if (!canManageUsers) return;
+    const requestContextKey = activeContextKey;
     setPerformanceUser(user);
     setPerformanceData(null);
     setPerformanceError("");
     setPerformanceLoading(true);
     try {
       const metrics = await getUserPerformance(clubId, user.id);
+      if (
+        !activeContextRef.current.canManageUsers ||
+        activeContextRef.current.key !== requestContextKey
+      ) {
+        return;
+      }
       setPerformanceData(metrics);
     } catch (perfError) {
-      setPerformanceError(
-        getApiErrorMessage(
-          perfError,
-          "Performance data could not be loaded for this user.",
-        ),
-      );
+      if (activeContextRef.current.key === requestContextKey) {
+        setPerformanceError(
+          getApiErrorMessage(
+            perfError,
+            "Performance data could not be loaded for this user.",
+          ),
+        );
+      }
     } finally {
       setPerformanceLoading(false);
     }
@@ -544,35 +613,70 @@ export default function UserManagement({ clubId }: UserManagementProps) {
 
   const loadRolePermissions = useCallback(
     async (roleId: number) => {
+      if (
+        !canManageUsers ||
+        loadedContextKey !== activeContextKey
+      ) {
+        return;
+      }
+      const requestContextKey = activeContextKey;
       setIsRoleModulesLoading(true);
       setPermissionsError("");
+      setRoleModules([]);
+      setActiveModuleKey(null);
       try {
         const modules = await getRolePermissionModules(clubId, roleId);
+        if (
+          !activeContextRef.current.canManageUsers ||
+          activeContextRef.current.key !== requestContextKey
+        ) {
+          return;
+        }
         setRoleModules(modules);
         setActiveModuleKey(modules[0]?.key ?? null);
         setPermissionsDirty(false);
       } catch (loadError) {
-        setPermissionsError(
-          getApiErrorMessage(
-            loadError,
-            "Permissions for this role could not be loaded.",
-          ),
-        );
+        if (activeContextRef.current.key === requestContextKey) {
+          setRoleModules([]);
+          setActiveModuleKey(null);
+          setPermissionsDirty(false);
+          setPermissionsError(
+            getApiErrorMessage(
+              loadError,
+              "Permissions for this role could not be loaded.",
+            ),
+          );
+        }
       } finally {
         setIsRoleModulesLoading(false);
       }
     },
-    [clubId],
+    [
+      activeContextKey,
+      canManageUsers,
+      clubId,
+      loadedContextKey,
+    ],
   );
 
   useEffect(() => {
-    if (selectedRoleId != null) {
+    if (
+      canManageUsers &&
+      loadedContextKey === activeContextKey &&
+      selectedRoleId != null
+    ) {
       void loadRolePermissions(selectedRoleId);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedRoleId]);
+  }, [
+    activeContextKey,
+    canManageUsers,
+    loadRolePermissions,
+    loadedContextKey,
+    selectedRoleId,
+  ]);
 
   function toggleRolePermission(key: string) {
+    if (!canManageUsers) return;
     setRoleModules((prev) =>
       prev.map((mod) => ({
         ...mod,
@@ -585,6 +689,7 @@ export default function UserManagement({ clubId }: UserManagementProps) {
   }
 
   function toggleModuleSelectAll(moduleKey: string, enableAll: boolean) {
+    if (!canManageUsers) return;
     setRoleModules((prev) =>
       prev.map((mod) =>
         mod.key === moduleKey
@@ -602,7 +707,8 @@ export default function UserManagement({ clubId }: UserManagementProps) {
   }
 
   async function saveRolePermissions() {
-    if (!selectedRoleId) return;
+    if (!canManageUsers || !selectedRoleId) return;
+    const requestContextKey = activeContextKey;
     setIsSavingPermissions(true);
     setPermissionsError("");
     try {
@@ -611,6 +717,12 @@ export default function UserManagement({ clubId }: UserManagementProps) {
         selectedRoleId,
         roleModules,
       );
+      if (
+        !activeContextRef.current.canManageUsers ||
+        activeContextRef.current.key !== requestContextKey
+      ) {
+        return;
+      }
       setRoleModules(saved);
       setPermissionsDirty(false);
       const enabledCount = countPermissionModules(saved);
@@ -622,19 +734,21 @@ export default function UserManagement({ clubId }: UserManagementProps) {
         ),
       );
     } catch (saveError) {
-      setPermissionsError(
-        getApiErrorMessage(
-          saveError,
-          "Permission changes could not be saved.",
-        ),
-      );
+      if (activeContextRef.current.key === requestContextKey) {
+        setPermissionsError(
+          getApiErrorMessage(
+            saveError,
+            "Permission changes could not be saved.",
+          ),
+        );
+      }
     } finally {
       setIsSavingPermissions(false);
     }
   }
 
   function cancelRolePermissionChanges() {
-    if (selectedRoleId != null) {
+    if (canManageUsers && selectedRoleId != null) {
       void loadRolePermissions(selectedRoleId);
     }
   }
@@ -656,6 +770,7 @@ export default function UserManagement({ clubId }: UserManagementProps) {
   const [isSavingRole, setIsSavingRole] = useState(false);
 
   function openCreateRole() {
+    if (!canManageUsers) return;
     setRoleForm({ label: "", description: "" });
     setRoleFormError("");
     setShowRoleForm(true);
@@ -668,6 +783,8 @@ export default function UserManagement({ clubId }: UserManagementProps) {
   }
 
   async function submitRoleForm() {
+    if (!canManageUsers) return;
+    const requestContextKey = activeContextKey;
     if (!roleForm.label.trim()) {
       setRoleFormError("Role name is required.");
       return;
@@ -681,23 +798,152 @@ export default function UserManagement({ clubId }: UserManagementProps) {
         label,
         description: roleForm.description.trim(),
       });
+      if (
+        !activeContextRef.current.canManageUsers ||
+        activeContextRef.current.key !== requestContextKey
+      ) {
+        return;
+      }
       setRoles((prev) => [...prev, created]);
       setSelectedRoleId(created.id);
       closeRoleForm();
     } catch (createError) {
-      setRoleFormError(
-        getApiErrorMessage(createError, "The role could not be created."),
-      );
+      if (activeContextRef.current.key === requestContextKey) {
+        setRoleFormError(
+          getApiErrorMessage(createError, "The role could not be created."),
+        );
+      }
     } finally {
       setIsSavingRole(false);
     }
   }
 
+  const clearScopedState = useCallback(() => {
+    setUsers([]);
+    setRoles([]);
+    setLoadedContextKey(null);
+    setIsLoading(false);
+    setLoadError("");
+    setError("");
+    setSearchQuery("");
+    setRoleFilter("ALL");
+    setStatusFilter("ALL");
+    setPage(1);
+    setUserForm(emptyUserForm);
+    setEditingUserId(null);
+    setShowUserForm(false);
+    setAvatarFile(null);
+    setAvatarPreview(null);
+    setShowPassword(false);
+    setFormError("");
+    setIsSavingUser(false);
+    setShowPermissionPicker(false);
+    setFormPermissionModules([]);
+    setPerformanceUser(null);
+    setPerformanceData(null);
+    setPerformanceLoading(false);
+    setPerformanceError("");
+    setSelectedRoleId(null);
+    setRoleModules([]);
+    setActiveModuleKey(null);
+    setPermissionTab("byModule");
+    setIsRoleModulesLoading(false);
+    setIsSavingPermissions(false);
+    setPermissionsDirty(false);
+    setPermissionsError("");
+    setShowRoleForm(false);
+    setRoleForm({ label: "", description: "" });
+    setRoleFormError("");
+    setIsSavingRole(false);
+  }, []);
+
+  useEffect(() => {
+    const requestId = ++loadRequestRef.current;
+    clearScopedState();
+
+    if (!canManageUsers) {
+      return;
+    }
+
+    setIsLoading(true);
+
+    void Promise.all([
+      getClubManagedUsers(clubId),
+      getClubRoles(clubId),
+    ])
+      .then(([usersResult, rolesResult]) => {
+        if (
+          loadRequestRef.current !== requestId ||
+          !activeContextRef.current.canManageUsers ||
+          activeContextRef.current.key !== activeContextKey
+        ) {
+          return;
+        }
+
+        setUsers(usersResult);
+        setRoles(rolesResult);
+        setSelectedRoleId(rolesResult[0]?.id ?? null);
+        setLoadedContextKey(activeContextKey);
+      })
+      .catch((requestError: unknown) => {
+        if (
+          loadRequestRef.current !== requestId ||
+          activeContextRef.current.key !== activeContextKey
+        ) {
+          return;
+        }
+
+        setUsers([]);
+        setRoles([]);
+        setSelectedRoleId(null);
+        setRoleModules([]);
+        setActiveModuleKey(null);
+        setLoadedContextKey(null);
+        setLoadError(
+          getApiErrorMessage(
+            requestError,
+            "Club users and roles could not be loaded.",
+          ),
+        );
+      })
+      .finally(() => {
+        if (loadRequestRef.current === requestId) {
+          setIsLoading(false);
+        }
+      });
+
+    return () => {
+      if (loadRequestRef.current === requestId) {
+        loadRequestRef.current += 1;
+      }
+    };
+  }, [
+    activeContextKey,
+    canManageUsers,
+    clearScopedState,
+    clubId,
+  ]);
+
   /* ------------------------------------------------------------------ */
   /* Render                                                              */
   /* ------------------------------------------------------------------ */
 
-  if (isLoading && users.length === 0) {
+  if (!canManageUsers) {
+    return (
+      <WorkspacePanel
+        eyebrow="Club administration"
+        title="User Management unavailable"
+        description="This Club workspace does not grant user-management access."
+      >
+        <WorkspaceEmpty
+          title="Permission required"
+          description={`The selected Club entitlement must include ${USER_MANAGEMENT_PERMISSION}.`}
+        />
+      </WorkspacePanel>
+    );
+  }
+
+  if (isLoading) {
     return (
       <WorkspacePanel
         eyebrow="Club administration"
@@ -712,12 +958,27 @@ export default function UserManagement({ clubId }: UserManagementProps) {
     );
   }
 
+  if (loadError) {
+    return (
+      <WorkspacePanel
+        eyebrow="Club administration"
+        title="User Management unavailable"
+        description="Users and roles were not loaded, so management actions remain disabled."
+      >
+        <WorkspaceEmpty
+          title="Access unavailable"
+          description={loadError}
+        />
+      </WorkspacePanel>
+    );
+  }
+
   return (
     <>
       {error && (
         <div className={styles.validationCard}>
           <Shield size={18} />
-          <strong>Some information may be stale</strong>
+          <strong>The action could not be completed</strong>
           <span>{error}</span>
         </div>
       )}

@@ -1,11 +1,42 @@
 import axiosInstance from './apiClient.js';
+import type { AuthenticatedUser } from '../types/dashboardAccess.js';
 
 export type AuthPayload = Record<string, unknown>;
+
+export interface LoginPayload {
+  identifier?: string;
+  email?: string;
+  password?: string;
+}
+
+export interface GoogleLoginPayload {
+  token?: string;
+  id_token?: string;
+  invitation_token?: string;
+}
+
+export interface AuthenticationResponse {
+  access: string;
+  refresh: string;
+  user: AuthenticatedUser;
+  requires_email_verification?: boolean;
+  is_new_user?: boolean;
+  message?: string;
+  token_type?: string;
+  next_step?: string;
+  role?: string;
+  frontend_dashboard_route?: string | null;
+  backend_dashboard_route?: string | null;
+}
 
 export const register = (payload: AuthPayload) =>
   axiosInstance.post('/accounts/register/', payload);
 
-export const login = (payload: AuthPayload) => axiosInstance.post('/accounts/login/', payload);
+export const login = (payload: LoginPayload) =>
+  axiosInstance.post<AuthenticationResponse>('/accounts/login/', payload);
+
+export const googleLogin = (payload: GoogleLoginPayload) =>
+  axiosInstance.post<AuthenticationResponse>('/accounts/google/', payload);
 
 export const verifyOtp = (payload: AuthPayload) =>
   axiosInstance.post('/accounts/verify-otp/', payload);
@@ -20,6 +51,9 @@ export const resetPassword = (payload: AuthPayload) =>
   axiosInstance.post('/accounts/password-reset/confirm/', payload);
 
 export const fetchProfile = () => axiosInstance.get('/accounts/profile/');
+
+export const fetchCurrentUser = () =>
+  axiosInstance.get<AuthenticatedUser>('/accounts/me/');
 
 export const updateProfile = (payload: AuthPayload) =>
   axiosInstance.patch('/accounts/profile/', payload);

@@ -18,6 +18,7 @@ import {
   Plus,
   Radio,
   RefreshCw,
+  ScanLine,
   Search,
   Settings as SettingsIcon,
   ShieldCheck,
@@ -30,9 +31,11 @@ import {
   X,
 } from "lucide-react";
 import {
+  type FormEvent,
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import {
@@ -63,10 +66,24 @@ import AdminWorkspaceLayout, {
 } from "../../components/AdminWorkspaceLayout/AdminWorkspaceLayout";
 import {
   getApiErrorMessage,
-  getClubAdminWorkspace,
+  getSelectedClubWorkspace,
+  validateWorkspaceTicket,
   type AdminWorkspaceMatch,
   type ClubAdminWorkspaceData,
+  type TicketValidationResult,
 } from "../../services/adminWorkspaceService";
+import { useAuthStore } from "../../store/authStore";
+import { useClubWorkspaceStore } from "../../store/clubWorkspaceStore";
+import {
+  CLUB_ADMIN_ROUTE,
+  CLUB_TICKETING_ROUTE,
+  getClubWorkspaceOptions,
+  getFirstPermittedClubTab,
+  isClubTabPermitted,
+  resolveActiveClubWorkspace,
+  type ActiveClubWorkspace,
+  type ClubWorkspaceTab,
+} from "../../utils/clubWorkspace";
 import {
   getClubSubscriptions,
   getClubMembershipPlans,
@@ -117,6 +134,8 @@ type TabKey =
   | "ticketingInventory"
   | "ticketingPublish"
   | "ticketingPerformance"
+  | "ticketingScanner"
+  | "ticketingEntryLogs"
   | "facilities"
   | "profileBranding"
   | "profileBrandingProfile"
@@ -135,7 +154,13 @@ const navItems: AdminWorkspaceNavGroup<TabKey>[] = [
   {
     label: "Overview",
     items: [
-      { key: "overview", label: "Dashboard", icon: BarChart3 },
+      {
+        key: "overview",
+        label: "Dashboard",
+        icon: BarChart3,
+        requiredClubPermissions: [],
+        clubWorkspaceFamily: "CLUB_ADMIN",
+      },
     ],
   },
   {
@@ -145,70 +170,176 @@ const navItems: AdminWorkspaceNavGroup<TabKey>[] = [
         key: "membership",
         label: "Membership",
         icon: CreditCard,
+        requiredClubPermissions: ["club.members.manage"],
+        clubWorkspaceFamily: "CLUB_ADMIN",
         children: [
           {
             key: "membershipDirectory",
             label: "Members Directory",
             icon: Users,
+            requiredClubPermissions: ["club.members.manage"],
+            clubWorkspaceFamily: "CLUB_ADMIN",
           },
           {
             key: "membershipRenewals",
             label: "Renewals & Expiry",
             icon: RefreshCw,
+            requiredClubPermissions: ["club.members.manage"],
+            clubWorkspaceFamily: "CLUB_ADMIN",
           },
           {
             key: "membershipTiers",
             label: "Tiers & Pricing",
             icon: Layers,
+            requiredClubPermissions: ["club.members.manage"],
+            clubWorkspaceFamily: "CLUB_ADMIN",
           },
           {
             key: "membershipRequests",
             label: "Requests Queue",
             icon: ClipboardList,
+            requiredClubPermissions: ["club.members.manage"],
+            clubWorkspaceFamily: "CLUB_ADMIN",
           },
           {
             key: "membershipReports",
             label: "Export Reports",
             icon: Download,
+            requiredClubPermissions: ["club.members.manage"],
+            clubWorkspaceFamily: "CLUB_ADMIN",
           },
         ],
       },
-      { key: "teams", label: "Teams", icon: Trophy },
-      { key: "matches", label: "Matches", icon: CalendarDays },
-      { key: "finances", label: "Finances", icon: Wallet },
+      {
+        key: "teams",
+        label: "Teams",
+        icon: Trophy,
+        requiredClubPermissions: [
+          "club.squad.manage",
+          "club.training.manage",
+        ],
+        clubPermissionMode: "any",
+        clubWorkspaceFamily: "CLUB_ADMIN",
+      },
+      {
+        key: "matches",
+        label: "Matches",
+        icon: CalendarDays,
+        requiredClubPermissions: [
+          "club.matches.manage",
+          "club.events.manage",
+        ],
+        clubPermissionMode: "any",
+        clubWorkspaceFamily: "CLUB_ADMIN",
+      },
+      {
+        key: "finances",
+        label: "Finances",
+        icon: Wallet,
+        requiredClubPermissions: [
+          "club.finance.view",
+          "club.finance.manage",
+        ],
+        clubPermissionMode: "any",
+        clubWorkspaceFamily: "CLUB_ADMIN",
+      },
       {
         key: "ticketing",
         label: "Tickets",
         icon: TicketCheck,
+        requiredClubPermissions: [
+          "club.ticketing.manage",
+          "club.ticketing.validate",
+        ],
+        clubPermissionMode: "any",
+        clubWorkspaceFamily: [
+          "CLUB_ADMIN",
+          "TICKETING_OFFICER",
+        ],
         children: [
           {
             key: "ticketingGames",
             label: "Home Games & Gates",
             icon: CalendarDays,
+            requiredClubPermissions: ["club.ticketing.manage"],
+            clubWorkspaceFamily: [
+              "CLUB_ADMIN",
+              "TICKETING_OFFICER",
+            ],
           },
           {
             key: "ticketingPricing",
             label: "Ticket Pricing",
             icon: Tag,
+            requiredClubPermissions: ["club.ticketing.manage"],
+            clubWorkspaceFamily: [
+              "CLUB_ADMIN",
+              "TICKETING_OFFICER",
+            ],
           },
           {
             key: "ticketingInventory",
             label: "Inventory",
             icon: Boxes,
+            requiredClubPermissions: ["club.ticketing.manage"],
+            clubWorkspaceFamily: [
+              "CLUB_ADMIN",
+              "TICKETING_OFFICER",
+            ],
           },
           {
             key: "ticketingPublish",
             label: "Publish & Go-Live",
             icon: Radio,
+            requiredClubPermissions: ["club.ticketing.manage"],
+            clubWorkspaceFamily: [
+              "CLUB_ADMIN",
+              "TICKETING_OFFICER",
+            ],
           },
           {
             key: "ticketingPerformance",
             label: "Sales Performance",
             icon: BarChart3,
+            requiredClubPermissions: ["club.ticketing.manage"],
+            clubWorkspaceFamily: [
+              "CLUB_ADMIN",
+              "TICKETING_OFFICER",
+            ],
+          },
+          {
+            key: "ticketingScanner",
+            label: "Ticket Scanner",
+            icon: ScanLine,
+            requiredClubPermissions: [
+              "club.ticketing.validate",
+            ],
+            clubWorkspaceFamily: [
+              "CLUB_ADMIN",
+              "TICKETING_OFFICER",
+            ],
+          },
+          {
+            key: "ticketingEntryLogs",
+            label: "Entry Logs",
+            icon: ClipboardList,
+            requiredClubPermissions: [
+              "club.ticketing.validate",
+            ],
+            clubWorkspaceFamily: [
+              "CLUB_ADMIN",
+              "TICKETING_OFFICER",
+            ],
           },
         ],
       },
-      { key: "facilities", label: "Facilities", icon: Building2 },
+      {
+        key: "facilities",
+        label: "Facilities",
+        icon: Building2,
+        requiredClubPermissions: [],
+        clubWorkspaceFamily: "CLUB_ADMIN",
+      },
     ],
   },
   {
@@ -218,31 +349,47 @@ const navItems: AdminWorkspaceNavGroup<TabKey>[] = [
         key: "profileBranding",
         label: "Profile & Branding",
         icon: UserCircle,
+        requiredClubPermissions: [
+          "club.profile.view",
+          "club.profile.edit",
+        ],
+        clubPermissionMode: "any",
+        clubWorkspaceFamily: "CLUB_ADMIN",
         children: [
           {
             key: "profileBrandingProfile",
             label: "Club Profile",
             icon: Building2,
+            requiredClubPermissions: ["club.profile.edit"],
+            clubWorkspaceFamily: "CLUB_ADMIN",
           },
           {
             key: "profileBrandingBrand",
             label: "Branding Editor",
             icon: Palette,
+            requiredClubPermissions: ["club.profile.edit"],
+            clubWorkspaceFamily: "CLUB_ADMIN",
           },
           {
             key: "profileBrandingVenues",
             label: "Venues",
             icon: MapPin,
+            requiredClubPermissions: [],
+            clubWorkspaceFamily: "CLUB_ADMIN",
           },
           {
             key: "profileBrandingMedia",
             label: "Media Assets",
             icon: ImageIcon,
+            requiredClubPermissions: ["club.profile.edit"],
+            clubWorkspaceFamily: "CLUB_ADMIN",
           },
           {
             key: "profileBrandingPreview",
             label: "Public Page Preview",
             icon: Eye,
+            requiredClubPermissions: ["club.profile.view"],
+            clubWorkspaceFamily: "CLUB_ADMIN",
           },
         ],
       },
@@ -250,30 +397,58 @@ const navItems: AdminWorkspaceNavGroup<TabKey>[] = [
         key: "sponsorshipMatchday",
         label: "Sponsorship & Matchday Operations",
         icon: Megaphone,
+        requiredClubPermissions: [
+          "club.sponsorship.view",
+          "club.sponsorship.manage",
+        ],
+        clubPermissionMode: "any",
+        clubWorkspaceFamily: "CLUB_ADMIN",
       },
-      { key: "compliance", label: "Compliance", icon: ShieldCheck },
+      {
+        key: "compliance",
+        label: "Compliance",
+        icon: ShieldCheck,
+        requiredClubPermissions: [],
+        clubWorkspaceFamily: "CLUB_ADMIN",
+      },
     ],
   },
   {
     label: "Administration",
     items: [
-      { key: "reports", label: "Reports", icon: FileBarChart },
+      {
+        key: "reports",
+        label: "Reports",
+        icon: FileBarChart,
+        requiredClubPermissions: ["club.reports.view"],
+        clubWorkspaceFamily: "CLUB_ADMIN",
+      },
       {
         key: "communications",
         label: "Communications",
         icon: MessageSquare,
+        requiredClubPermissions: [],
+        clubWorkspaceFamily: "CLUB_ADMIN",
       },
       {
         key: "clubUsers",
         label: "User & Permission Management",
         icon: Users,
+        requiredClubPermissions: ["club.admin.manage"],
+        clubWorkspaceFamily: "CLUB_ADMIN",
       },
-      { key: "settings", label: "Settings", icon: SettingsIcon },
+      {
+        key: "settings",
+        label: "Settings",
+        icon: SettingsIcon,
+        requiredClubPermissions: ["club.settings.manage"],
+        clubWorkspaceFamily: "CLUB_ADMIN",
+      },
     ],
   },
 ];
 
-const CLUB_ADMIN_BASE_PATH = "/dashboard/club-admin";
+const CLUB_ADMIN_BASE_PATH = CLUB_ADMIN_ROUTE;
 
 const TAB_TO_PATH: Record<TabKey, string> = {
   overview: CLUB_ADMIN_BASE_PATH,
@@ -292,6 +467,8 @@ const TAB_TO_PATH: Record<TabKey, string> = {
   ticketingInventory: `${CLUB_ADMIN_BASE_PATH}/ticketing/inventory`,
   ticketingPublish: `${CLUB_ADMIN_BASE_PATH}/ticketing/publish`,
   ticketingPerformance: `${CLUB_ADMIN_BASE_PATH}/ticketing/performance`,
+  ticketingScanner: `${CLUB_ADMIN_BASE_PATH}/ticketing/scanner`,
+  ticketingEntryLogs: `${CLUB_ADMIN_BASE_PATH}/ticketing/entry-logs`,
   facilities: `${CLUB_ADMIN_BASE_PATH}/facilities`,
   profileBranding: `${CLUB_ADMIN_BASE_PATH}/profile-branding`,
   profileBrandingProfile: `${CLUB_ADMIN_BASE_PATH}/profile-branding/profile`,
@@ -322,8 +499,162 @@ function normalizePath(pathname: string) {
   return pathname;
 }
 
-function getTabFromPath(pathname: string): TabKey | null {
-  return PATH_TO_TAB.get(normalizePath(pathname)) ?? null;
+function getTabFromPath(
+  pathname: string,
+  basePath: string,
+): TabKey | null {
+  const normalized = normalizePath(pathname);
+  const canonicalPath = normalized.startsWith(basePath)
+    ? `${CLUB_ADMIN_BASE_PATH}${normalized.slice(basePath.length)}`
+    : normalized;
+
+  return PATH_TO_TAB.get(canonicalPath) ?? null;
+}
+
+function getPathForTab(tab: TabKey, basePath: string) {
+  return `${basePath}${TAB_TO_PATH[tab].slice(
+    CLUB_ADMIN_BASE_PATH.length,
+  )}`;
+}
+
+const TAB_TO_MODULE: Record<TabKey, ClubWorkspaceTab> = {
+  overview: "overview",
+  membership: "membership",
+  membershipDirectory: "membership",
+  membershipRenewals: "membership",
+  membershipTiers: "membership",
+  membershipRequests: "membership",
+  membershipReports: "membership",
+  teams: "teams",
+  matches: "matches",
+  finances: "finances",
+  ticketing: "ticketing",
+  ticketingGames: "ticketing",
+  ticketingPricing: "ticketing",
+  ticketingInventory: "ticketing",
+  ticketingPublish: "ticketing",
+  ticketingPerformance: "ticketing",
+  ticketingScanner: "ticketing",
+  ticketingEntryLogs: "ticketing",
+  facilities: "facilities",
+  profileBranding: "profileBranding",
+  profileBrandingProfile: "profileBranding",
+  profileBrandingBrand: "profileBranding",
+  profileBrandingVenues: "facilities",
+  profileBrandingMedia: "profileBranding",
+  profileBrandingPreview: "profileBranding",
+  sponsorshipMatchday: "sponsorshipMatchday",
+  compliance: "compliance",
+  reports: "reports",
+  communications: "communications",
+  clubUsers: "clubUsers",
+  settings: "settings",
+};
+
+const MODULE_TO_DEFAULT_TAB: Record<ClubWorkspaceTab, TabKey> = {
+  overview: "overview",
+  membership: "membership",
+  teams: "teams",
+  matches: "matches",
+  finances: "finances",
+  ticketing: "ticketing",
+  facilities: "facilities",
+  profileBranding: "profileBranding",
+  sponsorshipMatchday: "sponsorshipMatchday",
+  compliance: "compliance",
+  reports: "reports",
+  communications: "communications",
+  clubUsers: "clubUsers",
+  settings: "settings",
+};
+
+const TAB_PERMISSION_OVERRIDES: Partial<
+  Record<TabKey, readonly string[]>
+> = {
+  overview: [],
+  facilities: [],
+  profileBrandingProfile: ["club.profile.edit"],
+  profileBrandingBrand: ["club.profile.edit"],
+  profileBrandingVenues: [],
+  profileBrandingMedia: ["club.profile.edit"],
+  profileBrandingPreview: ["club.profile.view"],
+  ticketingGames: ["club.ticketing.manage"],
+  ticketingPricing: ["club.ticketing.manage"],
+  ticketingInventory: ["club.ticketing.manage"],
+  ticketingPublish: ["club.ticketing.manage"],
+  ticketingPerformance: ["club.ticketing.manage"],
+  ticketingScanner: ["club.ticketing.validate"],
+  ticketingEntryLogs: ["club.ticketing.validate"],
+  compliance: [],
+  communications: [],
+};
+
+function isWorkspaceTabPermitted(
+  tab: TabKey,
+  workspace: ActiveClubWorkspace,
+) {
+  const module = TAB_TO_MODULE[tab];
+
+  if (
+    workspace.dashboard === "TICKETING_OFFICER" &&
+    module !== "ticketing"
+  ) {
+    return false;
+  }
+
+  const tabPermissions = TAB_PERMISSION_OVERRIDES[tab];
+
+  if (tabPermissions) {
+    return tabPermissions.some((permission) =>
+      workspace.permissions.includes(permission),
+    );
+  }
+
+  return isClubTabPermitted(module, workspace.permissions);
+}
+
+function getDefaultWorkspaceTab(
+  workspace: ActiveClubWorkspace,
+): TabKey | null {
+  if (workspace.dashboard === "TICKETING_OFFICER") {
+    return isClubTabPermitted(
+      "ticketing",
+      workspace.permissions,
+    )
+      ? "ticketing"
+      : null;
+  }
+
+  if (
+    workspace.workspace_role === "TREASURER" &&
+    isClubTabPermitted(
+      "finances",
+      workspace.permissions,
+    )
+  ) {
+    return "finances";
+  }
+
+  if (
+    workspace.workspace_role === "TEAM_MANAGER" &&
+    isClubTabPermitted("teams", workspace.permissions)
+  ) {
+    return "teams";
+  }
+
+  const module = getFirstPermittedClubTab(
+    workspace.permissions,
+  );
+
+  return module ? MODULE_TO_DEFAULT_TAB[module] : null;
+}
+
+function formatWorkspaceRole(role: string) {
+  return role
+    .replace(/_ADMIN$/, " ADMIN")
+    .replace(/_/g, " ")
+    .toLowerCase()
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
 const STATUS_FILTERS = [
@@ -476,15 +807,48 @@ function InventoryRow({
 export default function ClubAdminDashboard() {
   const location = useLocation();
   const navigate = useNavigate();
-  const routeTab = useMemo(
-    () => getTabFromPath(location.pathname),
-    [location.pathname],
+  const user = useAuthStore((state) => state.user);
+  const selectedEntitlementId = useClubWorkspaceStore(
+    (state) => state.selectedEntitlementId,
   );
-  const activeTab = routeTab ?? "overview";
+  const selectEntitlement = useClubWorkspaceStore(
+    (state) => state.selectEntitlement,
+  );
+  const clubWorkspaceOptions = useMemo(
+    () => getClubWorkspaceOptions(user?.dashboard_access),
+    [user?.dashboard_access],
+  );
+  const activeWorkspace = useMemo(
+    () =>
+      resolveActiveClubWorkspace(
+        user?.dashboard_access,
+        selectedEntitlementId,
+      ),
+    [selectedEntitlementId, user?.dashboard_access],
+  );
+  const basePath =
+    activeWorkspace?.route ??
+    (location.pathname.startsWith(CLUB_TICKETING_ROUTE)
+      ? CLUB_TICKETING_ROUTE
+      : CLUB_ADMIN_ROUTE);
+  const routeTab = useMemo(
+    () => getTabFromPath(location.pathname, basePath),
+    [basePath, location.pathname],
+  );
+  const defaultWorkspaceTab = activeWorkspace
+    ? getDefaultWorkspaceTab(activeWorkspace)
+    : null;
+  const activeTab =
+    activeWorkspace &&
+    routeTab &&
+    isWorkspaceTabPermitted(routeTab, activeWorkspace)
+      ? routeTab
+      : (defaultWorkspaceTab ?? "overview");
   const [data, setData] =
     useState<ClubAdminWorkspaceData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const loadRequestId = useRef(0);
 
   // Membership directory / plans state (shared across the five
   // membership child tabs, loaded alongside the main workspace).
@@ -533,37 +897,134 @@ export default function ClubAdminDashboard() {
   >(null);
   const [isLoadingSales, setIsLoadingSales] = useState(false);
   const [salesError, setSalesError] = useState("");
+  const [scannedCode, setScannedCode] = useState("");
+  const [validationMatchId, setValidationMatchId] =
+    useState("");
+  const [validationResult, setValidationResult] =
+    useState<TicketValidationResult | null>(null);
+  const [validationError, setValidationError] =
+    useState("");
+  const [isValidatingTicket, setIsValidatingTicket] =
+    useState(false);
 
   useEffect(() => {
-    if (!routeTab) {
-      navigate(CLUB_ADMIN_BASE_PATH, { replace: true });
+    if (!activeWorkspace || !defaultWorkspaceTab) return;
+
+    const isCorrectWorkspaceRoute =
+      location.pathname === activeWorkspace.route ||
+      location.pathname.startsWith(
+        `${activeWorkspace.route}/`,
+      );
+    const isAllowedRouteTab =
+      routeTab &&
+      isWorkspaceTabPermitted(routeTab, activeWorkspace);
+
+    if (!isCorrectWorkspaceRoute || !isAllowedRouteTab) {
+      navigate(
+        getPathForTab(
+          defaultWorkspaceTab,
+          activeWorkspace.route,
+        ),
+        { replace: true },
+      );
     }
-  }, [location.pathname, navigate, routeTab]);
+  }, [
+    activeWorkspace,
+    defaultWorkspaceTab,
+    location.pathname,
+    navigate,
+    routeTab,
+  ]);
 
   // Membership's five sub-pages, and ticketing's five sub-pages,
   // render inline in this same workspace shell. The URL now carries
   // the active location, while the shell keeps the existing content.
-  const handleTabChange = useCallback((tab: TabKey) => {
-    navigate(TAB_TO_PATH[tab]);
-  }, [navigate]);
+  const handleTabChange = useCallback(
+    (tab: TabKey) => {
+      if (
+        !activeWorkspace ||
+        !isWorkspaceTabPermitted(tab, activeWorkspace)
+      ) {
+        return;
+      }
+
+      navigate(getPathForTab(tab, activeWorkspace.route));
+    },
+    [activeWorkspace, navigate],
+  );
+
+  const handleWorkspaceSelection = useCallback(
+    (entitlementId: string) => {
+      const nextWorkspace = clubWorkspaceOptions.find(
+        (option) =>
+          option.entitlement_id === entitlementId,
+      );
+
+      if (!nextWorkspace) return;
+
+      selectEntitlement(nextWorkspace.entitlement_id);
+      navigate(nextWorkspace.route, { replace: true });
+    },
+    [clubWorkspaceOptions, navigate, selectEntitlement],
+  );
 
   const loadWorkspace = useCallback(async () => {
+    const requestId = ++loadRequestId.current;
+    setData(null);
+    setSubscriptions([]);
+    setPlans([]);
+    setSelectedMatchId(null);
+    setTicketTypesByMatch({});
+    setSalesSummaries(null);
+    setTicketTypesError("");
+    setGateConfigError("");
+    setSalesError("");
+    setScannedCode("");
+    setValidationMatchId("");
+    setValidationResult(null);
+    setValidationError("");
+    setIsValidatingTicket(false);
+
+    if (!activeWorkspace || !defaultWorkspaceTab) {
+      setIsLoading(false);
+      setError("");
+      return;
+    }
+
     setIsLoading(true);
     setError("");
 
     try {
-      const workspaceData = await getClubAdminWorkspace();
+      const workspaceData =
+        await getSelectedClubWorkspace(activeWorkspace);
+
+      if (requestId !== loadRequestId.current) return;
+
       setData(workspaceData);
+      setValidationMatchId(
+        String(workspaceData.ticket_events[0]?.id ?? ""),
+      );
 
-      const clubId = workspaceData.club.id;
-      const [subsResult, plansResult] = await Promise.all([
-        getClubSubscriptions(clubId),
-        getClubMembershipPlans(clubId),
-      ]);
+      if (
+        activeWorkspace.permissions.includes(
+          "club.members.manage",
+        )
+      ) {
+        const clubId = workspaceData.club.id;
+        const [subsResult, plansResult] =
+          await Promise.all([
+            getClubSubscriptions(clubId),
+            getClubMembershipPlans(clubId),
+          ]);
 
-      setSubscriptions(subsResult);
-      setPlans(plansResult);
+        if (requestId !== loadRequestId.current) return;
+
+        setSubscriptions(subsResult);
+        setPlans(plansResult);
+      }
     } catch (loadError) {
+      if (requestId !== loadRequestId.current) return;
+
       setData(null);
       setError(
         getApiErrorMessage(
@@ -572,9 +1033,11 @@ export default function ClubAdminDashboard() {
         ),
       );
     } finally {
-      setIsLoading(false);
+      if (requestId === loadRequestId.current) {
+        setIsLoading(false);
+      }
     }
-  }, []);
+  }, [activeWorkspace, defaultWorkspaceTab]);
 
   useEffect(() => {
     void loadWorkspace();
@@ -2614,6 +3077,226 @@ export default function ClubAdminDashboard() {
     );
   }
 
+  async function handleTicketValidation(
+    event: FormEvent<HTMLFormElement>,
+  ) {
+    event.preventDefault();
+
+    if (
+      !activeWorkspace?.permissions.includes(
+        "club.ticketing.validate",
+      )
+    ) {
+      setValidationError(
+        "The selected Club entitlement cannot validate tickets.",
+      );
+      return;
+    }
+
+    if (!scannedCode.trim()) {
+      setValidationError(
+        "Enter or scan a ticket code first.",
+      );
+      return;
+    }
+
+    setIsValidatingTicket(true);
+    setValidationResult(null);
+    setValidationError("");
+
+    try {
+      const result = await validateWorkspaceTicket({
+        scannedCode,
+        matchId: validationMatchId
+          ? Number(validationMatchId)
+          : undefined,
+      });
+      setValidationResult(result);
+      setScannedCode("");
+    } catch (validationFailure) {
+      const responseData =
+        typeof validationFailure === "object" &&
+        validationFailure !== null &&
+        "response" in validationFailure
+          ? (
+              validationFailure as {
+                response?: {
+                  data?: TicketValidationResult;
+                };
+              }
+            ).response?.data
+          : undefined;
+
+      if (responseData?.result) {
+        setValidationResult(responseData);
+      } else {
+        setValidationError(
+          getApiErrorMessage(
+            validationFailure,
+            "The ticket could not be validated.",
+          ),
+        );
+      }
+    } finally {
+      setIsValidatingTicket(false);
+    }
+  }
+
+  function renderTicketScanner() {
+    return (
+      <WorkspacePanel
+        eyebrow="Gate operations"
+        title="Validate a ticket"
+        description="Scan a QR code or paste its ticket UUID for this selected Club scope."
+      >
+        <form
+          className={styles.formGrid}
+          onSubmit={handleTicketValidation}
+        >
+          <div
+            className={`${styles.field} ${styles.fieldFull}`}
+          >
+            <label htmlFor="club-ticket-code">
+              Ticket code
+            </label>
+            <input
+              id="club-ticket-code"
+              autoComplete="off"
+              value={scannedCode}
+              onChange={(event) =>
+                setScannedCode(event.target.value)
+              }
+              placeholder="Paste UUID or LOS-TICKET:UUID"
+            />
+          </div>
+
+          <div
+            className={`${styles.field} ${styles.fieldFull}`}
+          >
+            <label htmlFor="club-ticket-match">
+              Match
+            </label>
+            <select
+              id="club-ticket-match"
+              value={validationMatchId}
+              onChange={(event) =>
+                setValidationMatchId(event.target.value)
+              }
+            >
+              <option value="">
+                Validate against ticket match
+              </option>
+              {(data?.ticket_events ?? []).map((match) => (
+                <option
+                  key={match.id}
+                  value={match.id}
+                >
+                  {match.label} ·{" "}
+                  {formatWorkspaceDate(match.match_date)}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div
+            className={`${styles.toolbar} ${styles.fieldFull}`}
+          >
+            <button
+              className={styles.primaryButton}
+              type="submit"
+              disabled={isValidatingTicket}
+            >
+              <ScanLine size={18} />
+              {isValidatingTicket
+                ? "Validating…"
+                : "Validate ticket"}
+            </button>
+          </div>
+        </form>
+
+        {validationError ? (
+          <div
+            className={`${styles.validationCard} ${styles.validationFailure}`}
+          >
+            <strong>Validation failed</strong>
+            <span>{validationError}</span>
+          </div>
+        ) : null}
+
+        {validationResult ? (
+          <div
+            className={`${styles.validationCard} ${
+              validationResult.result === "VALID"
+                ? styles.validationSuccess
+                : styles.validationFailure
+            }`}
+          >
+            <WorkspaceStatus
+              value={validationResult.result}
+            />
+            <strong>
+              {validationResult.result_display ??
+                validationResult.result}
+            </strong>
+            <span>{validationResult.message}</span>
+          </div>
+        ) : null}
+      </WorkspacePanel>
+    );
+  }
+
+  function renderTicketEntryLogs() {
+    const logs = data?.ticketing_logs ?? [];
+
+    return (
+      <WorkspacePanel
+        eyebrow="Attendance audit"
+        title="Recent entry logs"
+        description="Latest ticket validation attempts for the selected Club scope."
+      >
+        {logs.length === 0 ? (
+          <WorkspaceEmpty
+            title="No entry logs"
+            description="Validation attempts will appear after tickets are scanned."
+          />
+        ) : (
+          <div className={styles.tableShell}>
+            <table>
+              <thead>
+                <tr>
+                  <th>Match</th>
+                  <th>Officer</th>
+                  <th>Result</th>
+                  <th>Message</th>
+                  <th>Time</th>
+                </tr>
+              </thead>
+              <tbody>
+                {logs.map((log) => (
+                  <tr key={log.id}>
+                    <td>{log.match}</td>
+                    <td>{log.scanned_by}</td>
+                    <td>
+                      <WorkspaceStatus
+                        value={log.result}
+                      />
+                    </td>
+                    <td>{log.message || "—"}</td>
+                    <td>
+                      {formatWorkspaceDate(
+                        log.created_at,
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </WorkspacePanel>
+    );
+  }
+
   function renderTicketingOverview() {
     // Landing tab for "Tickets" itself — mirrors renderMembershipOverview().
     return (
@@ -2676,30 +3359,35 @@ export default function ClubAdminDashboard() {
         title: "Club Profile",
         description: "Edit public club details, contact information, and description.",
         icon: Building2,
+        permissions: ["club.profile.edit"],
       },
       {
         key: "profileBrandingBrand" as const,
         title: "Branding Editor",
         description: "Manage logo uploads, brand colours, and kit previews.",
         icon: Palette,
+        permissions: ["club.profile.edit"],
       },
       {
         key: "profileBrandingVenues" as const,
         title: "Venues",
         description: "Maintain home venues, locations, capacity, and status.",
         icon: MapPin,
+        permissions: [],
       },
       {
         key: "profileBrandingMedia" as const,
         title: "Media Assets",
         description: "Organize club images, documents, videos, and downloads.",
         icon: ImageIcon,
+        permissions: ["club.profile.edit"],
       },
       {
         key: "profileBrandingPreview" as const,
         title: "Public Page Preview",
         description: "Preview how fans will see the club page before publishing.",
         icon: Eye,
+        permissions: ["club.profile.view"],
       },
     ];
 
@@ -2710,7 +3398,15 @@ export default function ClubAdminDashboard() {
         description="Manage your club's public identity and page assets."
       >
         <div className="branding-grid">
-          {profileSections.map((section) => {
+          {profileSections
+            .filter((section) =>
+              section.permissions.some((permission) =>
+                activeWorkspace?.permissions.includes(
+                  permission,
+                ),
+              ),
+            )
+            .map((section) => {
             const Icon = section.icon;
 
             return (
@@ -2732,7 +3428,7 @@ export default function ClubAdminDashboard() {
                 </p>
               </button>
             );
-          })}
+            })}
         </div>
       </WorkspacePanel>
     );
@@ -2740,7 +3436,14 @@ export default function ClubAdminDashboard() {
 
   let content;
 
-  if (isLoading && !data) {
+  if (!defaultWorkspaceTab) {
+    content = (
+      <WorkspaceEmpty
+        title="No Club modules are available"
+        description="The selected Club entitlement does not grant access to a maintained workspace module."
+      />
+    );
+  } else if (isLoading && !data) {
     content = (
       <WorkspaceLoading label="Loading club operations…" />
     );
@@ -2784,6 +3487,10 @@ export default function ClubAdminDashboard() {
     content = renderTicketingPublish();
   } else if (activeTab === "ticketingPerformance") {
     content = renderTicketingPerformance();
+  } else if (activeTab === "ticketingScanner") {
+    content = renderTicketScanner();
+  } else if (activeTab === "ticketingEntryLogs") {
+    content = renderTicketEntryLogs();
   } else if (activeTab === "facilities") {
     content = renderPlaceholder(
       "Facilities",
@@ -2821,9 +3528,12 @@ export default function ClubAdminDashboard() {
       "Communications",
       "Messages and alerts for this club.",
     );
-} else if (activeTab === "clubUsers") {
+  } else if (activeTab === "clubUsers") {
     content = data ? (
-      <UserManagement clubId={data.club.id} />
+      <UserManagement
+        clubId={data.club.id}
+        permissions={activeWorkspace?.permissions ?? []}
+      />
     ) : (
       <WorkspaceLoading label="Loading club users…" />
     );
@@ -2834,6 +3544,51 @@ export default function ClubAdminDashboard() {
     );
   } else {
     content = renderOverview();
+  }
+
+  if (!activeWorkspace) {
+    const requiresSelection =
+      clubWorkspaceOptions.length > 1 &&
+      !selectedEntitlementId;
+
+    return (
+      <main className={styles.page}>
+        <section className={styles.stateCard}>
+          <strong>
+            {requiresSelection
+              ? "Choose a Club workspace"
+              : "Club workspace access is unavailable"}
+          </strong>
+          <span>
+            {requiresSelection
+              ? "Select the exact Club entitlement you want to use. Permissions remain isolated between Clubs."
+              : "The selected Club entitlement is missing or invalid. No Club workspace has been opened."}
+          </span>
+
+          {requiresSelection ? (
+            <div className={styles.panelActions}>
+              {clubWorkspaceOptions.map((option) => (
+                <button
+                  type="button"
+                  className={styles.primaryButton}
+                  key={option.entitlement_id}
+                  onClick={() =>
+                    handleWorkspaceSelection(
+                      option.entitlement_id,
+                    )
+                  }
+                >
+                  Club {option.scope_id} ·{" "}
+                  {formatWorkspaceRole(
+                    option.workspace_role,
+                  )}
+                </button>
+              ))}
+            </div>
+          ) : null}
+        </section>
+      </main>
+    );
   }
 
   return (
@@ -2850,20 +3605,56 @@ export default function ClubAdminDashboard() {
       navItems={navItems}
       activeTab={activeTab}
       onTabChange={handleTabChange}
+      activeClubWorkspace={activeWorkspace}
       publicPath={
-        data ? `/clubs/${data.club.slug}` : "/clubs"
+        data?.club.slug
+          ? `/clubs/${data.club.slug}`
+          : undefined
       }
-      publicLabel="View club page"
+      publicLabel={
+        data?.club.slug ? "View club page" : undefined
+      }
       headerActions={
-        <button
-          type="button"
-          className={styles.publicLink}
-          disabled={isLoading}
-          onClick={() => void loadWorkspace()}
-        >
-          <RefreshCw size={16} />
-          Refresh
-        </button>
+        <>
+          {clubWorkspaceOptions.length > 1 ? (
+            <label>
+              <span className="sr-only">
+                Club workspace
+              </span>
+              <select
+                aria-label="Club workspace"
+                value={activeWorkspace.entitlement_id}
+                onChange={(event) =>
+                  handleWorkspaceSelection(
+                    event.target.value,
+                  )
+                }
+              >
+                {clubWorkspaceOptions.map((option) => (
+                  <option
+                    key={option.entitlement_id}
+                    value={option.entitlement_id}
+                  >
+                    Club {option.scope_id} ·{" "}
+                    {formatWorkspaceRole(
+                      option.workspace_role,
+                    )}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : null}
+
+          <button
+            type="button"
+            className={styles.publicLink}
+            disabled={isLoading || !defaultWorkspaceTab}
+            onClick={() => void loadWorkspace()}
+          >
+            <RefreshCw size={16} />
+            Refresh
+          </button>
+        </>
       }
     >
       {error && data ? (

@@ -9,7 +9,7 @@ import {
   UserCheck,
   X,
 } from "lucide-react";
-import { type FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { type FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getPublicFixtures } from "../../services/publicDashboardService";
 import {
   getUnionAdminManagementCompetitions,
@@ -103,6 +103,10 @@ export default function OfficialAppointmentsPanel({
   workspaceSlug,
   workspaceName,
 }: Props) {
+  const workspaceGenerationRef = useRef(0);
+  const requestGenerationRef = useRef(0);
+  const workspaceSlugRef = useRef(workspaceSlug);
+  workspaceSlugRef.current = workspaceSlug;
   const [appointments, setAppointments] = useState<OfficialAppointment[]>([]);
   const [fixtures, setFixtures] = useState<AppointmentFixture[]>([]);
   const [officials, setOfficials] = useState<AppointmentOfficial[]>([]);
@@ -146,23 +150,33 @@ export default function OfficialAppointmentsPanel({
 
   const loadUnionData = useCallback(async () => {
     if (!workspaceSlug) return;
+    const requestedWorkspace = workspaceSlug;
+    const workspaceGeneration = workspaceGenerationRef.current;
+    const requestGeneration = ++requestGenerationRef.current;
+    const isCurrent = () => workspaceSlugRef.current === requestedWorkspace && workspaceGenerationRef.current === workspaceGeneration && requestGenerationRef.current === requestGeneration;
     setIsLoading(true);
     setError("");
     try {
       const [appointmentRows, competitionRows, officialDirectory] = await Promise.all([
-        getUnionAdminAppointments(workspaceSlug),
-        getUnionAdminManagementCompetitions(workspaceSlug),
-        getUnionAdminMatchOfficials(workspaceSlug),
+        getUnionAdminAppointments(requestedWorkspace),
+        getUnionAdminManagementCompetitions(requestedWorkspace),
+        getUnionAdminMatchOfficials(requestedWorkspace),
       ]);
+      if (!isCurrent()) return;
       setAppointments(appointmentRows);
       setCompetitions(competitionRows);
       setOfficials(officialDirectory.results);
       setRoleOptions(officialDirectory.role_options);
-      setSelectedCompetitionId((current) => current || String(competitionRows[0]?.id ?? ""));
+      setSelectedCompetitionId((current) =>
+        competitionRows.some((competition) => String(competition.id) === current)
+          ? current
+          : String(competitionRows[0]?.id ?? ""),
+      );
     } catch (loadError) {
+      if (!isCurrent()) return;
       setError(errorMessage(loadError, "Union appointment operations could not be loaded."));
     } finally {
-      setIsLoading(false);
+      if (isCurrent()) setIsLoading(false);
     }
   }, [workspaceSlug]);
 
@@ -208,13 +222,18 @@ export default function OfficialAppointmentsPanel({
   }, []);
 
   useEffect(() => {
+    workspaceGenerationRef.current += 1;
+    setAppointments([]); setFixtures([]); setOfficials([]); setRoleOptions([]); setCompetitions([]);
+    setSelectedCompetitionId(""); setForm(EMPTY_FORM); setNotice(""); setError("");
+    setIsSaving(false); setBusyId(null);
     setNotice("");
     setForm(EMPTY_FORM);
     setDecliningId(null);
     if (mode === "official") void loadOfficialAppointments();
     if (mode === "union") void loadUnionData();
     if (mode === "league") void loadLeagueBootstrap();
-  }, [mode, loadOfficialAppointments, loadUnionData, loadLeagueBootstrap]);
+    return () => { workspaceGenerationRef.current += 1; };
+  }, [mode, workspaceSlug, loadOfficialAppointments, loadUnionData, loadLeagueBootstrap]);
 
   useEffect(() => {
     if (mode === "league" && selectedScope) {
@@ -223,22 +242,24 @@ export default function OfficialAppointmentsPanel({
   }, [mode, selectedScope, loadLeagueScopeData]);
 
   useEffect(() => {
-    if (mode !== "union" || !selectedCompetitionId) {
+    if (mode !== "union" || !selectedCompetitionId || !competitions.some((competition) => String(competition.id) === selectedCompetitionId)) {
       if (mode === "union") setFixtures([]);
       return;
     }
+    const workspaceGeneration = workspaceGenerationRef.current;
+    const fixtureGeneration = ++requestGenerationRef.current;
     let active = true;
     getPublicFixtures({ competitionId: Number(selectedCompetitionId) })
       .then((rows) => {
-        if (active) setFixtures(rows);
+        if (active && workspaceGenerationRef.current === workspaceGeneration && requestGenerationRef.current === fixtureGeneration) setFixtures(rows);
       })
       .catch(() => {
-        if (active) setFixtures([]);
+        if (active && workspaceGenerationRef.current === workspaceGeneration && requestGenerationRef.current === fixtureGeneration) setFixtures([]);
       });
     return () => {
       active = false;
     };
-  }, [mode, selectedCompetitionId]);
+  }, [mode, selectedCompetitionId, competitions]);
 
   useEffect(() => {
     if (!form.roleType && roleOptions[0]?.value) {

@@ -1,6 +1,7 @@
 // apiClent.ts
 import axios from 'axios';
-import { getToken, clearAuthStorage } from '../utils/tokenManager.js';
+import { useAuthStore } from '../store/authStore.js';
+import { getToken } from '../utils/tokenManager.js';
 
 const rawApiBaseUrl =
   import.meta.env.VITE_API_BASE_URL ||
@@ -59,7 +60,7 @@ axiosInstance.interceptors.response.use(
     );
 
     if (status === 401 && !isPublicAuthRequest) {
-      clearAuthStorage();
+      useAuthStore.getState().clearAuth();
     }
 
     return Promise.reject(error);

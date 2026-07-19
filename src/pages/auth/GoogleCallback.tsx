@@ -3,9 +3,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore.js';
 import { GlassCard, PageShell } from '../../components/site/LeagueUI.js';
 import {
-  getPostAuthRedirect,
   VERIFY_EMAIL_ROUTE,
 } from '../../utils/authFlow.js';
+import {
+  ACCESS_UNAVAILABLE_ROUTE,
+  getDefaultDashboardRoute,
+} from '../../utils/dashboardAccess.js';
 import '../../styles/pages/auth/login.css';
 
 function parseCallbackHash() {
@@ -90,6 +93,7 @@ export default function GoogleCallback() {
     }
 
     if (!access || !refresh) {
+      setMessage('Google sign-in could not be completed. Please try again.');
       return;
     }
 
@@ -100,7 +104,12 @@ export default function GoogleCallback() {
       requiresEmailVerification,
     });
 
-    navigate(getPostAuthRedirect({ isFirstTimeUser: result.isFirstTimeUser }), {
+    const destination = result.isFirstTimeUser
+      ? '/personalize'
+      : getDefaultDashboardRoute(user?.dashboard_access) ??
+        ACCESS_UNAVAILABLE_ROUTE;
+
+    navigate(destination, {
       replace: true,
     });
   }, [clearAuth, navigate, setAuth]);

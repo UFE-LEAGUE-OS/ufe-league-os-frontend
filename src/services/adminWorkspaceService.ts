@@ -1,4 +1,5 @@
 import apiClient from "./apiClient";
+import type { ActiveClubWorkspace } from "../utils/clubWorkspace";
 
 export interface AdminWorkspaceMatch {
   id: number;
@@ -107,6 +108,9 @@ export interface ClubAdminWorkspaceData {
   }>;
   recent_activity?: ClubActivityItem[];
   financial_overview?: ClubFinancialPoint[];
+  ticketing_scope?: TicketingScope;
+  ticketing_logs?: TicketingLog[];
+  ticketing_pending_issues?: number;
 }
 
 export interface TreasurerTransaction {
@@ -512,12 +516,285 @@ export async function getLeagueAdminWorkspace(): Promise<LeagueAdminWorkspaceDat
   return response.data;
 }
 
-export async function getClubAdminWorkspace(): Promise<ClubAdminWorkspaceData> {
-  const response = await apiClient.get<ClubAdminWorkspaceData>(
-    "/dashboards/club-admin/workspace/",
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+function normalizeClubScopeId(scopeId: string | number) {
+  if (
+    typeof scopeId === "number" &&
+    Number.isFinite(scopeId)
+  ) {
+    return String(scopeId);
+  }
+
+  if (typeof scopeId === "string" && scopeId.trim()) {
+    return scopeId.trim();
+  }
+
+  throw new Error("A valid selected Club workspace scope is required.");
+}
+
+function assertSelectedClubWorkspace(
+  value: unknown,
+  selectedScopeId: string,
+): asserts value is ClubAdminWorkspaceData {
+  if (
+    !isRecord(value) ||
+    value.scope_type !== "CLUB" ||
+    !isRecord(value.club) ||
+    !isFiniteNumber(value.club.id) ||
+    String(value.club.id) !== selectedScopeId
+  ) {
+    throw new Error(
+      "The Club workspace response did not match the selected Club workspace.",
+    );
+  }
+}
+
+export async function getClubAdminWorkspace(
+  scopeId?: string | number,
+): Promise<ClubAdminWorkspaceData> {
+  // Compatibility bridge for legacy page modules while they migrate to the
+  // selected-entitlement loader. Never fall back to a user-linked Club: an
+  // omitted scope must fail before an API request is made.
+  if (scopeId === undefined) {
+    throw new Error(
+      "A valid selected Club workspace scope is required.",
+    );
+  }
+
+  const selectedScopeId = normalizeClubScopeId(scopeId);
+  // The current backend still resolves this endpoint from the user-linked
+  // Club. Send the selected scope for the maintained contract, then reject
+  // the response below if the backend did not actually honor that selection.
+  const response = await apiClient.get<unknown>(
+    `/dashboards/club-admin/workspace/?club_id=${encodeURIComponent(
+      selectedScopeId,
+    )}`,
+  );
+
+  assertSelectedClubWorkspace(
+    response.data,
+    selectedScopeId,
   );
 
   return response.data;
+}
+
+function isFiniteNumber(value: unknown): value is number {
+  return typeof value === "number" && Number.isFinite(value);
+}
+
+function isNullableFiniteNumber(
+  value: unknown,
+): value is number | null {
+  return value === null || isFiniteNumber(value);
+}
+
+function isTicketingScope(value: unknown): value is TicketingScope {
+  if (!isRecord(value)) return false;
+
+  return (
+    typeof value.key === "string" &&
+    (value.scope_type === "CLUB" ||
+      value.scope_type === "UNION") &&
+    isFiniteNumber(value.id) &&
+    typeof value.name === "string" &&
+    typeof value.short_name === "string" &&
+    typeof value.sport === "string"
+  );
+}
+
+function isTicketingEvent(value: unknown): value is TicketingEvent {
+  if (!isRecord(value)) return false;
+
+  return (
+    isFiniteNumber(value.id) &&
+    typeof value.label === "string" &&
+    isFiniteNumber(value.competition_id) &&
+    typeof value.competition === "string" &&
+    isFiniteNumber(value.league_id) &&
+    typeof value.league === "string" &&
+    isFiniteNumber(value.home_club_id) &&
+    typeof value.home_club === "string" &&
+    isFiniteNumber(value.away_club_id) &&
+    typeof value.away_club === "string" &&
+    typeof value.match_date === "string" &&
+    typeof value.venue === "string" &&
+    typeof value.round === "string" &&
+    typeof value.status === "string" &&
+    isNullableFiniteNumber(value.home_score) &&
+    isNullableFiniteNumber(value.away_score) &&
+    isFiniteNumber(value.ticket_types) &&
+    isFiniteNumber(value.tickets_sold) &&
+    isFiniteNumber(value.checked_in)
+  );
+}
+
+function isTicketingLog(value: unknown): value is TicketingLog {
+  if (!isRecord(value)) return false;
+
+  return (
+    isFiniteNumber(value.id) &&
+    (value.match_id === null ||
+      isFiniteNumber(value.match_id)) &&
+    typeof value.match === "string" &&
+    typeof value.scanned_by === "string" &&
+    typeof value.result === "string" &&
+    typeof value.result_display === "string" &&
+    typeof value.message === "string" &&
+    typeof value.created_at === "string"
+  );
+}
+
+function assertSelectedClubTicketingWorkspace(
+  value: unknown,
+  selectedScopeId: string,
+): asserts value is TicketingOfficerWorkspaceData {
+  if (
+    !isRecord(value) ||
+    !Array.isArray(value.available_scopes) ||
+    !value.available_scopes.every(isTicketingScope) ||
+    !isTicketingScope(value.selected_scope) ||
+    value.selected_scope.scope_type !== "CLUB" ||
+    String(value.selected_scope.id) !== selectedScopeId ||
+    value.selected_scope.key !== `club:${selectedScopeId}` ||
+    !value.available_scopes.some(
+      (scope) =>
+        scope.scope_type === "CLUB" &&
+        String(scope.id) === selectedScopeId &&
+        scope.key === `club:${selectedScopeId}`,
+    ) ||
+    !isRecord(value.summary) ||
+    !isFiniteNumber(value.summary.active_events) ||
+    !isFiniteNumber(value.summary.tickets_sold) ||
+    !isFiniteNumber(value.summary.checked_in) ||
+    !isFiniteNumber(value.summary.pending_issues) ||
+    !Array.isArray(value.events) ||
+    !value.events.every(isTicketingEvent) ||
+    !Array.isArray(value.recent_logs) ||
+    !value.recent_logs.every(isTicketingLog)
+  ) {
+    throw new Error(
+      "The ticketing response did not match the selected Club workspace.",
+    );
+  }
+}
+
+function mapClubTicketingWorkspace(
+  data: TicketingOfficerWorkspaceData,
+): ClubAdminWorkspaceData {
+  const scope = data.selected_scope;
+  const ticketTypes = data.events.reduce(
+    (total, event) => total + event.ticket_types,
+    0,
+  );
+
+  return {
+    scope_type: "CLUB",
+    club: {
+      id: scope.id,
+      name: scope.name,
+      short_name: scope.short_name,
+      slug: "",
+      sport: scope.sport,
+      sport_display: scope.sport,
+      logo_url: null,
+      primary_color: "",
+      secondary_color: "",
+    },
+    summary: {
+      competitions: new Set(
+        data.events.map((event) => event.competition_id),
+      ).size,
+      upcoming_fixtures: data.summary.active_events,
+      completed_matches: 0,
+      club_users: 0,
+      ticket_types: ticketTypes,
+      tickets_sold: data.summary.tickets_sold,
+      checked_in: data.summary.checked_in,
+    },
+    league_memberships: [],
+    upcoming_fixtures: [...data.events],
+    recent_results: [],
+    ticket_events: [...data.events],
+    staff: [],
+    ticketing_scope: { ...scope },
+    ticketing_logs: [...data.recent_logs],
+    ticketing_pending_issues: data.summary.pending_issues,
+  };
+}
+
+export async function getSelectedClubWorkspace(
+  workspace: ActiveClubWorkspace,
+): Promise<ClubAdminWorkspaceData> {
+  const selectedScopeId = normalizeClubScopeId(
+    workspace.scope_id,
+  );
+
+  if (
+    workspace.scope_type !== "CLUB" ||
+    !workspace.entitlement_id ||
+    !Array.isArray(workspace.permissions) ||
+    !workspace.permissions.every(
+      (permission) => typeof permission === "string",
+    )
+  ) {
+    throw new Error(
+      "The selected Club workspace entitlement is invalid.",
+    );
+  }
+
+  if (workspace.dashboard === "CLUB_ADMIN") {
+    const normalClubRoles = new Set([
+      "CLUB_ADMIN",
+      "CHAIRMAN",
+      "TREASURER",
+      "TEAM_MANAGER",
+      "CUSTOM",
+      "CUSTOM_ADMIN",
+    ]);
+
+    if (
+      workspace.route !== "/dashboard/club-admin" ||
+      !normalClubRoles.has(workspace.workspace_role) ||
+      !workspace.permissions.includes(
+        "dashboard.club_admin",
+      )
+    ) {
+      throw new Error(
+        "The selected Club workspace entitlement is invalid.",
+      );
+    }
+
+    return getClubAdminWorkspace(selectedScopeId);
+  }
+
+  if (
+    workspace.dashboard !== "TICKETING_OFFICER" ||
+    workspace.route !== "/dashboard/ticketing-officer" ||
+    workspace.workspace_role !== "TICKETING_OFFICER" ||
+    !workspace.permissions.includes(
+      "dashboard.ticketing_officer",
+    )
+  ) {
+    throw new Error(
+      "The selected Club workspace entitlement is invalid.",
+    );
+  }
+
+  const ticketingWorkspace =
+    await getTicketingOfficerWorkspace(
+      `club:${selectedScopeId}`,
+    );
+
+  assertSelectedClubTicketingWorkspace(
+    ticketingWorkspace,
+    selectedScopeId,
+  );
+
+  return mapClubTicketingWorkspace(ticketingWorkspace);
 }
 
 export async function getCustomAdminWorkspace(): Promise<CustomAdminWorkspaceData> {
