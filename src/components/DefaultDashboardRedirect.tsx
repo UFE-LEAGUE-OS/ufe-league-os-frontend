@@ -7,6 +7,7 @@ import {
   ACCESS_UNAVAILABLE_ROUTE,
   getDefaultDashboardRoute,
 } from '../utils/dashboardAccess.js';
+import RouteLoadingFallback from './RouteLoadingFallback.js';
 
 function comparablePath(value: string) {
   const pathname = value.split(/[?#]/, 1)[0] || '/';
@@ -27,13 +28,7 @@ export default function DefaultDashboardRedirect() {
 
   if (accessStatus === 'loading') {
     return (
-      <div
-        aria-live="polite"
-        className="dashboard-access-loading"
-        role="status"
-      >
-        Restoring your dashboard access…
-      </div>
+      <RouteLoadingFallback message="Restoring your dashboard access…" />
     );
   }
 

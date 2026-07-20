@@ -54,10 +54,8 @@ import {
   type ClubBudgetCategoryAllocation,
   type TreasurerWorkspaceData,
 } from "../../services/adminWorkspaceService";
-import {
-  BudgetStatusBadge,
-  formatCurrency,
-} from "../../utils/budgetStatusMeta";
+import { BudgetStatusBadge } from "../../components/BudgetStatusBadge";
+import { formatCurrency } from "../../utils/budgetStatusMeta";
 
 type TabKey =
   | "overview"

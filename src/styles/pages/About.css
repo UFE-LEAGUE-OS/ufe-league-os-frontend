@@ -105,7 +105,7 @@
 
 .about-main-hero {
   flex: 1;
-  background-image: url("../assets/about-hero.jpg");
+  background-image: url("../../assets/stadium-bg.svg");
   background-size: cover;
   background-position: center;
 }

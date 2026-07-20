@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import "../styles/pages/SuperAdminDashboard.css";
-import "../components/SuperAdminSideBar.css";
+import "../../styles/pages/SuperAdminDashboard.css";
+import "../../components/SuperAdminSideBar.css";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
-import "../styles/pages/SuperAdminDashboard.css";
-import "../components/SuperAdminSideBar.css";
-import "../pages/admin/admin.css";
+import "../../styles/pages/SuperAdminDashboard.css";
+import "../../components/SuperAdminSideBar.css";
+import "../admin/admin.css";
 import {
     Users,
     ShieldCheck,
@@ -23,10 +23,10 @@ import {
     ArrowRight,
 } from "lucide-react";
 
-import Footer from "../components/Footer";
-import superImage from "../assets/cta-banner.png";
-import Sidebar from "../components/SuperAdminSideBar";
-import SuperAdminTopBar from "../components/SuperAdminTopBar";
+import Footer from "../../components/Footer";
+import superImage from "../../assets/cta-banner.png";
+import Sidebar from "../../components/SuperAdminSideBar";
+import SuperAdminTopBar from "../../components/SuperAdminTopBar";
 
 
 

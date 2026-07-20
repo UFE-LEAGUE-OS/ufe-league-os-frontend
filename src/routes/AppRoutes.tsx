@@ -5,7 +5,7 @@ import {
     Routes,
 } from 'react-router-dom';
 
-import { type ReactNode } from 'react';
+import { lazy, Suspense, type ReactNode } from 'react';
 
 import {
     Landing,
@@ -22,14 +22,9 @@ import {
     Support,
 } from '../pages';
 
+// Public / first-paint pages — stay eagerly bundled
 import Personalize from '../pages/auth/Personalize';
 import NewsSection from '../pages/NewsPage';
-import ProfileInterests from '../pages/fan/ProfileInterests';
-import ProfileClubs from '../pages/fan/ProfileClubs';
-import ProfilePayments from '../pages/fan/ProfilePayments';
-import ProfileNotifications from '../pages/fan/ProfileNotifications';
-import ProfilePrivacy from '../pages/fan/ProfilePrivacy';
-import ProfileSupport from '../pages/fan/ProfileSupport';
 import AboutUs from '../pages/About';
 import Tickets from '../pages/landing/TicketsLandingPage';
 import Unions from '../pages/landing/Unions';
@@ -62,94 +57,16 @@ import MembershipFailedPage from '../pages/memberships/MembershipFailedPage';
 import MembershipPaymentProcessingPage from '../pages/memberships/MembershipPaymentProcessingPage';
 import ExploreMembershipsPage from '../pages/memberships/ExploreMembershipsPage';
 import MyMembershipsPage from '../pages/memberships/MyMembershipsPage';
-import MyTicketsPage from '../pages/fan/MyTicketsPage';
-import TicketDetailPage from '../pages/fan/TicketDetailPage';
 import ProtectedRoute from './ProtectedRoute';
 import DashboardEntitlementRoute from './DashboardEntitlementRoute';
 import Payments from '../pages/PaymentPage';
-import FanPollsPage from '../pages/fan/FanPollsPage';
 import TicketCheckoutPage from '../pages/tickets/TicketCheckoutPage';
 import TicketPaymentProcessingPage from '../pages/tickets/TicketPaymentProcessingPage';
 import TicketPaymentSuccessPage from '../pages/tickets/TicketPaymentSuccessPage';
 import TicketPaymentFailedPage from '../pages/tickets/TicketPaymentFailedPage';
 import MatchCentrePage from '../pages/MatchCentrePage';
-import MVPVotingPage from '../pages/fan/MVPVotingPage';
-import SuperAdminDashboard from '../pages/SuperAdminDashboard';
-import SuperVariants from '../pages/SuperVariantsPage';
-import RulesAndStandards from '../pages/SuperAdminRules';
 import CompetitionConfigurator from '../pages/CompetitionConfigurator';
 import PublishStandards from '../pages/PublishStandards';
-import FantasyModuleConfig from '../pages/super-admin/fantasy/FantasyModuleConfig';
-import ScoringRules from '../pages/super-admin/fantasy/ScoringRules';
-import TransferRules from '../pages/super-admin/fantasy/TransferRules';
-import SquadLimits from '../pages/super-admin/fantasy/SquadLimits';
-import CompetitionMappings from '../pages/super-admin/fantasy/CompetitionMappings';
-import SeasonGameweekSettings from '../pages/super-admin/fantasy/SeasonGameweekSettings';
-import PriceStructureGovernance from '../pages/super-admin/fantasy/PriceStructureGovernance';
-import EligibilityRosterRules from '../pages/super-admin/fantasy/EligibilityRosterRules';
-import PublishChangesWorkflow from '../pages/super-admin/fantasy/PublishChangesWorkflow';
-import SuperAdminHome from '../pages/super-admin/SuperAdminHome';
-import UserManagement from '../pages/admin/UserManagement';
-import RoleTemplates from '../pages/admin/RoleTemplates';
-import PermissionBundles from '../pages/admin/PermissionBundles';
-import CrossRoleAccess from '../pages/admin/CrossRoleAccess';
-import RoleAssignment from '../pages/admin/RoleAssignment';
-import AuditLog from '../pages/admin/AuditLog';
-import SessionManagement from '../pages/admin/SessionManagement';
-import ImpersonateUser from '../pages/admin/ImpersonateUser';
-import PaymentsAuditPage from '../pages/super-admin/finance-security/payments-audit';
-import TransactionTrailPage from '../pages/super-admin/finance-security/transaction-trail';
-import ApprovalsQueuePage from '../pages/super-admin/finance-security/approvals-queue';
-import ChargebacksRefundsPage from '../pages/super-admin/finance-security/chargebacks-refunds';
-import DataAccessLogPage from '../pages/super-admin/finance-security/data-access-log';
-import SecurityEventsPage from '../pages/super-admin/finance-security/security-events';
-import SuperAdminProfilePage from '../pages/super-admin/SuperAdminProfilePage';
-import AnnouncementsBannersPage from '../pages/super-admin/content-platform-operations/AnnouncementsBannersPage';
-import AnnouncementDetailPage from '../pages/super-admin/content-platform-operations/AnnouncementDetailPage';
-import NotificationTemplatesPage from '../pages/super-admin/content-platform-operations/NotificationTemplatesPage';
-import PublicContentEditor from '../pages/super-admin/content-platform-operations/PublicContentEditor';
-import Broadcasts from '../pages/super-admin/content-platform-operations/Broadcasts';
-import SupportSettings from '../pages/super-admin/content-platform-operations/SupportSettings';
-import HelpCenter from '../pages/super-admin/content-platform-operations/HelpCenter';
-import FeatureFlags from '../pages/super-admin/content-platform-operations/FeatureFlags';
-import SystemMessages from '../pages/super-admin/content-platform-operations/SystemMessages';
-import BulkOperations from '../pages/super-admin/content-platform-operations/BulkOperations';
-
-// Sponsor pages
-import SponsorshipHub from '../pages/sponsor/SponsorshipHub';
-import IndividualSponsorSetup from '../pages/sponsor/IndividualSponsorSetup';
-import IndividualSponsorPreferences from '../pages/sponsor/IndividualSponsorPreferences';
-import IndividualSponsorReview from '../pages/sponsor/IndividualSponsorReview';
-import IndividualSponsorComplete from '../pages/sponsor/IndividualSponsorComplete';
-import CorporateSponsorSetup from '../pages/sponsor/CorporateSponsorSetup';
-import CorporateVerificationUpload from '../pages/sponsor/CorporateVerificationUpload';
-import CorporateContactPerson from '../pages/sponsor/CorporateContactPerson';
-import CorporateSponsorDashboard from '../pages/sponsor/CorporateSponsorDashboard';
-import SponsorPayments from '../pages/sponsor/SponsorPayments';
-import SponsorPaymentProcessing from '../pages/sponsor/SponsorPaymentProcessing';
-import CorporateTeamManagement from '../pages/sponsor/CorporateTeamManagement';
-import SponsorPermissions from '../pages/sponsor/SponsorPermissions';
-import SponsorPackages from '../pages/sponsor/SponsorPackages';
-import SponsorPackageDetail from '../pages/sponsor/SponsorPackageDetail';
-import CampaignCreation from '../pages/sponsor/CampaignCreation';
-import CampaignAnalytics from '../pages/sponsor/CampaignAnalytics';
-import CampaignPlacementPreview from '../pages/sponsor/CampaignPlacementPreview';
-import CorporateSponsorReview from '../pages/sponsor/CorporateSponsorReview';
-import CorporateSponsorComplete from '../pages/sponsor/CorporateSponsorComplete';
-import SponsorCampaigns from '../pages/sponsor/SponsorCampaigns';
-import SponsorSettings from '../pages/sponsor/SponsorSettings';
-import SponsorHelp from '../pages/sponsor/SponsorHelp';
-import CampaignTargeting from '../pages/sponsor/CampaignTargeting';
-import CampaignAssets from '../pages/sponsor/CampaignAssets';
-import CampaignPlacement from '../pages/sponsor/CampaignPlacement';
-import CampaignBudget from '../pages/sponsor/CampaignBudget';
-import CampaignReview from '../pages/sponsor/CampaignReview';
-import CampaignLaunch from '../pages/sponsor/CampaignLaunch';
-import SponsorProfile from '../pages/sponsor/SponsorProfile';
-
-import UnionAdminDashboard from '../pages/union-admin/UnionAdminDashboard';
-import LeagueAdminDashboard from '../pages/league-admin/LeagueAdminDashboard';
-import ClubAdminDashboard from '../pages/club-admin/ClubAdminDashboard';
 import AccessUnavailablePage from '../pages/account/AccessUnavailablePage';
 import type { DashboardIdentifier } from '../types/dashboardAccess';
 
@@ -158,26 +75,114 @@ import {
     ClubAdminSubRoleRedirect,
 } from '../routes/ClubAdminSubRoleRouting';
 import DefaultDashboardRedirect from '../components/DefaultDashboardRedirect';
+import RouteLoadingFallback from '../components/RouteLoadingFallback';
 
-//super admin sponsorship management
-import SponsorFramework from "../pages/super-admin/sponsorship-management/SponsorshipFramework";
-import CampaignVisibility from "../pages/super-admin/sponsorship-management/CampaignVisibility";
-import PlacementManager from "../pages/super-admin/sponsorship-management/PlacementManager";
-import BenefitSharing from "../pages/super-admin/sponsorship-management/BenefitSharing";
-import SponsorshipInventory from "../pages/super-admin/sponsorship-management/SponsorshipInvetory";
-import CampaignPerformance from "../pages/super-admin/sponsorship-management/CampaignPerformance";
-import ApprovalWorkflow from "../pages/super-admin/sponsorship-management/ApprovalWorkFlow";
-import SponsorAudits from "../pages/super-admin/sponsorship-management/SponsorsAudit";
-import SuperAdminSettings from "../pages/super-admin/superadmin-settings/SuperAdminSettings";
+// Fan dashboard pages — lazy-loaded (authenticated role area)
+const ProfileInterests = lazy(() => import('../pages/fan/ProfileInterests'));
+const ProfileClubs = lazy(() => import('../pages/fan/ProfileClubs'));
+const ProfilePayments = lazy(() => import('../pages/fan/ProfilePayments'));
+const ProfileNotifications = lazy(() => import('../pages/fan/ProfileNotifications'));
+const ProfilePrivacy = lazy(() => import('../pages/fan/ProfilePrivacy'));
+const ProfileSupport = lazy(() => import('../pages/fan/ProfileSupport'));
+const MyTicketsPage = lazy(() => import('../pages/fan/MyTicketsPage'));
+const TicketDetailPage = lazy(() => import('../pages/fan/TicketDetailPage'));
+const FanPollsPage = lazy(() => import('../pages/fan/FanPollsPage'));
+const MVPVotingPage = lazy(() => import('../pages/fan/MVPVotingPage'));
 
-//club management
-import TeamsManagement from "../pages/club-admin/club-management/TeamsManagement";
-import PlayerRegistration from "../pages/club-admin/club-management/PlayerRegistration";
-import StaffOfficials from "../pages/club-admin/club-management/StaffOfficials";
-import RosterUpdate from "../pages/club-admin/club-management/RoasterUpdate";
-import SquadSubmission from "../pages/club-admin/club-management/SquadSubmision";
+// Super Admin pages — lazy-loaded (role-gated dashboard area)
+const SuperAdminDashboard = lazy(() => import('../pages/super-admin/SuperAdminDashboard'));
+const SuperVariants = lazy(() => import('../pages/super-admin/SuperVariantsPage'));
+const RulesAndStandards = lazy(() => import('../pages/super-admin/SuperAdminRules'));
+const FantasyModuleConfig = lazy(() => import('../pages/super-admin/fantasy/FantasyModuleConfig'));
+const ScoringRules = lazy(() => import('../pages/super-admin/fantasy/ScoringRules'));
+const TransferRules = lazy(() => import('../pages/super-admin/fantasy/TransferRules'));
+const SquadLimits = lazy(() => import('../pages/super-admin/fantasy/SquadLimits'));
+const CompetitionMappings = lazy(() => import('../pages/super-admin/fantasy/CompetitionMappings'));
+const SeasonGameweekSettings = lazy(() => import('../pages/super-admin/fantasy/SeasonGameweekSettings'));
+const PriceStructureGovernance = lazy(() => import('../pages/super-admin/fantasy/PriceStructureGovernance'));
+const EligibilityRosterRules = lazy(() => import('../pages/super-admin/fantasy/EligibilityRosterRules'));
+const PublishChangesWorkflow = lazy(() => import('../pages/super-admin/fantasy/PublishChangesWorkflow'));
+const SuperAdminHome = lazy(() => import('../pages/super-admin/SuperAdminHome'));
+const PaymentsAuditPage = lazy(() => import('../pages/super-admin/finance-security/payments-audit'));
+const TransactionTrailPage = lazy(() => import('../pages/super-admin/finance-security/transaction-trail'));
+const ApprovalsQueuePage = lazy(() => import('../pages/super-admin/finance-security/approvals-queue'));
+const ChargebacksRefundsPage = lazy(() => import('../pages/super-admin/finance-security/chargebacks-refunds'));
+const DataAccessLogPage = lazy(() => import('../pages/super-admin/finance-security/data-access-log'));
+const SecurityEventsPage = lazy(() => import('../pages/super-admin/finance-security/security-events'));
+const SuperAdminProfilePage = lazy(() => import('../pages/super-admin/SuperAdminProfilePage'));
+const AnnouncementsBannersPage = lazy(() => import('../pages/super-admin/content-platform-operations/AnnouncementsBannersPage'));
+const AnnouncementDetailPage = lazy(() => import('../pages/super-admin/content-platform-operations/AnnouncementDetailPage'));
+const NotificationTemplatesPage = lazy(() => import('../pages/super-admin/content-platform-operations/NotificationTemplatesPage'));
+const PublicContentEditor = lazy(() => import('../pages/super-admin/content-platform-operations/PublicContentEditor'));
+const Broadcasts = lazy(() => import('../pages/super-admin/content-platform-operations/Broadcasts'));
+const SupportSettings = lazy(() => import('../pages/super-admin/content-platform-operations/SupportSettings'));
+const HelpCenter = lazy(() => import('../pages/super-admin/content-platform-operations/HelpCenter'));
+const FeatureFlags = lazy(() => import('../pages/super-admin/content-platform-operations/FeatureFlags'));
+const SystemMessages = lazy(() => import('../pages/super-admin/content-platform-operations/SystemMessages'));
+const BulkOperations = lazy(() => import('../pages/super-admin/content-platform-operations/BulkOperations'));
+const SponsorFramework = lazy(() => import('../pages/super-admin/sponsorship-management/SponsorshipFramework'));
+const CampaignVisibility = lazy(() => import('../pages/super-admin/sponsorship-management/CampaignVisibility'));
+const PlacementManager = lazy(() => import('../pages/super-admin/sponsorship-management/PlacementManager'));
+const BenefitSharing = lazy(() => import('../pages/super-admin/sponsorship-management/BenefitSharing'));
+const SponsorshipInventory = lazy(() => import('../pages/super-admin/sponsorship-management/SponsorshipInvetory'));
+const CampaignPerformance = lazy(() => import('../pages/super-admin/sponsorship-management/CampaignPerformance'));
+const ApprovalWorkflow = lazy(() => import('../pages/super-admin/sponsorship-management/ApprovalWorkFlow'));
+const SponsorAudits = lazy(() => import('../pages/super-admin/sponsorship-management/SponsorsAudit'));
+const SuperAdminSettings = lazy(() => import('../pages/super-admin/superadmin-settings/SuperAdminSettings'));
 
+// Platform admin (user/role management) pages — lazy-loaded
+const UserManagement = lazy(() => import('../pages/admin/PlatformUserManagement'));
+const RoleTemplates = lazy(() => import('../pages/admin/RoleTemplates'));
+const PermissionBundles = lazy(() => import('../pages/admin/PermissionBundles'));
+const CrossRoleAccess = lazy(() => import('../pages/admin/CrossRoleAccess'));
+const RoleAssignment = lazy(() => import('../pages/admin/RoleAssignment'));
+const AuditLog = lazy(() => import('../pages/admin/AuditLog'));
+const SessionManagement = lazy(() => import('../pages/admin/SessionManagement'));
+const ImpersonateUser = lazy(() => import('../pages/admin/ImpersonateUser'));
 
+// Sponsor pages — lazy-loaded (role-gated dashboard area)
+const SponsorshipHub = lazy(() => import('../pages/sponsor/SponsorshipHub'));
+const IndividualSponsorSetup = lazy(() => import('../pages/sponsor/IndividualSponsorSetup'));
+const IndividualSponsorPreferences = lazy(() => import('../pages/sponsor/IndividualSponsorPreferences'));
+const IndividualSponsorReview = lazy(() => import('../pages/sponsor/IndividualSponsorReview'));
+const IndividualSponsorComplete = lazy(() => import('../pages/sponsor/IndividualSponsorComplete'));
+const CorporateSponsorSetup = lazy(() => import('../pages/sponsor/CorporateSponsorSetup'));
+const CorporateVerificationUpload = lazy(() => import('../pages/sponsor/CorporateVerificationUpload'));
+const CorporateContactPerson = lazy(() => import('../pages/sponsor/CorporateContactPerson'));
+const CorporateSponsorDashboard = lazy(() => import('../pages/sponsor/CorporateSponsorDashboard'));
+const SponsorPayments = lazy(() => import('../pages/sponsor/SponsorPayments'));
+const SponsorPaymentProcessing = lazy(() => import('../pages/sponsor/SponsorPaymentProcessing'));
+const CorporateTeamManagement = lazy(() => import('../pages/sponsor/CorporateTeamManagement'));
+const SponsorPermissions = lazy(() => import('../pages/sponsor/SponsorPermissions'));
+const SponsorPackages = lazy(() => import('../pages/sponsor/SponsorPackages'));
+const SponsorPackageDetail = lazy(() => import('../pages/sponsor/SponsorPackageDetail'));
+const CampaignCreation = lazy(() => import('../pages/sponsor/CampaignCreation'));
+const CampaignAnalytics = lazy(() => import('../pages/sponsor/CampaignAnalytics'));
+const CampaignPlacementPreview = lazy(() => import('../pages/sponsor/CampaignPlacementPreview'));
+const CorporateSponsorReview = lazy(() => import('../pages/sponsor/CorporateSponsorReview'));
+const CorporateSponsorComplete = lazy(() => import('../pages/sponsor/CorporateSponsorComplete'));
+const SponsorCampaigns = lazy(() => import('../pages/sponsor/SponsorCampaigns'));
+const SponsorSettings = lazy(() => import('../pages/sponsor/SponsorSettings'));
+const SponsorHelp = lazy(() => import('../pages/sponsor/SponsorHelp'));
+const CampaignTargeting = lazy(() => import('../pages/sponsor/CampaignTargeting'));
+const CampaignAssets = lazy(() => import('../pages/sponsor/CampaignAssets'));
+const CampaignPlacement = lazy(() => import('../pages/sponsor/CampaignPlacement'));
+const CampaignBudget = lazy(() => import('../pages/sponsor/CampaignBudget'));
+const CampaignReview = lazy(() => import('../pages/sponsor/CampaignReview'));
+const CampaignLaunch = lazy(() => import('../pages/sponsor/CampaignLaunch'));
+const SponsorProfile = lazy(() => import('../pages/sponsor/SponsorProfile'));
+
+// Union / League / Club admin dashboards — lazy-loaded
+const UnionAdminDashboard = lazy(() => import('../pages/union-admin/UnionAdminDashboard'));
+const LeagueAdminDashboard = lazy(() => import('../pages/league-admin/LeagueAdminDashboard'));
+const ClubAdminDashboard = lazy(() => import('../pages/club-admin/ClubAdminDashboard'));
+
+// Club management — lazy-loaded
+const TeamsManagement = lazy(() => import('../pages/club-admin/club-management/TeamsManagement'));
+const PlayerRegistration = lazy(() => import('../pages/club-admin/club-management/PlayerRegistration'));
+const StaffOfficials = lazy(() => import('../pages/club-admin/club-management/StaffOfficials'));
+const RosterUpdate = lazy(() => import('../pages/club-admin/club-management/RoasterUpdate'));
+const SquadSubmission = lazy(() => import('../pages/club-admin/club-management/SquadSubmision'));
 
 function protectedPage(page: ReactNode) {
     return <ProtectedRoute>{page}</ProtectedRoute>;
@@ -212,6 +217,7 @@ export default function AppRoutes() {
         >
             <AuthRequiredGate />
 
+            <Suspense fallback={<RouteLoadingFallback />}>
             <Routes>
                 <Route path="/" element={<Landing />} />
                 <Route path="/login" element={<Login />} />
@@ -721,6 +727,7 @@ export default function AppRoutes() {
                     }
                 />
             </Routes>
+            </Suspense>
         </Router>
     );
 }

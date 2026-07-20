@@ -78,7 +78,7 @@ vi.mock('../pages/sponsor/SponsorPaymentProcessing', () => ({
   default: () => <h1>Sponsor Payment Processing Page</h1>,
 }));
 
-vi.mock('../pages/SuperAdminDashboard', async () => {
+vi.mock('../pages/super-admin/SuperAdminDashboard', async () => {
   const { Outlet } = await vi.importActual<
     typeof import('react-router-dom')
   >('react-router-dom');
@@ -192,7 +192,7 @@ describe('AppRoutes dashboard entitlements', () => {
     ).toBeInTheDocument();
   });
 
-  it('uses the Sponsor default when Sponsor and Fan are both explicit', () => {
+  it('uses the Sponsor default when Sponsor and Fan are both explicit', async () => {
     const sponsor = makeEntitlement('SPONSOR');
     const fan = makeEntitlement('FAN');
     authenticate([sponsor, fan], sponsor.id);
@@ -200,7 +200,7 @@ describe('AppRoutes dashboard entitlements', () => {
     visit('/dashboard');
 
     expect(
-      screen.getByRole('heading', { name: /sponsor dashboard/i }),
+      await screen.findByRole('heading', { name: /sponsor dashboard/i }),
     ).toBeInTheDocument();
   });
 
@@ -216,7 +216,7 @@ describe('AppRoutes dashboard entitlements', () => {
     ).toBeInTheDocument();
   });
 
-  it('denies the Fan dashboard to a Union operational account', () => {
+  it('denies the Fan dashboard to a Union operational account', async () => {
     const union = makeEntitlement('UNION_WORKSPACE', {
       workspace_role: 'OWNER',
       permissions: ['union.dashboard.view'],
@@ -226,7 +226,7 @@ describe('AppRoutes dashboard entitlements', () => {
     visit('/dashboard/fan');
 
     expect(
-      screen.getByRole('heading', { name: /union workspace/i }),
+      await screen.findByRole('heading', { name: /union workspace/i }),
     ).toBeInTheDocument();
     expect(
       screen.queryByRole('heading', { name: /fan dashboard/i }),
@@ -279,24 +279,24 @@ describe('AppRoutes dashboard entitlements', () => {
     ['CLUB_ADMIN', '/dashboard/club-admin', /club admin dashboard/i],
   ] as const)(
     'allows a scoped %s entitlement through its dashboard route',
-    (dashboard, path, heading) => {
+    async (dashboard, path, heading) => {
       authenticate([makeEntitlement(dashboard)]);
 
       visit(path);
 
       expect(
-        screen.getByRole('heading', { name: heading }),
+        await screen.findByRole('heading', { name: heading }),
       ).toBeInTheDocument();
     },
   );
 
-  it('supports the canonical Super Admin backend route', () => {
+  it('supports the canonical Super Admin backend route', async () => {
     authenticate([makeEntitlement('SUPER_ADMIN')]);
 
     visit('/dashboard/super-admin');
 
     expect(
-      screen.getByRole('heading', { name: /super admin dashboard/i }),
+      await screen.findByRole('heading', { name: /super admin dashboard/i }),
     ).toBeInTheDocument();
   });
 
@@ -538,7 +538,7 @@ describe('AppRoutes dashboard entitlements', () => {
     ).toBeInTheDocument();
   });
 
-  it('keeps the Sponsor callback public while access is hydrating', () => {
+  it('keeps the Sponsor callback public while access is hydrating', async () => {
     useAuthStore.setState({
       user: { id: 1 },
       accessToken: 'access-token',
@@ -550,7 +550,7 @@ describe('AppRoutes dashboard entitlements', () => {
     visit('/sponsor/payment/processing?status=successful&tx_ref=test-reference');
 
     expect(
-      screen.getByRole('heading', {
+      await screen.findByRole('heading', {
         name: /sponsor payment processing page/i,
       }),
     ).toBeInTheDocument();

@@ -7,6 +7,7 @@ import {
 } from 'react-router-dom';
 
 import ProtectedRoute from './ProtectedRoute.js';
+import RouteLoadingFallback from '../components/RouteLoadingFallback.js';
 import { useAuthStore } from '../store/authStore.js';
 import { useClubWorkspaceStore } from '../store/clubWorkspaceStore.js';
 import {
@@ -148,13 +149,7 @@ function EntitlementAuthorization({
 
   if (accessStatus === 'loading') {
     return (
-      <div
-        aria-live="polite"
-        className="dashboard-access-loading"
-        role="status"
-      >
-        Restoring your dashboard access…
-      </div>
+      <RouteLoadingFallback message="Restoring your dashboard access…" />
     );
   }
 

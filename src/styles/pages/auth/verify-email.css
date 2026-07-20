@@ -5,7 +5,7 @@
   padding: 24px;
   background:
     linear-gradient(180deg, rgba(2, 5, 18, 0.72), rgba(5, 10, 30, 0.9)),
-    url('../../assets/cta-banner.png') center / cover no-repeat fixed;
+    url('../../../assets/cta-banner.png') center / cover no-repeat fixed;
   color: #f8fafc;
 }
 
