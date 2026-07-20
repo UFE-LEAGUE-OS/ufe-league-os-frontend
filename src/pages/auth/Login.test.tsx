@@ -10,6 +10,7 @@ const navigateMock = vi.hoisted(() => vi.fn())
 const authMocks = vi.hoisted(() => ({
   login: vi.fn(),
   googleLogin: vi.fn(),
+  fetchCurrentUser: vi.fn(),
 }))
 
 vi.mock('@react-oauth/google', () => ({
@@ -46,6 +47,7 @@ vi.mock('react-router-dom', async () => {
 vi.mock('../../services/authService.js', () => ({
   login: authMocks.login,
   googleLogin: authMocks.googleLogin,
+  fetchCurrentUser: authMocks.fetchCurrentUser,
 }))
 
 function renderLogin(initialEntries?: { pathname: string; state?: object }[]) {
@@ -121,6 +123,7 @@ describe('Login page', () => {
     navigateMock.mockClear()
     authMocks.login.mockReset()
     authMocks.googleLogin.mockReset()
+    authMocks.fetchCurrentUser.mockReset()
     useAuthStore.setState({
       user: null,
       accessToken: null,
@@ -521,6 +524,113 @@ describe('Login page', () => {
     })
 
     expect(await screen.findByText(/invalid google token/i)).toBeInTheDocument()
+    expect(navigateMock).not.toHaveBeenCalled()
+  })
+
+  it('sends an already-authenticated user straight to their default dashboard instead of showing the form', async () => {
+    useAuthStore.setState({
+      user: { email: 'fan@example.com', dashboard_access: fanAccess },
+      accessToken: 'access-token',
+      refreshToken: 'refresh-token',
+      requiresEmailVerification: false,
+      accessStatus: 'ready',
+    })
+    authMocks.fetchCurrentUser.mockResolvedValueOnce({
+      data: { email: 'fan@example.com', dashboard_access: fanAccess },
+    })
+
+    renderLogin()
+
+    expect(screen.queryByRole('heading', { name: /welcome back/i })).not.toBeInTheDocument()
+
+    await waitFor(() => {
+      expect(navigateMock).toHaveBeenCalledWith('/dashboard/fan', { replace: true })
+    })
+  })
+
+  it('honors a postLoginRedirect to the sponsor dashboard once a refresh confirms the sponsor entitlement', async () => {
+    // The cached store still only knows about the Fan entitlement — e.g.
+    // this tab was hydrated before the sponsor application was approved —
+    // but a fresh fetch reveals the sponsor entitlement now exists.
+    const sponsorAccess = access('sponsor', [
+      entitlement('sponsor', 'SPONSOR', '/sponsor/dashboard'),
+      entitlement('fan', 'FAN', '/dashboard/fan'),
+    ])
+
+    useAuthStore.setState({
+      user: { email: 'sponsor@example.com', dashboard_access: fanAccess },
+      accessToken: 'access-token',
+      refreshToken: 'refresh-token',
+      requiresEmailVerification: false,
+      accessStatus: 'ready',
+    })
+    authMocks.fetchCurrentUser.mockResolvedValueOnce({
+      data: { email: 'sponsor@example.com', dashboard_access: sponsorAccess },
+    })
+
+    renderLogin([
+      { pathname: '/login', state: { postLoginRedirect: '/sponsor/dashboard' } },
+    ])
+
+    await waitFor(() => {
+      expect(navigateMock).toHaveBeenCalledWith('/sponsor/dashboard', { replace: true })
+    })
+    expect(useAuthStore.getState().user).toEqual({
+      email: 'sponsor@example.com',
+      dashboard_access: sponsorAccess,
+    })
+  })
+
+  it('falls back to the default dashboard when a refresh confirms the user still lacks the requested entitlement', async () => {
+    useAuthStore.setState({
+      user: { email: 'fan@example.com', dashboard_access: fanAccess },
+      accessToken: 'access-token',
+      refreshToken: 'refresh-token',
+      requiresEmailVerification: false,
+      accessStatus: 'ready',
+    })
+    authMocks.fetchCurrentUser.mockResolvedValueOnce({
+      data: { email: 'fan@example.com', dashboard_access: fanAccess },
+    })
+
+    renderLogin([
+      { pathname: '/login', state: { postLoginRedirect: '/sponsor/dashboard' } },
+    ])
+
+    await waitFor(() => {
+      expect(navigateMock).toHaveBeenCalledWith('/dashboard/fan', { replace: true })
+    })
+  })
+
+  it('falls back to the cached entitlements if the refresh request fails', async () => {
+    useAuthStore.setState({
+      user: { email: 'fan@example.com', dashboard_access: fanAccess },
+      accessToken: 'access-token',
+      refreshToken: 'refresh-token',
+      requiresEmailVerification: false,
+      accessStatus: 'ready',
+    })
+    authMocks.fetchCurrentUser.mockRejectedValueOnce(new Error('network error'))
+
+    renderLogin()
+
+    await waitFor(() => {
+      expect(navigateMock).toHaveBeenCalledWith('/dashboard/fan', { replace: true })
+    })
+  })
+
+  it('does not show the sign-in form while a stored session is still being restored', () => {
+    useAuthStore.setState({
+      user: null,
+      accessToken: 'access-token',
+      refreshToken: 'refresh-token',
+      requiresEmailVerification: false,
+      accessStatus: 'loading',
+    })
+
+    renderLogin()
+
+    expect(screen.queryByRole('heading', { name: /welcome back/i })).not.toBeInTheDocument()
     expect(navigateMock).not.toHaveBeenCalled()
   })
 })

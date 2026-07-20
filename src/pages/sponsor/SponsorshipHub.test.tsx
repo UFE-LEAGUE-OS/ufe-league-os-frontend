@@ -96,12 +96,27 @@ describe('SponsorshipHub', () => {
     ).toBeInTheDocument();
   });
 
-  it('redirects an already-authenticated sponsor straight to their dashboard', () => {
+  it('redirects an already-authenticated sponsor with a granted entitlement straight to their dashboard', () => {
     useAuthStore.setState({
       accessToken: 'token-123',
       user: {
         id: 1,
         is_sponsor: true,
+        dashboard_access: {
+          version: 1,
+          default_entitlement_id: 'sponsor',
+          entitlements: [
+            {
+              id: 'sponsor',
+              dashboard: 'SPONSOR',
+              route: '/sponsor/dashboard',
+              scope_type: null,
+              scope_id: null,
+              workspace_role: null,
+              permissions: [],
+            },
+          ],
+        },
       } as never,
     });
 
@@ -109,5 +124,40 @@ describe('SponsorshipHub', () => {
 
     expect(screen.getByText('Sponsor Dashboard')).toBeInTheDocument();
     expect(screen.queryByText('Sponsorship Hub')).not.toBeInTheDocument();
+  });
+
+  it('does not bounce a pending sponsor without a granted entitlement back and forth', () => {
+    // is_sponsor is true (they've applied) but no SPONSOR dashboard entitlement
+    // has been granted yet (e.g. pending approval) — the old is_sponsor-only
+    // check used to force-navigate to /sponsor/dashboard here, which would
+    // immediately bounce them back out since that route requires the real
+    // entitlement, creating a redirect loop back to wherever they came from.
+    useAuthStore.setState({
+      accessToken: 'token-123',
+      user: {
+        id: 1,
+        is_sponsor: true,
+        dashboard_access: {
+          version: 1,
+          default_entitlement_id: 'fan',
+          entitlements: [
+            {
+              id: 'fan',
+              dashboard: 'FAN',
+              route: '/dashboard/fan',
+              scope_type: null,
+              scope_id: null,
+              workspace_role: null,
+              permissions: [],
+            },
+          ],
+        },
+      } as never,
+    });
+
+    renderHub();
+
+    expect(screen.getByText('Sponsorship Hub')).toBeInTheDocument();
+    expect(screen.queryByText('Sponsor Dashboard')).not.toBeInTheDocument();
   });
 });
