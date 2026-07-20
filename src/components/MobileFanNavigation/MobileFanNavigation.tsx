@@ -75,7 +75,7 @@ const drawerSections: MobileNavSection[] = [
             { label: "Fantasy", href: "/fantasy", icon: Swords, requiresFan: true },
             { label: "Polls Hub", href: "/fan/polls", icon: BarChart3, requiresFan: true },
             { label: "MVP Voting", href: "/fan/mvp-voting", icon: Goal, requiresFan: true },
-            { label: "Become a Sponsor", href: "/sponsor/apply", icon: Handshake },
+            { label: "Become a Sponsor", href: "/sponsorhub", icon: Handshake },
         ],
     },
     {
@@ -100,6 +100,8 @@ function MobileFanNavigation() {
             dashboardAccess,
             "UNION_WORKSPACE",
         )[0] ?? null;
+    const sponsorEntitlement =
+        getEntitlementsForDashboard(dashboardAccess, "SPONSOR")[0] ?? null;
 
     useEffect(() => {
         setIsDrawerOpen(false);
@@ -169,7 +171,9 @@ function MobileFanNavigation() {
                                     const href =
                                         link.href === "/dashboard/fan"
                                             ? fanEntitlement?.route ?? link.href
-                                            : link.href;
+                                            : link.href === "/sponsorhub"
+                                                ? sponsorEntitlement?.route ?? link.href
+                                                : link.href;
 
                                     return (
                                         <NavLink
