@@ -6,6 +6,7 @@ import {
   FiCheckCircle,
   FiEdit2,
   FiHome,
+  FiLogIn,
   FiUser,
   FiFileText,
   FiAlertCircle,
@@ -14,9 +15,26 @@ import { useAuthStore } from '../../store/authStore';
 import { useSponsorFormStore } from '../../store/sponsorFormStore';
 import { getToken } from '../../utils/tokenManager';
 import { becomeSponsor } from '../../services/sponsorshipService';
-import { updateProfile } from '../../services/authService.js';
+import { fetchCurrentUser, updateProfile } from '../../services/authService.js';
+import { LOGIN_ROUTE, type AuthFlowState } from '../../utils/authFlow';
 import '../../styles/pages/landing.css';
 import './CorporateSponsorReview.css';
+
+function isExistingAccountError(error: unknown): boolean {
+  const responseData = (error as { response?: { data?: unknown } })?.response?.data;
+
+  if (!responseData || typeof responseData !== 'object') {
+    return false;
+  }
+
+  return Object.values(responseData as Record<string, unknown>)
+    .flatMap((value) => (Array.isArray(value) ? value : [value]))
+    .some(
+      (value) =>
+        typeof value === 'string' &&
+        /already have (a|an) .*sponsor account/i.test(value),
+    );
+}
 
 const steps = [
   { number: 1, label: 'Company Info' },
@@ -71,16 +89,27 @@ export default function CorporateSponsorReview() {
   const form = useSponsorFormStore((state) => state.corporate);
   const resetCorporate = useSponsorFormStore((state) => state.resetCorporate);
   const accessToken = useAuthStore((state) => state.accessToken);
+  const setHydratedUser = useAuthStore((state) => state.setHydratedUser);
   const isAuthenticated = Boolean(accessToken || getToken());
 
   const [declarationChecked, setDeclarationChecked] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [hasExistingAccount, setHasExistingAccount] = useState(false);
 
   const dialCode = countryDialCodes[form.country] ?? '+256';
 
+  const handleGoToDashboard = () => {
+    navigate(LOGIN_ROUTE, {
+      state: {
+        postLoginRedirect: '/sponsor/dashboard',
+      } satisfies AuthFlowState,
+    });
+  };
+
   const handleSubmit = async () => {
     setErrorMessage('');
+    setHasExistingAccount(false);
 
     if (!declarationChecked) {
       setErrorMessage('Please confirm the declaration before submitting.');
@@ -114,6 +143,14 @@ try {
         // Non-critical — sponsor account was created successfully either way.
       }
 
+      try {
+        const { data } = await fetchCurrentUser();
+        setHydratedUser(data);
+      } catch {
+        // Non-critical — dashboard routing will just fall back to the
+        // pre-sponsor entitlements until the user's session next refreshes.
+      }
+
       resetCorporate();
       navigate('/sponsor/corporatesetup/complete');
     } catch (error) {
@@ -130,6 +167,7 @@ try {
       }
 
       setErrorMessage(extractErrorMessage(error));
+      setHasExistingAccount(isExistingAccountError(error));
     } finally {
       setIsSubmitting(false);
     }
@@ -403,13 +441,22 @@ try {
             <FiArrowLeft size={15} />
             Back: Verification
           </button>
-          <button
-            className="csr-submit-btn"
-            onClick={handleSubmit}
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? 'Submitting...' : 'Submit Application'} <FiArrowRight size={15} />
-          </button>
+          {hasExistingAccount ? (
+            <button
+              className="csr-submit-btn"
+              onClick={handleGoToDashboard}
+            >
+              Log In to Your Dashboard <FiLogIn size={15} />
+            </button>
+          ) : (
+            <button
+              className="csr-submit-btn"
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Submitting...' : 'Submit Application'} <FiArrowRight size={15} />
+            </button>
+          )}
         </div>
       </main>
     </div>

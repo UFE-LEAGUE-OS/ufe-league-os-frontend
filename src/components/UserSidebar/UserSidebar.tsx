@@ -96,6 +96,8 @@ function UserSidebar({ isCollapsed = false }: UserSidebarProps) {
             dashboardAccess,
             "UNION_WORKSPACE",
         )[0] ?? null;
+    const sponsorEntitlement =
+        getEntitlementsForDashboard(dashboardAccess, "SPONSOR")[0] ?? null;
 
     function handleLogout() {
         [
@@ -168,7 +170,9 @@ function UserSidebar({ isCollapsed = false }: UserSidebarProps) {
                                 const href =
                                     link.href === "/dashboard/fan"
                                         ? fanEntitlement?.route ?? link.href
-                                        : link.href;
+                                        : link.href === "/sponsorhub"
+                                            ? sponsorEntitlement?.route ?? link.href
+                                            : link.href;
 
                                 return (
                                     <li key={href}>
