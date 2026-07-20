@@ -200,9 +200,6 @@
   flex-shrink: 0;
   opacity: 0.85;
 }
-<<<<<<< Updated upstream
-=======
-
 .sidebar-heading {
   display: flex;
   align-items: center;
@@ -423,4 +420,3 @@
     font-size: 12px;
   }
 }
->>>>>>> Stashed changes

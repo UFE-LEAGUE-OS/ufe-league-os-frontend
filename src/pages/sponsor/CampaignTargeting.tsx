@@ -9,15 +9,18 @@ import {
   FiTarget,
 } from 'react-icons/fi';
 import SponsorSidebar from '../../components/SponsorSidebar';
+import { useSponsorCampaignStore } from '../../store/sponsorCampaignStore';
 import '../../styles/pages/landing.css';
 import './CampaignTargeting.css';
 
 const steps = [
   { number: 1, label: 'Campaign Info' },
   { number: 2, label: 'Targeting' },
-  { number: 3, label: 'Budget' },
-  { number: 4, label: 'Review' },
-  { number: 5, label: 'Launch' },
+  { number: 3, label: 'Assets' },
+  { number: 4, label: 'Placement' },
+  { number: 5, label: 'Budget' },
+  { number: 6, label: 'Review' },
+  { number: 7, label: 'Launch' },
 ];
 
 const currentStep = 2;
@@ -59,16 +62,30 @@ const fanInterests = [
 
 export default function CampaignTargeting() {
   const navigate = useNavigate();
+  const audience = useSponsorCampaignStore((s) => s.audience);
+  const updateAudience = useSponsorCampaignStore((s) => s.updateAudience);
+  const saveDraft = useSponsorCampaignStore((s) => s.saveDraft);
 
-  const [selectedSports, setSelectedSports] = useState<string[]>(['Football', 'Rugby']);
-  const [selectedLeagues, setSelectedLeagues] = useState<string[]>(['Nile Special Rugby Premiership']);
-  const [selectedAges, setSelectedAges] = useState<string[]>(['18-24', '25-34', '35-44']);
-  const [selectedGender, setSelectedGender] = useState('All Genders');
-  const [selectedLocations, setSelectedLocations] = useState<string[]>(['All Uganda']);
-  const [selectedInterests, setSelectedInterests] = useState<string[]>(['Match Attendees']);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
 
-  const toggle = (arr: string[], val: string, set: (v: string[]) => void) => {
-    set(arr.includes(val) ? arr.filter((v) => v !== val) : [...arr, val]);
+  const toggle = (arr: string[], val: string, key: keyof typeof audience) => {
+    updateAudience({
+      [key]: arr.includes(val) ? arr.filter((v) => v !== val) : [...arr, val],
+    } as Partial<typeof audience>);
+  };
+
+  const handleNext = async () => {
+    setErrorMessage('');
+    setIsSaving(true);
+    try {
+      await saveDraft();
+      navigate('/sponsor/campaigns/new/assets');
+    } catch {
+      setErrorMessage('We could not save your campaign. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -126,10 +143,10 @@ export default function CampaignTargeting() {
                 {sports.map((sport) => (
                   <div
                     key={sport}
-                    className={`ct-chip ${selectedSports.includes(sport) ? 'ct-chip-selected' : ''}`}
-                    onClick={() => toggle(selectedSports, sport, setSelectedSports)}
+                    className={`ct-chip ${audience.sports.includes(sport) ? 'ct-chip-selected' : ''}`}
+                    onClick={() => toggle(audience.sports, sport, 'sports')}
                   >
-                    {selectedSports.includes(sport) && <FiCheck size={12} />}
+                    {audience.sports.includes(sport) && <FiCheck size={12} />}
                     {sport}
                   </div>
                 ))}
@@ -147,10 +164,10 @@ export default function CampaignTargeting() {
                 {leagues.map((league) => (
                   <div
                     key={league}
-                    className={`ct-chip ${selectedLeagues.includes(league) ? 'ct-chip-selected' : ''}`}
-                    onClick={() => toggle(selectedLeagues, league, setSelectedLeagues)}
+                    className={`ct-chip ${audience.leagues.includes(league) ? 'ct-chip-selected' : ''}`}
+                    onClick={() => toggle(audience.leagues, league, 'leagues')}
                   >
-                    {selectedLeagues.includes(league) && <FiCheck size={12} />}
+                    {audience.leagues.includes(league) && <FiCheck size={12} />}
                     {league}
                   </div>
                 ))}
@@ -168,11 +185,11 @@ export default function CampaignTargeting() {
                 {ageGroups.map((age) => (
                   <div
                     key={age.id}
-                    className={`ct-age-card ${selectedAges.includes(age.id) ? 'ct-age-selected' : ''}`}
-                    onClick={() => toggle(selectedAges, age.id, setSelectedAges)}
+                    className={`ct-age-card ${audience.ageGroups.includes(age.id) ? 'ct-age-selected' : ''}`}
+                    onClick={() => toggle(audience.ageGroups, age.id, 'ageGroups')}
                   >
-                    <div className={`ct-checkbox ${selectedAges.includes(age.id) ? 'ct-checkbox-checked' : ''}`}>
-                      {selectedAges.includes(age.id) && <FiCheck size={11} />}
+                    <div className={`ct-checkbox ${audience.ageGroups.includes(age.id) ? 'ct-checkbox-checked' : ''}`}>
+                      {audience.ageGroups.includes(age.id) && <FiCheck size={11} />}
                     </div>
                     <div className="ct-age-label">{age.label}</div>
                     <div className="ct-age-desc">{age.desc}</div>
@@ -191,10 +208,10 @@ export default function CampaignTargeting() {
                 {genders.map((g) => (
                   <div
                     key={g}
-                    className={`ct-gender-card ${selectedGender === g ? 'ct-gender-selected' : ''}`}
-                    onClick={() => setSelectedGender(g)}
+                    className={`ct-gender-card ${audience.gender === g ? 'ct-gender-selected' : ''}`}
+                    onClick={() => updateAudience({ gender: g })}
                   >
-                    <div className={`ct-radio ${selectedGender === g ? 'ct-radio-on' : ''}`} />
+                    <div className={`ct-radio ${audience.gender === g ? 'ct-radio-on' : ''}`} />
                     {g}
                   </div>
                 ))}
@@ -212,10 +229,10 @@ export default function CampaignTargeting() {
                 {locations.map((loc) => (
                   <div
                     key={loc}
-                    className={`ct-chip ${selectedLocations.includes(loc) ? 'ct-chip-selected' : ''}`}
-                    onClick={() => toggle(selectedLocations, loc, setSelectedLocations)}
+                    className={`ct-chip ${audience.locations.includes(loc) ? 'ct-chip-selected' : ''}`}
+                    onClick={() => toggle(audience.locations, loc, 'locations')}
                   >
-                    {selectedLocations.includes(loc) && <FiCheck size={12} />}
+                    {audience.locations.includes(loc) && <FiCheck size={12} />}
                     {loc}
                   </div>
                 ))}
@@ -233,10 +250,10 @@ export default function CampaignTargeting() {
                 {fanInterests.map((interest) => (
                   <div
                     key={interest}
-                    className={`ct-chip ${selectedInterests.includes(interest) ? 'ct-chip-selected' : ''}`}
-                    onClick={() => toggle(selectedInterests, interest, setSelectedInterests)}
+                    className={`ct-chip ${audience.fanInterests.includes(interest) ? 'ct-chip-selected' : ''}`}
+                    onClick={() => toggle(audience.fanInterests, interest, 'fanInterests')}
                   >
-                    {selectedInterests.includes(interest) && <FiCheck size={12} />}
+                    {audience.fanInterests.includes(interest) && <FiCheck size={12} />}
                     {interest}
                   </div>
                 ))}
@@ -269,13 +286,17 @@ export default function CampaignTargeting() {
             </div>
           </div>
 
+          {errorMessage && (
+            <div className="ct-error-banner">{errorMessage}</div>
+          )}
+
           {/* Bottom nav */}
           <div className="ct-bottom-nav">
             <button className="ct-back-nav-btn" onClick={() => navigate('/sponsor/campaigns/new')}>
               <FiArrowLeft size={15} /> Back: Campaign Info
             </button>
-            <button className="ct-next-btn" onClick={() => navigate('/sponsor/campaigns/new/budget')}>
-              Next: Budget <FiArrowRight size={15} />
+            <button className="ct-next-btn" disabled={isSaving} onClick={() => void handleNext()}>
+              {isSaving ? 'Saving…' : 'Next: Assets'} <FiArrowRight size={15} />
             </button>
           </div>
         </main>

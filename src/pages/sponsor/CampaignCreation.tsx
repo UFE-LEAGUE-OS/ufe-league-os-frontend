@@ -10,15 +10,18 @@ import {
   FiHeart,
 } from 'react-icons/fi';
 import SponsorSidebar from '../../components/SponsorSidebar';
+import { useSponsorCampaignStore } from '../../store/sponsorCampaignStore';
 import '../../styles/pages/landing.css';
 import './CampaignCreation.css';
 
 const steps = [
   { number: 1, label: 'Campaign Info' },
   { number: 2, label: 'Targeting' },
-  { number: 3, label: 'Budget' },
-  { number: 4, label: 'Review' },
-  { number: 5, label: 'Launch' },
+  { number: 3, label: 'Assets' },
+  { number: 4, label: 'Placement' },
+  { number: 5, label: 'Budget' },
+  { number: 6, label: 'Review' },
+  { number: 7, label: 'Launch' },
 ];
 
 const campaignTypes = [
@@ -69,26 +72,47 @@ const currentStep = 1;
 
 export default function CampaignCreation() {
   const navigate = useNavigate();
+  const info = useSponsorCampaignStore((s) => s.info);
+  const updateInfo = useSponsorCampaignStore((s) => s.updateInfo);
+  const saveDraft = useSponsorCampaignStore((s) => s.saveDraft);
 
-  const [form, setForm] = useState({
-    campaignName: 'Nile Special Rugby Premiership – Brand Awareness Campaign',
-    property: 'Nile Special Rugby Premiership',
-    campaignType: 'Brand Awareness',
-    description: 'Position Nile Special as the official beer partner of the Nile Special Rugby Premiership. Build brand visibility across matchdays, digital platforms, and fan communities throughout the season.',
-  });
-
-  const [selectedGoals, setSelectedGoals] = useState<string[]>(['brand-awareness']);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    updateInfo({ [e.target.name]: e.target.value });
   };
 
   const toggleGoal = (id: string) => {
-    setSelectedGoals((prev) =>
-      prev.includes(id) ? prev.filter((g) => g !== id) : [...prev, id]
-    );
+    updateInfo({
+      goals: info.goals.includes(id)
+        ? info.goals.filter((g) => g !== id)
+        : [...info.goals, id],
+    });
+  };
+
+  const handleNext = async () => {
+    if (!info.campaignName.trim()) {
+      setErrorMessage('Please enter a campaign name before continuing.');
+      return;
+    }
+    if (info.goals.length === 0) {
+      setErrorMessage('Please select at least one campaign goal.');
+      return;
+    }
+
+    setErrorMessage('');
+    setIsSaving(true);
+    try {
+      await saveDraft();
+      navigate('/sponsor/campaigns/new/targeting');
+    } catch {
+      setErrorMessage('We could not save your campaign. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -150,13 +174,13 @@ export default function CampaignCreation() {
                 <textarea
                   className="cc-input cc-textarea"
                   name="campaignName"
-                  value={form.campaignName}
+                  value={info.campaignName}
                   onChange={handleChange}
                   maxLength={100}
                   rows={3}
                 />
                 <div className="cc-char-count">
-                  {form.campaignName.length}/100
+                  {info.campaignName.length}/100
                 </div>
               </div>
 
@@ -169,9 +193,10 @@ export default function CampaignCreation() {
                   <select
                     className="cc-input cc-select cc-select-icon-pad"
                     name="property"
-                    value={form.property}
+                    value={info.property}
                     onChange={handleChange}
                   >
+                    <option value="">Select a property</option>
                     {properties.map((p) => (
                       <option key={p} value={p}>{p}</option>
                     ))}
@@ -192,9 +217,10 @@ export default function CampaignCreation() {
                   <select
                     className="cc-input cc-select cc-select-icon-pad"
                     name="campaignType"
-                    value={form.campaignType}
+                    value={info.campaignType}
                     onChange={handleChange}
                   >
+                    <option value="">Select a campaign type</option>
                     {campaignTypes.map((t) => (
                       <option key={t} value={t}>{t}</option>
                     ))}
@@ -210,13 +236,13 @@ export default function CampaignCreation() {
                 <textarea
                   className="cc-input cc-textarea cc-textarea-tall"
                   name="description"
-                  value={form.description}
+                  value={info.description}
                   onChange={handleChange}
                   maxLength={500}
                   rows={5}
                 />
                 <div className="cc-char-count cc-char-count-right">
-                  {form.description.length}/500
+                  {info.description.length}/500
                 </div>
               </div>
             </div>
@@ -232,7 +258,7 @@ export default function CampaignCreation() {
               <div className="cc-goals-grid">
                 {goals.map((goal) => {
                   const Icon = goal.icon;
-                  const isSelected = selectedGoals.includes(goal.id);
+                  const isSelected = info.goals.includes(goal.id);
                   return (
                     <div
                       key={goal.id}
@@ -254,15 +280,20 @@ export default function CampaignCreation() {
                 })}
               </div>
             </div>
+
+            {errorMessage && (
+              <div className="cc-error-banner">{errorMessage}</div>
+            )}
           </div>
 
           {/* Footer */}
           <div className="cc-footer">
             <button
               className="cc-next-btn"
-              onClick={() => navigate('/sponsor/campaigns/new/targeting')}
+              disabled={isSaving}
+              onClick={() => void handleNext()}
             >
-              Next: Targeting <FiArrowRight size={16} />
+              {isSaving ? 'Saving…' : 'Next: Targeting'} <FiArrowRight size={16} />
             </button>
           </div>
         </main>
