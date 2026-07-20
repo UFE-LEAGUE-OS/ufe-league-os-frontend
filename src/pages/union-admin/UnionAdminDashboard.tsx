@@ -49,6 +49,7 @@ import UnionAdminClubsPanel from "../../components/UnionAdminClubsPanel/UnionAdm
 import UnionAdminRefereesPanel from "../../components/UnionAdminRefereesPanel/UnionAdminRefereesPanel";
 import OfficialAppointmentsPanel from "../../components/OfficialAppointmentsPanel/OfficialAppointmentsPanel";
 import LeagueAdminScopesPanel from "../../components/LeagueAdminScopesPanel/LeagueAdminScopesPanel";
+import UnionMatchOfficialsPanel from "../../components/union-admin/UnionMatchOfficialsPanel";
 import {
     UnionNationalTeamsPanel,
     UnionOfficialReadinessPanel,
@@ -66,6 +67,10 @@ type TabKey =
     | "clubs"
     | "nationalTeams"
     | "registrations"
+    | "playersTransfers"
+    | "matchOfficials"
+    | "statistics"
+    | "profileBranding"
     | "referees"
     | "appointments"
     | "availability"
@@ -91,6 +96,7 @@ type TabDefinition = {
     label: string;
     icon: typeof BarChart3;
     permission?: UnionWorkspacePermission;
+    anyPermissions?: UnionWorkspacePermission[];
     matchOfficialOnly?: boolean;
 };
 
@@ -187,56 +193,54 @@ const tabs: TabDefinition[] = [
         permission: "union.clubs.manage",
     },
     {
+        key: "registrations",
+        label: "Registrations",
+        icon: ClipboardCheck,
+        anyPermissions: [
+            "union.registrations.view",
+            "union.registrations.manage",
+            "union.players.approve",
+        ],
+    },
+    {
+        key: "playersTransfers",
+        label: "Players & Transfers",
+        icon: UserCheck,
+        anyPermissions: [
+            "union.players.view",
+            "union.players.approve",
+            "union.transfers.view",
+            "union.transfers.approve",
+        ],
+    },
+    {
         key: "nationalTeams",
         label: "National Teams",
         icon: Users,
         permission: "union.teams.manage",
     },
     {
-        key: "registrations",
-        label: "Registrations",
-        icon: ClipboardCheck,
-        permission: "union.players.approve",
-    },
-    {
-        key: "referees",
-        label: "Referees",
+        key: "matchOfficials",
+        label: "Match Officials",
         icon: BadgeCheck,
-        permission: "union.referees.manage",
+        anyPermissions: [
+            "union.referees.manage",
+            "union.official.appointments.view",
+            "union.official.availability.manage",
+            "union.official.reports.manage",
+            "union.official.documents.view",
+            "union.official.payments.view",
+        ],
     },
     {
-        key: "appointments",
-        label: "Appointments",
-        icon: CalendarDays,
-        permission: "union.official.appointments.view",
-    },
-    {
-        key: "availability",
-        label: "Availability",
-        icon: UserCheck,
-        permission: "union.official.availability.manage",
-    },
-    {
-        key: "matchReports",
-        label: "Match Reports",
-        icon: FileText,
-        permission: "union.official.reports.manage",
-    },
-    {
-        key: "documents",
-        label: "Documents",
-        icon: FileText,
-        permission: "union.official.documents.view",
-    },
-    {
-        key: "allowances",
-        label: "Allowances",
-        icon: DollarSign,
-        permission: "union.official.payments.view",
+        key: "statistics",
+        label: "Statistics & Records",
+        icon: BarChart3,
+        permission: "union.reports.view",
     },
     {
         key: "profile",
-        label: "Profile",
+        label: "My Official Profile",
         icon: UserCheck,
         permission: "union.dashboard.view",
         matchOfficialOnly: true,
@@ -273,21 +277,27 @@ const tabs: TabDefinition[] = [
     },
     {
         key: "comms",
-        label: "Comms",
+        label: "Communications",
         icon: Megaphone,
         permission: "union.communications.manage",
     },
     {
         key: "users",
-        label: "Users",
+        label: "Users & Access",
         icon: Users,
         permission: "union.users.manage",
     },
     {
         key: "audit",
-        label: "Audit Logs",
+        label: "Audit & Approvals",
         icon: FileText,
         permission: "union.reports.view",
+    },
+    {
+        key: "profileBranding",
+        label: "Profile & Branding",
+        icon: Building2,
+        permission: "union.dashboard.view",
     },
     {
         key: "settings",
@@ -297,9 +307,42 @@ const tabs: TabDefinition[] = [
     },
 ];
 
+const sidebarSections: Array<{ label: string; keys: TabKey[] }> = [
+    {
+        label: "Operations",
+        keys: [
+            "overview",
+            "competitions",
+            "clubs",
+            "registrations",
+            "playersTransfers",
+            "nationalTeams",
+            "matchOfficials",
+            "statistics",
+            "profile",
+            "ticketing",
+            "scanner",
+            "entryLogs",
+        ],
+    },
+    {
+        label: "Business",
+        keys: ["finance", "comms", "sponsors"],
+    },
+    {
+        label: "Administration",
+        keys: ["users", "audit", "profileBranding", "settings"],
+    },
+];
+
+
 function canAccessTab(workspace: UnionWorkspaceOption, tab: TabDefinition) {
     return (
         (!tab.permission || workspace.permissions.includes(tab.permission)) &&
+        (!tab.anyPermissions ||
+            tab.anyPermissions.some((permission) =>
+                workspace.permissions.includes(permission),
+            )) &&
         (!tab.matchOfficialOnly || isMatchOfficialWorkspace(workspace))
     );
 }
@@ -378,6 +421,34 @@ function getPageHeaderContent(
                 eyebrow: "Player governance",
                 title: "Registration & Eligibility",
                 description: `Review player registrations, eligibility decisions, transfers and approval queues across ${workspace.name}.`,
+                ...unionPage,
+            };
+        case "playersTransfers":
+            return {
+                eyebrow: "Player governance",
+                title: "Players & Transfers",
+                description: `Review authoritative registrations, competition eligibility and transfer activity across ${workspace.name}.`,
+                ...unionPage,
+            };
+        case "matchOfficials":
+            return {
+                eyebrow: "Official management",
+                title: "Match Officials",
+                description: `Manage official registration, readiness, appointments, availability, reports, documents and allowances under ${workspace.name}.`,
+                ...unionPage,
+            };
+        case "statistics":
+            return {
+                eyebrow: "Union records",
+                title: "Statistics & Records",
+                description: `Review maintained historical records, participation totals and competition reporting for ${workspace.name}.`,
+                ...unionPage,
+            };
+        case "profileBranding":
+            return {
+                eyebrow: "Public identity",
+                title: "Profile & Branding",
+                description: `Manage the public Union identity, logo, banner and organisational profile for ${workspace.name}.`,
                 ...unionPage,
             };
         case "referees":
@@ -711,14 +782,6 @@ export default function UnionAdminDashboard() {
                 dashboardAccess,
                 "UNION_WORKSPACE",
             ),
-        [dashboardAccess],
-    );
-    const fanDashboardRoute = useMemo(
-        () =>
-            getEntitlementsForDashboard(
-                dashboardAccess,
-                "FAN",
-            )[0]?.route,
         [dashboardAccess],
     );
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -1169,6 +1232,7 @@ export default function UnionAdminDashboard() {
             !isWaitingForAccess && workspaces.length > 1;
 
         return (
+            <>
             <main className={styles.pageShell}>
                 <section className={styles.contentArea}>
                     <header className={styles.heroHeader}>
@@ -1203,14 +1267,6 @@ export default function UnionAdminDashboard() {
                             >
                                 View Unions
                             </Link>
-                            {fanDashboardRoute ? (
-                                <Link
-                                    className={styles.headerActionSecondary}
-                                    to={fanDashboardRoute}
-                                >
-                                    Open Fan Dashboard
-                                </Link>
-                            ) : null}
                         </div>
                     </header>
 
@@ -1253,11 +1309,12 @@ export default function UnionAdminDashboard() {
                         </label>
                     ) : null}
 
-                    <div className={styles.dashboardFooterWrap}>
-                        <AuthenticatedFooter />
-                    </div>
                 </section>
             </main>
+            <div className={styles.dashboardFooterWrap}>
+                <AuthenticatedFooter />
+            </div>
+            </>
         );
     }
 
@@ -1284,20 +1341,15 @@ export default function UnionAdminDashboard() {
 
 
     const statsByTab: Record<TabKey, StatCard[] | null> = {
-        overview: overview
-            ? [
-                  { label: "Active Competitions", value: summary.activeCompetitions, detail: `${activeWorkspace.sport} competitions`, icon: Trophy },
-                  { label: "Member Clubs", value: summary.memberClubs, detail: "Workspace-scoped clubs", icon: Building2 },
-                  { label: "National Teams", value: summary.nationalTeams, detail: "Maintained representative teams", icon: Users },
-                  { label: "Pending Approvals", value: summary.pendingApprovals, detail: "Registration review queue", icon: ClipboardCheck },
-                  { label: "Officials", value: summary.referees, detail: "Maintained official pool", icon: BadgeCheck },
-                  { label: "Upcoming Matches", value: summary.upcomingMatches, detail: "Scheduled matches", icon: CalendarDays },
-              ]
-            : null,
+        overview: null,
         competitions: null,
         clubs: null,
         nationalTeams: null,
         registrations: null,
+        playersTransfers: null,
+        matchOfficials: null,
+        statistics: null,
+        profileBranding: null,
         referees: null,
         appointments: null,
         profile: currentOfficial
@@ -1355,41 +1407,206 @@ export default function UnionAdminDashboard() {
 
         if (!isMatchOfficialWorkspace(activeWorkspace)) {
             return (
-                <div className={styles.overviewLayout}>
-                    <section className={styles.panelLarge}>
-                        <SectionHeader
-                            eyebrow="Workspace overview"
-                            title={activeWorkspace.name}
-                            description="Maintained workspace-scoped competition, Club, National Team, registration and official totals returned by the backend."
-                        />
-                        <div className={styles.approvalSummaryGrid}>
-                            <article><span>Leagues</span><strong>{summary.leagues}</strong><small>Maintained leagues</small></article>
-                            <article><span>Active competitions</span><strong>{summary.activeCompetitions}</strong><small>Active competition records</small></article>
-                            <article><span>Member Clubs</span><strong>{summary.memberClubs}</strong><small>Workspace Club membership</small></article>
-                            <article><span>National Teams</span><strong>{summary.nationalTeams}</strong><small>Active representative teams</small></article>
-                            <article><span>Pending approvals</span><strong>{summary.pendingApprovals}</strong><small>Registration applications</small></article>
-                            <article><span>Officials</span><strong>{summary.referees}</strong><small>Maintained official profiles</small></article>
-                            <article><span>Upcoming matches</span><strong>{summary.upcomingMatches}</strong><small>Scheduled fixtures</small></article>
+                <div className={styles.overviewDashboard}>
+                    <section className={styles.overviewLeadPanel}>
+                        <div className={styles.overviewLeadHeader}>
+                            <div>
+                                <span className={styles.sectionEyebrow}>
+                                    Workspace command centre
+                                </span>
+                                <h2>{activeWorkspace.name}</h2>
+                                <p>
+                                    Review maintained competition, Club,
+                                    registration, national-team and official
+                                    records for this workspace.
+                                </p>
+                            </div>
+
+                            <span className={styles.workspaceStatusBadge}>
+                                Active workspace
+                            </span>
+                        </div>
+
+                        <div className={styles.overviewMetricGrid}>
+                            <article>
+                                <Trophy size={19} aria-hidden="true" />
+                                <span>Leagues</span>
+                                <strong>{summary.leagues}</strong>
+                                <small>Maintained league records</small>
+                            </article>
+
+                            <article>
+                                <Layers3 size={19} aria-hidden="true" />
+                                <span>Competitions</span>
+                                <strong>{summary.activeCompetitions}</strong>
+                                <small>Active competition records</small>
+                            </article>
+
+                            <article>
+                                <Building2 size={19} aria-hidden="true" />
+                                <span>Member Clubs</span>
+                                <strong>{summary.memberClubs}</strong>
+                                <small>Workspace Club membership</small>
+                            </article>
+
+                            <article>
+                                <Users size={19} aria-hidden="true" />
+                                <span>National Teams</span>
+                                <strong>{summary.nationalTeams}</strong>
+                                <small>Representative teams</small>
+                            </article>
+
+                            <article>
+                                <ClipboardCheck size={19} aria-hidden="true" />
+                                <span>Approvals</span>
+                                <strong>{summary.pendingApprovals}</strong>
+                                <small>Registration review queue</small>
+                            </article>
+
+                            <article>
+                                <BadgeCheck size={19} aria-hidden="true" />
+                                <span>Officials</span>
+                                <strong>{summary.referees}</strong>
+                                <small>Maintained official pool</small>
+                            </article>
+
+                            <article>
+                                <CalendarDays size={19} aria-hidden="true" />
+                                <span>Matches</span>
+                                <strong>{summary.upcomingMatches}</strong>
+                                <small>Upcoming scheduled fixtures</small>
+                            </article>
                         </div>
                     </section>
-                    <aside className={styles.sidePanel}>
+
+                    <aside className={styles.overviewActionPanel}>
                         <SectionHeader
-                            eyebrow="Operational actions"
+                            eyebrow="Priority actions"
                             title="Continue workspace management"
-                            description="Open the maintained modules behind the summary totals."
+                            description="Open the maintained modules available to your current Union role."
                         />
+
                         <div className={styles.quickActionsList}>
-                            {activeWorkspace.permissions.includes("union.teams.manage") ? (
-                                <ModuleButton label="Manage National Teams" detail={`${summary.nationalTeams} active teams`} icon={Users} onClick={() => resetSearch("nationalTeams")} />
+                            {activeWorkspace.permissions.includes(
+                                "union.competitions.manage",
+                            ) ? (
+                                <ModuleButton
+                                    label="Manage competitions"
+                                    detail={`${summary.activeCompetitions} active competitions`}
+                                    icon={Trophy}
+                                    onClick={() => resetSearch("competitions")}
+                                />
                             ) : null}
-                            {activeWorkspace.permissions.includes("union.players.approve") ? (
-                                <ModuleButton label="Review registrations" detail={`${summary.pendingApprovals} pending applications`} icon={ClipboardCheck} onClick={() => resetSearch("registrations")} />
+
+                            {activeWorkspace.permissions.includes(
+                                "union.clubs.manage",
+                            ) ? (
+                                <ModuleButton
+                                    label="Manage Clubs"
+                                    detail={`${summary.memberClubs} affiliated Clubs`}
+                                    icon={Building2}
+                                    onClick={() => resetSearch("clubs")}
+                                />
                             ) : null}
-                            {activeWorkspace.permissions.includes("union.official.appointments.view") ? (
-                                <ModuleButton label="Check official readiness" detail={`${summary.referees} officials in the pool`} icon={BadgeCheck} onClick={() => resetSearch("appointments")} />
+
+                            {activeWorkspace.permissions.includes(
+                                "union.players.approve",
+                            ) ? (
+                                <ModuleButton
+                                    label="Review registrations"
+                                    detail={`${summary.pendingApprovals} pending applications`}
+                                    icon={ClipboardCheck}
+                                    onClick={() => resetSearch("registrations")}
+                                />
+                            ) : null}
+
+                            {activeWorkspace.permissions.includes(
+                                "union.teams.manage",
+                            ) ? (
+                                <ModuleButton
+                                    label="Manage National Teams"
+                                    detail={`${summary.nationalTeams} active teams`}
+                                    icon={Users}
+                                    onClick={() => resetSearch("nationalTeams")}
+                                />
+                            ) : null}
+
+                            {activeWorkspace.permissions.includes(
+                                "union.official.appointments.view",
+                            ) ? (
+                                <ModuleButton
+                                    label="Check official readiness"
+                                    detail={`${summary.referees} officials in the pool`}
+                                    icon={BadgeCheck}
+                                    onClick={() => resetSearch("appointments")}
+                                />
                             ) : null}
                         </div>
                     </aside>
+
+                    <section
+                        className={styles.overviewWorkflowGrid}
+                        aria-label="Union workspace workflow"
+                    >
+                        <button
+                            type="button"
+                            onClick={() => resetSearch("competitions")}
+                        >
+                            <Trophy size={21} aria-hidden="true" />
+                            <span>
+                                <small>01</small>
+                                <strong>Competition delivery</strong>
+                                <p>
+                                    Competition → season → Clubs → fixtures.
+                                </p>
+                            </span>
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={() => resetSearch("clubs")}
+                        >
+                            <Building2 size={21} aria-hidden="true" />
+                            <span>
+                                <small>02</small>
+                                <strong>Club governance</strong>
+                                <p>
+                                    Affiliations, Club records and participation
+                                    readiness.
+                                </p>
+                            </span>
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={() => resetSearch("registrations")}
+                        >
+                            <ClipboardCheck size={21} aria-hidden="true" />
+                            <span>
+                                <small>03</small>
+                                <strong>Player governance</strong>
+                                <p>
+                                    Registration, eligibility and transfer
+                                    decisions.
+                                </p>
+                            </span>
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={() => resetSearch("appointments")}
+                        >
+                            <CalendarDays size={21} aria-hidden="true" />
+                            <span>
+                                <small>04</small>
+                                <strong>Match operations</strong>
+                                <p>
+                                    Official readiness, appointments and
+                                    matchday records.
+                                </p>
+                            </span>
+                        </button>
+                    </section>
                 </div>
             );
         }
@@ -1853,17 +2070,12 @@ export default function UnionAdminDashboard() {
 
     function renderCompetitions() {
         return (
-            <section className={styles.panelLarge}>
-                <SectionHeader
-                    eyebrow={`${activeWorkspace.acronym} competitions`}
-                    title="Competition management"
-                    description="Competition, season, membership and fixture workflows use maintained management APIs. Generated operations summaries are not displayed."
-                />
+            <div className={styles.contentStack}>
                 <UnionAdminManagementWorkflow
                     workspaceSlug={activeWorkspace.slug}
                     workspaceLabel={activeWorkspace.name}
                 />
-            </section>
+            </div>
         );
 
         if (competitionView === "fixtures") return renderFixtureGenerator();
@@ -2402,14 +2614,14 @@ export default function UnionAdminDashboard() {
         if (clubView === "detail") return renderClubDetail();
 
         return (
-            <section className={styles.panelLarge}>
+            <div className={styles.contentStack}>
                 <UnionAdminClubsPanel
                     workspaceSlug={activeWorkspace.slug}
                     workspaceLabel={activeWorkspace.name}
                     sport={activeWorkspace.sport}
                     canManageClubs={activeWorkspace.permissions.includes("union.clubs.manage")}
                 />
-            </section>
+            </div>
         );
     }
 
@@ -2514,6 +2726,68 @@ export default function UnionAdminDashboard() {
                 workspaceSlug={activeWorkspace.slug}
                 workspaceName={activeWorkspace.name}
             />
+        );
+    }
+
+    function renderPlayersTransfers() {
+        return (
+            <section className={styles.panelLarge}>
+                <SectionHeader
+                    eyebrow="Player governance"
+                    title="Players & Transfers"
+                    description="The approved frontend module will combine the player registry, authoritative registrations, competition eligibility and transfer review."
+                />
+
+                <div className={styles.emptyState}>
+                    This screen is ready for the next frontend design slice.
+                    No hardcoded player or transfer records are being presented.
+                </div>
+            </section>
+        );
+    }
+
+    function renderMatchOfficials() {
+        return (
+            <UnionMatchOfficialsPanel
+                workspaceSlug={activeWorkspace.slug}
+                workspaceName={activeWorkspace.name}
+                workspaceSport={activeWorkspace.sport}
+                workspaceRole={activeWorkspace.role}
+                permissions={activeWorkspace.permissions}
+            />
+        );
+    }
+
+    function renderStatistics() {
+        return (
+            <section className={styles.panelLarge}>
+                <SectionHeader
+                    eyebrow="Union records"
+                    title="Statistics & Records"
+                    description="Historical records and maintained Union statistics will appear here after the frontend review and backend contract are completed."
+                />
+
+                <div className={styles.emptyState}>
+                    No synthetic statistics are displayed.
+                </div>
+            </section>
+        );
+    }
+
+    function renderProfileBranding() {
+        return (
+            <section className={styles.panelLarge}>
+                <SectionHeader
+                    eyebrow="Public identity"
+                    title="Profile & Branding"
+                    description="Review the Union logo, banner, public profile and brand presentation before enabling uploads."
+                />
+
+                <div className={styles.emptyState}>
+                    The logo and banner preview editor will be added in the
+                    next frontend-only slice.
+                </div>
+            </section>
         );
     }
 
@@ -3115,6 +3389,10 @@ export default function UnionAdminDashboard() {
             case "clubs": return renderClubs();
             case "nationalTeams": return renderNationalTeams();
             case "registrations": return renderRegistrations();
+            case "playersTransfers": return renderPlayersTransfers();
+            case "matchOfficials": return renderMatchOfficials();
+            case "statistics": return renderStatistics();
+            case "profileBranding": return renderProfileBranding();
             case "referees": return renderReferees();
             case "appointments": return renderAppointments();
             case "availability": return renderAvailability();
@@ -3139,6 +3417,18 @@ export default function UnionAdminDashboard() {
     const ActivePageIcon =
         tabs.find((tab) => tab.key === activeTab)?.icon ?? BarChart3;
     const pageHeader = getPageHeaderContent(activeTab, activeWorkspace);
+    const groupedSidebarTabs = sidebarSections
+        .map((section) => ({
+            ...section,
+            items: section.keys
+                .map((key) =>
+                    availableTabs.find((tab) => tab.key === key),
+                )
+                .filter(
+                    (tab): tab is TabDefinition => Boolean(tab),
+                ),
+        }))
+        .filter((section) => section.items.length > 0);
 
     return (
         <>
@@ -3184,12 +3474,8 @@ export default function UnionAdminDashboard() {
 
                 <Link
                     className={styles.logoLink}
-                    to={fanDashboardRoute ?? "/"}
-                    aria-label={
-                        fanDashboardRoute
-                            ? "Open Fan Dashboard"
-                            : "Open League OS home"
-                    }
+                    to="/"
+                    aria-label="Open League OS home"
                 >
                     <img
                         className={styles.logoHorizontal}
@@ -3231,28 +3517,48 @@ export default function UnionAdminDashboard() {
                     ))}
                 </select>
 
-                <nav className={styles.navList} aria-label="Union workspace modules">
-                    {availableTabs.map((tab) => {
-                        const Icon = tab.icon;
+                <nav
+                    className={styles.navList}
+                    aria-label="Union workspace modules"
+                >
+                    {groupedSidebarTabs.map((section) => (
+                        <div
+                            className={styles.navGroup}
+                            key={section.label}
+                        >
+                            <span className={styles.navGroupLabel}>
+                                {section.label}
+                            </span>
 
-                        return (
-                            <button
-                                key={tab.key}
-                                className={
-                                    activeTab === tab.key
-                                        ? styles.activeNavItem
-                                        : ""
-                                }
-                                type="button"
-                                onClick={() => resetSearch(tab.key)}
-                                aria-label={tab.label}
-                                title={tab.label}
-                            >
-                                <Icon size={17} strokeWidth={2.3} aria-hidden="true" />
-                                <span>{tab.label}</span>
-                            </button>
-                        );
-                    })}
+                            {section.items.map((tab) => {
+                                const Icon = tab.icon;
+
+                                return (
+                                    <button
+                                        key={tab.key}
+                                        className={
+                                            activeTab === tab.key
+                                                ? styles.activeNavItem
+                                                : ""
+                                        }
+                                        type="button"
+                                        onClick={() =>
+                                            resetSearch(tab.key)
+                                        }
+                                        aria-label={tab.label}
+                                        title={tab.label}
+                                    >
+                                        <Icon
+                                            size={17}
+                                            strokeWidth={2.3}
+                                            aria-hidden="true"
+                                        />
+                                        <span>{tab.label}</span>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    ))}
                 </nav>
 
                 <button
@@ -3286,14 +3592,6 @@ export default function UnionAdminDashboard() {
                         <Link className={styles.headerActionPrimary} to={pageHeader.publicPath}>
                             {pageHeader.publicLabel}
                         </Link>
-                        {fanDashboardRoute ? (
-                            <Link
-                                className={styles.headerActionSecondary}
-                                to={fanDashboardRoute}
-                            >
-                                Open Fan Dashboard
-                            </Link>
-                        ) : null}
                     </div>
                 </header>
 
@@ -3314,12 +3612,12 @@ export default function UnionAdminDashboard() {
                 ) : null}
 
                 {renderActiveTab()}
-
-                <div className={styles.dashboardFooterWrap}>
-                    <AuthenticatedFooter />
-                </div>
             </section>
             </main>
+
+            <div className={styles.dashboardFooterWrap}>
+                <AuthenticatedFooter />
+            </div>
 
             <MobileUnionNavigation
                 activeKey={activeTab}
@@ -3330,7 +3628,6 @@ export default function UnionAdminDashboard() {
                 }))}
                 workspaceName={activeWorkspace.name}
                 workspaceRole={activeWorkspace.role}
-                fanDashboardRoute={fanDashboardRoute}
                 onTabChange={(key) => resetSearch(key as TabKey)}
                 onLogout={handleLogout}
             />
