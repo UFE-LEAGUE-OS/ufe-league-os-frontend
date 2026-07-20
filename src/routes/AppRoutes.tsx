@@ -140,6 +140,8 @@ import SponsorCampaigns from '../pages/sponsor/SponsorCampaigns';
 import SponsorSettings from '../pages/sponsor/SponsorSettings';
 import SponsorHelp from '../pages/sponsor/SponsorHelp';
 import CampaignTargeting from '../pages/sponsor/CampaignTargeting';
+import CampaignAssets from '../pages/sponsor/CampaignAssets';
+import CampaignPlacement from '../pages/sponsor/CampaignPlacement';
 import CampaignBudget from '../pages/sponsor/CampaignBudget';
 import CampaignReview from '../pages/sponsor/CampaignReview';
 import CampaignLaunch from '../pages/sponsor/CampaignLaunch';
@@ -592,6 +594,14 @@ export default function AppRoutes() {
                 <Route
                     path="/sponsor/campaigns/new/targeting"
                     element={dashboardProtectedPage(<CampaignTargeting />, 'SPONSOR')}
+                />
+                <Route
+                    path="/sponsor/campaigns/new/assets"
+                    element={dashboardProtectedPage(<CampaignAssets />, 'SPONSOR')}
+                />
+                <Route
+                    path="/sponsor/campaigns/new/placement"
+                    element={dashboardProtectedPage(<CampaignPlacement />, 'SPONSOR')}
                 />
                 <Route
                     path="/sponsor/campaigns/new/budget"

@@ -9,18 +9,21 @@ import {
   FiInfo,
 } from 'react-icons/fi';
 import SponsorSidebar from '../../components/SponsorSidebar';
+import { useSponsorCampaignStore } from '../../store/sponsorCampaignStore';
 import '../../styles/pages/landing.css';
 import './CampaignBudget.css';
 
 const steps = [
   { number: 1, label: 'Campaign Info' },
   { number: 2, label: 'Targeting' },
-  { number: 3, label: 'Budget' },
-  { number: 4, label: 'Review' },
-  { number: 5, label: 'Launch' },
+  { number: 3, label: 'Assets' },
+  { number: 4, label: 'Placement' },
+  { number: 5, label: 'Budget' },
+  { number: 6, label: 'Review' },
+  { number: 7, label: 'Launch' },
 ];
 
-const currentStep = 3;
+const currentStep = 5;
 
 const budgetPresets = [
   { id: 'starter', label: 'Starter', amount: '5,000,000', desc: 'Good for small digital campaigns' },
@@ -44,18 +47,32 @@ const paymentSchedules = [
 
 export default function CampaignBudget() {
   const navigate = useNavigate();
+  const budget = useSponsorCampaignStore((s) => s.budget);
+  const updateBudget = useSponsorCampaignStore((s) => s.updateBudget);
+  const saveDraft = useSponsorCampaignStore((s) => s.saveDraft);
 
-  const [selectedPreset, setSelectedPreset] = useState('premium');
-  const [customBudget, setCustomBudget] = useState('');
-  const [isCustom, setIsCustom] = useState(false);
-  const [selectedDuration, setSelectedDuration] = useState('1year');
-  const [selectedPayment, setSelectedPayment] = useState('upfront');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
 
-  const selectedPresetData = budgetPresets.find((b) => b.id === selectedPreset);
-  const displayBudget = isCustom ? customBudget : selectedPresetData?.amount ?? '0';
-  const displayDuration = durations.find((d) => d.id === selectedDuration)?.label ?? '';
+  const displayDuration = durations.find((d) => d.id === budget.duration)?.label ?? '';
+
+  const handleNext = async () => {
+    if (!budget.amount || !budget.duration || !budget.startDate || !budget.endDate) {
+      setErrorMessage('Please set a budget, duration and campaign dates before continuing.');
+      return;
+    }
+
+    setErrorMessage('');
+    setIsSaving(true);
+    try {
+      await saveDraft();
+      navigate('/sponsor/campaigns/new/review');
+    } catch {
+      setErrorMessage('We could not save your campaign. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   return (
     <div className="cb-page">
@@ -66,7 +83,7 @@ export default function CampaignBudget() {
 
           {/* Header */}
           <div className="cb-header">
-            <button className="cb-back-btn" onClick={() => navigate('/sponsor/campaigns/new/targeting')}>
+            <button className="cb-back-btn" onClick={() => navigate('/sponsor/campaigns/new/placement')}>
               <FiArrowLeft size={18} />
             </button>
             <h1 className="cb-title">Create Sponsor Campaign</h1>
@@ -114,14 +131,14 @@ export default function CampaignBudget() {
                   {budgetPresets.map((preset) => (
                     <div
                       key={preset.id}
-                      className={`cb-preset-card ${selectedPreset === preset.id && !isCustom ? 'cb-preset-selected' : ''}`}
-                      onClick={() => { setSelectedPreset(preset.id); setIsCustom(false); }}
+                      className={`cb-preset-card ${budget.presetId === preset.id && !budget.isCustom ? 'cb-preset-selected' : ''}`}
+                      onClick={() => updateBudget({ presetId: preset.id, isCustom: false, amount: preset.amount })}
                     >
                       {preset.popular && <span className="cb-popular-badge">Most Popular</span>}
                       <div className="cb-preset-label">{preset.label}</div>
                       <div className="cb-preset-amount">UGX {preset.amount}</div>
                       <div className="cb-preset-desc">{preset.desc}</div>
-                      {selectedPreset === preset.id && !isCustom && (
+                      {budget.presetId === preset.id && !budget.isCustom && (
                         <div className="cb-preset-check"><FiCheck size={14} /></div>
                       )}
                     </div>
@@ -130,22 +147,22 @@ export default function CampaignBudget() {
 
                 {/* Custom budget */}
                 <div
-                  className={`cb-custom-wrap ${isCustom ? 'cb-custom-active' : ''}`}
-                  onClick={() => setIsCustom(true)}
+                  className={`cb-custom-wrap ${budget.isCustom ? 'cb-custom-active' : ''}`}
+                  onClick={() => updateBudget({ isCustom: true, amount: '' })}
                 >
                   <div className="cb-custom-left">
-                    <div className={`cb-radio ${isCustom ? 'cb-radio-on' : ''}`} />
+                    <div className={`cb-radio ${budget.isCustom ? 'cb-radio-on' : ''}`} />
                     <span className="cb-custom-label">Custom Budget</span>
                   </div>
-                  {isCustom && (
+                  {budget.isCustom && (
                     <div className="cb-custom-input-wrap">
                       <span className="cb-currency">UGX</span>
                       <input
                         className="cb-custom-input"
                         type="text"
                         placeholder="Enter amount"
-                        value={customBudget}
-                        onChange={(e) => setCustomBudget(e.target.value)}
+                        value={budget.amount}
+                        onChange={(e) => updateBudget({ amount: e.target.value })}
                         onClick={(e) => e.stopPropagation()}
                       />
                     </div>
@@ -162,10 +179,10 @@ export default function CampaignBudget() {
                   {durations.map((d) => (
                     <div
                       key={d.id}
-                      className={`cb-duration-card ${selectedDuration === d.id ? 'cb-duration-selected' : ''}`}
-                      onClick={() => setSelectedDuration(d.id)}
+                      className={`cb-duration-card ${budget.duration === d.id ? 'cb-duration-selected' : ''}`}
+                      onClick={() => updateBudget({ duration: d.id })}
                     >
-                      <div className={`cb-radio ${selectedDuration === d.id ? 'cb-radio-on' : ''}`} />
+                      <div className={`cb-radio ${budget.duration === d.id ? 'cb-radio-on' : ''}`} />
                       <div>
                         <div className="cb-duration-label">{d.label}</div>
                         <div className="cb-duration-desc">{d.desc}</div>
@@ -186,8 +203,8 @@ export default function CampaignBudget() {
                       <input
                         className="cb-input"
                         type="date"
-                        value={startDate}
-                        onChange={(e) => setStartDate(e.target.value)}
+                        value={budget.startDate}
+                        onChange={(e) => updateBudget({ startDate: e.target.value })}
                       />
                     </div>
                   </div>
@@ -198,8 +215,8 @@ export default function CampaignBudget() {
                       <input
                         className="cb-input"
                         type="date"
-                        value={endDate}
-                        onChange={(e) => setEndDate(e.target.value)}
+                        value={budget.endDate}
+                        onChange={(e) => updateBudget({ endDate: e.target.value })}
                       />
                     </div>
                   </div>
@@ -213,10 +230,10 @@ export default function CampaignBudget() {
                   {paymentSchedules.map((p) => (
                     <div
                       key={p.id}
-                      className={`cb-payment-card ${selectedPayment === p.id ? 'cb-payment-selected' : ''}`}
-                      onClick={() => setSelectedPayment(p.id)}
+                      className={`cb-payment-card ${budget.paymentSchedule === p.id ? 'cb-payment-selected' : ''}`}
+                      onClick={() => updateBudget({ paymentSchedule: p.id })}
                     >
-                      <div className={`cb-radio ${selectedPayment === p.id ? 'cb-radio-on' : ''}`} />
+                      <div className={`cb-radio ${budget.paymentSchedule === p.id ? 'cb-radio-on' : ''}`} />
                       <div>
                         <div className="cb-payment-label">{p.label}</div>
                         <div className="cb-payment-desc">{p.desc}</div>
@@ -242,7 +259,7 @@ export default function CampaignBudget() {
               <div className="cb-summary-rows">
                 <div className="cb-summary-row">
                   <span className="cb-summary-label">Campaign Budget</span>
-                  <span className="cb-summary-val">UGX {displayBudget}</span>
+                  <span className="cb-summary-val">UGX {budget.amount || '0'}</span>
                 </div>
                 <div className="cb-summary-row">
                   <span className="cb-summary-label">Duration</span>
@@ -251,22 +268,22 @@ export default function CampaignBudget() {
                 <div className="cb-summary-row">
                   <span className="cb-summary-label">Payment</span>
                   <span className="cb-summary-val">
-                    {paymentSchedules.find((p) => p.id === selectedPayment)?.label}
+                    {paymentSchedules.find((p) => p.id === budget.paymentSchedule)?.label}
                   </span>
                 </div>
                 <div className="cb-summary-row">
                   <span className="cb-summary-label">Start Date</span>
-                  <span className="cb-summary-val">{startDate || '—'}</span>
+                  <span className="cb-summary-val">{budget.startDate || '—'}</span>
                 </div>
                 <div className="cb-summary-row">
                   <span className="cb-summary-label">End Date</span>
-                  <span className="cb-summary-val">{endDate || '—'}</span>
+                  <span className="cb-summary-val">{budget.endDate || '—'}</span>
                 </div>
               </div>
               <div className="cb-summary-divider" />
               <div className="cb-summary-total-row">
                 <span className="cb-summary-total-label">Estimated Total</span>
-                <span className="cb-summary-total-val">UGX {displayBudget}</span>
+                <span className="cb-summary-total-val">UGX {budget.amount || '0'}</span>
               </div>
               <div className="cb-summary-note">
                 <FiDollarSign size={13} className="cb-summary-note-icon" />
@@ -275,13 +292,17 @@ export default function CampaignBudget() {
             </div>
           </div>
 
+          {errorMessage && (
+            <div className="cb-error-banner">{errorMessage}</div>
+          )}
+
           {/* Bottom nav */}
           <div className="cb-bottom-nav">
-            <button className="cb-back-nav-btn" onClick={() => navigate('/sponsor/campaigns/new/targeting')}>
-              <FiArrowLeft size={15} /> Back: Targeting
+            <button className="cb-back-nav-btn" onClick={() => navigate('/sponsor/campaigns/new/placement')}>
+              <FiArrowLeft size={15} /> Back: Placement
             </button>
-            <button className="cb-next-btn" onClick={() => navigate('/sponsor/campaigns/new/review')}>
-              Next: Review <FiArrowRight size={15} />
+            <button className="cb-next-btn" disabled={isSaving} onClick={() => void handleNext()}>
+              {isSaving ? 'Saving…' : 'Next: Review'} <FiArrowRight size={15} />
             </button>
           </div>
         </main>

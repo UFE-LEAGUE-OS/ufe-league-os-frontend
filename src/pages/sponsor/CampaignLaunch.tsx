@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
   FiCheckCircle,
   FiArrowRight,
@@ -13,15 +13,19 @@ import {
   FiDollarSign,
 } from 'react-icons/fi';
 import SponsorSidebar from '../../components/SponsorSidebar';
+import { useSponsorCampaignStore } from '../../store/sponsorCampaignStore';
+import type { SponsorCampaign } from '../../services/sponsorCampaignService';
 import '../../styles/pages/landing.css';
 import './CampaignLaunch.css';
 
 const steps = [
   { number: 1, label: 'Campaign Info' },
   { number: 2, label: 'Targeting' },
-  { number: 3, label: 'Budget' },
-  { number: 4, label: 'Review' },
-  { number: 5, label: 'Launch' },
+  { number: 3, label: 'Assets' },
+  { number: 4, label: 'Placement' },
+  { number: 5, label: 'Budget' },
+  { number: 6, label: 'Review' },
+  { number: 7, label: 'Launch' },
 ];
 
 const nextSteps = [
@@ -50,14 +54,23 @@ const nextSteps = [
 
 export default function CampaignLaunch() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [copied, setCopied] = useState(false);
+  const store = useSponsorCampaignStore();
+  const { info, budget } = store;
 
-  const campaignRef = 'CAM-2026-00247';
+  const campaign = (location.state as { campaign?: SponsorCampaign } | null)?.campaign;
+  const campaignRef = campaign?.reference || `Pending review (ID ${campaign?.id ?? '—'})`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(campaignRef);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleCreateAnother = () => {
+    store.reset();
+    navigate('/sponsor/campaigns/new');
   };
 
   return (
@@ -70,8 +83,8 @@ export default function CampaignLaunch() {
           {/* Stepper */}
           <div className="cl-stepper">
             {steps.map((step, index) => {
-              const isCompleted = step.number < 5;
-              const isActive = step.number === 5;
+              const isCompleted = step.number < 7;
+              const isActive = step.number === 7;
               return (
                 <div key={step.number} className="cl-step-wrap">
                   <div className="cl-step">
@@ -128,7 +141,7 @@ export default function CampaignLaunch() {
                 </div>
                 <div className="cl-summary-label">Campaign</div>
                 <div className="cl-summary-val">
-                  Nile Special Rugby Premiership – Brand Awareness
+                  {info.campaignName || campaign?.name || '—'}
                 </div>
               </div>
               <div className="cl-summary-card">
@@ -136,21 +149,23 @@ export default function CampaignLaunch() {
                   <FiCalendar size={18} className="cl-summary-icon" />
                 </div>
                 <div className="cl-summary-label">Duration</div>
-                <div className="cl-summary-val">01 Jun 2026 – 31 May 2027</div>
+                <div className="cl-summary-val">
+                  {budget.startDate || '—'} – {budget.endDate || '—'}
+                </div>
               </div>
               <div className="cl-summary-card">
                 <div className="cl-summary-icon-wrap">
                   <FiUsers size={18} className="cl-summary-icon" />
                 </div>
-                <div className="cl-summary-label">Estimated Reach</div>
-                <div className="cl-summary-val">850K – 1.2M fans</div>
+                <div className="cl-summary-label">Placements</div>
+                <div className="cl-summary-val">{store.placements.length} selected</div>
               </div>
               <div className="cl-summary-card">
                 <div className="cl-summary-icon-wrap">
                   <FiDollarSign size={18} className="cl-summary-icon" />
                 </div>
                 <div className="cl-summary-label">Total Budget</div>
-                <div className="cl-summary-val">UGX 50,000,000</div>
+                <div className="cl-summary-val">UGX {budget.amount || '—'}</div>
               </div>
             </div>
           </div>
@@ -220,6 +235,7 @@ export default function CampaignLaunch() {
             <div className="cl-next-grid">
               {nextSteps.map((item) => {
                 const Icon = item.icon;
+                const isCreateAnother = item.route === '/sponsor/campaigns/new';
                 return (
                   <div key={item.title} className="cl-next-card">
                     <div className="cl-next-icon-wrap">
@@ -229,7 +245,7 @@ export default function CampaignLaunch() {
                     <p className="cl-next-desc">{item.desc}</p>
                     <button
                       className="cl-next-btn"
-                      onClick={() => navigate(item.route)}
+                      onClick={() => (isCreateAnother ? handleCreateAnother() : navigate(item.route))}
                     >
                       {item.action} <FiArrowRight size={14} />
                     </button>
