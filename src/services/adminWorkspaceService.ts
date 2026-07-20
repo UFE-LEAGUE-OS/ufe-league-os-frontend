@@ -1,5 +1,7 @@
 import apiClient from "./apiClient";
 import type { ActiveClubWorkspace } from "../utils/clubWorkspace";
+import { getStoredUser } from "../utils/tokenManager";
+import type { AuthenticatedUser } from "../types/dashboardAccess";
 
 export interface AdminWorkspaceMatch {
   id: number;
@@ -568,18 +570,86 @@ export async function getClubAdminWorkspace(
   // The current backend still resolves this endpoint from the user-linked
   // Club. Send the selected scope for the maintained contract, then reject
   // the response below if the backend did not actually honor that selection.
-  const response = await apiClient.get<unknown>(
-    `/dashboards/club-admin/workspace/?club_id=${encodeURIComponent(
+  try {
+    const response = await apiClient.get<unknown>(
+      `/dashboards/club-admin/workspace/?club_id=${encodeURIComponent(
+        selectedScopeId,
+      )}`,
+    );
+
+    assertSelectedClubWorkspace(
+      response.data,
       selectedScopeId,
-    )}`,
-  );
+    );
 
-  assertSelectedClubWorkspace(
-    response.data,
-    selectedScopeId,
-  );
+    return response.data;
+  } catch (error) {
+    return getLegacyClubAdminWorkspace(selectedScopeId, error);
+  }
+}
 
-  return response.data;
+async function getLegacyClubAdminWorkspace(
+  selectedScopeId: string,
+  originalError: unknown,
+): Promise<ClubAdminWorkspaceData> {
+  try {
+    const response = await apiClient.get<{
+      user?: AuthenticatedUser | null;
+    }>("/dashboards/club-admin/");
+    const user =
+      response.data.user ??
+      getStoredUser<AuthenticatedUser>();
+    const club =
+      user && typeof user.club === "object" && user.club !== null
+        ? user.club as { id?: unknown; name?: unknown }
+        : null;
+    const clubId =
+      typeof club?.id === "number" || typeof club?.id === "string"
+        ? Number(club.id)
+        : Number(selectedScopeId);
+
+    if (!Number.isFinite(clubId)) {
+      throw originalError;
+    }
+
+    return {
+      scope_type: "CLUB",
+      club: {
+        id: clubId,
+        name:
+          typeof club?.name === "string" && club.name.trim()
+            ? club.name
+            : "Club Operations",
+        short_name: "",
+        slug: "",
+        sport: "FOOTBALL",
+        sport_display: "Football",
+        logo_url: null,
+        primary_color: "",
+        secondary_color: "",
+      },
+      summary: {
+        competitions: 0,
+        upcoming_fixtures: 0,
+        completed_matches: 0,
+        club_users: 0,
+        ticket_types: 0,
+        tickets_sold: 0,
+        checked_in: 0,
+      },
+      league_memberships: [],
+      upcoming_fixtures: [],
+      recent_results: [],
+      ticket_events: [],
+      staff: [],
+      recent_activity: [],
+      financial_overview: [],
+      ticketing_logs: [],
+      ticketing_pending_issues: 0,
+    };
+  } catch {
+    throw originalError;
+  }
 }
 
 function isFiniteNumber(value: unknown): value is number {

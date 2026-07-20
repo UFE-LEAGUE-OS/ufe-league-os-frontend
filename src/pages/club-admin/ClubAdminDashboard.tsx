@@ -635,6 +635,10 @@ function isWorkspaceTabPermitted(
   const tabPermissions = TAB_PERMISSION_OVERRIDES[tab];
 
   if (tabPermissions) {
+    if (tabPermissions.length === 0) {
+      return true;
+    }
+
     return tabPermissions.some((permission) =>
       workspace.permissions.includes(permission),
     );

@@ -22,6 +22,9 @@ import {
     getDefaultDashboardRoute,
     validateDashboardAccess,
 } from '../../utils/dashboardAccess.js';
+import {
+    getDefaultDashboardRoute as getRoleDefaultDashboardRoute,
+} from '../../utils/roleRoutes.js';
 import type { AuthenticatedUser } from '../../types/dashboardAccess.js';
 
 import '../../styles/pages/auth/login.css';
@@ -123,6 +126,7 @@ function resolvePostLoginRoute(
 
     return (
         getDefaultDashboardRoute(dashboardAccess) ??
+        getRoleDefaultDashboardRoute(result.user) ??
         ACCESS_UNAVAILABLE_ROUTE
     );
 }
