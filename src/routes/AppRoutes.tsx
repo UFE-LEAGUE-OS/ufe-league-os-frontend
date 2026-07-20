@@ -176,6 +176,7 @@ const SponsorProfile = lazy(() => import('../pages/sponsor/SponsorProfile'));
 const UnionAdminDashboard = lazy(() => import('../pages/union-admin/UnionAdminDashboard'));
 const LeagueAdminDashboard = lazy(() => import('../pages/league-admin/LeagueAdminDashboard'));
 const ClubAdminDashboard = lazy(() => import('../pages/club-admin/ClubAdminDashboard'));
+const ClubTicketingOfficer = lazy(() => import('../pages/club-admin/sub-roles/ClubTicketingOfficer'));
 
 // Club management — lazy-loaded
 const TeamsManagement = lazy(() => import('../pages/club-admin/club-management/TeamsManagement'));
@@ -269,7 +270,7 @@ export default function AppRoutes() {
                 <Route
                     path="/dashboard/ticketing-officer/*"
                     element={dashboardProtectedPage(
-                        <ClubAdminDashboard />,
+                        <ClubTicketingOfficer />,
                         'TICKETING_OFFICER',
                         'TICKETING_OFFICER',
                         undefined,
