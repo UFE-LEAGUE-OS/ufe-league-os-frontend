@@ -28,8 +28,6 @@ const SPORT_NAMES: Record<string, string> = {
   rugby: 'Rugby',
   football: 'Football',
   basketball: 'Basketball',
-  cricket: 'Cricket',
-  netball: 'Netball',
 };
 
 // Base sports category (always shown)
@@ -42,8 +40,6 @@ const SPORTS_CATEGORY: Category = {
     { id: 'rugby', name: 'Rugby' },
     { id: 'football', name: 'Football' },
     { id: 'basketball', name: 'Basketball' },
-    { id: 'cricket', name: 'Cricket' },
-    { id: 'netball', name: 'Netball' },
   ],
 };
 
@@ -55,8 +51,6 @@ const FEDERATIONS_BY_SPORT: Record<string, Item[]> = {
     { id: 'unoc', name: 'UNOC' },
   ],
   Basketball: [{ id: 'fuba', name: 'FUBA' }],
-  Cricket: [],
-  Netball: [],
 };
 
 // Generate dynamic categories based on selected sports
