@@ -373,14 +373,14 @@ describe("AdminWorkspaceLayout", () => {
     ).toHaveLength(3);
   });
 
-  it("fails closed for empty or missing Club permission metadata", () => {
-    type FailClosedTab = "empty" | "parent" | "child";
+  it("fails closed for missing Club permission metadata", () => {
+    type FailClosedTab = "unannotated" | "parent" | "child";
     const emptyPermissionNav: AdminWorkspaceNavItem<FailClosedTab>[] = [
       {
-        key: "empty",
-        label: "Empty permission module",
+        key: "unannotated",
+        label: "Unannotated module",
         icon: BarChart3,
-        requiredClubPermissions: [],
+        // No requiredClubPermissions property at all - should fail closed
       },
       {
         key: "parent",
@@ -406,7 +406,7 @@ describe("AdminWorkspaceLayout", () => {
           title="KOBS"
           description="Manage this Club."
           navItems={emptyPermissionNav}
-          activeTab="empty"
+          activeTab="unannotated"
           onTabChange={vi.fn()}
           activeClubWorkspace={activeClubWorkspace({
             permissions: ["dashboard.club_admin"],
@@ -419,7 +419,7 @@ describe("AdminWorkspaceLayout", () => {
 
     expect(
       screen.queryByRole("button", {
-        name: "Empty permission module",
+        name: "Unannotated module",
       }),
     ).toBeNull();
     expect(
