@@ -4,17 +4,53 @@ import {
 } from 'react-router-dom';
 import {
   FiClipboard,
+  FiEye,
+  FiFeather,
+  FiHeart,
+  FiHome,
   FiLayout,
+  FiLock,
+  FiLogIn,
   FiTarget,
   FiTrendingUp,
   FiUser,
   FiUserPlus,
+  FiUsers,
 } from 'react-icons/fi';
 import Navbar from '../../components/Navbar';
 import { useAuthStore } from '../../store/authStore';
 import { getToken } from '../../utils/tokenManager';
+import { LOGIN_ROUTE, type AuthFlowState } from '../../utils/authFlow';
 import '../../styles/pages/landing.css';
 import './SponsorshipHub.css';
+
+const packageTiers = [
+  {
+    icon: FiEye,
+    title: 'Visibility',
+    desc: 'Brand placement across matchday, digital and broadcast touchpoints.',
+  },
+  {
+    icon: FiUsers,
+    title: 'Fan Engagement',
+    desc: 'Activations that put your brand directly in front of engaged fans.',
+  },
+  {
+    icon: FiHome,
+    title: 'Hospitality',
+    desc: 'VIP access, hospitality suites and matchday experiences.',
+  },
+  {
+    icon: FiHeart,
+    title: 'Community Impact',
+    desc: 'Community-facing sponsorship opportunities that build brand trust.',
+  },
+  {
+    icon: FiFeather,
+    title: 'Grassroots Development',
+    desc: 'Support development programmes at the grassroots level.',
+  },
+];
 
 const steps = [
   {
@@ -156,6 +192,98 @@ export default function SponsorshipHub() {
                 <span className="sh-type-desc">
                   Individuals supporting sport
                 </span>
+              </button>
+            </div>
+
+            <div className="sh-login-divider">
+              <span>Already a sponsor?</span>
+            </div>
+
+            <button
+              type="button"
+              className="sh-login-btn"
+              onClick={() =>
+                navigate(LOGIN_ROUTE, {
+                  state: {
+                    postLoginRedirect:
+                      '/sponsor/dashboard',
+                  } satisfies AuthFlowState,
+                })
+              }
+            >
+              <FiLogIn size={16} />
+              Log In to Your Dashboard
+            </button>
+          </div>
+        </section>
+
+        <section className="sh-packages-section">
+          <h2 className="sh-packages-title">
+            Sponsorship Packages
+          </h2>
+
+          <div className="sh-packages-underline" />
+
+          <p className="sh-packages-intro">
+            Packages are tailored around a sponsorship
+            objective. Sign in or create a sponsor
+            account to see full package details and
+            pricing.
+          </p>
+
+          <div className="sh-packages-grid">
+            {packageTiers.map((tier) => {
+              const Icon = tier.icon;
+
+              return (
+                <article
+                  key={tier.title}
+                  className="sh-package-card"
+                >
+                  <div className="sh-package-icon-wrap">
+                    <Icon
+                      size={22}
+                      className="sh-package-icon"
+                    />
+                  </div>
+                  <div className="sh-package-title">
+                    {tier.title}
+                  </div>
+                  <div className="sh-package-desc">
+                    {tier.desc}
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+
+          <div className="sh-packages-cta">
+            <FiLock
+              size={15}
+              className="sh-packages-lock-icon"
+            />
+            <span className="sh-packages-cta-text">
+              Pricing is available to signed-in sponsors.
+            </span>
+            <div className="sh-packages-cta-buttons">
+              <button
+                type="button"
+                className="sh-packages-signin-btn"
+                onClick={() => navigate(LOGIN_ROUTE, {
+                  state: {
+                    postLoginRedirect:
+                      '/sponsor/dashboard',
+                  } satisfies AuthFlowState,
+                })}
+              >
+                Sign In
+              </button>
+              <button
+                type="button"
+                className="sh-packages-register-btn"
+                onClick={() => navigate('/register')}
+              >
+                Create Account
               </button>
             </div>
           </div>
