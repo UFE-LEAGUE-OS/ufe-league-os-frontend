@@ -1,16 +1,16 @@
-import "../styles/pages/NewsPage.css";
-import "../styles/pages/About.css";
-import Footer from "../components/Footer";
+import "../../styles/pages/NewsPage.css";
+import "../../styles/pages/About.css";
+import Footer from "../../components/Footer";
 import { useNavigate, useLocation } from "react-router-dom";
-import logo from "../assets/logo.png";
+import logo from "../../assets/logo.png";
 import { useState } from "react";
 
 // Sport images
-import footballImg from "../assets/football-card.png";
-import rugbyImg from "../assets/women.jfif";
-import basketballImg from "../assets/story4.jfif";
-import aboutImage from "../assets/fantasylandingpage.png";
-import heroImage from "../assets/hero.png"
+import footballImg from "../../assets/football-card.png";
+import rugbyImg from "../../assets/women.jfif";
+import basketballImg from "../../assets/story4.jfif";
+import aboutImage from "../../assets/fantasylandingpage.png";
+import heroImage from "../../assets/hero.png"
 
 type LocationState = { tab?: string };
 

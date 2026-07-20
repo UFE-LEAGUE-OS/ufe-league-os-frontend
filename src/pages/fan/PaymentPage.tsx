@@ -1,12 +1,12 @@
-import "../styles/pages/landing/PaymentPage.css";
-import logo from "../assets/logo.png";
+import "../../styles/pages/landing/PaymentPage.css";
+import logo from "../../assets/logo.png";
 import { FiUser } from "react-icons/fi";
 import { useState } from "react";
 
-import bg from "../assets/basketball-card.png";
-import mtn from "../assets/mtn.png";
-import airtel from "../assets/airtel.jfif";
-import bank from "../assets/bank.png";
+import bg from "../../assets/basketball-card.png";
+import mtn from "../../assets/mtn.png";
+import airtel from "../../assets/airtel.jfif";
+import bank from "../../assets/bank.png";
 
 type BillingCycle = "monthly" | "quarterly" | "yearly";
 type Plan = "premium" | "pro" | "basic";

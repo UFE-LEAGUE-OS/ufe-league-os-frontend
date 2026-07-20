@@ -1,15 +1,15 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
-import Navbar from '../components/Navbar';
-import Footer from '../components/Footer';
+import Navbar from '../../components/Navbar';
+import Footer from '../../components/Footer';
 import { Button } from '@/components/ui/button';
-import fixturesImg from '../assets/fixtures.png';
-import heroBg from '../assets/stadium-bg.svg';
+import fixturesImg from '../../assets/fixtures.png';
+import heroBg from '../../assets/stadium-bg.svg';
 import {
   getPublicFixtures,
   type PublicFixtureApi,
-} from '../services/publicDashboardService.js';
+} from '../../services/publicDashboardService.js';
 
 interface Fixture {
   id: string;

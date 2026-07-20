@@ -42,7 +42,7 @@ vi.mock('../pages/auth/Personalize', () => ({
   default: () => <h1>Personalize Page</h1>,
 }));
 
-vi.mock('../pages/NewsPage', () => ({
+vi.mock('../pages/landing/NewsPage', () => ({
   default: () => <h1>News Page</h1>,
 }));
 

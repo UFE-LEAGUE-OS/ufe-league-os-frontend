@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
-import "../components/SuperAdminSideBar.css";
-import "../styles/pages/SuperAdminDashboard.css";
-import "../styles/pages/SuperVariantsPage.css";
+import "../../components/SuperAdminSideBar.css";
+import "../../styles/pages/SuperAdminDashboard.css";
+import "../../styles/pages/SuperVariantsPage.css";
 
 import {
     
