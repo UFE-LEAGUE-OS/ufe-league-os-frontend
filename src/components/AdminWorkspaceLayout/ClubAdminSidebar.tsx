@@ -135,8 +135,15 @@ function clubAccessAllows<T extends string>(
     return false;
   }
 
-  if (!item.requiredClubPermissions?.length) {
+  // If requiredClubPermissions is undefined (not set), fail closed (deny access)
+  // If requiredClubPermissions is an empty array [], allow access (no restrictions)
+  if (item.requiredClubPermissions === undefined) {
     return false;
+  }
+
+  // Empty array means no permissions required - allow access
+  if (item.requiredClubPermissions.length === 0) {
+    return true;
   }
 
   const effectivePermissions = new Set(
