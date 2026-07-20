@@ -169,6 +169,166 @@
 .sh-type-name { font-size: 14px; font-weight: 700; color: #ffffff; }
 .sh-type-desc { font-size: 12px; color: #9CA3AF; line-height: 1.4; }
 
+.sh-login-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  margin-top: 18px;
+  color: #6B7280;
+  font-size: 12px;
+}
+
+.sh-login-divider::before,
+.sh-login-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.sh-login-btn {
+  width: 100%;
+  margin-top: 12px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 12px;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: 'Inter', sans-serif;
+  padding: 14px 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.sh-login-btn:hover {
+  border-color: #8135FA;
+  background: rgba(129, 53, 250, 0.12);
+}
+
+/* ── Sponsorship Packages ─────────────────────── */
+.sh-packages-section {
+  padding: 0 48px 56px;
+}
+
+.sh-packages-title {
+  font-size: 32px;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0 0 10px;
+}
+
+.sh-packages-underline {
+  width: 60px;
+  height: 3px;
+  background: #8135FA;
+  border-radius: 2px;
+  margin-bottom: 16px;
+}
+
+.sh-packages-intro {
+  font-size: 14px;
+  color: #9CA3AF;
+  line-height: 1.7;
+  max-width: 640px;
+  margin: 0 0 32px;
+}
+
+.sh-packages-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.sh-package-card {
+  background: rgba(18, 19, 31, 0.85);
+  border: 1px solid #1e2340;
+  border-radius: 14px;
+  padding: 24px 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+}
+
+.sh-package-icon-wrap {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: rgba(129, 53, 250, 0.14);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+
+.sh-package-icon { color: #8135FA; }
+.sh-package-title { font-size: 14px; font-weight: 700; color: #ffffff; }
+.sh-package-desc { font-size: 12px; color: #9CA3AF; line-height: 1.5; }
+
+.sh-packages-cta {
+  background: rgba(129, 53, 250, 0.06);
+  border: 1px solid rgba(129, 53, 250, 0.2);
+  border-radius: 14px;
+  padding: 18px 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.sh-packages-lock-icon { color: #8135FA; flex-shrink: 0; }
+
+.sh-packages-cta-text {
+  font-size: 13px;
+  color: #d1d5db;
+  flex: 1;
+  min-width: 200px;
+}
+
+.sh-packages-cta-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.sh-packages-signin-btn {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 10px;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: 'Inter', sans-serif;
+  padding: 10px 18px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+.sh-packages-signin-btn:hover {
+  border-color: #8135FA;
+  background: rgba(129, 53, 250, 0.12);
+}
+
+.sh-packages-register-btn {
+  background: #8135FA;
+  border: none;
+  border-radius: 10px;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: 'Inter', sans-serif;
+  padding: 10px 18px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+.sh-packages-register-btn:hover { background: #9b55fb; }
+
 /* ── How it works ────────────────────────────── */
 .sh-how-section {
   padding: 48px 48px 60px;
@@ -238,6 +398,8 @@
   .sh-hero-section { grid-template-columns: 1fr 360px; padding: 40px 32px; }
   .sh-steps-grid { gap: 14px; }
   .sh-how-section { padding: 40px 32px 48px; }
+  .sh-packages-section { padding: 0 32px 48px; }
+  .sh-packages-grid { grid-template-columns: repeat(3, 1fr); }
 }
 
 @media (max-width: 1024px) {
@@ -245,6 +407,8 @@
   .sh-become-sponsor-card { max-width: 500px; }
   .sh-steps-grid { grid-template-columns: repeat(2, 1fr); }
   .sh-how-section { padding: 32px 24px 40px; }
+  .sh-packages-section { padding: 0 24px 40px; }
+  .sh-packages-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
 @media (max-width: 768px) {
@@ -255,10 +419,15 @@
   .sh-sponsor-type-grid { grid-template-columns: 1fr; }
   .sh-how-section { padding: 24px 16px 32px; }
   .sh-stats { gap: 20px; }
+  .sh-packages-section { padding: 0 16px 32px; }
+  .sh-packages-grid { grid-template-columns: 1fr; }
+  .sh-packages-cta-buttons { width: 100%; }
+  .sh-packages-signin-btn, .sh-packages-register-btn { flex: 1; }
 }
 
 @media (max-width: 480px) {
   .sh-page-title { font-size: 26px; }
   .sh-bs-title { font-size: 20px; }
   .sh-how-title { font-size: 24px; }
+  .sh-packages-title { font-size: 24px; }
 }
