@@ -135,8 +135,10 @@ function clubAccessAllows<T extends string>(
     return false;
   }
 
+  // If no specific permissions are required, allow access
+  // (empty array means "no restrictions" not "no access")
   if (!item.requiredClubPermissions?.length) {
-    return false;
+    return true;
   }
 
   const effectivePermissions = new Set(
