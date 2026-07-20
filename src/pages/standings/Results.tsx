@@ -3,11 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import Footer from "../components/Footer";
-import Navbar from "../components/Navbar";
-import resultsImg from "../assets/results.png";
-import standingsImg from "../assets/standings.png";
-import heroBg from "../assets/stadium-bg.svg";
+import Footer from "../../components/Footer";
+import Navbar from "../../components/Navbar";
+import resultsImg from "../../assets/results.png";
+import standingsImg from "../../assets/standings.png";
+import heroBg from "../../assets/stadium-bg.svg";
 import {
     getPublicCompetitions,
     getPublicResults,
@@ -15,7 +15,7 @@ import {
     type PublicCompetitionApi,
     type PublicFixtureApi,
     type PublicStandingApi,
-} from "../services/publicDashboardService";
+} from "../../services/publicDashboardService";
 
 const competitionColors = ["#F97316", "#10B981", "#3B82F6", "#A855F7", "#EC4899"];
 

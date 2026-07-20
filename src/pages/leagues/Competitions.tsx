@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import CompetitionsNavbar from '../components/CompetitionsNavbar';
-import Footer from '../components/Footer';
+import CompetitionsNavbar from '../../components/CompetitionsNavbar';
+import Footer from '../../components/Footer';
 import {
     getPublicClubs,
     getPublicCompetitions,
@@ -12,9 +12,9 @@ import {
     type PublicCompetitionApi,
     type PublicFixtureApi,
     type PublicStandingApi,
-} from '../services/publicDashboardService';
-import '../styles/pages/landing/Competitions.css';
-import '../styles/pages/landing.css';
+} from '../../services/publicDashboardService';
+import '../../styles/pages/landing/Competitions.css';
+import '../../styles/pages/landing.css';
 
 type SportFilter = 'ALL' | 'RUGBY' | 'FOOTBALL' | 'BASKETBALL' | 'OTHER';
 

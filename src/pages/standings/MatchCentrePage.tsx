@@ -2,13 +2,13 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiMapPin, FiUsers, FiCalendar, FiShare2, FiExternalLink, FiArrowRight } from 'react-icons/fi';
 import './MatchCentrePage.css';
-import kccaLogo from '../assets/kcca.png';
-import vipersLogo from '../assets/Vipers_SC.jpg';
-import stadiumImg from '../assets/stadium-bg.svg';
-import kccaTransfer from '../assets/kcca_transfer.jpg';
-import vipersNews from '../assets/Vipers_SC.jpg';
-import Navbar from '../components/Navbar';
-import Footer from '../components/Footer';
+import kccaLogo from '../../assets/kcca.png';
+import vipersLogo from '../../assets/Vipers_SC.jpg';
+import stadiumImg from '../../assets/stadium-bg.svg';
+import kccaTransfer from '../../assets/kcca_transfer.jpg';
+import vipersNews from '../../assets/Vipers_SC.jpg';
+import Navbar from '../../components/Navbar';
+import Footer from '../../components/Footer';
 
 const tabs = ['Overview', 'Lineups', 'Timeline', 'Stats', 'Tickets'];
 

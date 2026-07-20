@@ -1,8 +1,8 @@
 import { useState, useMemo, useEffect } from "react";
 import axios from "axios";
-import "../components/SuperAdminSideBar.css";
-import "../styles/pages/SuperAdminDashboard.css";
-import "../styles/pages/SuperVariantsPage.css";
+import "../../components/SuperAdminSideBar.css";
+import "../../styles/pages/SuperAdminDashboard.css";
+import "../../styles/pages/SuperVariantsPage.css";
 
 import {
    
@@ -20,7 +20,7 @@ import {
 
 
 
-import "../styles/pages/SuperAdminDashboard.css";
+import "../../styles/pages/SuperAdminDashboard.css";
 
 
 /* ---------------- TYPES ---------------- */

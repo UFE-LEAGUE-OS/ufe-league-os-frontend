@@ -1,23 +1,23 @@
-import "../styles/pages/NewsPage.css"
+import "../../styles/pages/NewsPage.css"
 import { useNavigate } from "react-router-dom";
 
 import { FaArrowRight } from "react-icons/fa6";
-import heroB from "../assets/News/city oilers.jfif";
-import newsR from "../assets/News/kobs.jfif";
-import news2 from "../assets/images/rugby.jpeg";
-import newsF from "../assets/News/kcca sports.jfif";
-import news4 from "../assets/News/ucu.jfif";
-import news5 from "../assets/News/kiu.jfif";
-import news6 from "../assets/News/rhinos.jfif";
-import news7 from "../assets/News/shewolves.jfif";
-import news8 from "../assets/News/vipers.jfif";
-import news9 from "../assets/News/ura.jfif";
-import newsF2 from "../assets/News/kccanew.jfif";
-import news3 from "../assets/basketball-card.png";
-import heroF from "../assets/News/kcca sports.jfif";
-import heroR from "../assets/News/kobs.jfif";
-import Footer from "../components/Footer.tsx";
-import Navbar from "../components/Navbar.tsx";
+import heroB from "../../assets/News/city oilers.jfif";
+import newsR from "../../assets/News/kobs.jfif";
+import news2 from "../../assets/images/rugby.jpeg";
+import newsF from "../../assets/News/kcca sports.jfif";
+import news4 from "../../assets/News/ucu.jfif";
+import news5 from "../../assets/News/kiu.jfif";
+import news6 from "../../assets/News/rhinos.jfif";
+import news7 from "../../assets/News/shewolves.jfif";
+import news8 from "../../assets/News/vipers.jfif";
+import news9 from "../../assets/News/ura.jfif";
+import newsF2 from "../../assets/News/kccanew.jfif";
+import news3 from "../../assets/basketball-card.png";
+import heroF from "../../assets/News/kcca sports.jfif";
+import heroR from "../../assets/News/kobs.jfif";
+import Footer from "../../components/Footer.tsx";
+import Navbar from "../../components/Navbar.tsx";
 
 import { useState } from "react";
 

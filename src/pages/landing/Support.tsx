@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom';
-import Navbar from '../components/Navbar';
-import Footer from '../components/Footer';
+import Navbar from '../../components/Navbar';
+import Footer from '../../components/Footer';
 import { Mail, Phone, MapPin, Rocket, User, Ticket, Trophy, Wrench, Lock } from 'lucide-react';
-import heroBg from '../assets/stadium-bg.svg';
+import heroBg from '../../assets/stadium-bg.svg';
 
 const faqItems = [
   { q: 'How do I create an account?', a: 'Click "Sign Up" on the homepage, fill in your details, verify your email, and you\'re ready to follow your favourite Ugandan sports teams.' },

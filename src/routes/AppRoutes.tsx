@@ -24,8 +24,8 @@ import {
 
 // Public / first-paint pages — stay eagerly bundled
 import Personalize from '../pages/auth/Personalize';
-import NewsSection from '../pages/NewsPage';
-import AboutUs from '../pages/About';
+import NewsSection from '../pages/landing/NewsPage';
+import AboutUs from '../pages/landing/About';
 import Tickets from '../pages/landing/TicketsLandingPage';
 import Unions from '../pages/landing/Unions';
 import AuthenticatedLayout from '../components/AuthenticatedLayout/AuthenticatedLayout';
@@ -59,14 +59,14 @@ import ExploreMembershipsPage from '../pages/memberships/ExploreMembershipsPage'
 import MyMembershipsPage from '../pages/memberships/MyMembershipsPage';
 import ProtectedRoute from './ProtectedRoute';
 import DashboardEntitlementRoute from './DashboardEntitlementRoute';
-import Payments from '../pages/PaymentPage';
+import Payments from '../pages/fan/PaymentPage';
 import TicketCheckoutPage from '../pages/tickets/TicketCheckoutPage';
 import TicketPaymentProcessingPage from '../pages/tickets/TicketPaymentProcessingPage';
 import TicketPaymentSuccessPage from '../pages/tickets/TicketPaymentSuccessPage';
 import TicketPaymentFailedPage from '../pages/tickets/TicketPaymentFailedPage';
-import MatchCentrePage from '../pages/MatchCentrePage';
-import CompetitionConfigurator from '../pages/CompetitionConfigurator';
-import PublishStandards from '../pages/PublishStandards';
+import MatchCentrePage from '../pages/standings/MatchCentrePage';
+import CompetitionConfigurator from '../pages/super-admin/CompetitionConfigurator';
+import PublishStandards from '../pages/super-admin/PublishStandards';
 import AccessUnavailablePage from '../pages/account/AccessUnavailablePage';
 import type { DashboardIdentifier } from '../types/dashboardAccess';
 
