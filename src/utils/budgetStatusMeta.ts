@@ -1,4 +1,3 @@
-import React from "react";
 import type { ClubBudget } from "../services/adminWorkspaceService";
 
 /**
@@ -38,30 +37,4 @@ export function formatCurrency(value: number) {
     currency: "UGX",
     maximumFractionDigits: 0,
   }).format(value);
-}
-
-export function BudgetStatusBadge({
-  status,
-}: {
-  status: ClubBudget["status"];
-}): React.ReactNode {
-  const meta = BUDGET_STATUS_META[status];
-
-  return (
-    <span
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        gap: 6,
-        padding: "4px 10px",
-        borderRadius: 999,
-        fontSize: 12,
-        fontWeight: 600,
-        color: meta.color,
-        background: meta.background,
-      }}
-    >
-      {meta.label}
-    </span>
-  );
 }

@@ -150,7 +150,7 @@
 .popup-card {
   background: 
     linear-gradient(rgba(30, 31, 46, 0.938), rgba(30, 31, 46, 0.8)),
-    url("./src/assets/images/bak blue.jfif");
+    url("../assets/images/bak blue.jfif");
   background-size: cover;
   background-position: center;
   padding: 10px;
