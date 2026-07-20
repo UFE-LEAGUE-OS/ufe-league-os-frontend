@@ -5,6 +5,13 @@ import {
   getUnionDashboardOverview,
   getUnionFinanceDashboard,
   getUnionAdminMatchOfficials,
+  getUnionNationalTeams,
+  createUnionNationalTeam,
+  getUnionNationalTeamMembers,
+  createUnionNationalTeamMember,
+  getUnionRegistrationApplications,
+  updateUnionRegistrationApplication,
+  getUnionOfficialReadiness,
   getUnionOperationsDashboard,
   getUnionWorkspaceUsers,
   intersectUnionWorkspaceOptions,
@@ -279,5 +286,86 @@ describe("unionAdminService workspace-scoped dashboards", () => {
       workspace: "union & league",
       results: [],
     });
+  });
+});
+
+
+describe("unionAdminService maintained Union operations", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("uses workspace-scoped National Team and roster endpoints", async () => {
+    apiMock.get.mockResolvedValue({ data: { count: 0, results: [] } });
+    apiMock.post.mockResolvedValue({ data: { id: 1 } });
+
+    await getUnionNationalTeams("union & league");
+    await createUnionNationalTeam({
+      workspace: "union & league",
+      name: "National XV",
+      category: "Senior Men",
+    });
+    await getUnionNationalTeamMembers(7, "union & league");
+    await createUnionNationalTeamMember(7, {
+      workspace: "union & league",
+      full_name: "Amina Player",
+    });
+
+    expect(apiMock.get).toHaveBeenNthCalledWith(
+      1,
+      "/dashboards/union-admin/national-teams/?workspace=union%20%26%20league",
+    );
+    expect(apiMock.post).toHaveBeenNthCalledWith(
+      1,
+      "/dashboards/union-admin/national-teams/",
+      {
+        workspace: "union & league",
+        name: "National XV",
+        category: "Senior Men",
+      },
+    );
+    expect(apiMock.get).toHaveBeenNthCalledWith(
+      2,
+      "/dashboards/union-admin/national-teams/7/members/?workspace=union%20%26%20league",
+    );
+    expect(apiMock.post).toHaveBeenNthCalledWith(
+      2,
+      "/dashboards/union-admin/national-teams/7/members/",
+      {
+        workspace: "union & league",
+        full_name: "Amina Player",
+      },
+    );
+  });
+
+  it("loads and reviews registration applications and official readiness", async () => {
+    apiMock.get.mockResolvedValue({ data: { count: 0, results: [] } });
+    apiMock.patch.mockResolvedValue({ data: { id: 9 } });
+
+    await getUnionRegistrationApplications("uru");
+    await updateUnionRegistrationApplication(9, "uru", {
+      status: "APPROVED",
+      documents_complete: true,
+      reviewer_notes: "Verif ed",
+    });
+    await getUnionOfficialReadiness("uru");
+
+    expect(apiMock.get).toHaveBeenNthCalledWith(
+      1,
+      "/dashboards/union-admin/registration-applications/?workspace=uru",
+    );
+    expect(apiMock.patch).toHaveBeenCalledWith(
+      "/dashboards/union-admin/registration-applications/9/",
+      {
+        workspace: "uru",
+        status: "APPROVED",
+        documents_complete: true,
+        reviewer_notes: "Verif ed",
+      },
+    );
+    expect(apiMock.get).toHaveBeenNthCalledWith(
+      2,
+      "/dashboards/union-admin/official-readiness/?workspace=uru",
+    );
   });
 });

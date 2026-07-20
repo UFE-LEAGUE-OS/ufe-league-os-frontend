@@ -4947,3 +4947,8 @@ tr:last-child td {
         grid-template-columns: 1fr !important;
     }
 }
+
+.contentStack {
+    display: grid;
+    gap: 1.25rem;
+}

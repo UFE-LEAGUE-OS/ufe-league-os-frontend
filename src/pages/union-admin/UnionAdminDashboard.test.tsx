@@ -58,6 +58,11 @@ vi.mock("../../components/UnionAdminClubsPanel/UnionAdminClubsPanel", () => ({ d
 vi.mock("../../components/UnionAdminRefereesPanel/UnionAdminRefereesPanel", () => ({ default: () => <div /> }));
 vi.mock("../../components/OfficialAppointmentsPanel/OfficialAppointmentsPanel", () => ({ default: () => <div /> }));
 vi.mock("../../components/LeagueAdminScopesPanel/LeagueAdminScopesPanel", () => ({ default: () => <div /> }));
+vi.mock("../../components/UnionOperationalPanels/UnionOperationalPanels", () => ({
+  UnionNationalTeamsPanel: ({ workspaceSlug }: { workspaceSlug: string }) => <div>National Teams panel for {workspaceSlug}</div>,
+  UnionRegistrationsPanel: ({ workspaceSlug }: { workspaceSlug: string }) => <div>Registrations panel for {workspaceSlug}</div>,
+  UnionOfficialReadinessPanel: ({ workspaceSlug }: { workspaceSlug: string }) => <div>Official readiness panel for {workspaceSlug}</div>,
+}));
 
 const workspace = {
   id: 1,
@@ -82,8 +87,9 @@ function overviewFor() {
     summary: {
       active_competitions: 3,
       member_clubs: 2,
-      pending_approvals: 0,
-      referees: 0,
+      national_teams: 1,
+      pending_approvals: 4,
+      referees: 8,
       upcoming_matches: 0,
     },
     permissions: workspace.permissions,
@@ -142,13 +148,13 @@ describe("UnionAdminDashboard", () => {
     await waitFor(() => expect(serviceMock.getUnionFinanceDashboard).not.toHaveBeenCalled());
   });
 
-  it("shows only safe overview metrics and never promotes placeholder Club, approval, or official values", async () => {
+  it("shows maintained overview metrics and routes operational tabs to the new workspace panels", async () => {
     serviceMock.getUnionOperationsDashboard.mockResolvedValue({
       workspace: { slug: "union-a", acronym: "UA", name: "Union A", sport: "RUGBY" },
       competitions: [],
-      clubs: [{ id: "generated", name: "KOBS Rugby Club", players: 52 }],
-      national_teams: [{ team: "National XV", category: "Senior", players: 52, staff: 8, status: "Active" }],
-      registrations: [{ applicant: "Generated Applicant", club: "KOBS Rugby Club" }],
+      clubs: [{ id: "generated", name: "Generated Club", players: 52 }],
+      national_teams: [{ team: "Generated Team", category: "Senior", players: 52, staff: 8, status: "Active" }],
+      registrations: [{ applicant: "Generated Applicant", club: "Generated Club" }],
       referees: [{ name: "Generated Referee" }],
       appointments: [{ match: "Generated Fixture" }],
       player_positions: [],
@@ -157,21 +163,25 @@ describe("UnionAdminDashboard", () => {
     renderDashboard();
 
     expect(await screen.findByText("Active Competitions")).toBeInTheDocument();
-    expect(screen.getByText("Upcoming Matches")).toBeInTheDocument();
-    expect(screen.queryByText("Clubs / Teams")).not.toBeInTheDocument();
-    expect(screen.queryByText("Pending Approvals")).not.toBeInTheDocument();
-    expect(screen.queryByText("Officials")).not.toBeInTheDocument();
-    expect(screen.queryByText("KOBS Rugby Club")).not.toBeInTheDocument();
+    expect(screen.getAllByText("Member Clubs").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("National Teams").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Pending Approvals").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Officials").length).toBeGreaterThan(0);
+    expect(screen.queryByText("Generated Club")).not.toBeInTheDocument();
 
-    fireEvent.click(screen.getAllByRole("button", { name: "National Teams" })[0]);
-    expect(screen.getByText("No maintained National Team management API is available for this workspace.")).toBeInTheDocument();
-    expect(screen.queryByText("National XV")).not.toBeInTheDocument();
+    fireEvent.click(
+      screen.getAllByRole("button", { name: "National Teams" })[0],
+    );
+    expect(
+      screen.getByText("National Teams panel for union-a"),
+    ).toBeInTheDocument();
 
-    fireEvent.click(screen.getAllByRole("button", { name: "Registrations" })[0]);
-    expect(screen.getByText("No maintained registration approval API is available for this workspace.")).toBeInTheDocument();
-    expect(screen.queryByText("Generated Applicant")).not.toBeInTheDocument();
-    expect(screen.queryByText("Generated Referee")).not.toBeInTheDocument();
-    expect(screen.queryByText("Generated Fixture")).not.toBeInTheDocument();
+    fireEvent.click(
+      screen.getAllByRole("button", { name: "Registrations" })[0],
+    );
+    expect(
+      screen.getByText("Registrations panel for union-a"),
+    ).toBeInTheDocument();
   });
 
   it("keeps an overview failure inside Overview and does not display zero metric cards", async () => {

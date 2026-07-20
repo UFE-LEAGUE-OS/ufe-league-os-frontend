@@ -49,6 +49,11 @@ import UnionAdminClubsPanel from "../../components/UnionAdminClubsPanel/UnionAdm
 import UnionAdminRefereesPanel from "../../components/UnionAdminRefereesPanel/UnionAdminRefereesPanel";
 import OfficialAppointmentsPanel from "../../components/OfficialAppointmentsPanel/OfficialAppointmentsPanel";
 import LeagueAdminScopesPanel from "../../components/LeagueAdminScopesPanel/LeagueAdminScopesPanel";
+import {
+    UnionNationalTeamsPanel,
+    UnionOfficialReadinessPanel,
+    UnionRegistrationsPanel,
+} from "../../components/UnionOperationalPanels/UnionOperationalPanels";
 import { useCurrentUser } from "../../hooks/useCurrentUser";
 import { getEntitlementsForDashboard } from "../../utils/dashboardAccess.js";
 import logoHorizontal from "../../assets/logos/league-os-horizontal.png";
@@ -93,6 +98,7 @@ type Summary = {
     leagues: number;
     activeCompetitions: number;
     memberClubs: number;
+    nationalTeams: number;
     pendingApprovals: number;
     referees: number;
     upcomingMatches: number;
@@ -303,6 +309,7 @@ function getSummary(overview: UnionDashboardOverview | null): Summary {
         leagues: overview?.summary.leagues ?? 0,
         activeCompetitions: overview?.summary.active_competitions ?? 0,
         memberClubs: overview?.summary.member_clubs ?? 0,
+        nationalTeams: overview?.summary.national_teams ?? 0,
         pendingApprovals: overview?.summary.pending_approvals ?? 0,
         referees: overview?.summary.referees ?? 0,
         upcomingMatches: overview?.summary.upcoming_matches ?? 0,
@@ -1280,6 +1287,10 @@ export default function UnionAdminDashboard() {
         overview: overview
             ? [
                   { label: "Active Competitions", value: summary.activeCompetitions, detail: `${activeWorkspace.sport} competitions`, icon: Trophy },
+                  { label: "Member Clubs", value: summary.memberClubs, detail: "Workspace-scoped clubs", icon: Building2 },
+                  { label: "National Teams", value: summary.nationalTeams, detail: "Maintained representative teams", icon: Users },
+                  { label: "Pending Approvals", value: summary.pendingApprovals, detail: "Registration review queue", icon: ClipboardCheck },
+                  { label: "Officials", value: summary.referees, detail: "Maintained official pool", icon: BadgeCheck },
                   { label: "Upcoming Matches", value: summary.upcomingMatches, detail: "Scheduled matches", icon: CalendarDays },
               ]
             : null,
@@ -1349,33 +1360,35 @@ export default function UnionAdminDashboard() {
                         <SectionHeader
                             eyebrow="Workspace overview"
                             title={activeWorkspace.name}
-                            description="This overview shows only workspace-scoped metrics returned by the overview endpoint."
+                            description="Maintained workspace-scoped competition, Club, National Team, registration and official totals returned by the backend."
                         />
                         <div className={styles.approvalSummaryGrid}>
-                            <article>
-                                <span>Leagues</span>
-                                <strong>{summary.leagues}</strong>
-                                <small>Returned by overview</small>
-                            </article>
-                            <article>
-                                <span>Active competitions</span>
-                                <strong>{summary.activeCompetitions}</strong>
-                                <small>Returned by overview</small>
-                            </article>
-                            <article>
-                                <span>Upcoming matches</span>
-                                <strong>{summary.upcomingMatches}</strong>
-                                <small>Scheduled matches</small>
-                            </article>
+                            <article><span>Leagues</span><strong>{summary.leagues}</strong><small>Maintained leagues</small></article>
+                            <article><span>Active competitions</span><strong>{summary.activeCompetitions}</strong><small>Active competition records</small></article>
+                            <article><span>Member Clubs</span><strong>{summary.memberClubs}</strong><small>Workspace Club membership</small></article>
+                            <article><span>National Teams</span><strong>{summary.nationalTeams}</strong><small>Active representative teams</small></article>
+                            <article><span>Pending approvals</span><strong>{summary.pendingApprovals}</strong><small>Registration applications</small></article>
+                            <article><span>Officials</span><strong>{summary.referees}</strong><small>Maintained official profiles</small></article>
+                            <article><span>Upcoming matches</span><strong>{summary.upcomingMatches}</strong><small>Scheduled fixtures</small></article>
                         </div>
                     </section>
                     <aside className={styles.sidePanel}>
                         <SectionHeader
-                            eyebrow="Approvals"
-                            title="Approval queue unavailable"
-                            description="A maintained approval query is required before approval counts or records can be shown."
+                            eyebrow="Operational actions"
+                            title="Continue workspace management"
+                            description="Open the maintained modules behind the summary totals."
                         />
-                        <div className={styles.emptyState}>No approval data is currently available for this workspace.</div>
+                        <div className={styles.quickActionsList}>
+                            {activeWorkspace.permissions.includes("union.teams.manage") ? (
+                                <ModuleButton label="Manage National Teams" detail={`${summary.nationalTeams} active teams`} icon={Users} onClick={() => resetSearch("nationalTeams")} />
+                            ) : null}
+                            {activeWorkspace.permissions.includes("union.players.approve") ? (
+                                <ModuleButton label="Review registrations" detail={`${summary.pendingApprovals} pending applications`} icon={ClipboardCheck} onClick={() => resetSearch("registrations")} />
+                            ) : null}
+                            {activeWorkspace.permissions.includes("union.official.appointments.view") ? (
+                                <ModuleButton label="Check official readiness" detail={`${summary.referees} officials in the pool`} icon={BadgeCheck} onClick={() => resetSearch("appointments")} />
+                            ) : null}
+                        </div>
                     </aside>
                 </div>
             );
@@ -2488,27 +2501,19 @@ export default function UnionAdminDashboard() {
 
     function renderNationalTeams() {
         return (
-            <section className={styles.panelLarge}>
-                <SectionHeader
-                    eyebrow="Union-owned teams"
-                    title="National teams"
-                    description="National-team records are unavailable until a maintained workspace-scoped team contract is available."
-                />
-                <div className={styles.emptyState}>No maintained National Team management API is available for this workspace.</div>
-            </section>
+            <UnionNationalTeamsPanel
+                workspaceSlug={activeWorkspace.slug}
+                workspaceName={activeWorkspace.name}
+            />
         );
     }
 
     function renderRegistrations() {
         return (
-            <section className={styles.panelLarge}>
-                <SectionHeader
-                    eyebrow="Approval centre"
-                    title="Registrations"
-                    description="Registration records are unavailable until a maintained workspace-scoped approvals contract is available."
-                />
-                <div className={styles.emptyState}>No maintained registration approval API is available for this workspace.</div>
-            </section>
+            <UnionRegistrationsPanel
+                workspaceSlug={activeWorkspace.slug}
+                workspaceName={activeWorkspace.name}
+            />
         );
     }
 
@@ -2525,11 +2530,19 @@ export default function UnionAdminDashboard() {
 
     function renderAppointments() {
         return (
-            <OfficialAppointmentsPanel
-                mode={isMatchOfficialWorkspace(activeWorkspace) ? "official" : "union"}
-                workspaceSlug={activeWorkspace.slug}
-                workspaceName={activeWorkspace.name}
-            />
+            <div className={styles.contentStack}>
+                {!isMatchOfficialWorkspace(activeWorkspace) ? (
+                    <UnionOfficialReadinessPanel
+                        workspaceSlug={activeWorkspace.slug}
+                        workspaceName={activeWorkspace.name}
+                    />
+                ) : null}
+                <OfficialAppointmentsPanel
+                    mode={isMatchOfficialWorkspace(activeWorkspace) ? "official" : "union"}
+                    workspaceSlug={activeWorkspace.slug}
+                    workspaceName={activeWorkspace.name}
+                />
+            </div>
         );
     }
 

@@ -92,6 +92,7 @@ export interface UnionDashboardSummary {
   leagues?: number;
   active_competitions: number;
   member_clubs: number;
+  national_teams?: number;
   pending_approvals: number;
   referees: number;
   upcoming_matches?: number;
@@ -513,11 +514,270 @@ export async function getUnionOperationsDashboard(
 
 
 
+export type UnionNationalTeamStatus = "ACTIVE" | "CAMP" | "SELECTION" | "INACTIVE";
+export type UnionNationalTeamMemberType = "PLAYER" | "STAFF";
+export type UnionNationalTeamMemberStatus = "ACTIVE" | "INJURED" | "UNAVAILABLE" | "RELEASED";
+export type UnionRegistrationApplicationStatus =
+  | "PENDING"
+  | "UNDER_REVIEW"
+  | "DOCUMENTS_REQUIRED"
+  | "APPROVED"
+  | "REJECTED"
+  | "WITHDRAWN";
+
+export interface UnionNationalTeam {
+  id: number;
+  workspace: number;
+  workspace_slug: string;
+  workspace_acronym: string;
+  name: string;
+  slug: string;
+  category: string;
+  gender: string;
+  age_group: string;
+  head_coach: string;
+  status: UnionNationalTeamStatus;
+  status_display: string;
+  players: number;
+  staff: number;
+  notes: string;
+  is_active: boolean;
+  created_by: number | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UnionNationalTeamMember {
+  id: number;
+  team: number;
+  team_name: string;
+  user: number | null;
+  user_email: string | null;
+  club: number | null;
+  club_name: string | null;
+  full_name: string;
+  member_type: UnionNationalTeamMemberType;
+  member_type_display: string;
+  role: string;
+  status: UnionNationalTeamMemberStatus;
+  status_display: string;
+  notes: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UnionRegistrationApplication {
+  id: number;
+  workspace: number;
+  workspace_slug: string;
+  workspace_acronym: string;
+  application_type: string;
+  application_type_display: string;
+  club: number;
+  club_name: string;
+  club_slug: string;
+  team: number | null;
+  team_name: string | null;
+  competition: number | null;
+  competition_name: string | null;
+  player_registration: number | null;
+  applicant_name: string;
+  registration_number: string;
+  status: UnionRegistrationApplicationStatus;
+  status_display: string;
+  documents_complete: boolean;
+  submitted_by: number | null;
+  submitted_by_email: string | null;
+  submitted_at: string;
+  reviewed_by: number | null;
+  reviewed_by_email: string | null;
+  reviewed_at: string | null;
+  reviewer_notes: string;
+  metadata: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UnionOfficialReadinessFixture {
+  id: number;
+  match: string;
+  competition: string;
+  match_date: string;
+  venue: string;
+  assignment_count: number;
+  accepted_count: number;
+  pending_response_count: number;
+  declined_count: number;
+  readiness:
+    | "NO_ASSIGNMENTS"
+    | "PENDING_RESPONSES"
+    | "HAS_ACCEPTED_ASSIGNMENTS"
+    | "REVIEW_REQUIRED";
+}
+
+export interface UnionOfficialReadiness {
+  workspace: {
+    slug: string;
+    acronym: string;
+    name: string;
+  };
+  summary: {
+    officials_total: number;
+    officials_available: number;
+    officials_unavailable: number;
+    officials_suspended: number;
+    upcoming_fixtures: number;
+    fixtures_without_assignments: number;
+    fixtures_with_pending_responses: number;
+  };
+  fixtures: UnionOfficialReadinessFixture[];
+  officials: UnionAdminMatchOfficial[];
+}
+
+export interface CreateUnionNationalTeamPayload {
+  workspace: string;
+  name: string;
+  category: string;
+  gender?: string;
+  age_group?: string;
+  head_coach?: string;
+  status?: UnionNationalTeamStatus;
+  notes?: string;
+  is_active?: boolean;
+}
+
+export interface CreateUnionNationalTeamMemberPayload {
+  workspace: string;
+  full_name: string;
+  member_type?: UnionNationalTeamMemberType;
+  role?: string;
+  status?: UnionNationalTeamMemberStatus;
+  club?: number | null;
+  user?: number | null;
+  notes?: string;
+}
+
+export async function getUnionNationalTeams(
+  workspaceSlug: string,
+): Promise<UnionAdminListResponse<UnionNationalTeam>> {
+  const response = await apiClient.get<UnionAdminListResponse<UnionNationalTeam>>(
+    `/dashboards/union-admin/national-teams/?workspace=${encodeURIComponent(workspaceSlug)}`,
+  );
+  return response.data;
+}
+
+export async function createUnionNationalTeam(
+  payload: CreateUnionNationalTeamPayload,
+): Promise<UnionNationalTeam> {
+  const response = await apiClient.post<UnionNationalTeam>(
+    "/dashboards/union-admin/national-teams/",
+    payload,
+  );
+  return response.data;
+}
+
+export async function updateUnionNationalTeam(
+  teamId: number,
+  workspaceSlug: string,
+  payload: Partial<Omit<CreateUnionNationalTeamPayload, "workspace">>,
+): Promise<UnionNationalTeam> {
+  const response = await apiClient.patch<UnionNationalTeam>(
+    `/dashboards/union-admin/national-teams/${teamId}/`,
+    { workspace: workspaceSlug, ...payload },
+  );
+  return response.data;
+}
+
+export async function deleteUnionNationalTeam(
+  teamId: number,
+  workspaceSlug: string,
+): Promise<void> {
+  await apiClient.delete(`/dashboards/union-admin/national-teams/${teamId}/`, {
+    data: { workspace: workspaceSlug },
+  });
+}
+
+export async function getUnionNationalTeamMembers(
+  teamId: number,
+  workspaceSlug: string,
+): Promise<UnionAdminListResponse<UnionNationalTeamMember>> {
+  const response = await apiClient.get<UnionAdminListResponse<UnionNationalTeamMember>>(
+    `/dashboards/union-admin/national-teams/${teamId}/members/?workspace=${encodeURIComponent(workspaceSlug)}`,
+  );
+  return response.data;
+}
+
+export async function createUnionNationalTeamMember(
+  teamId: number,
+  payload: CreateUnionNationalTeamMemberPayload,
+): Promise<UnionNationalTeamMember> {
+  const response = await apiClient.post<UnionNationalTeamMember>(
+    `/dashboards/union-admin/national-teams/${teamId}/members/`,
+    payload,
+  );
+  return response.data;
+}
+
+export async function updateUnionNationalTeamMember(
+  teamId: number,
+  memberId: number,
+  workspaceSlug: string,
+  payload: Partial<Omit<CreateUnionNationalTeamMemberPayload, "workspace">>,
+): Promise<UnionNationalTeamMember> {
+  const response = await apiClient.patch<UnionNationalTeamMember>(
+    `/dashboards/union-admin/national-teams/${teamId}/members/${memberId}/`,
+    { workspace: workspaceSlug, ...payload },
+  );
+  return response.data;
+}
+
+export async function deleteUnionNationalTeamMember(
+  teamId: number,
+  memberId: number,
+  workspaceSlug: string,
+): Promise<void> {
+  await apiClient.delete(
+    `/dashboards/union-admin/national-teams/${teamId}/members/${memberId}/`,
+    { data: { workspace: workspaceSlug } },
+  );
+}
+
+export async function getUnionRegistrationApplications(
+  workspaceSlug: string,
+): Promise<UnionAdminListResponse<UnionRegistrationApplication>> {
+  const response = await apiClient.get<UnionAdminListResponse<UnionRegistrationApplication>>(
+    `/dashboards/union-admin/registration-applications/?workspace=${encodeURIComponent(workspaceSlug)}`,
+  );
+  return response.data;
+}
+
+export async function updateUnionRegistrationApplication(
+  applicationId: number,
+  workspaceSlug: string,
+  payload: Partial<Pick<UnionRegistrationApplication, "status" | "documents_complete" | "reviewer_notes" | "metadata">>,
+): Promise<UnionRegistrationApplication> {
+  const response = await apiClient.patch<UnionRegistrationApplication>(
+    `/dashboards/union-admin/registration-applications/${applicationId}/`,
+    { workspace: workspaceSlug, ...payload },
+  );
+  return response.data;
+}
+
+export async function getUnionOfficialReadiness(
+  workspaceSlug: string,
+): Promise<UnionOfficialReadiness> {
+  const response = await apiClient.get<UnionOfficialReadiness>(
+    `/dashboards/union-admin/official-readiness/?workspace=${encodeURIComponent(workspaceSlug)}`,
+  );
+  return response.data;
+}
+
+
 
 
 // UNION ADMIN MANAGEMENT API START
 
-type UnionAdminListResponse<T> = {
+export type UnionAdminListResponse<T> = {
   count: number;
   results: T[];
 };
