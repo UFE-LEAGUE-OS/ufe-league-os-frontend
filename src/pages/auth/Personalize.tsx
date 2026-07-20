@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import CheckIcon from '@mui/icons-material/Check';
 import AddIcon from '@mui/icons-material/Add';
@@ -10,9 +10,10 @@ import SportsSoccerIcon from '@mui/icons-material/SportsSoccer';
 import type { SvgIconComponent } from '@mui/icons-material';
 import { PageShell } from '../../components/site/LeagueUI.js';
 import { DASHBOARD_ROUTE } from '../../utils/authFlow.js';
+import { publicClubs, competitionStandings } from '../../data/publicBrowseCatalog.js';
 import '../../styles/pages/personalize.css';
 
-type Item = { id: string; name: string; sub?: string; emoji?: string };
+type Item = { id: string; name: string; sub?: string; emoji?: string; sport?: string };
 
 type Category = {
   id: string;
@@ -22,70 +23,124 @@ type Category = {
   items: Item[];
 };
 
-const CATEGORIES: Category[] = [
-  {
-    id: 'sports',
-    label: 'FAVOURITE SPORTS',
-    sublabel: 'Select at least one sport you love.',
-    icon: SportsSoccerIcon,
-    items: [
-      { id: 'rugby', name: 'Rugby' },
-      { id: 'football', name: 'Football' },
-      { id: 'basketball', name: 'Basketball' },
-      { id: 'cricket', name: 'Cricket'},
-      { id: 'netball', name: 'Netball' },
-    ],
-  },
-  {
-    id: 'clubs',
-    label: 'CLUBS',
-    sublabel: 'Follow at least one club you support.',
-    icon: ShieldOutlinedIcon,
-    items: [
-      { id: 'kobs', name: 'KOBS', sub: 'Rugby Club' },
-      { id: 'heathens', name: 'Heathens' },
-      { id: 'scvilla', name: 'SC Villa'},
-      { id: 'vipers', name: 'Vipers SC' },
-      { id: 'cityoilers', name: 'City Oilers' },
-    ],
-  },
-  {
-    id: 'federations',
-    label: 'UNIONS / FEDERATIONS',
-    sublabel: 'Select at least one union or federation.',
-    icon: PublicIcon,
-    items: [
-      { id: 'uru', name: 'Uganda Rugby Union'},
-      { id: 'fufa', name: 'FUFA'},
-      { id: 'fuba', name: 'FUBA'},
-      { id: 'unoc', name: 'UNOC' },
-    ],
-  },
-  {
-    id: 'leagues',
-    label: 'LEAGUES',
-    sublabel: 'Select at least one league to follow.',
-    icon: EmojiEventsOutlinedIcon,
-    items: [
-      { id: 'nrp', name: 'Nile Special Rugby Premiership' },
-      { id: 'upl', name: 'Uganda Premier League'},
-      { id: 'nbl', name: 'National Basketball League'},
-      { id: 'fufa2', name: 'FUFA Big League' },
-    ],
-  },
-  {
+// Sport ID to display name mapping
+const SPORT_NAMES: Record<string, string> = {
+  rugby: 'Rugby',
+  football: 'Football',
+  basketball: 'Basketball',
+  cricket: 'Cricket',
+  netball: 'Netball',
+};
+
+// Base sports category (always shown)
+const SPORTS_CATEGORY: Category = {
+  id: 'sports',
+  label: 'FAVOURITE SPORTS',
+  sublabel: 'Select at least one sport you love.',
+  icon: SportsSoccerIcon,
+  items: [
+    { id: 'rugby', name: 'Rugby' },
+    { id: 'football', name: 'Football' },
+    { id: 'basketball', name: 'Basketball' },
+    { id: 'cricket', name: 'Cricket' },
+    { id: 'netball', name: 'Netball' },
+  ],
+};
+
+// Federation mapping by sport
+const FEDERATIONS_BY_SPORT: Record<string, Item[]> = {
+  Rugby: [{ id: 'uru', name: 'Uganda Rugby Union' }],
+  Football: [
+    { id: 'fufa', name: 'FUFA' },
+    { id: 'unoc', name: 'UNOC' },
+  ],
+  Basketball: [{ id: 'fuba', name: 'FUBA' }],
+  Cricket: [],
+  Netball: [],
+};
+
+// Generate dynamic categories based on selected sports
+const getDynamicCategories = (selectedSports: Set<string>): Category[] => {
+  const categories: Category[] = [SPORTS_CATEGORY];
+
+  // If no sports selected, return only sports category
+  if (selectedSports.size === 0) {
+    return categories;
+  }
+
+  // Build clubs category filtered by selected sports
+  const selectedSportNames = Array.from(selectedSports).map(s => SPORT_NAMES[s]);
+  const clubsItems: Item[] = publicClubs
+    .filter(club => selectedSportNames.includes(club.sport))
+    .map(club => ({
+      id: club.slug,
+      name: club.shortName || club.name,
+      sub: club.sport,
+      sport: club.sport,
+    }));
+
+  if (clubsItems.length > 0) {
+    categories.push({
+      id: 'clubs',
+      label: 'CLUBS',
+      sublabel: 'Follow at least one club you support.',
+      icon: ShieldOutlinedIcon,
+      items: clubsItems,
+    });
+  }
+
+  // Build federations category filtered by selected sports
+  const federationsItems: Item[] = [];
+  selectedSportNames.forEach(sportName => {
+    const sportFederations = FEDERATIONS_BY_SPORT[sportName] || [];
+    federationsItems.push(...sportFederations.map(f => ({ ...f, sport: sportName })));
+  });
+
+  if (federationsItems.length > 0) {
+    categories.push({
+      id: 'federations',
+      label: 'UNIONS / FEDERATIONS',
+      sublabel: 'Select at least one union or federation.',
+      icon: PublicIcon,
+      items: federationsItems,
+    });
+  }
+
+  // Build leagues category filtered by selected sports
+  const leaguesItems: Item[] = competitionStandings
+    .filter(comp => selectedSportNames.includes(comp.sport))
+    .map(comp => ({
+      id: comp.id,
+      name: comp.name,
+      sport: comp.sport,
+    }));
+
+  if (leaguesItems.length > 0) {
+    categories.push({
+      id: 'leagues',
+      label: 'LEAGUES',
+      sublabel: 'Select at least one league to follow.',
+      icon: EmojiEventsOutlinedIcon,
+      items: leaguesItems,
+    });
+  }
+
+  // School leagues (general, not sport-specific in current data)
+  categories.push({
     id: 'schoolleagues',
     label: 'SCHOOL LEAGUES',
     sublabel: 'Select at least one school league to follow.',
     icon: SchoolOutlinedIcon,
     items: [
-      { id: 'budo', name: 'Budo League'},
+      { id: 'budo', name: 'Budo League' },
       { id: 'smack', name: 'SMACK League' },
       { id: 'ntare', name: 'Ntare League' },
-      { id: 'kakira', name: 'Kakira League'},
+      { id: 'kakira', name: 'Kakira League' },
     ],
-  },
-];
+  });
+
+  return categories;
+};
 
 const STEPS = ['Welcome', 'Sign Up', 'Verify OTP', 'Log In', 'Follow Interests'];
 
@@ -93,14 +148,24 @@ export default function Personalize() {
   const navigate = useNavigate();
   const [selected, setSelected] = useState<Record<string, Set<string>>>({});
 
+  // Get selected sports
+  const selectedSports = useMemo(() => {
+    return new Set(selected['sports'] ? Array.from(selected['sports']) : []);
+  }, [selected]);
+
+  // Generate dynamic categories based on selected sports
+  const categories = useMemo(() => {
+    return getDynamicCategories(selectedSports);
+  }, [selectedSports]);
+
   const toggle = (catId: string, itemId: string) => {
     setSelected((prev) => {
       const set = new Set(prev[catId] ?? []);
-if (set.has(itemId)) {
-  set.delete(itemId);
-} else {
-  set.add(itemId);
-}
+      if (set.has(itemId)) {
+        set.delete(itemId);
+      } else {
+        set.add(itemId);
+      }
       return { ...prev, [catId]: set };
     });
   };
@@ -146,7 +211,7 @@ if (set.has(itemId)) {
         </div>
 
         <div className="personalize-categories">
-          {CATEGORIES.map((cat) => {
+          {categories.map((cat) => {
             const CatIcon = cat.icon;
             return (
             <div key={cat.id} className="p-category">
