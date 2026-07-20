@@ -3,11 +3,13 @@ import {
   Boxes,
   Building2,
   CalendarDays,
+  ClipboardCheck,
   ClipboardList,
   CreditCard,
   Download,
   Eye,
   FileBarChart,
+  FileText,
   Image as ImageIcon,
   Inbox,
   Layers,
@@ -110,6 +112,7 @@ import {
 } from "../../services/clubTicketingService";
 import "./ClubMembershipManagement.css";
 import "../../styles/pages/ClubAdmin.css";
+import ComplianceDocuments from "./ComplianceDocuments";
 import BrandingEditor from "./BrandingEditor";
 import ClubProfileEdit from "./ClubProfileEdit";
 import MediaAssetLibrary from "./MediaAssetLibrary";
@@ -144,7 +147,9 @@ type TabKey =
   | "profileBrandingMedia"
   | "profileBrandingPreview"
   | "sponsorshipMatchday"
+  | "communicationCompliance"
   | "compliance"
+  | "complianceChecklist"
   | "reports"
   | "communications"
   | "clubUsers"
@@ -404,12 +409,40 @@ const navItems: AdminWorkspaceNavGroup<TabKey>[] = [
         clubPermissionMode: "any",
         clubWorkspaceFamily: "CLUB_ADMIN",
       },
+    ],
+  },
+  {
+    label: "Communication & Compliance",
+    items: [
       {
-        key: "compliance",
-        label: "Compliance",
-        icon: ShieldCheck,
+        key: "communicationCompliance",
+        label: "Communication & Compliance",
+        icon: FileText,
         requiredClubPermissions: [],
         clubWorkspaceFamily: "CLUB_ADMIN",
+        children: [
+          {
+            key: "compliance",
+            label: "Compliance Documents",
+            icon: ShieldCheck,
+            requiredClubPermissions: [],
+            clubWorkspaceFamily: "CLUB_ADMIN",
+          },
+          {
+            key: "complianceChecklist",
+            label: "Compliance Checklist",
+            icon: ClipboardCheck,
+            requiredClubPermissions: [],
+            clubWorkspaceFamily: "CLUB_ADMIN",
+          },
+          {
+            key: "communications",
+            label: "Communications",
+            icon: MessageSquare,
+            requiredClubPermissions: [],
+            clubWorkspaceFamily: "CLUB_ADMIN",
+          },
+        ],
       },
     ],
   },
@@ -421,13 +454,6 @@ const navItems: AdminWorkspaceNavGroup<TabKey>[] = [
         label: "Reports",
         icon: FileBarChart,
         requiredClubPermissions: ["club.reports.view"],
-        clubWorkspaceFamily: "CLUB_ADMIN",
-      },
-      {
-        key: "communications",
-        label: "Communications",
-        icon: MessageSquare,
-        requiredClubPermissions: [],
         clubWorkspaceFamily: "CLUB_ADMIN",
       },
       {
@@ -477,7 +503,9 @@ const TAB_TO_PATH: Record<TabKey, string> = {
   profileBrandingMedia: `${CLUB_ADMIN_BASE_PATH}/profile-branding/media`,
   profileBrandingPreview: `${CLUB_ADMIN_BASE_PATH}/profile-branding/preview`,
   sponsorshipMatchday: `${CLUB_ADMIN_BASE_PATH}/sponsorship-matchday`,
+  communicationCompliance: `${CLUB_ADMIN_BASE_PATH}/communication-compliance`,
   compliance: `${CLUB_ADMIN_BASE_PATH}/compliance`,
+  complianceChecklist: `${CLUB_ADMIN_BASE_PATH}/compliance-checklist`,
   reports: `${CLUB_ADMIN_BASE_PATH}/reports`,
   communications: `${CLUB_ADMIN_BASE_PATH}/communications`,
   clubUsers: `${CLUB_ADMIN_BASE_PATH}/users`,
@@ -544,7 +572,9 @@ const TAB_TO_MODULE: Record<TabKey, ClubWorkspaceTab> = {
   profileBrandingMedia: "profileBranding",
   profileBrandingPreview: "profileBranding",
   sponsorshipMatchday: "sponsorshipMatchday",
+  communicationCompliance: "compliance",
   compliance: "compliance",
+  complianceChecklist: "compliance",
   reports: "reports",
   communications: "communications",
   clubUsers: "clubUsers",
@@ -3514,10 +3544,7 @@ export default function ClubAdminDashboard() {
       "Manage sponsors and matchday operational details.",
     );
   } else if (activeTab === "compliance") {
-    content = renderPlaceholder(
-      "Compliance",
-      "Track club compliance and regulatory requirements.",
-    );
+    content = <ComplianceDocuments />;
   } else if (activeTab === "reports") {
     content = renderPlaceholder(
       "Reports",
