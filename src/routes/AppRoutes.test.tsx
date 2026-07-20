@@ -62,6 +62,10 @@ vi.mock('../pages/club-admin/ClubAdminDashboard', () => ({
   default: () => <h1>Club Admin Dashboard</h1>,
 }));
 
+vi.mock('../pages/club-admin/sub-roles/ClubTicketingOfficer', () => ({
+  default: () => <h1>Club Ticketing Dashboard</h1>,
+}));
+
 vi.mock('../pages/fantasy/FantasyPage', () => ({
   default: () => <h1>Fantasy Page</h1>,
 }));
@@ -300,7 +304,7 @@ describe('AppRoutes dashboard entitlements', () => {
     ).toBeInTheDocument();
   });
 
-  it('renders Club Ticketing in the shared Club Admin shell', () => {
+  it('renders Club Ticketing in its dedicated club ticketing officer page', async () => {
     authenticate([
       makeEntitlement('TICKETING_OFFICER', {
         workspace_role: 'TICKETING_OFFICER',
@@ -311,8 +315,8 @@ describe('AppRoutes dashboard entitlements', () => {
     visit('/dashboard/ticketing-officer');
 
     expect(
-      screen.getByRole('heading', {
-        name: /club admin dashboard/i,
+      await screen.findByRole('heading', {
+        name: /club ticketing dashboard/i,
       }),
     ).toBeInTheDocument();
   });
@@ -336,6 +340,29 @@ describe('AppRoutes dashboard entitlements', () => {
 
       visit('/dashboard/club-admin');
 
+      expect(
+        screen.getByRole('heading', {
+          name: /club admin dashboard/i,
+        }),
+      ).toBeInTheDocument();
+    },
+  );
+
+  it.each(['/club-admin', '/club-admin/'])(
+    'redirects the bare %s alias to /dashboard/club-admin',
+    (path) => {
+      authenticate([
+        makeEntitlement('CLUB_ADMIN', {
+          id: 'club-admin-7',
+          scope_id: 7,
+          workspace_role: 'CLUB_ADMIN',
+          permissions: ['dashboard.club_admin'],
+        }),
+      ]);
+
+      visit(path);
+
+      expect(window.location.pathname).toBe('/dashboard/club-admin');
       expect(
         screen.getByRole('heading', {
           name: /club admin dashboard/i,
@@ -375,7 +402,7 @@ describe('AppRoutes dashboard entitlements', () => {
     },
   );
 
-  it('redirects the ticketing alias to its canonical shared-shell route', () => {
+  it('redirects the ticketing alias to its canonical dedicated route', async () => {
     authenticate([
       makeEntitlement('TICKETING_OFFICER', {
         id: 'club-ticketing-7',
@@ -390,8 +417,8 @@ describe('AppRoutes dashboard entitlements', () => {
       '/dashboard/ticketing-officer',
     );
     expect(
-      screen.getByRole('heading', {
-        name: /club admin dashboard/i,
+      await screen.findByRole('heading', {
+        name: /club ticketing dashboard/i,
       }),
     ).toBeInTheDocument();
   });
