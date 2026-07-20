@@ -23,6 +23,27 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes('node_modules')) {
+            return undefined;
+          }
+          if (/[\\/](react|react-dom|react-router|react-router-dom|scheduler)[\\/]/.test(id)) {
+            return 'react-vendor';
+          }
+          if (/[\\/](@mui|@emotion)[\\/]/.test(id)) {
+            return 'mui-vendor';
+          }
+          if (id.includes('recharts') || id.includes('d3-')) {
+            return 'charts-vendor';
+          }
+          return 'vendor';
+        },
+      },
+    },
+  },
   test: {
     root: projectRoot,
     environment: 'jsdom',

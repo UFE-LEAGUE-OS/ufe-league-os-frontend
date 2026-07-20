@@ -1,8 +1,8 @@
 import axios from "axios";
 import { useEffect, useState, useMemo } from "react";
-import "../styles/pages/SuperAdminDashboard.css";
-import "../styles/pages/SuperVariantsPage.css";
-import "../components/SuperAdminSideBar.css";
+import "../../styles/pages/SuperAdminDashboard.css";
+import "../../styles/pages/SuperVariantsPage.css";
+import "../../components/SuperAdminSideBar.css";
 import { X, Plus, Pencil, Search, Inbox } from "lucide-react";
 
 

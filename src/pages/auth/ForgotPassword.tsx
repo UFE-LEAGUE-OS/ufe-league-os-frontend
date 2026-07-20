@@ -15,8 +15,6 @@ import { normalizeCodeInput } from './forgotPasswordUtils.js';
 import '../../styles/pages/auth/login.css';
 import '../../styles/pages/auth/register.css';
 import { usePasswordValidation } from '../../hooks/usePasswordValidation.js';
-import '../../styles/pages/login.css';
-import '../../styles/pages/register.css';
 
 const features = [
   {
