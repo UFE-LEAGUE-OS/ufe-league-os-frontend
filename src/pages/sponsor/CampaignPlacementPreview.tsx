@@ -1,57 +1,108 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import {
-  FiShare2,
-  FiCheck,
-  FiCircle,
-  FiArrowRight,
+  FiAlertCircle,
   FiCheckCircle,
+  FiCircle,
+  FiFile,
+  FiImage,
+  FiMonitor,
+  FiRefreshCw,
+  FiSmartphone,
+  FiVideo,
 } from 'react-icons/fi';
 import SponsorSidebar from '../../components/SponsorSidebar';
+import { useSponsorCampaignStore } from '../../store/sponsorCampaignStore';
+import { placementOptions } from './campaignPlacementOptions';
 import '../../styles/pages/landing.css';
 import './CampaignPlacementPreview.css';
 
-const checklistItems = [
-  { id: 1, label: 'Landing Page Hero', desc: 'Homepage hero banner', done: true },
-  { id: 2, label: 'Fixtures Page Card', desc: 'Sponsored fixture highlight', done: true },
-  { id: 3, label: 'Team Profile Banner', desc: 'Partner banner on team pages', done: true },
-  { id: 4, label: 'Match Center Branding', desc: 'In-game branding & overlays', done: false },
-  { id: 5, label: 'Membership Section', desc: 'Sponsor tile in membership', done: false },
-  { id: 6, label: 'Ticketing Flow Branding', desc: 'Branding in ticket purchase flow', done: true },
-];
+const ACCEPTED_VIDEO_TYPES = ['video/mp4'];
+const ACCEPTED_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif'];
 
-const approvalHistory = [
-  {
-    initials: 'DT',
-    name: 'Design Team',
-    sub: 'Reviewed by Jane • 2 hours ago',
-    status: 'APPROVED',
-    statusClass: 'cpp-status-approved',
-  },
-  {
-    initials: 'BC',
-    name: 'Branding and Compliance',
-    sub: 'Pending Review • 2 hours ago',
-    status: 'PENDING',
-    statusClass: 'cpp-status-pending',
-  },
-];
+function assetIcon(fileType: string) {
+  if (ACCEPTED_VIDEO_TYPES.includes(fileType)) return FiVideo;
+  if (ACCEPTED_IMAGE_TYPES.includes(fileType)) return FiImage;
+  return FiFile;
+}
+
+function formatDate(value: string) {
+  if (!value) {
+    return 'Not set';
+  }
+
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime())
+    ? 'Not set'
+    : parsed.toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+      });
+}
+
+const statusLabels: Record<string, string> = {
+  DRAFT: 'DRAFT',
+  SUBMITTED: 'SUBMITTED',
+  UNDER_REVIEW: 'UNDER REVIEW',
+  APPROVED: 'APPROVED',
+  ACTIVE: 'ACTIVE',
+  REJECTED: 'REJECTED',
+};
+
+const statusBadgeClass: Record<string, string> = {
+  DRAFT: 'cpp-draft-badge',
+  SUBMITTED: 'cpp-pending-badge',
+  UNDER_REVIEW: 'cpp-pending-badge',
+  APPROVED: 'cpp-status-approved-badge',
+  ACTIVE: 'cpp-status-approved-badge',
+  REJECTED: 'cpp-status-rejected-badge',
+};
 
 export default function CampaignPlacementPreview() {
   const navigate = useNavigate();
-  const [note, setNote] = useState('');
+  const { campaignId: campaignIdParam } = useParams();
 
-  const doneCount = checklistItems.filter((i) => i.done).length;
+  const campaignId = useSponsorCampaignStore((s) => s.campaignId);
+  const status = useSponsorCampaignStore((s) => s.status);
+  const info = useSponsorCampaignStore((s) => s.info);
+  const budget = useSponsorCampaignStore((s) => s.budget);
+  const placements = useSponsorCampaignStore((s) => s.placements);
+  const assets = useSponsorCampaignStore((s) => s.assets);
+  const hydrating = useSponsorCampaignStore((s) => s.hydrating);
+  const saving = useSponsorCampaignStore((s) => s.saving);
+  const error = useSponsorCampaignStore((s) => s.error);
+  const hydrate = useSponsorCampaignStore((s) => s.hydrate);
+  const submit = useSponsorCampaignStore((s) => s.submit);
+
+  const [device, setDevice] = useState<'desktop' | 'mobile'>('desktop');
+  const [submitError, setSubmitError] = useState('');
+
+  useEffect(() => {
+    const idFromRoute = campaignIdParam ? Number(campaignIdParam) : null;
+
+    if (idFromRoute && idFromRoute !== campaignId) {
+      void hydrate(idFromRoute);
+    }
+  }, [campaignIdParam, campaignId, hydrate]);
+
+  const handleSubmit = async () => {
+    setSubmitError('');
+    try {
+      await submit();
+    } catch {
+      setSubmitError('We could not submit your campaign for approval. Please try again.');
+    }
+  };
+
+  const hasCampaign = campaignId != null;
 
   return (
     <div className="cpp-page">
-
       <div className="cpp-layout">
         <SponsorSidebar />
 
         <main className="cpp-main landing-page">
-
-          {/* Header */}
           <div className="cpp-header">
             <div className="cpp-header-left">
               <h1 className="cpp-title">Campaign Placement Preview</h1>
@@ -59,277 +110,200 @@ export default function CampaignPlacementPreview() {
                 Review how your campaign will appear across the League OS ecosystem before activation.
               </p>
             </div>
+
+            <div className="cpp-view-toggle">
+              <button
+                type="button"
+                className={`cpp-toggle-btn ${device === 'desktop' ? 'cpp-toggle-active' : ''}`}
+                onClick={() => setDevice('desktop')}
+              >
+                <FiMonitor size={14} /> Desktop
+              </button>
+              <button
+                type="button"
+                className={`cpp-toggle-btn ${device === 'mobile' ? 'cpp-toggle-active' : ''}`}
+                onClick={() => setDevice('mobile')}
+              >
+                <FiSmartphone size={14} /> Mobile
+              </button>
+            </div>
           </div>
 
-          {/* Body */}
-          <div className="cpp-body">
+          {hydrating && (
+            <div className="cpp-state">
+              <FiRefreshCw className="cpp-spin" size={28} />
+              <h2>Loading campaign</h2>
+            </div>
+          )}
 
-            {/* Preview grid + comments */}
-            <div className="cpp-content">
+          {!hydrating && !hasCampaign && (
+            <div className="cpp-state">
+              <FiAlertCircle size={28} />
+              <h2>No campaign to preview</h2>
+              <p>Start or resume a campaign draft to see its placement preview here.</p>
+              <button
+                type="button"
+                className="cpp-publish-btn"
+                onClick={() => navigate('/sponsor/campaigns/new')}
+              >
+                Start a Campaign
+              </button>
+            </div>
+          )}
 
-              {/* 2x2 preview grid */}
-              <div className="cpp-preview-grid">
+          {!hydrating && hasCampaign && (
+            <div className={`cpp-body ${device === 'mobile' ? 'cpp-body-mobile' : ''}`}>
+              <div className="cpp-content">
+                <div className={`cpp-assets-grid ${device === 'mobile' ? 'cpp-assets-grid-mobile' : ''}`}>
+                  {assets.length === 0 && (
+                    <div className="cpp-preview-card cpp-preview-empty">
+                      <div className="cpp-preview-card-header">
+                        <span className="cpp-preview-label">Creative Assets</span>
+                      </div>
+                      <div className="cpp-preview-content">
+                        <p className="cpp-empty-text">
+                          No creative assets uploaded yet. Add assets in the Assets step to see them
+                          here.
+                        </p>
+                      </div>
+                    </div>
+                  )}
 
-                {/* 1. Landing Page Hero */}
-                <div className="cpp-preview-card">
-                  <div className="cpp-preview-card-header">
-                    <span className="cpp-preview-num">1</span>
-                    <span className="cpp-preview-label">Landing Page Hero</span>
-                    <span className="cpp-live-badge">LIVE PREVIEW</span>
+                  {assets.map((asset, index) => {
+                    const Icon = assetIcon(asset.file_type);
+                    const isImage = ACCEPTED_IMAGE_TYPES.includes(asset.file_type);
+
+                    return (
+                      <div key={asset.id} className="cpp-preview-card">
+                        <div className="cpp-preview-card-header">
+                          <span className="cpp-preview-num">{index + 1}</span>
+                          <span className="cpp-preview-label">{asset.file_name}</span>
+                          {asset.placement && (
+                            <span className="cpp-live-badge">{asset.placement}</span>
+                          )}
+                        </div>
+                        <div className="cpp-preview-content">
+                          {isImage ? (
+                            <img
+                              src={asset.file_url}
+                              alt={asset.file_name}
+                              className="cpp-asset-preview-img"
+                            />
+                          ) : (
+                            <div className="cpp-asset-preview-file">
+                              <Icon size={22} />
+                              <span>{asset.file_name}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="cpp-comments-card">
+                  <h3 className="cpp-comments-title">Status</h3>
+                  <p className="cpp-status-text">
+                    {status === 'DRAFT' &&
+                      'This campaign is still a draft. Submit it for approval when you are ready.'}
+                    {status === 'SUBMITTED' &&
+                      'This campaign has been submitted and is waiting to be reviewed.'}
+                    {status === 'UNDER_REVIEW' && 'This campaign is currently under review.'}
+                    {status === 'APPROVED' && 'This campaign has been approved.'}
+                    {status === 'ACTIVE' && 'This campaign is active.'}
+                    {status === 'REJECTED' &&
+                      'This campaign was rejected. Update it and submit again.'}
+                    {!status && 'This campaign has not been submitted yet.'}
+                  </p>
+                  {(submitError || error) && (
+                    <p className="cpp-status-error">
+                      <FiAlertCircle size={13} /> {submitError || error}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className="cpp-sidebar">
+                <div className="cpp-summary-card">
+                  <div className="cpp-summary-header">
+                    <span className="cpp-summary-title">Campaign Summary</span>
+                    <span className={statusBadgeClass[status ?? 'DRAFT'] ?? 'cpp-draft-badge'}>
+                      {statusLabels[status ?? 'DRAFT'] ?? 'DRAFT'}
+                    </span>
                   </div>
-                  <div className="cpp-preview-content cpp-hero-preview">
-                    <div className="cpp-nile-hero">
-                      <div className="cpp-nile-hero-bg">
-                        <div className="cpp-nile-hero-text">
-                          <div className="cpp-nile-hero-name">NILE</div>
-                          <div className="cpp-nile-hero-special">— SPECIAL —</div>
-                          <div className="cpp-nile-hero-bars">
-                            <span className="cpp-bar cpp-bar-orange" />
-                            <span className="cpp-bar cpp-bar-red" />
+                  <div className="cpp-summary-campaign">
+                    <div>
+                      <div className="cpp-summary-campaign-name">
+                        {info.campaignName || 'Untitled Campaign'}
+                      </div>
+                      <div className="cpp-summary-campaign-type">
+                        {info.campaignType || 'Campaign type not set'}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="cpp-summary-details">
+                    <div className="cpp-summary-row">
+                      <span className="cpp-summary-label">Run Dates</span>
+                      <span className="cpp-summary-val">
+                        {formatDate(budget.startDate)} – {formatDate(budget.endDate)}
+                      </span>
+                    </div>
+                    <div className="cpp-summary-row">
+                      <span className="cpp-summary-label">Property</span>
+                      <span className="cpp-summary-val">
+                        {info.property || 'Not set'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="cpp-checklist-card">
+                  <div className="cpp-checklist-header">
+                    <span className="cpp-checklist-title">Selected Placements</span>
+                    <span className="cpp-checklist-count">
+                      {placements.length} / {placementOptions.length}
+                    </span>
+                  </div>
+                  <div className="cpp-checklist-items">
+                    {placementOptions.map((option) => {
+                      const isSelected = placements.includes(option.id);
+                      return (
+                        <div key={option.id} className="cpp-checklist-item">
+                          {isSelected ? (
+                            <FiCheckCircle size={16} className="cpp-check-done" />
+                          ) : (
+                            <FiCircle size={16} className="cpp-check-todo" />
+                          )}
+                          <div>
+                            <div
+                              className={`cpp-check-label ${isSelected ? 'cpp-check-label-done' : ''}`}
+                            >
+                              {option.id}
+                            </div>
+                            <div className="cpp-check-desc">{option.desc}</div>
                           </div>
                         </div>
-                        <div className="cpp-nile-bottle">🍺</div>
-                      </div>
-                    </div>
+                      );
+                    })}
                   </div>
                 </div>
 
-                {/* 2. Fixtures Page */}
-                <div className="cpp-preview-card">
-                  <div className="cpp-preview-card-header">
-                    <span className="cpp-preview-num">2</span>
-                    <span className="cpp-preview-label">Fixtures Page - Sponsored Fixture Card</span>
-                    <span className="cpp-live-badge">LIVE PREVIEW</span>
+                {status === 'DRAFT' && (
+                  <div className="cpp-action-btns">
+                    <button
+                      type="button"
+                      className="cpp-publish-btn"
+                      disabled={saving}
+                      onClick={() => void handleSubmit()}
+                    >
+                      <FiCheckCircle size={15} />
+                      {saving ? 'Submitting…' : 'Submit for Approval'}
+                    </button>
                   </div>
-                  <div className="cpp-preview-content">
-                    <div className="cpp-sponsored-tag">SPONSORED</div>
-                    <div className="cpp-fixture-row">
-                      <div className="cpp-fixture-info">
-                        <div className="cpp-fixture-teams">
-                          <span className="cpp-team-badge">🏉</span>
-                          <span className="cpp-team-name">KCB KOBS</span>
-                          <span className="cpp-vs">VS</span>
-                          <span className="cpp-team-badge">⭐</span>
-                          <span className="cpp-team-name">Platinum Heathens</span>
-                          <span className="cpp-sponsor-mini">🍺</span>
-                        </div>
-                        <div className="cpp-fixture-meta">Sat, 26 May • 4:30 PM</div>
-                        <div className="cpp-fixture-venue">Kampala Rugby Club</div>
-                      </div>
-                      <button className="cpp-buy-btn">Buy Tickets <FiArrowRight size={12} /></button>
-                    </div>
-                    <div className="cpp-fixture-divider" />
-                    <div className="cpp-fixture-row">
-                      <div className="cpp-fixture-info">
-                        <div className="cpp-fixture-teams">
-                          <span className="cpp-team-badge">🏴‍☠️</span>
-                          <span className="cpp-team-name">Black Pirates</span>
-                          <span className="cpp-vs">VS</span>
-                          <span className="cpp-team-badge">🌿</span>
-                          <span className="cpp-team-name">Makerere Impis</span>
-                        </div>
-                        <div className="cpp-fixture-meta">Sun, 27 May • 4:30 PM</div>
-                        <div className="cpp-fixture-venue">King's Park Arena</div>
-                      </div>
-                      <button className="cpp-buy-btn">Buy Tickets <FiArrowRight size={12} /></button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* 3. Team Profile */}
-                <div className="cpp-preview-card">
-                  <div className="cpp-preview-card-header">
-                    <span className="cpp-preview-num">3</span>
-                    <span className="cpp-preview-label">Team Profile - Partner Banner</span>
-                    <span className="cpp-live-badge">LIVE PREVIEW</span>
-                  </div>
-                  <div className="cpp-preview-content">
-                    <div className="cpp-team-profile-header">
-                      <div className="cpp-team-profile-logo">🦅</div>
-                      <div className="cpp-team-profile-name">KCB KOBS</div>
-                      <FiShare2 size={14} className="cpp-share-icon" />
-                    </div>
-                    <div className="cpp-partner-banner">
-                      <span className="cpp-partner-banner-text">NILE SPECIAL — UGANDAN REWARD</span>
-                    </div>
-                    <div className="cpp-team-tabs">
-                      <span className="cpp-team-tab cpp-team-tab-active">Overview</span>
-                      <span className="cpp-team-tab">Squad</span>
-                      <span className="cpp-team-tab">Fixtures</span>
-                    </div>
-                    <div className="cpp-team-desc">
-                      KCB Football Club is a professional football club...
-                    </div>
-                  </div>
-                </div>
-
-                {/* 4. Ticketing Flow */}
-                <div className="cpp-preview-card">
-                  <div className="cpp-preview-card-header">
-                    <span className="cpp-preview-num">4</span>
-                    <span className="cpp-preview-label">Ticketing Flow - Branding Placement</span>
-                    <span className="cpp-live-badge">LIVE PREVIEW</span>
-                  </div>
-                  <div className="cpp-preview-content">
-                    <div className="cpp-ticket-stepper">
-                      <span className="cpp-ticket-step cpp-ticket-step-active">① Tickets</span>
-                      <span className="cpp-ticket-step">② Details</span>
-                      <span className="cpp-ticket-step">③ Payment</span>
-                      <span className="cpp-ticket-step">④ Confirmation</span>
-                    </div>
-                    <div className="cpp-ticket-match">
-                      <span className="cpp-team-badge">🦅</span>
-                      <span className="cpp-ticket-match-text">KCB KOBS VS Platinum Heathens</span>
-                    </div>
-                    <div className="cpp-ticket-meta">Sat, 26 May • 4:30 PM • Kampala Rugby Club</div>
-                    <div className="cpp-ticket-row">
-                      <span className="cpp-ticket-tier">VIP Stand</span>
-                      <div className="cpp-ticket-qty">
-                        <span className="cpp-qty-label">UGX 30,000</span>
-                        <div className="cpp-qty-ctrl">
-                          <button className="cpp-qty-btn">-</button>
-                          <span className="cpp-qty-num">2</span>
-                          <button className="cpp-qty-btn">+</button>
-                        </div>
-                        <span className="cpp-qty-total">UGX 60,000</span>
-                      </div>
-                    </div>
-                    <div className="cpp-ticket-banner">
-                      <span className="cpp-ticket-banner-text">NILE SPECIAL — UGANDAN REWARD</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Comments & Approvals */}
-              <div className="cpp-comments-card">
-                <h3 className="cpp-comments-title">Comments & Approvals</h3>
-                <div className="cpp-comments-body">
-
-                  {/* Comment input */}
-                  <div className="cpp-comment-section">
-                    <div className="cpp-comment-existing">
-                      <div className="cpp-comment-avatar">JK</div>
-                      <div className="cpp-comment-content">
-                        <div className="cpp-comment-author-row">
-                          <span className="cpp-comment-author">John Doe</span>
-                          <span className="cpp-comment-role">Super Admin • 2 hours ago</span>
-                        </div>
-                        <div className="cpp-comment-text">
-                          Please review the hero banner text contrast on mobile. Looks good overall.
-                        </div>
-                      </div>
-                    </div>
-                    <div className="cpp-comment-input-row">
-                      <input
-                        className="cpp-comment-input"
-                        type="text"
-                        placeholder="Add Internal Notes..."
-                        value={note}
-                        onChange={(e) => setNote(e.target.value)}
-                      />
-                      <button className="cpp-add-note-btn">Add Note</button>
-                    </div>
-                  </div>
-
-                  {/* Approval history */}
-                  <div className="cpp-approval-section">
-                    <h4 className="cpp-approval-title">Approval History</h4>
-                    {approvalHistory.map((item) => (
-                      <div key={item.initials} className="cpp-approval-row">
-                        <div className="cpp-approval-avatar">{item.initials}</div>
-                        <div className="cpp-approval-info">
-                          <div className="cpp-approval-name">{item.name}</div>
-                          <div className="cpp-approval-sub">{item.sub}</div>
-                        </div>
-                        <span className={`cpp-approval-status ${item.statusClass}`}>
-                          {item.status}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                )}
               </div>
             </div>
-
-            {/* Right sidebar */}
-            <div className="cpp-sidebar">
-
-              {/* Campaign Summary */}
-              <div className="cpp-summary-card">
-                <div className="cpp-summary-header">
-                  <span className="cpp-summary-title">Campaign Summary</span>
-                  <span className="cpp-draft-badge">DRAFT</span>
-                </div>
-                <div className="cpp-summary-campaign">
-                  <div className="cpp-summary-logo">🍺</div>
-                  <div>
-                    <div className="cpp-summary-campaign-name">Nile Special Matchday</div>
-                    <div className="cpp-summary-campaign-type">Awareness Campaign</div>
-                  </div>
-                </div>
-                <div className="cpp-summary-details">
-                  <div className="cpp-summary-row">
-                    <span className="cpp-summary-label">Run Dates</span>
-                    <span className="cpp-summary-val">01 Jun 2026 – 30 Jun 2027</span>
-                  </div>
-                  <div className="cpp-summary-row">
-                    <span className="cpp-summary-label">Target Entities</span>
-                    <span className="cpp-summary-val">All NSRPL Clubs, All Fans</span>
-                  </div>
-                  <div className="cpp-summary-row">
-                    <span className="cpp-summary-label">Campaign Type</span>
-                    <span className="cpp-summary-val">Awareness</span>
-                  </div>
-                  <div className="cpp-summary-row">
-                    <span className="cpp-summary-label">Approval Status</span>
-                    <span className="cpp-pending-badge">PENDING</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Placement Checklist */}
-              <div className="cpp-checklist-card">
-                <div className="cpp-checklist-header">
-                  <span className="cpp-checklist-title">Placement Checklist</span>
-                  <span className="cpp-checklist-count">{doneCount} / {checklistItems.length}</span>
-                </div>
-                <div className="cpp-checklist-items">
-                  {checklistItems.map((item) => (
-                    <div key={item.id} className="cpp-checklist-item">
-                      {item.done ? (
-                        <FiCheckCircle size={16} className="cpp-check-done" />
-                      ) : (
-                        <FiCircle size={16} className="cpp-check-todo" />
-                      )}
-                      <div>
-                        <div className={`cpp-check-label ${item.done ? 'cpp-check-label-done' : ''}`}>
-                          {item.label}
-                        </div>
-                        <div className="cpp-check-desc">{item.desc}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Action buttons */}
-              <div className="cpp-action-btns">
-                <button
-                  className="cpp-request-btn"
-                  onClick={() => navigate('/sponsor/campaigns/new/launch')}
-                >
-                  Request Approval
-                </button>
-                <button
-                  className="cpp-publish-btn"
-                  onClick={() => navigate('/sponsor/campaigns/new/launch')}
-                >
-                  <FiCheck size={15} /> Publish Campaign
-                </button>
-              </div>
-            </div>
-          </div>
+          )}
         </main>
       </div>
     </div>

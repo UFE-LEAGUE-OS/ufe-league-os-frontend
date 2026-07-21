@@ -107,7 +107,9 @@ describe('CorporateSponsorReview', () => {
   });
 
   it('refreshes the authenticated user with the new sponsor entitlement after submitting', async () => {
-    vi.mocked(becomeSponsor).mockResolvedValue({ data: {} } as never);
+    vi.mocked(becomeSponsor).mockResolvedValue({
+      data: { sponsor_account: { id: 301 } },
+    } as never);
     vi.mocked(fetchCurrentUser).mockResolvedValue({ data: sponsorUser } as never);
 
     renderPage();
@@ -127,7 +129,9 @@ describe('CorporateSponsorReview', () => {
   });
 
   it('still navigates to the complete page if refreshing the user fails', async () => {
-    vi.mocked(becomeSponsor).mockResolvedValue({ data: {} } as never);
+    vi.mocked(becomeSponsor).mockResolvedValue({
+      data: { sponsor_account: { id: 301 } },
+    } as never);
     vi.mocked(fetchCurrentUser).mockRejectedValue(new Error('network error'));
 
     renderPage();

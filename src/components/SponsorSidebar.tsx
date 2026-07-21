@@ -5,8 +5,10 @@ import {
 import {
   FiBarChart2,
   FiCreditCard,
+  FiFileText,
   FiGrid,
   FiHelpCircle,
+  FiImage,
   FiLayout,
   FiSettings,
   FiTag,
@@ -44,6 +46,16 @@ const sidebarLinks = [
     route: '/sponsor/activations',
   },
   {
+    label: 'Campaigns',
+    icon: FiZap,
+    route: '/sponsor/campaigns',
+  },
+  {
+    label: 'Assets',
+    icon: FiImage,
+    route: '/sponsor/assets',
+  },
+  {
     label: 'Performance',
     icon: FiBarChart2,
     route: '/sponsor/analytics',
@@ -52,6 +64,11 @@ const sidebarLinks = [
     label: 'My Team',
     icon: FiUsers,
     route: '/sponsor/team',
+  },
+  {
+    label: 'Audit Log',
+    icon: FiFileText,
+    route: '/sponsor/audit-log',
   },
 ];
 

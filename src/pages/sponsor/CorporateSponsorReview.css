@@ -247,6 +247,8 @@
 .csr-doc-item:last-child { border-bottom: none; }
 
 .csr-doc-icon-done { color: #16a34a; flex-shrink: 0; }
+.csr-doc-icon-pending { color: #F97316; flex-shrink: 0; }
+.csr-doc-icon-failed { color: #DC2626; flex-shrink: 0; }
 
 .csr-doc-name {
   flex: 1;
@@ -265,6 +267,18 @@
   background: rgba(22, 163, 74, 0.12);
   color: #16a34a;
   border: 1px solid rgba(22, 163, 74, 0.25);
+}
+
+.csr-doc-pending {
+  background: rgba(249, 115, 22, 0.12);
+  color: #F97316;
+  border: 1px solid rgba(249, 115, 22, 0.25);
+}
+
+.csr-doc-failed {
+  background: rgba(220, 38, 38, 0.12);
+  color: #DC2626;
+  border: 1px solid rgba(220, 38, 38, 0.25);
 }
 
 .csr-declaration {

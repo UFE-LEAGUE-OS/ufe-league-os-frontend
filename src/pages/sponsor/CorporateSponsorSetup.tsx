@@ -384,16 +384,6 @@ export default function CorporateSponsorSetup() {
                 generate agreements, and match you with relevant opportunities.
               </p>
             </div>
-
-            <div className="css-secure-section">
-              <span>🔒</span>
-              <div>
-                <div className="css-secure-title">Your data is secure</div>
-                <div className="css-secure-text">
-                  We never share your information without your consent.
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </main>

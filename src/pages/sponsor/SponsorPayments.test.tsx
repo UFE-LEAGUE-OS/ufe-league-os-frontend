@@ -150,6 +150,7 @@ const agreement = {
   revenue_share_rules: [],
   revenue_distributions: [],
   workflow_events: [],
+  signed_at: '2026-07-14T10:00:00Z',
   created_at:
     '2026-07-14T10:00:00Z',
   updated_at:
@@ -313,6 +314,39 @@ describe('SponsorPayments', () => {
       ).toContain(
         'LOS-SPONSOR-201-TEST',
       );
+    },
+  );
+
+  it(
+    'routes to the agreement sign page instead of Flutterwave when unsigned',
+    async () => {
+      mockPageData([
+        { ...agreement, signed_at: null },
+      ]);
+
+      renderPage();
+
+      expect(
+        await screen.findByRole(
+          'button',
+          {
+            name: /review & sign agreement/i,
+          },
+        ),
+      ).toBeInTheDocument();
+
+      expect(
+        screen.queryByRole(
+          'button',
+          {
+            name: /pay with flutterwave/i,
+          },
+        ),
+      ).not.toBeInTheDocument();
+
+      expect(
+        initializePaymentMock,
+      ).not.toHaveBeenCalled();
     },
   );
 

@@ -10,15 +10,31 @@ import {
   FiUser,
   FiFileText,
   FiAlertCircle,
+  FiClock,
+  FiXCircle,
 } from 'react-icons/fi';
 import { useAuthStore } from '../../store/authStore';
-import { useSponsorFormStore } from '../../store/sponsorFormStore';
+import {
+  useSponsorFormStore,
+  type CorporateVerificationDocType,
+} from '../../store/sponsorFormStore';
 import { getToken } from '../../utils/tokenManager';
-import { becomeSponsor } from '../../services/sponsorshipService';
+import {
+  becomeSponsor,
+  uploadSponsorVerificationDocument,
+} from '../../services/sponsorshipService';
 import { fetchCurrentUser, updateProfile } from '../../services/authService.js';
 import { LOGIN_ROUTE, type AuthFlowState } from '../../utils/authFlow';
 import '../../styles/pages/landing.css';
 import './CorporateSponsorReview.css';
+
+type DocUploadState = 'attached' | 'uploading' | 'uploaded' | 'failed';
+
+const verificationDocLabels: Record<CorporateVerificationDocType, string> = {
+  incorporation: 'Certificate of Incorporation',
+  tin: 'Tax Identification Number (TIN)',
+  logo: 'Company Logo',
+};
 
 function isExistingAccountError(error: unknown): boolean {
   const responseData = (error as { response?: { data?: unknown } })?.response?.data;
@@ -87,6 +103,9 @@ export default function CorporateSponsorReview() {
   const navigate = useNavigate();
 
   const form = useSponsorFormStore((state) => state.corporate);
+  const corporateDocuments = useSponsorFormStore(
+    (state) => state.corporateDocuments,
+  );
   const resetCorporate = useSponsorFormStore((state) => state.resetCorporate);
   const accessToken = useAuthStore((state) => state.accessToken);
   const setHydratedUser = useAuthStore((state) => state.setHydratedUser);
@@ -96,6 +115,13 @@ export default function CorporateSponsorReview() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [hasExistingAccount, setHasExistingAccount] = useState(false);
+  const [docStatus, setDocStatus] = useState<
+    Record<CorporateVerificationDocType, DocUploadState>
+  >({
+    incorporation: 'attached',
+    tin: 'attached',
+    logo: 'attached',
+  });
 
   const dialCode = countryDialCodes[form.country] ?? '+256';
 
@@ -129,13 +155,38 @@ export default function CorporateSponsorReview() {
     setIsSubmitting(true);
 
 try {
-      await becomeSponsor({
+      const { data } = await becomeSponsor({
         sponsor_type: 'CORPORATE',
         name: form.companyName.trim(),
         registration_country: countryIsoCodes[form.country] ?? 'UG',
         brn: form.brn.trim(),
         tin: form.tin.trim(),
       });
+
+      const accountId = data.sponsor_account.id;
+
+      const docEntries = Object.entries(corporateDocuments) as [
+        CorporateVerificationDocType,
+        File | null,
+      ][];
+
+      await Promise.all(
+        docEntries
+          .filter(([, file]) => file != null)
+          .map(async ([docType, file]) => {
+            setDocStatus((prev) => ({ ...prev, [docType]: 'uploading' }));
+            try {
+              await uploadSponsorVerificationDocument(
+                accountId,
+                docType,
+                file as File,
+              );
+              setDocStatus((prev) => ({ ...prev, [docType]: 'uploaded' }));
+            } catch {
+              setDocStatus((prev) => ({ ...prev, [docType]: 'failed' }));
+            }
+          }),
+      );
 
       try {
         await updateProfile({ location: form.city.trim() });
@@ -345,21 +396,42 @@ try {
                 </button>
               </div>
               <div className="csr-docs-list">
-                <div className="csr-doc-item">
-                  <FiCheckCircle size={16} className="csr-doc-icon-done" />
-                  <span className="csr-doc-name">Certificate of Incorporation</span>
-                  <span className="csr-doc-status csr-doc-uploaded">Uploaded</span>
-                </div>
-                <div className="csr-doc-item">
-                  <FiCheckCircle size={16} className="csr-doc-icon-done" />
-                  <span className="csr-doc-name">Tax Identification Number (TIN)</span>
-                  <span className="csr-doc-status csr-doc-uploaded">Uploaded</span>
-                </div>
-                <div className="csr-doc-item">
-                  <FiCheckCircle size={16} className="csr-doc-icon-done" />
-                  <span className="csr-doc-name">Company Logo</span>
-                  <span className="csr-doc-status csr-doc-uploaded">Uploaded</span>
-                </div>
+                {(
+                  Object.keys(verificationDocLabels) as CorporateVerificationDocType[]
+                ).map((docType) => {
+                  const status = docStatus[docType];
+                  const isAttached = corporateDocuments[docType] != null;
+
+                  return (
+                    <div className="csr-doc-item" key={docType}>
+                      {status === 'failed' ? (
+                        <FiXCircle size={16} className="csr-doc-icon-failed" />
+                      ) : status === 'uploading' ? (
+                        <FiClock size={16} className="csr-doc-icon-pending" />
+                      ) : (
+                        <FiCheckCircle size={16} className="csr-doc-icon-done" />
+                      )}
+                      <span className="csr-doc-name">
+                        {verificationDocLabels[docType]}
+                      </span>
+                      <span
+                        className={`csr-doc-status ${
+                          status === 'failed'
+                            ? 'csr-doc-failed'
+                            : status === 'uploading'
+                              ? 'csr-doc-pending'
+                              : 'csr-doc-uploaded'
+                        }`}
+                      >
+                        {status === 'uploading' && 'Uploading…'}
+                        {status === 'uploaded' && 'Uploaded'}
+                        {status === 'failed' && 'Upload failed'}
+                        {status === 'attached' &&
+                          (isAttached ? 'Ready to submit' : 'Not attached')}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
             </div>
 

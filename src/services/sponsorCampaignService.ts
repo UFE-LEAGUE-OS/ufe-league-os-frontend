@@ -1,4 +1,5 @@
 import apiClient from './apiClient.js';
+import type { PaginatedResponse } from './sponsorshipService';
 
 export type CampaignStatus =
   | 'DRAFT'
@@ -26,6 +27,11 @@ export interface SponsorCampaignBudget {
   ends_at: string | null;
 }
 
+export type SponsorCampaignAssetApprovalStatus =
+  | 'pending'
+  | 'approved'
+  | 'rejected';
+
 export interface SponsorCampaignAsset {
   id: number;
   file_name: string;
@@ -33,12 +39,23 @@ export interface SponsorCampaignAsset {
   file_type: string;
   size_bytes: number;
   placement: string;
+  tags: string[];
+  approval_status: SponsorCampaignAssetApprovalStatus;
+  rejection_reason: string | null;
   uploaded_at: string;
+}
+
+export interface SponsorCampaignAssetWithCampaign
+  extends SponsorCampaignAsset {
+  campaign_id: number;
+  campaign_name: string;
+  sponsor_account_name: string;
 }
 
 export interface SponsorCampaign {
   id: number;
   sponsor_account: number;
+  agreement_id: number | null;
   name: string;
   property: string;
   campaign_type: string;
@@ -50,12 +67,14 @@ export interface SponsorCampaign {
   assets: SponsorCampaignAsset[];
   status: CampaignStatus;
   reference: string | null;
+  spend_to_date: number | null;
   created_at: string;
   updated_at: string;
 }
 
 export interface SponsorCampaignDraftPayload {
   sponsor_account: number;
+  agreement_id?: number | null;
   name?: string;
   property?: string;
   campaign_type?: string;
@@ -64,6 +83,12 @@ export interface SponsorCampaignDraftPayload {
   audience?: Partial<SponsorCampaignAudience>;
   budget?: Partial<SponsorCampaignBudget>;
   placement_preferences?: string[];
+}
+
+export interface SponsorCampaignFilters {
+  sponsor_account?: number;
+  status?: CampaignStatus;
+  agreement?: number;
 }
 
 export const createSponsorCampaignDraft = (
@@ -88,6 +113,14 @@ export const getSponsorCampaign = (
 ) =>
   apiClient.get<SponsorCampaign>(
     `/sponsorships/campaigns/${campaignId}/`,
+  );
+
+export const getSponsorCampaigns = (
+  filters?: SponsorCampaignFilters,
+) =>
+  apiClient.get<PaginatedResponse<SponsorCampaign>>(
+    '/sponsorships/campaigns/',
+    { params: filters },
   );
 
 export const submitSponsorCampaign = (
@@ -121,4 +154,43 @@ export const deleteSponsorCampaignAsset = (
 ) =>
   apiClient.delete(
     `/sponsorships/campaigns/${campaignId}/assets/${assetId}/`,
+  );
+
+export const updateSponsorCampaignAssetTags = (
+  campaignId: number,
+  assetId: number,
+  tags: string[],
+) =>
+  apiClient.patch<SponsorCampaignAsset>(
+    `/sponsorships/campaigns/${campaignId}/assets/${assetId}/`,
+    { tags },
+  );
+
+export interface PendingCampaignAssetFilters {
+  approval_status?: SponsorCampaignAssetApprovalStatus;
+}
+
+export const getPendingSponsorCampaignAssets = (
+  filters?: PendingCampaignAssetFilters,
+) =>
+  apiClient.get<
+    PaginatedResponse<SponsorCampaignAssetWithCampaign>
+  >(
+    '/sponsorships/admin/campaign-assets/',
+    { params: filters },
+  );
+
+export interface ReviewSponsorCampaignAssetPayload {
+  approval_status: 'approved' | 'rejected';
+  rejection_reason?: string;
+}
+
+export const reviewSponsorCampaignAsset = (
+  campaignId: number,
+  assetId: number,
+  payload: ReviewSponsorCampaignAssetPayload,
+) =>
+  apiClient.patch<SponsorCampaignAsset>(
+    `/sponsorships/campaigns/${campaignId}/assets/${assetId}/review/`,
+    payload,
   );

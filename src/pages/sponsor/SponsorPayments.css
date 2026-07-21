@@ -519,7 +519,7 @@
 .spp-card-columns {
   display: grid;
   grid-template-columns:
-    repeat(2, minmax(0, 1fr));
+    repeat(3, minmax(0, 1fr));
 }
 
 .spp-card-columns > section {
@@ -527,9 +527,55 @@
   padding: 18px 21px;
 }
 
-.spp-card-columns > section:first-child {
+.spp-card-columns > section:not(:last-child) {
   border-right: 1px solid #21263e;
 }
+
+.spp-revenue-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.spp-revenue-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid #21263e;
+  font-size: 12px;
+}
+.spp-revenue-row:last-child { border-bottom: none; }
+
+.spp-revenue-recipient {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.spp-revenue-recipient strong {
+  color: #fff;
+  font-size: 12px;
+}
+
+.spp-revenue-recipient span {
+  color: #6f778c;
+  font-size: 10px;
+}
+
+.spp-doc-links {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.spp-doc-link {
+  font-size: 11px;
+  font-weight: 700;
+  color: #8135fa;
+  text-decoration: none;
+}
+.spp-doc-link:hover { text-decoration: underline; }
 
 .spp-section-title {
   margin-bottom: 13px;
@@ -698,7 +744,7 @@
     grid-template-columns: 1fr;
   }
 
-  .spp-card-columns > section:first-child {
+  .spp-card-columns > section:not(:last-child) {
     border-right: 0;
     border-bottom: 1px solid #21263e;
   }
