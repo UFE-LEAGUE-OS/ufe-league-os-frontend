@@ -12,15 +12,16 @@ interface CampaignMetrics {
     views: number;
     clicks: number;
     engagement: number; // percentage 0-100
+    status: "Active" | "Paused" | "Completed";
 }
 
 const SPORTS: Sport[] = ["All Sports", "Football", "Basketball", "Rugby"];
 
 const CAMPAIGNS: CampaignMetrics[] = [
-    { id: 1, campaignName: "MTN Season Campaign", sport: "Football", sponsor: "MTN Uganda", views: 250000, clicks: 45000, engagement: 87 },
-    { id: 2, campaignName: "Airtel Matchday Takeover", sport: "Basketball", sponsor: "Airtel Africa", views: 132000, clicks: 21500, engagement: 74 },
-    { id: 3, campaignName: "Coca-Cola Premium Banner", sport: "Rugby", sponsor: "Coca-Cola", views: 68000, clicks: 9200, engagement: 61 },
-    { id: 4, campaignName: "MTN Cranes Nation Push", sport: "Football", sponsor: "MTN Uganda", views: 184000, clicks: 30200, engagement: 79 },
+    { id: 1, campaignName: "MTN Season Campaign", sport: "Football", sponsor: "MTN Uganda", views: 250000, clicks: 45000, engagement: 87 ,    status: "Active"},
+    { id: 2, campaignName: "Airtel Matchday Takeover", sport: "Basketball", sponsor: "Airtel Africa", views: 132000, clicks: 21500, engagement: 74 ,    status: "Active"},
+    { id: 3, campaignName: "Coca-Cola Premium Banner", sport: "Rugby", sponsor: "Coca-Cola", views: 68000, clicks: 9200, engagement: 61,    status: "Active" },
+    { id: 4, campaignName: "MTN Cranes Nation Push", sport: "Football", sponsor: "MTN Uganda", views: 184000, clicks: 30200, engagement: 79,    status: "Active" },
 ];
 
 const formatCompact = (value: number) =>
@@ -167,6 +168,7 @@ export default function CampaignPerformance() {
                             <th>Clicks</th>
                             <th>CTR</th>
                             <th>Engagement</th>
+                            <th>Status</th>
                         </tr>
                     </thead>
 
@@ -175,24 +177,55 @@ export default function CampaignPerformance() {
                             <tr key={c.id}>
                                 <td>
                                     <div className="package-cell__text">
-                                        <span className="package-name">{c.campaignName}</span>
-                                        <span className="package-sponsor">{c.sponsor}</span>
+                                        <span className="package-name">
+                                            {c.campaignName}
+                                        </span>
+                                        <span className="package-sponsor">
+                                            {c.sponsor}
+                                        </span>
                                     </div>
                                 </td>
+
                                 <td>
-                                    <span className="sport-tag">{c.sport}</span>
+                                    <span className="sport-tag">
+                                        {c.sport}
+                                    </span>
                                 </td>
-                                <td>{formatCompact(c.views)}</td>
-                                <td>{formatCompact(c.clicks)}</td>
-                                <td>{((c.clicks / c.views) * 100).toFixed(1)}%</td>
+
+                                <td>
+                                    {formatCompact(c.views)}
+                                </td>
+
+                                <td>
+                                    {formatCompact(c.clicks)}
+                                </td>
+
+                                <td>
+                                    {((c.clicks / c.views) * 100).toFixed(1)}%
+                                </td>
+
                                 <td>
                                     <div className="engagement-cell">
                                         <div className="engagement-track">
-                                            <div className="engagement-fill" style={{ width: `${c.engagement}%` }} />
+                                            <div
+                                                className="engagement-fill"
+                                                style={{ width: `${c.engagement}%` }}
+                                            />
                                         </div>
-                                        <span>{c.engagement}%</span>
+
+                                        <span>
+                                            {c.engagement}%
+                                        </span>
                                     </div>
                                 </td>
+
+                                <td>
+                                    <span className={`badge badge--${c.status.toLowerCase()}`}>
+                                        <span className="badge-dot" />
+                                        {c.status}
+                                    </span>
+                                </td>
+
                             </tr>
                         ))}
                     </tbody>

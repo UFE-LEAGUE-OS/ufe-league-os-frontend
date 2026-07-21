@@ -3,6 +3,8 @@ import "../../../styles/pages/super-admin/sponsorship-management/sponsorshipMana
 
 type Sport = "Football" | "Basketball" | "Rugby";
 type EntityType = "League" | "Club" | "Fan Page";
+type VisibilityStatus = "All" | "Visible" | "Hidden";
+type SportFilter = "All" | Sport;
 
 interface VisibilityRule {
     id: number;
@@ -10,6 +12,10 @@ interface VisibilityRule {
     sport: Sport;
     entityType: EntityType;
     target: string;
+
+    startDate: string;
+    endDate: string;
+
     status: "Visible" | "Hidden";
     updatedAt: string;
 }
@@ -45,6 +51,10 @@ export default function CampaignVisibility() {
             sport: "Football",
             entityType: "League",
             target: "Uganda Premier League",
+
+            startDate: "2026-01-01",
+            endDate: "2026-12-31",
+
             status: "Visible",
             updatedAt: "Jul 09, 2026",
         },
@@ -54,6 +64,10 @@ export default function CampaignVisibility() {
             sport: "Basketball",
             entityType: "Club",
             target: "City Oilers",
+
+            startDate: "2026-07-01",
+            endDate: "2026-12-31",
+
             status: "Visible",
             updatedAt: "Jul 06, 2026",
         },
@@ -63,6 +77,10 @@ export default function CampaignVisibility() {
             sport: "Rugby",
             entityType: "Fan Page",
             target: "Kobs RFC Fan Page",
+
+            startDate: "2026-02-01",
+            endDate: "2026-05-31",
+
             status: "Hidden",
             updatedAt: "Jun 28, 2026",
         },
@@ -70,9 +88,16 @@ export default function CampaignVisibility() {
 
     const [campaignName, setCampaignName] = useState("");
     const [sport, setSport] = useState<Sport>("Football");
+    const [startDate, setStartDate] = useState("");
+    const [endDate, setEndDate] = useState("");
     const [entityType, setEntityType] = useState<EntityType>("League");
     const [target, setTarget] = useState(ENTITY_DIRECTORY.Football.League[0]);
     const [isVisible, setIsVisible] = useState(true);
+    const [editingRuleId, setEditingRuleId] = useState<number | null>(null);
+    const [deleteRuleId, setDeleteRuleId] = useState<number | null>(null);
+    const [search, setSearch] = useState("");
+    const [statusFilter, setStatusFilter] = useState<VisibilityStatus>("All");
+    const [sportFilter, setSportFilter] = useState<SportFilter>("All");
 
     const targetOptions = useMemo(
         () => ENTITY_DIRECTORY[sport][entityType],
@@ -94,8 +119,55 @@ export default function CampaignVisibility() {
         [rules]
     );
 
+    const filteredRules = useMemo(() => {
+        return rules.filter((rule) => {
+
+            const matchesSearch =
+                search.trim() === "" ||
+                rule.campaignName.toLowerCase().includes(search.toLowerCase()) ||
+                rule.target.toLowerCase().includes(search.toLowerCase());
+
+            const matchesStatus =
+                statusFilter === "All" ||
+                rule.status === statusFilter;
+
+            const matchesSport =
+                sportFilter === "All" ||
+                rule.sport === sportFilter;
+
+            return matchesSearch && matchesStatus && matchesSport;
+        });
+    }, [rules, search, statusFilter, sportFilter]);
+
     const handleSave = () => {
         if (!campaignName.trim()) return;
+
+        if (editingRuleId !== null) {
+
+            setRules(rules.map(rule =>
+                rule.id === editingRuleId
+                    ? {
+                        ...rule,
+                        campaignName,
+                        sport,
+                        entityType,
+                        target,
+                        startDate,
+                        endDate,
+                        status: isVisible ? "Visible" : "Hidden",
+                        updatedAt: "Today",
+                    }
+                    : rule
+            ));
+
+            setEditingRuleId(null);
+            setCampaignName("");
+            setStartDate("");
+            setEndDate("");
+            setIsVisible(true);
+
+            return;
+        }
 
         const newRule: VisibilityRule = {
             id: rules.length + 1,
@@ -103,12 +175,22 @@ export default function CampaignVisibility() {
             sport,
             entityType,
             target,
+
+            startDate,
+            endDate,
+
             status: isVisible ? "Visible" : "Hidden",
             updatedAt: "Today",
         };
 
         setRules([newRule, ...rules]);
+
         setCampaignName("");
+        setSport("Football");
+        setEntityType("League");
+        setTarget(ENTITY_DIRECTORY.Football.League[0]);
+        setStartDate("");
+        setEndDate("");
         setIsVisible(true);
     };
 
@@ -120,8 +202,28 @@ export default function CampaignVisibility() {
         ));
     };
 
+    const handleDelete = () => {
+        if (deleteRuleId === null) return;
+
+        setRules(rules.filter(rule => rule.id !== deleteRuleId));
+        setDeleteRuleId(null);
+    };
+    const handleEdit = (rule: VisibilityRule) => {
+        setEditingRuleId(rule.id);
+
+        setCampaignName(rule.campaignName);
+        setSport(rule.sport);
+        setEntityType(rule.entityType);
+        setTarget(rule.target);
+
+        setStartDate(rule.startDate);
+        setEndDate(rule.endDate);
+
+        setIsVisible(rule.status === "Visible");
+    };
+
     return (
-        <div className="page-container">
+        <div className="page-container campaign-visibility-page">
 
             <div className="page-header">
                 <div>
@@ -135,7 +237,9 @@ export default function CampaignVisibility() {
 
                 <div className="card">
                     <div className="card-header">
-                        <h2>New Visibility Rule</h2>
+                        <h2>
+                            {editingRuleId ? "Edit Visibility Rule" : "New Visibility Rule"}
+                        </h2>
                         <p>Target a campaign to a specific league, club, or fan page.</p>
                     </div>
 
@@ -200,6 +304,26 @@ export default function CampaignVisibility() {
                     </div>
 
                     <div className="field-group">
+                        <label htmlFor="startDate">Visibility Start Date</label>
+                        <input
+                            id="startDate"
+                            type="date"
+                            value={startDate}
+                            onChange={(e) => setStartDate(e.target.value)}
+                        />
+                    </div>
+
+                    <div className="field-group">
+                        <label htmlFor="endDate">Visibility End Date</label>
+                        <input
+                            id="endDate"
+                            type="date"
+                            value={endDate}
+                            onChange={(e) => setEndDate(e.target.value)}
+                        />
+                    </div>
+
+                    <div className="field-group">
                         <label>Status</label>
                         <button
                             type="button"
@@ -215,13 +339,33 @@ export default function CampaignVisibility() {
                         </button>
                     </div>
 
-                    <button className="primary-btn" onClick={handleSave}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z" />
-                            <path d="M17 21v-8H7v8M7 3v5h8" />
-                        </svg>
-                        Save Settings
-                    </button>
+                    <div className="form-actions">
+                        <button className="primary-btn" onClick={handleSave}>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z" />
+                                <path d="M17 21v-8H7v8M7 3v5h8" />
+                            </svg>
+                            {editingRuleId ? "Update Settings" : "Save Settings"}
+                        </button>
+
+                        {editingRuleId && (
+                            <button
+                                className="secondary-btn"
+                                onClick={() => {
+                                    setEditingRuleId(null);
+                                    setCampaignName("");
+                                    setSport("Football");
+                                    setEntityType("League");
+                                    setTarget(ENTITY_DIRECTORY.Football.League[0]);
+                                    setStartDate("");
+                                    setEndDate("");
+                                    setIsVisible(true);
+                                }}
+                            >
+                                Cancel Edit
+                            </button>
+                        )}
+                    </div>
                 </div>
 
                 <div className="card summary-card">
@@ -265,8 +409,58 @@ export default function CampaignVisibility() {
             </div>
 
             <div className="table-card">
+
                 <div className="table-card__header">
                     <h2>Configured Campaigns</h2>
+                </div>
+
+                <div className="table-toolbar">
+
+                    <div className="search-field">
+                        <input
+                            type="text"
+                            placeholder="Search campaigns..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                        />
+                    </div>
+
+                    <div className="toolbar-filters">
+
+                        <div className="filter-select">
+                            <label>Sport:</label>
+                            <select
+                                value={sportFilter}
+                                onChange={(e) =>
+                                    setSportFilter(e.target.value as SportFilter)
+                                }
+                            >
+                                <option value="All">All Sports</option>
+
+                                {SPORTS.map((sport) => (
+                                    <option key={sport} value={sport}>
+                                        {sport}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="filter-select">
+                            <label>Status:</label>
+                            <select
+                                value={statusFilter}
+                                onChange={(e) =>
+                                    setStatusFilter(e.target.value as VisibilityStatus)
+                                }
+                            >
+                                <option value="All">All Statuses</option>
+                                <option value="Visible">Visible</option>
+                                <option value="Hidden">Hidden</option>
+                            </select>
+                        </div>
+
+                    </div>
+
                 </div>
 
                 <table>
@@ -275,6 +469,7 @@ export default function CampaignVisibility() {
                             <th>Campaign</th>
                             <th>Sport</th>
                             <th>Target</th>
+                            <th>Visibility Period</th>
                             <th>Status</th>
                             <th>Last Updated</th>
                             <th aria-label="Actions" />
@@ -282,7 +477,7 @@ export default function CampaignVisibility() {
                     </thead>
 
                     <tbody>
-                        {rules.map((rule) => (
+                        {filteredRules.map((rule) => (
                             <tr key={rule.id}>
                                 <td className="package-name">{rule.campaignName}</td>
                                 <td>
@@ -295,6 +490,13 @@ export default function CampaignVisibility() {
                                     </div>
                                 </td>
                                 <td>
+                                    <div className="date-range">
+                                        <span>{rule.startDate}</span>
+                                        <span> to </span>
+                                        <span>{rule.endDate}</span>
+                                    </div>
+                                </td>
+                                <td>
                                     <span className={`badge badge--${rule.status.toLowerCase()}`}>
                                         <span className="badge-dot" />
                                         {rule.status}
@@ -302,15 +504,75 @@ export default function CampaignVisibility() {
                                 </td>
                                 <td className="muted-cell">{rule.updatedAt}</td>
                                 <td>
-                                    <button className="edit-btn" onClick={() => toggleRuleStatus(rule.id)}>
-                                        {rule.status === "Visible" ? "Hide" : "Show"}
-                                    </button>
+                                    <div className="actions-cell">
+
+                                        <button
+                                            className="edit-btn"
+                                            onClick={() => handleEdit(rule)}
+                                        >
+                                            Edit
+                                        </button>
+
+                                        <button
+                                            className="edit-btn"
+                                            onClick={() => toggleRuleStatus(rule.id)}
+                                        >
+                                            {rule.status === "Visible" ? "Hide" : "Show"}
+                                        </button>
+                                        <button
+                                            className="delete-btn"
+                                            onClick={() => setDeleteRuleId(rule.id)}
+                                        >
+                                            Delete
+                                        </button>
+
+                                    </div>
                                 </td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
             </div>
+            {deleteRuleId !== null && (
+                <div
+                    className="modal-overlay"
+                    onClick={() => setDeleteRuleId(null)}
+                >
+                    <div
+                        className="modal-panel modal-panel--confirm"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+
+                        <div className="modal-header">
+                            <h3>Delete Visibility Rule</h3>
+                        </div>
+
+                        <p className="confirm-message">
+                            Are you sure you want to delete this visibility rule?
+                            This action cannot be undone.
+                        </p>
+
+                        <div className="modal-actions">
+
+                            <button
+                                className="secondary-btn"
+                                onClick={() => setDeleteRuleId(null)}
+                            >
+                                Cancel
+                            </button>
+
+                            <button
+                                className="danger-btn"
+                                onClick={handleDelete}
+                            >
+                                Delete Rule
+                            </button>
+
+                        </div>
+
+                    </div>
+                </div>
+            )}
 
         </div>
     );

@@ -38,7 +38,11 @@ export default function BenefitSharing() {
     const club = Number(clubInput) || 0;
     const player = Number(playerInput) || 0;
     const total = league + club + player;
-    const isValid = total === 100;
+    const isValid =
+        total === 100 &&
+        league >= 0 &&
+        club >= 0 &&
+        player >= 0;
 
     const handleUpdate = () => {
         if (!isValid) return;
@@ -59,6 +63,45 @@ export default function BenefitSharing() {
                     <h1>Benefit Sharing Policy</h1>
                     <p>Define how sponsorship revenue is split between leagues, clubs, and players.</p>
                 </div>
+            </div>
+
+            <div className="stats-grid">
+
+                <div className="stat-card">
+                    <div>
+                        <span className="stat-label">
+                            Total Policies
+                        </span>
+                        <span className="stat-value">
+                            {SPORTS.length}
+                        </span>
+                    </div>
+                </div>
+
+
+                <div className="stat-card">
+                    <div>
+                        <span className="stat-label">
+                            Active Policies
+                        </span>
+                        <span className="stat-value">
+                            {SPORTS.length}
+                        </span>
+                    </div>
+                </div>
+
+
+                <div className="stat-card">
+                    <div>
+                        <span className="stat-label">
+                            Last Updated
+                        </span>
+                        <span className="stat-value">
+                            {savedPolicy.updatedAt}
+                        </span>
+                    </div>
+                </div>
+
             </div>
 
             <div className="field-group sport-select-group">
@@ -197,6 +240,7 @@ export default function BenefitSharing() {
                             <th>League</th>
                             <th>Club</th>
                             <th>Player</th>
+                            <th>Status</th>
                             <th>Last Updated</th>
                         </tr>
                     </thead>
@@ -209,7 +253,14 @@ export default function BenefitSharing() {
                                 <td>{policies[sport].league}%</td>
                                 <td>{policies[sport].club}%</td>
                                 <td>{policies[sport].player}%</td>
+                                <td>
+                                    <span className="badge badge--active">
+                                        <span className="badge-dot" />
+                                        Active
+                                    </span>
+                                </td>
                                 <td className="muted-cell">{policies[sport].updatedAt}</td>
+                                
                             </tr>
                         ))}
                     </tbody>
