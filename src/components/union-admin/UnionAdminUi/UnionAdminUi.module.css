@@ -31,9 +31,17 @@
 }
 
 .header h2 {
-  margin: 5px 0;
+  margin: 10px 0 8px;
   color: #fff;
-  font-size: 1.45rem;
+  font-family:
+    var(--font-heading, "League Spartan"),
+    Inter,
+    sans-serif;
+  font-size: clamp(2.15rem, 3.4vw, 3.55rem);
+  font-style: italic;
+  font-weight: 800;
+  line-height: 0.94;
+  letter-spacing: -0.052em;
 }
 
 .header p {
