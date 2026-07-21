@@ -57,7 +57,6 @@ import "../../styles/pages/club-admin/UserManagement.css";
 /* ------------------------------------------------------------------ */
 
 const PAGE_SIZE = 8;
-const USER_MANAGEMENT_PERMISSION = "club.admin.manage";
 
 const STATUS_FILTERS: Array<"ALL" | UserStatus> = [
   "ALL",
@@ -184,27 +183,16 @@ function PermissionToggleList({
 
 export interface UserManagementProps {
   clubId: number;
-  permissions: readonly string[];
 }
 
-export default function UserManagement({
-  clubId,
-  permissions,
-}: UserManagementProps) {
+export default function UserManagement({ clubId }: UserManagementProps) {
   /* ---------------- Users & roles data ---------------- */
 
-  const permissionKey = useMemo(
-    () => [...permissions].sort().join("\u0000"),
-    [permissions],
-  );
-  const canManageUsers = permissions.includes(USER_MANAGEMENT_PERMISSION);
-  const activeContextKey = `${clubId}:${permissionKey}`;
+  const activeContextKey = `${clubId}`;
   const activeContextRef = useRef({
-    canManageUsers,
     key: activeContextKey,
   });
   activeContextRef.current = {
-    canManageUsers,
     key: activeContextKey,
   };
   const loadRequestRef = useRef(0);
@@ -284,7 +272,6 @@ export default function UserManagement({
   }
 
   function openCreateUser() {
-    if (!canManageUsers) return;
     resetForm();
     setShowUserForm(true);
   }
@@ -296,7 +283,6 @@ export default function UserManagement({
   }
 
   async function beginEditUser(user: ManagedUser) {
-    if (!canManageUsers) return;
     const requestContextKey = activeContextKey;
     setEditingUserId(user.id);
     setFormError("");
@@ -335,7 +321,6 @@ export default function UserManagement({
       if (role) {
         const modules = await getRolePermissionModules(clubId, role.id);
         if (
-          !activeContextRef.current.canManageUsers ||
           activeContextRef.current.key !== requestContextKey
         ) {
           return;
@@ -358,7 +343,6 @@ export default function UserManagement({
   }
 
   async function handleRoleChange(roleKey: string) {
-    if (!canManageUsers) return;
     const requestContextKey = activeContextKey;
     setUserForm((prev) => ({ ...prev, role: roleKey }));
     setFormPermissionModules([]);
@@ -368,7 +352,6 @@ export default function UserManagement({
     try {
       const modules = await getRolePermissionModules(clubId, role.id);
       if (
-        !activeContextRef.current.canManageUsers ||
         activeContextRef.current.key !== requestContextKey
       ) {
         return;
@@ -410,7 +393,6 @@ export default function UserManagement({
   }
 
   async function submitUserForm() {
-    if (!canManageUsers) return;
     const requestContextKey = activeContextKey;
     setFormError("");
 
@@ -453,7 +435,6 @@ export default function UserManagement({
           avatar: avatarFile,
         });
         if (
-          !activeContextRef.current.canManageUsers ||
           activeContextRef.current.key !== requestContextKey
         ) {
           return;
@@ -474,7 +455,6 @@ export default function UserManagement({
           avatar: avatarFile,
         });
         if (
-          !activeContextRef.current.canManageUsers ||
           activeContextRef.current.key !== requestContextKey
         ) {
           return;
@@ -496,14 +476,12 @@ export default function UserManagement({
   /* ---------------- Row actions: status toggle / delete ---------------- */
 
   async function toggleUserStatus(user: ManagedUser) {
-    if (!canManageUsers) return;
     const requestContextKey = activeContextKey;
     const nextStatus: UserStatus =
       user.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
     try {
       const updated = await setClubUserStatus(clubId, user.id, nextStatus);
       if (
-        !activeContextRef.current.canManageUsers ||
         activeContextRef.current.key !== requestContextKey
       ) {
         return;
@@ -524,7 +502,6 @@ export default function UserManagement({
   }
 
   async function removeUser(user: ManagedUser) {
-    if (!canManageUsers) return;
     const requestContextKey = activeContextKey;
     const confirmed = window.confirm(
       `Remove ${user.full_name}? This cannot be undone.`,
@@ -533,7 +510,6 @@ export default function UserManagement({
     try {
       await deleteClubUser(clubId, user.id);
       if (
-        !activeContextRef.current.canManageUsers ||
         activeContextRef.current.key !== requestContextKey
       ) {
         return;
@@ -559,7 +535,6 @@ export default function UserManagement({
   const [performanceError, setPerformanceError] = useState("");
 
   async function openPerformance(user: ManagedUser) {
-    if (!canManageUsers) return;
     const requestContextKey = activeContextKey;
     setPerformanceUser(user);
     setPerformanceData(null);
@@ -568,7 +543,6 @@ export default function UserManagement({
     try {
       const metrics = await getUserPerformance(clubId, user.id);
       if (
-        !activeContextRef.current.canManageUsers ||
         activeContextRef.current.key !== requestContextKey
       ) {
         return;
@@ -614,7 +588,6 @@ export default function UserManagement({
   const loadRolePermissions = useCallback(
     async (roleId: number) => {
       if (
-        !canManageUsers ||
         loadedContextKey !== activeContextKey
       ) {
         return;
@@ -627,7 +600,6 @@ export default function UserManagement({
       try {
         const modules = await getRolePermissionModules(clubId, roleId);
         if (
-          !activeContextRef.current.canManageUsers ||
           activeContextRef.current.key !== requestContextKey
         ) {
           return;
@@ -653,7 +625,6 @@ export default function UserManagement({
     },
     [
       activeContextKey,
-      canManageUsers,
       clubId,
       loadedContextKey,
     ],
@@ -661,7 +632,6 @@ export default function UserManagement({
 
   useEffect(() => {
     if (
-      canManageUsers &&
       loadedContextKey === activeContextKey &&
       selectedRoleId != null
     ) {
@@ -669,14 +639,12 @@ export default function UserManagement({
     }
   }, [
     activeContextKey,
-    canManageUsers,
     loadRolePermissions,
     loadedContextKey,
     selectedRoleId,
   ]);
 
   function toggleRolePermission(key: string) {
-    if (!canManageUsers) return;
     setRoleModules((prev) =>
       prev.map((mod) => ({
         ...mod,
@@ -689,7 +657,6 @@ export default function UserManagement({
   }
 
   function toggleModuleSelectAll(moduleKey: string, enableAll: boolean) {
-    if (!canManageUsers) return;
     setRoleModules((prev) =>
       prev.map((mod) =>
         mod.key === moduleKey
@@ -707,7 +674,7 @@ export default function UserManagement({
   }
 
   async function saveRolePermissions() {
-    if (!canManageUsers || !selectedRoleId) return;
+    if (!selectedRoleId) return;
     const requestContextKey = activeContextKey;
     setIsSavingPermissions(true);
     setPermissionsError("");
@@ -718,7 +685,6 @@ export default function UserManagement({
         roleModules,
       );
       if (
-        !activeContextRef.current.canManageUsers ||
         activeContextRef.current.key !== requestContextKey
       ) {
         return;
@@ -748,7 +714,7 @@ export default function UserManagement({
   }
 
   function cancelRolePermissionChanges() {
-    if (canManageUsers && selectedRoleId != null) {
+    if (selectedRoleId != null) {
       void loadRolePermissions(selectedRoleId);
     }
   }
@@ -770,7 +736,6 @@ export default function UserManagement({
   const [isSavingRole, setIsSavingRole] = useState(false);
 
   function openCreateRole() {
-    if (!canManageUsers) return;
     setRoleForm({ label: "", description: "" });
     setRoleFormError("");
     setShowRoleForm(true);
@@ -783,7 +748,6 @@ export default function UserManagement({
   }
 
   async function submitRoleForm() {
-    if (!canManageUsers) return;
     const requestContextKey = activeContextKey;
     if (!roleForm.label.trim()) {
       setRoleFormError("Role name is required.");
@@ -799,7 +763,6 @@ export default function UserManagement({
         description: roleForm.description.trim(),
       });
       if (
-        !activeContextRef.current.canManageUsers ||
         activeContextRef.current.key !== requestContextKey
       ) {
         return;
@@ -861,10 +824,6 @@ export default function UserManagement({
     const requestId = ++loadRequestRef.current;
     clearScopedState();
 
-    if (!canManageUsers) {
-      return;
-    }
-
     setIsLoading(true);
 
     void Promise.all([
@@ -874,7 +833,6 @@ export default function UserManagement({
       .then(([usersResult, rolesResult]) => {
         if (
           loadRequestRef.current !== requestId ||
-          !activeContextRef.current.canManageUsers ||
           activeContextRef.current.key !== activeContextKey
         ) {
           return;
@@ -919,7 +877,6 @@ export default function UserManagement({
     };
   }, [
     activeContextKey,
-    canManageUsers,
     clearScopedState,
     clubId,
   ]);
@@ -927,21 +884,6 @@ export default function UserManagement({
   /* ------------------------------------------------------------------ */
   /* Render                                                              */
   /* ------------------------------------------------------------------ */
-
-  if (!canManageUsers) {
-    return (
-      <WorkspacePanel
-        eyebrow="Club administration"
-        title="User Management unavailable"
-        description="This Club workspace does not grant user-management access."
-      >
-        <WorkspaceEmpty
-          title="Permission required"
-          description={`The selected Club entitlement must include ${USER_MANAGEMENT_PERMISSION}.`}
-        />
-      </WorkspacePanel>
-    );
-  }
 
   if (isLoading) {
     return (
