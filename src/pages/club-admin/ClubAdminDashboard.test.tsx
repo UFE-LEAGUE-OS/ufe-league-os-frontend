@@ -261,14 +261,29 @@ describe("shared Club workspace", () => {
     });
     expect(
       screen.getAllByRole("button", {
-        name: "Finances",
+        name: "Finance & Audit",
       }).length,
     ).toBeGreaterThan(0);
+    fireEvent.click(
+      screen.getAllByRole("button", {
+        name: "Finance & Audit",
+      })[0],
+    );
+    expect(
+      screen.getByRole("button", {
+        name: "Membership payments overview",
+      }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", {
+        name: "Audit trail log viewer",
+      }),
+    ).toBeInTheDocument();
     expect(
       screen.queryAllByRole("button", {
         name: /user & permission management/i,
       }),
-    ).toHaveLength(0);
+    ).not.toHaveLength(0);
   });
 
   it("requires explicit selection when multiple Club entitlements exist", async () => {
@@ -363,7 +378,7 @@ describe("shared Club workspace", () => {
     });
     expect(
       screen.queryAllByRole("button", {
-        name: "Finances",
+        name: "Finance & Audit",
       }),
     ).toHaveLength(0);
     expect(

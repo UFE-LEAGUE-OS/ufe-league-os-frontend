@@ -81,9 +81,7 @@ const forbidden = {
   },
 };
 
-const managementPermissions = ["club.admin.manage"] as const;
-
-describe("UserManagement entitlement permissions", () => {
+describe("UserManagement club-scoped access", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(getClubManagedUsers).mockResolvedValue([managedUser]);
@@ -91,37 +89,8 @@ describe("UserManagement entitlement permissions", () => {
     vi.mocked(getRolePermissionModules).mockResolvedValue(permissionModules);
   });
 
-  it("fails closed without club.admin.manage and makes no API calls", () => {
-    render(
-      <UserManagement
-        clubId={17}
-        permissions={["club.members.manage"]}
-      />,
-    );
-
-    expect(screen.getByText("Permission required")).toBeInTheDocument();
-    expect(screen.getByText(/club\.admin\.manage/)).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /add user/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /add role/i })).not.toBeInTheDocument();
-    expect(getClubManagedUsers).not.toHaveBeenCalled();
-    expect(getClubRoles).not.toHaveBeenCalled();
-    expect(getRolePermissionModules).not.toHaveBeenCalled();
-    expect(createClubUser).not.toHaveBeenCalled();
-    expect(updateClubUser).not.toHaveBeenCalled();
-    expect(deleteClubUser).not.toHaveBeenCalled();
-    expect(setClubUserStatus).not.toHaveBeenCalled();
-    expect(createClubRole).not.toHaveBeenCalled();
-    expect(updateRolePermissionModules).not.toHaveBeenCalled();
-    expect(getUserPerformance).not.toHaveBeenCalled();
-  });
-
-  it("loads data and exposes management controls with club.admin.manage", async () => {
-    render(
-      <UserManagement
-        clubId={17}
-        permissions={managementPermissions}
-      />,
-    );
+  it("loads data and exposes management controls for the selected club", async () => {
+    render(<UserManagement clubId={17} />);
 
     expect(await screen.findByText("Jane Admin")).toBeInTheDocument();
     expect(getClubManagedUsers).toHaveBeenCalledWith(17);
@@ -137,35 +106,29 @@ describe("UserManagement entitlement permissions", () => {
     expect(screen.getByTitle("Delete user")).toBeInTheDocument();
   });
 
-  it("clears loaded Club data immediately when permission is removed", async () => {
+  it("reloads data when the selected Club changes", async () => {
     const { rerender } = render(
-      <UserManagement
-        clubId={17}
-        permissions={managementPermissions}
-      />,
+      <UserManagement clubId={17} />,
     );
 
     expect(await screen.findByText("Jane Admin")).toBeInTheDocument();
 
-    rerender(
-      <UserManagement
-        clubId={17}
-        permissions={["club.members.manage"]}
-      />,
-    );
+    vi.mocked(getClubManagedUsers).mockResolvedValueOnce([]);
+    vi.mocked(getClubRoles).mockResolvedValueOnce([]);
 
-    expect(screen.getByText("Permission required")).toBeInTheDocument();
+    rerender(<UserManagement clubId={18} />);
+
+    await waitFor(() =>
+      expect(getClubManagedUsers).toHaveBeenCalledWith(18),
+    );
     expect(screen.queryByText("Jane Admin")).not.toBeInTheDocument();
-    expect(getClubManagedUsers).toHaveBeenCalledTimes(1);
-    expect(getClubRoles).toHaveBeenCalledTimes(1);
+    expect(getClubManagedUsers).toHaveBeenCalledTimes(2);
+    expect(getClubRoles).toHaveBeenCalledTimes(2);
   });
 
   it("clears stale data and disables controls when a new Club load returns 403", async () => {
     const { rerender } = render(
-      <UserManagement
-        clubId={17}
-        permissions={managementPermissions}
-      />,
+      <UserManagement clubId={17} />,
     );
 
     expect(await screen.findByText("Jane Admin")).toBeInTheDocument();
@@ -173,12 +136,7 @@ describe("UserManagement entitlement permissions", () => {
     vi.mocked(getClubManagedUsers).mockRejectedValueOnce(forbidden);
     vi.mocked(getClubRoles).mockResolvedValueOnce([role]);
 
-    rerender(
-      <UserManagement
-        clubId={18}
-        permissions={managementPermissions}
-      />,
-    );
+    rerender(<UserManagement clubId={18} />);
 
     expect(
       await screen.findByText(
@@ -197,12 +155,7 @@ describe("UserManagement entitlement permissions", () => {
   it("shows a mutation 403 detail without changing the local user", async () => {
     vi.mocked(setClubUserStatus).mockRejectedValueOnce(forbidden);
 
-    render(
-      <UserManagement
-        clubId={17}
-        permissions={managementPermissions}
-      />,
-    );
+    render(<UserManagement clubId={17} />);
 
     expect(await screen.findByText("Jane Admin")).toBeInTheDocument();
     fireEvent.click(screen.getByTitle("Deactivate user"));

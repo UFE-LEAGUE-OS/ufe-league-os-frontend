@@ -480,9 +480,14 @@ export function getApiErrorMessage(
 
 function getFirstApiMessage(value: unknown, field?: string): string | null {
   if (typeof value === "string" && value.trim()) {
+    const trimmed = value.trim();
+    if (/^<!doctype html/i.test(trimmed) || /^<html[\s>]/i.test(trimmed)) {
+      return null;
+    }
+
     return field && !["detail", "message", "non_field_errors"].includes(field)
-      ? `${formatApiErrorField(field)}: ${value}`
-      : value;
+      ? `${formatApiErrorField(field)}: ${trimmed}`
+      : trimmed;
   }
 
   if (Array.isArray(value)) {

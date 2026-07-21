@@ -132,6 +132,11 @@ type TabKey =
   | "teams"
   | "matches"
   | "finances"
+  | "financeMembershipPayments"
+  | "financeTicketingPayments"
+  | "financeIncomeExpense"
+  | "financeInvoicesReceipts"
+  | "financeAuditTrail"
   | "ticketing"
   | "ticketingGames"
   | "ticketingPricing"
@@ -240,7 +245,7 @@ const navItems: AdminWorkspaceNavGroup<TabKey>[] = [
       },
       {
         key: "finances",
-        label: "Finances",
+        label: "Finance & Audit",
         icon: Wallet,
         requiredClubPermissions: [
           "club.finance.view",
@@ -248,6 +253,63 @@ const navItems: AdminWorkspaceNavGroup<TabKey>[] = [
         ],
         clubPermissionMode: "any",
         clubWorkspaceFamily: "CLUB_ADMIN",
+        children: [
+          {
+            key: "financeMembershipPayments",
+            label: "Membership payments overview",
+            icon: CreditCard,
+            requiredClubPermissions: [
+              "club.finance.view",
+              "club.finance.manage",
+            ],
+            clubPermissionMode: "any",
+            clubWorkspaceFamily: "CLUB_ADMIN",
+          },
+          {
+            key: "financeTicketingPayments",
+            label: "Ticketing payments overview",
+            icon: TicketCheck,
+            requiredClubPermissions: [
+              "club.finance.view",
+              "club.finance.manage",
+            ],
+            clubPermissionMode: "any",
+            clubWorkspaceFamily: "CLUB_ADMIN",
+          },
+          {
+            key: "financeIncomeExpense",
+            label: "Income & expense summary",
+            icon: BarChart3,
+            requiredClubPermissions: [
+              "club.finance.view",
+              "club.finance.manage",
+            ],
+            clubPermissionMode: "any",
+            clubWorkspaceFamily: "CLUB_ADMIN",
+          },
+          {
+            key: "financeInvoicesReceipts",
+            label: "Invoices & receipts list",
+            icon: FileText,
+            requiredClubPermissions: [
+              "club.finance.view",
+              "club.finance.manage",
+            ],
+            clubPermissionMode: "any",
+            clubWorkspaceFamily: "CLUB_ADMIN",
+          },
+          {
+            key: "financeAuditTrail",
+            label: "Audit trail log viewer",
+            icon: ClipboardList,
+            requiredClubPermissions: [
+              "club.finance.view",
+              "club.finance.manage",
+            ],
+            clubPermissionMode: "any",
+            clubWorkspaceFamily: "CLUB_ADMIN",
+          },
+        ],
       },
       {
         key: "ticketing",
@@ -461,7 +523,7 @@ const navItems: AdminWorkspaceNavGroup<TabKey>[] = [
         key: "clubUsers",
         label: "User & Permission Management",
         icon: Users,
-        requiredClubPermissions: ["club.admin.manage"],
+        requiredClubPermissions: [],
         clubWorkspaceFamily: "CLUB_ADMIN",
       },
       {
@@ -488,6 +550,11 @@ const TAB_TO_PATH: Record<TabKey, string> = {
   teams: `${CLUB_ADMIN_BASE_PATH}/teams`,
   matches: `${CLUB_ADMIN_BASE_PATH}/matches`,
   finances: `${CLUB_ADMIN_BASE_PATH}/finances`,
+  financeMembershipPayments: `${CLUB_ADMIN_BASE_PATH}/finances/membership-payments`,
+  financeTicketingPayments: `${CLUB_ADMIN_BASE_PATH}/finances/ticketing-payments`,
+  financeIncomeExpense: `${CLUB_ADMIN_BASE_PATH}/finances/income-expense`,
+  financeInvoicesReceipts: `${CLUB_ADMIN_BASE_PATH}/finances/invoices-receipts`,
+  financeAuditTrail: `${CLUB_ADMIN_BASE_PATH}/finances/audit-trail`,
   ticketing: `${CLUB_ADMIN_BASE_PATH}/ticketing`,
   ticketingGames: `${CLUB_ADMIN_BASE_PATH}/ticketing/games`,
   ticketingPricing: `${CLUB_ADMIN_BASE_PATH}/ticketing/pricing`,
@@ -557,6 +624,11 @@ const TAB_TO_MODULE: Record<TabKey, ClubWorkspaceTab> = {
   teams: "teams",
   matches: "matches",
   finances: "finances",
+  financeMembershipPayments: "finances",
+  financeTicketingPayments: "finances",
+  financeIncomeExpense: "finances",
+  financeInvoicesReceipts: "finances",
+  financeAuditTrail: "finances",
   ticketing: "ticketing",
   ticketingGames: "ticketing",
   ticketingPricing: "ticketing",
@@ -618,6 +690,7 @@ const TAB_PERMISSION_OVERRIDES: Partial<
   ticketingEntryLogs: ["club.ticketing.validate"],
   compliance: [],
   communications: [],
+  clubUsers: [],
 };
 
 function isWorkspaceTabPermitted(
@@ -1749,11 +1822,164 @@ export default function ClubAdminDashboard() {
   function renderFinances() {
     return (
       <WorkspacePanel
-        eyebrow="Club finances"
-        title="Financial overview"
-        description="Income vs expense across recent months."
+        eyebrow="Club finance & audit"
+        title="Finance & Audit"
+        description="Income, payments, invoices, receipts, and audit controls for this club."
       >
         {renderFinancialChart()}
+      </WorkspacePanel>
+    );
+  }
+
+  function renderFinanceMembershipPayments() {
+    const membershipStats = [
+      {
+        label: "Subscriptions",
+        value: subscriptions.length,
+        detail: "Membership payment records tracked",
+        icon: CreditCard,
+      },
+      {
+        label: "Active Members",
+        value: subscriptions.filter((sub) => sub.status === "ACTIVE").length,
+        detail: "Paid or currently valid subscriptions",
+        icon: Users,
+      },
+      {
+        label: "Pending Payment",
+        value: pendingSubscriptions.length,
+        detail: "Memberships awaiting payment completion",
+        icon: Inbox,
+      },
+      {
+        label: "Expired",
+        value: expiredSubscriptions.length,
+        detail: "Past-due or expired memberships",
+        icon: RefreshCw,
+      },
+    ];
+
+    return (
+      <>
+        <WorkspaceStatGrid stats={membershipStats} />
+        {renderMembershipDirectory()}
+      </>
+    );
+  }
+
+  function renderFinanceTicketingPayments() {
+    return (
+      <>
+        <WorkspacePanel
+          eyebrow="Ticketing payments"
+          title="Ticketing payments overview"
+          description="Review ticket revenue, sales volume, and sell-through across home fixtures."
+        >
+          <WorkspaceEmpty
+            title="Ticketing payment summary"
+            description="The detailed sales performance section below uses current ticketing revenue and inventory records."
+          />
+        </WorkspacePanel>
+        {renderTicketingPerformance()}
+      </>
+    );
+  }
+
+  function renderFinanceIncomeExpense() {
+    const totals = (data?.financial_overview ?? []).reduce(
+      (summary, point) => ({
+        income: summary.income + point.income,
+        expense: summary.expense + point.expense,
+      }),
+      { income: 0, expense: 0 },
+    );
+
+    const financeStats = [
+      {
+        label: "Total Income",
+        value: formatTicketCurrency(totals.income),
+        detail: "Across available finance periods",
+        icon: Wallet,
+      },
+      {
+        label: "Total Expense",
+        value: formatTicketCurrency(totals.expense),
+        detail: "Across available finance periods",
+        icon: FileBarChart,
+      },
+      {
+        label: "Net Position",
+        value: formatTicketCurrency(totals.income - totals.expense),
+        detail: "Income less expense",
+        icon: BarChart3,
+      },
+    ];
+
+    return (
+      <>
+        <WorkspaceStatGrid stats={financeStats} />
+        <WorkspacePanel
+          eyebrow="Income & expense"
+          title="Income & expense summary"
+          description="Compare incoming funds and outgoing expenses across recent months."
+        >
+          {renderFinancialChart()}
+        </WorkspacePanel>
+      </>
+    );
+  }
+
+  function renderFinanceInvoicesReceipts() {
+    return (
+      <WorkspacePanel
+        eyebrow="Invoices & receipts"
+        title="Invoices & receipts list"
+        description="Central register for generated invoices, receipts, payment references, and exportable finance documents."
+      >
+        <WorkspaceEmpty
+          title="No invoices or receipts yet"
+          description="Invoice and receipt records will appear here once finance document endpoints are connected."
+        />
+      </WorkspacePanel>
+    );
+  }
+
+  function renderFinanceAuditTrail() {
+    return (
+      <WorkspacePanel
+        eyebrow="Audit trail"
+        title="Audit trail log viewer"
+        description="Review recent club finance and administration activity for audit follow-up."
+      >
+        {data?.recent_activity?.length ? (
+          <div className={styles.tableShell}>
+            <table>
+              <thead>
+                <tr>
+                  <th>Event</th>
+                  <th>Details</th>
+                  <th>Time</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.recent_activity.map((item) => (
+                  <tr key={item.id}>
+                    <td>
+                      <span className={styles.tablePrimary}>{item.title}</span>
+                    </td>
+                    <td>{item.description}</td>
+                    <td>{formatWorkspaceDate(item.timestamp)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <WorkspaceEmpty
+            title="No audit activity yet"
+            description="Finance audit events will appear here as tracked actions are recorded."
+          />
+        )}
       </WorkspacePanel>
     );
   }
@@ -3511,6 +3737,16 @@ export default function ClubAdminDashboard() {
     content = renderMatches();
   } else if (activeTab === "finances") {
     content = renderFinances();
+  } else if (activeTab === "financeMembershipPayments") {
+    content = renderFinanceMembershipPayments();
+  } else if (activeTab === "financeTicketingPayments") {
+    content = renderFinanceTicketingPayments();
+  } else if (activeTab === "financeIncomeExpense") {
+    content = renderFinanceIncomeExpense();
+  } else if (activeTab === "financeInvoicesReceipts") {
+    content = renderFinanceInvoicesReceipts();
+  } else if (activeTab === "financeAuditTrail") {
+    content = renderFinanceAuditTrail();
   } else if (activeTab === "ticketing") {
     content = renderTicketingOverview();
   } else if (activeTab === "ticketingGames") {
@@ -3563,10 +3799,7 @@ export default function ClubAdminDashboard() {
     );
   } else if (activeTab === "clubUsers") {
     content = data ? (
-      <UserManagement
-        clubId={data.club.id}
-        permissions={activeWorkspace?.permissions ?? []}
-      />
+      <UserManagement clubId={data.club.id} />
     ) : (
       <WorkspaceLoading label="Loading club users…" />
     );
