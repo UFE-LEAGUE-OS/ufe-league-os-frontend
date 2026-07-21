@@ -1,0 +1,373 @@
+.page {
+  display: grid;
+  gap: 18px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Stat cards                                                          */
+/* ------------------------------------------------------------------ */
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.statCard {
+  min-width: 0;
+  padding: 18px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 9px;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(2, 6, 23, 0.68));
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.23);
+  backdrop-filter: blur(8px);
+
+  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.statCard:hover {
+  transform: translateY(-3px);
+  border-color: rgba(168, 85, 247, 0.5);
+}
+
+.statCardTop {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.statIcon {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+}
+
+.statLabel {
+  min-width: 0;
+
+  color: rgba(255, 255, 255, 0.62);
+
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.statValue {
+  color: #ffffff;
+
+  font-family: var(--font-subhead, "Space Grotesk"), Inter, sans-serif;
+  font-size: clamp(19px, 1.6vw, 22px);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.statFooter {
+  margin-top: auto;
+  padding-top: 4px;
+
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.statFooterText {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.trendUp,
+.trendDown,
+.trendNote {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.trendUp {
+  color: #4ade80;
+}
+
+.trendDown {
+  color: #ff9b9b;
+}
+
+.trendCaption {
+  color: rgba(255, 255, 255, 0.42);
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.sparkline {
+  width: 72px;
+  height: 24px;
+  flex: 0 0 auto;
+}
+
+/* ------------------------------------------------------------------ */
+/* Tab bar                                                             */
+/* ------------------------------------------------------------------ */
+
+.tabBar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+
+  padding-bottom: 2px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+.tabButton,
+.tabButtonActive {
+  min-height: 42px;
+  padding: 0 14px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+
+  font: inherit;
+  font-family: var(--font-subhead, "Space Grotesk"), Inter, sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+
+  cursor: pointer;
+  transition: color 160ms ease, border-color 160ms ease;
+}
+
+.tabButton {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.tabButton:hover {
+  color: #ffffff;
+}
+
+.tabButtonActive {
+  color: #ffffff;
+  border-bottom-color: var(--workspace-purple, #7b3ff2);
+}
+
+/* ------------------------------------------------------------------ */
+/* Membership payments panel                                           */
+/* ------------------------------------------------------------------ */
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.controlButton,
+.controlSelect {
+  min-height: 42px;
+  padding: 0 14px;
+
+  color: rgba(255, 255, 255, 0.78);
+  background: rgba(2, 6, 23, 0.38);
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 7px;
+
+  font: inherit;
+  font-size: 11px;
+  font-weight: 800;
+
+  cursor: pointer;
+}
+
+.controlSelect option {
+  color: #1c1230;
+  background: #ffffff;
+}
+
+.contentGrid {
+  margin-top: 18px;
+
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.donutCard,
+.tableCard {
+  min-width: 0;
+  padding: 18px;
+
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 9px;
+  background: rgba(15, 23, 42, 0.55);
+}
+
+.cardHeading {
+  margin: 0 0 16px;
+
+  color: #ffffff;
+
+  font-family: var(--font-subhead, "Space Grotesk"), Inter, sans-serif;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.donutRow {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  flex-wrap: wrap;
+}
+
+.donutWrap {
+  position: relative;
+  flex: 0 0 auto;
+  width: 168px;
+  height: 168px;
+}
+
+.donut {
+  width: 100%;
+  height: 100%;
+}
+
+.donutCenter {
+  position: absolute;
+  inset: 0;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+
+  text-align: center;
+}
+
+.donutCenter span {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.donutCenter strong {
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex: 1;
+  min-width: 160px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.legendRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.legendDot {
+  width: 10px;
+  height: 10px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+}
+
+.legendText {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.legendText strong {
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.legendText span {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.tableCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.tableCardHeader .cardHeading {
+  margin: 0;
+}
+
+.viewAllLink {
+  color: #a879ff;
+  background: transparent;
+  border: 0;
+
+  font: inherit;
+  font-size: 11px;
+  font-weight: 800;
+
+  cursor: pointer;
+}
+
+.viewAllLink:hover {
+  color: #ffffff;
+}
+
+/* ------------------------------------------------------------------ */
+/* Responsive                                                          */
+/* ------------------------------------------------------------------ */
+
+@media (max-width: 1180px) {
+  .statsGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .contentGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 680px) {
+  .statsGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .donutRow {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

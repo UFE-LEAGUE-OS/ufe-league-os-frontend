@@ -1,0 +1,141 @@
+.mpo-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.mpo-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 14px;
+}
+
+@media (max-width: 1100px) {
+  .mpo-stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.mpo-stat-card {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 16px;
+  border: 1px solid var(--border, #232838);
+  border-radius: 12px;
+  background: var(--card, #12141c);
+}
+
+.mpo-stat-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: rgba(124, 92, 255, 0.12);
+  flex-shrink: 0;
+}
+
+.mpo-stat-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.mpo-stat-label {
+  font-size: 12px;
+  color: var(--muted, #8b93a7);
+}
+
+.mpo-stat-value {
+  font-size: 20px;
+  color: var(--text, #f5f6fa);
+}
+
+.mpo-stat-footer {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.mpo-stat-footer.up {
+  color: #22c55e;
+}
+
+.mpo-stat-footer.down {
+  color: #ef4444;
+}
+
+.mpo-stat-footer.note {
+  color: var(--muted, #8b93a7);
+  font-weight: 500;
+}
+
+.mpo-stat-caption {
+  font-weight: 400;
+  color: var(--muted, #8b93a7);
+  margin-left: 2px;
+}
+
+.mpo-chart-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+@media (max-width: 1200px) {
+  .mpo-chart-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.mpo-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.mpo-search-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-width: 260px;
+  flex: 1 1 260px;
+}
+
+.mpo-search-icon {
+  position: absolute;
+  left: 10px;
+  color: var(--muted, #8b93a7);
+  pointer-events: none;
+}
+
+.mpo-search-input {
+  width: 100%;
+  padding: 8px 10px 8px 32px;
+  border-radius: 8px;
+  border: 1px solid var(--border, #232838);
+  background: var(--card, #12141c);
+  color: var(--text, #f5f6fa);
+}
+
+.mpo-date-field {
+  display: flex;
+  flex-direction: column;
+  font-size: 11px;
+  color: var(--muted, #8b93a7);
+  gap: 2px;
+}
+
+.mpo-date-field input {
+  padding: 7px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--border, #232838);
+  background: var(--card, #12141c);
+  color: var(--text, #f5f6fa);
+}
