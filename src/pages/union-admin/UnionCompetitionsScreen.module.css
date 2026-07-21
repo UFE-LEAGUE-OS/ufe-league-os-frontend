@@ -1,0 +1,402 @@
+.screen {
+    display: grid;
+    gap: 18px;
+    color: #ffffff;
+}
+
+.screen button {
+    min-height: 40px;
+    padding: 0 15px;
+    border-radius: 7px;
+    border: 1px solid rgba(123, 63, 242, 0.8);
+    color: #ffffff;
+    background: linear-gradient(135deg, #7b3ff2, #6d28d9);
+    font: inherit;
+    font-size: 0.8rem;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.screen button:disabled {
+    cursor: default;
+    opacity: 0.62;
+}
+
+.subtleButton {
+    color: rgba(255, 255, 255, 0.82) !important;
+    background: rgba(15, 23, 42, 0.82) !important;
+    border-color: rgba(255, 255, 255, 0.13) !important;
+}
+
+.inlineActionGroup,
+.actionRow {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.workflowNotice {
+    padding: 12px 14px;
+    border-radius: 8px;
+    border-left: 4px solid #ff8a2a;
+    color: #ffd4af;
+    background: rgba(255, 122, 26, 0.1);
+}
+
+.heroSummaryGrid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.heroSummaryGrid article,
+.formCard,
+.supportCard,
+.detailGrid article,
+.detailGrid aside,
+.cardGrid article,
+.timeline article {
+    background:
+        linear-gradient(
+            135deg,
+            rgba(15, 23, 42, 0.9),
+            rgba(2, 6, 23, 0.66)
+        );
+    border: 1px solid rgba(255, 255, 255, 0.13);
+    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(9px);
+}
+
+.heroSummaryGrid article {
+    min-height: 108px;
+    padding: 18px;
+    border-radius: 10px;
+}
+
+.heroSummaryGrid span,
+.miniStatGrid span {
+    display: block;
+    color: rgba(255, 255, 255, 0.54);
+    font-size: 0.68rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.heroSummaryGrid strong,
+.miniStatGrid strong {
+    display: block;
+    margin: 8px 0 5px;
+    color: #ffffff;
+    font-size: 1.3rem;
+    font-weight: 900;
+}
+
+.heroSummaryGrid small {
+    color: rgba(255, 255, 255, 0.48);
+    font-size: 0.76rem;
+}
+
+.workflowGrid,
+.detailGrid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.45fr) minmax(300px, 0.75fr);
+    gap: 18px;
+    align-items: start;
+}
+
+.formCard,
+.supportCard,
+.detailGrid article,
+.detailGrid aside {
+    padding: 22px;
+    border-radius: 12px;
+}
+
+.formCard {
+    display: grid;
+    gap: 15px;
+}
+
+.formCard h3,
+.supportCard h3,
+.detailGrid h3,
+.cardGrid h3,
+.timeline h3 {
+    margin: 0;
+    font-family: var(--font-heading, "League Spartan"), Inter, sans-serif;
+    font-size: 1.7rem;
+    font-weight: 800;
+    font-style: italic;
+    line-height: 1;
+}
+
+.formCard label {
+    display: grid;
+    gap: 7px;
+    color: rgba(255, 255, 255, 0.68);
+    font-size: 0.76rem;
+    font-weight: 800;
+}
+
+.formCard input,
+.formCard select,
+.formCard textarea {
+    width: 100%;
+    min-height: 44px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    color: #ffffff;
+    background: rgba(2, 6, 23, 0.72);
+    font: inherit;
+    outline: none;
+}
+
+.formCard textarea {
+    min-height: 105px;
+    resize: vertical;
+}
+
+.formCard input:focus,
+.formCard select:focus,
+.formCard textarea:focus {
+    border-color: rgba(123, 63, 242, 0.95);
+    box-shadow: 0 0 0 3px rgba(123, 63, 242, 0.12);
+}
+
+.formCard select option {
+    color: #111827;
+}
+
+.fieldGrid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.helperList {
+    display: grid;
+    gap: 10px;
+    margin: 16px 0 0;
+    padding-left: 20px;
+    color: rgba(255, 255, 255, 0.65);
+    font-size: 0.86rem;
+    line-height: 1.5;
+}
+
+.miniStatGrid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.miniStatGrid article {
+    padding: 13px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.035);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.cardGrid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.cardGrid article,
+.timeline article {
+    padding: 20px;
+    border-radius: 11px;
+}
+
+.timeline {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.screen dl {
+    display: grid;
+    grid-template-columns: minmax(120px, 0.4fr) minmax(0, 1fr);
+    gap: 10px 14px;
+    margin-top: 18px;
+}
+
+.screen dt {
+    color: rgba(255, 255, 255, 0.48);
+    font-size: 0.76rem;
+    font-weight: 800;
+}
+
+.screen dd {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.linkGroup {
+    display: grid;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.mutedText {
+    color: rgba(255, 255, 255, 0.56);
+    line-height: 1.55;
+}
+
+@media (max-width: 1100px) {
+    .heroSummaryGrid,
+    .cardGrid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .workflowGrid,
+    .detailGrid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 700px) {
+    .heroSummaryGrid,
+    .cardGrid,
+    .timeline,
+    .fieldGrid,
+    .miniStatGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .inlineActionGroup,
+    .inlineActionGroup button,
+    .actionRow,
+    .actionRow button {
+        width: 100%;
+    }
+
+    .formCard,
+    .supportCard,
+    .detailGrid article,
+    .detailGrid aside {
+        padding: 17px;
+    }
+
+    .screen dl {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* COMPETITION SCREEN FINAL VISUAL REFINEMENTS */
+
+.screen {
+    gap: 20px;
+    padding-bottom: 34px;
+    background: transparent;
+}
+
+.screen > header {
+    margin: 0;
+    padding: 24px 26px;
+    border-radius: 13px;
+    border: 1px solid rgba(123, 63, 242, 0.38);
+    background:
+        linear-gradient(
+            120deg,
+            rgba(12, 20, 39, 0.78),
+            rgba(3, 8, 23, 0.48)
+        );
+    box-shadow:
+        0 16px 38px rgba(0, 0, 0, 0.22),
+        inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(8px);
+}
+
+.screen > header > div:first-child {
+    max-width: 780px;
+}
+
+.screen > header h2 {
+    margin: 7px 0 8px;
+    font-family:
+        var(--font-heading, "League Spartan"),
+        Inter,
+        sans-serif;
+    font-size: clamp(2rem, 3vw, 3rem);
+    font-style: italic;
+    font-weight: 800;
+    line-height: 0.96;
+    letter-spacing: -0.04em;
+}
+
+.screen > header p {
+    max-width: 760px;
+    color: rgba(255, 255, 255, 0.68);
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+
+.heroSummaryGrid article,
+.formCard,
+.supportCard,
+.detailGrid article,
+.detailGrid aside,
+.cardGrid article,
+.timeline article {
+    background:
+        linear-gradient(
+            135deg,
+            rgba(8, 15, 31, 0.74),
+            rgba(2, 6, 20, 0.52)
+        );
+    border-color: rgba(255, 255, 255, 0.12);
+    box-shadow:
+        0 14px 34px rgba(0, 0, 0, 0.18),
+        inset 0 1px 0 rgba(255, 255, 255, 0.035);
+    backdrop-filter: blur(8px);
+}
+
+.heroSummaryGrid article:hover,
+.cardGrid article:hover {
+    border-color: rgba(123, 63, 242, 0.58);
+}
+
+.workflowGrid,
+.detailGrid {
+    gap: 20px;
+}
+
+.formCard,
+.supportCard,
+.detailGrid article,
+.detailGrid aside {
+    padding: 24px;
+}
+
+.formCard input,
+.formCard select,
+.formCard textarea {
+    background: rgba(3, 8, 23, 0.74);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.formCard input:hover,
+.formCard select:hover,
+.formCard textarea:hover {
+    border-color: rgba(123, 63, 242, 0.48);
+}
+
+.formCard input::placeholder,
+.formCard textarea::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+@media (max-width: 700px) {
+    .screen > header {
+        padding: 19px;
+    }
+
+    .screen > header h2 {
+        font-size: 2rem;
+    }
+}

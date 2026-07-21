@@ -1,4 +1,4 @@
-import styles from "./UnionAdminScreens.module.css";
+import styles from "./UnionAdminScreenToolbar.module.css";
 
 export interface UnionAdminScreenToolbarProps {
   placeholder?: string;

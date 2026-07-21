@@ -1,8 +1,8 @@
 import {
     BadgeCheck,
     BarChart3,
+    LayoutDashboard,
     Building2,
-    CalendarDays,
     CheckCircle2,
     ClipboardCheck,
     DollarSign,
@@ -59,6 +59,7 @@ import logoMark from "../../assets/league-os-mark.svg";
 import styles from "./UnionAdminDashboard.module.css";
 import UnionAuditApprovalsScreen from "./UnionAuditApprovalsScreen";
 import UnionCommunicationsScreen from "./UnionCommunicationsScreen";
+import UnionOverviewScreen from "./UnionOverviewScreen";
 import UnionCompetitionsScreen from "./UnionCompetitionsScreen";
 import UnionPlayersTransfersScreen from "./UnionPlayersTransfersScreen";
 import UnionProfileBrandingScreen from "./UnionProfileBrandingScreen";
@@ -103,16 +104,6 @@ type TabDefinition = {
     permission?: UnionWorkspacePermission;
     anyPermissions?: UnionWorkspacePermission[];
     matchOfficialOnly?: boolean;
-};
-
-type Summary = {
-    leagues: number;
-    activeCompetitions: number;
-    memberClubs: number;
-    nationalTeams: number;
-    pendingApprovals: number;
-    referees: number;
-    upcomingMatches: number;
 };
 
 type StatCard = {
@@ -182,7 +173,7 @@ const tabs: TabDefinition[] = [
     {
         key: "overview",
         label: "Overview",
-        icon: BarChart3,
+        icon: LayoutDashboard,
         permission: "union.dashboard.view",
     },
     {
@@ -350,18 +341,6 @@ function canAccessTab(workspace: UnionWorkspaceOption, tab: TabDefinition) {
             )) &&
         (!tab.matchOfficialOnly || isMatchOfficialWorkspace(workspace))
     );
-}
-
-function getSummary(overview: UnionDashboardOverview | null): Summary {
-    return {
-        leagues: overview?.summary.leagues ?? 0,
-        activeCompetitions: overview?.summary.active_competitions ?? 0,
-        memberClubs: overview?.summary.member_clubs ?? 0,
-        nationalTeams: overview?.summary.national_teams ?? 0,
-        pendingApprovals: overview?.summary.pending_approvals ?? 0,
-        referees: overview?.summary.referees ?? 0,
-        upcomingMatches: overview?.summary.upcoming_matches ?? 0,
-    };
 }
 
 function isMatchOfficialWorkspace(workspace: UnionWorkspaceOption) {
@@ -803,7 +782,7 @@ export default function UnionAdminDashboard() {
     const [workspaceUsersError, setWorkspaceUsersError] = useState("");
     const [isLoadingWorkspaceUsers, setIsLoadingWorkspaceUsers] = useState(false);
     const [clubView, setClubView] = useState<ClubView>("directory");
-    const [selectedClubId, setSelectedClubId] = useState("");
+    const selectedClubId = "";
     const [financeData, setFinanceData] = useState<UnionFinanceDashboard | null>(null);
     const [isLoadingFinance, setIsLoadingFinance] = useState(false);
     const [financeError, setFinanceError] = useState("");
@@ -1318,13 +1297,9 @@ export default function UnionAdminDashboard() {
         );
     }
 
-    const summary = getSummary(overview);
     // The operations endpoint currently contains generated operational rows. Do
     // not present those rows, counts, or labels as workspace data.
-    const workspaceCompetitions: UnionOperationsDashboard["competitions"] = [];
     const workspaceClubs: UnionOperationsDashboard["clubs"] = [];
-    const workspaceRegistrations: UnionOperationsDashboard["registrations"] = [];
-    const workspaceReferees: UnionOperationsDashboard["referees"] = [];
     const workspaceAppointments: UnionOperationsDashboard["appointments"] = [];
     const workspacePlayerPositions = getSportPositionGroups(activeWorkspace.sport);
     const currentOfficial = operationsData?.current_official ?? null;
@@ -1396,666 +1371,21 @@ export default function UnionAdminDashboard() {
             return <div className={styles.emptyState}>Workspace overview is unavailable.</div>;
         }
 
-        if (!isMatchOfficialWorkspace(activeWorkspace)) {
-            return (
-                <div className={styles.overviewDashboard}>
-                    <section className={styles.overviewLeadPanel}>
-                        <div className={styles.overviewLeadHeader}>
-                            <div>
-                                <span className={styles.sectionEyebrow}>
-                                    Workspace command centre
-                                </span>
-                                <h2>{activeWorkspace.name}</h2>
-                                <p>
-                                    Review maintained competition, Club,
-                                    registration, national-team and official
-                                    records for this workspace.
-                                </p>
-                            </div>
-
-                            <span className={styles.workspaceStatusBadge}>
-                                Active workspace
-                            </span>
-                        </div>
-
-                        <div className={styles.overviewMetricGrid}>
-                            <article>
-                                <Trophy size={19} aria-hidden="true" />
-                                <span>Leagues</span>
-                                <strong>{summary.leagues}</strong>
-                                <small>Maintained league records</small>
-                            </article>
-
-                            <article>
-                                <Layers3 size={19} aria-hidden="true" />
-                                <span>Competitions</span>
-                                <strong>{summary.activeCompetitions}</strong>
-                                <small>Active competition records</small>
-                            </article>
-
-                            <article>
-                                <Building2 size={19} aria-hidden="true" />
-                                <span>Member Clubs</span>
-                                <strong>{summary.memberClubs}</strong>
-                                <small>Workspace Club membership</small>
-                            </article>
-
-                            <article>
-                                <Users size={19} aria-hidden="true" />
-                                <span>National Teams</span>
-                                <strong>{summary.nationalTeams}</strong>
-                                <small>Representative teams</small>
-                            </article>
-
-                            <article>
-                                <ClipboardCheck size={19} aria-hidden="true" />
-                                <span>Approvals</span>
-                                <strong>{summary.pendingApprovals}</strong>
-                                <small>Registration review queue</small>
-                            </article>
-
-                            <article>
-                                <BadgeCheck size={19} aria-hidden="true" />
-                                <span>Officials</span>
-                                <strong>{summary.referees}</strong>
-                                <small>Maintained official pool</small>
-                            </article>
-
-                            <article>
-                                <CalendarDays size={19} aria-hidden="true" />
-                                <span>Matches</span>
-                                <strong>{summary.upcomingMatches}</strong>
-                                <small>Upcoming scheduled fixtures</small>
-                            </article>
-                        </div>
-                    </section>
-
-                    <aside className={styles.overviewActionPanel}>
-                        <SectionHeader
-                            eyebrow="Priority actions"
-                            title="Continue workspace management"
-                            description="Open the maintained modules available to your current Union role."
-                        />
-
-                        <div className={styles.quickActionsList}>
-                            {activeWorkspace.permissions.includes(
-                                "union.competitions.manage",
-                            ) ? (
-                                <ModuleButton
-                                    label="Manage competitions"
-                                    detail={`${summary.activeCompetitions} active competitions`}
-                                    icon={Trophy}
-                                    onClick={() => resetSearch("competitions")}
-                                />
-                            ) : null}
-
-                            {activeWorkspace.permissions.includes(
-                                "union.clubs.manage",
-                            ) ? (
-                                <ModuleButton
-                                    label="Manage Clubs"
-                                    detail={`${summary.memberClubs} affiliated Clubs`}
-                                    icon={Building2}
-                                    onClick={() => resetSearch("clubs")}
-                                />
-                            ) : null}
-
-                            {activeWorkspace.permissions.includes(
-                                "union.players.approve",
-                            ) ? (
-                                <ModuleButton
-                                    label="Review registrations"
-                                    detail={`${summary.pendingApprovals} pending applications`}
-                                    icon={ClipboardCheck}
-                                    onClick={() => resetSearch("registrations")}
-                                />
-                            ) : null}
-
-                            {activeWorkspace.permissions.includes(
-                                "union.teams.manage",
-                            ) ? (
-                                <ModuleButton
-                                    label="Manage National Teams"
-                                    detail={`${summary.nationalTeams} active teams`}
-                                    icon={Users}
-                                    onClick={() => resetSearch("nationalTeams")}
-                                />
-                            ) : null}
-
-                            {activeWorkspace.permissions.includes(
-                                "union.official.appointments.view",
-                            ) ? (
-                                <ModuleButton
-                                    label="Check official readiness"
-                                    detail={`${summary.referees} officials in the pool`}
-                                    icon={BadgeCheck}
-                                    onClick={() => resetSearch("appointments")}
-                                />
-                            ) : null}
-                        </div>
-                    </aside>
-
-                    <section
-                        className={styles.overviewWorkflowGrid}
-                        aria-label="Union workspace workflow"
-                    >
-                        <button
-                            type="button"
-                            onClick={() => resetSearch("competitions")}
-                        >
-                            <Trophy size={21} aria-hidden="true" />
-                            <span>
-                                <small>01</small>
-                                <strong>Competition delivery</strong>
-                                <p>
-                                    Competition → season → Clubs → fixtures.
-                                </p>
-                            </span>
-                        </button>
-
-                        <button
-                            type="button"
-                            onClick={() => resetSearch("clubs")}
-                        >
-                            <Building2 size={21} aria-hidden="true" />
-                            <span>
-                                <small>02</small>
-                                <strong>Club governance</strong>
-                                <p>
-                                    Affiliations, Club records and participation
-                                    readiness.
-                                </p>
-                            </span>
-                        </button>
-
-                        <button
-                            type="button"
-                            onClick={() => resetSearch("registrations")}
-                        >
-                            <ClipboardCheck size={21} aria-hidden="true" />
-                            <span>
-                                <small>03</small>
-                                <strong>Player governance</strong>
-                                <p>
-                                    Registration, eligibility and transfer
-                                    decisions.
-                                </p>
-                            </span>
-                        </button>
-
-                        <button
-                            type="button"
-                            onClick={() => resetSearch("appointments")}
-                        >
-                            <CalendarDays size={21} aria-hidden="true" />
-                            <span>
-                                <small>04</small>
-                                <strong>Match operations</strong>
-                                <p>
-                                    Official readiness, appointments and
-                                    matchday records.
-                                </p>
-                            </span>
-                        </button>
-                    </section>
-                </div>
-            );
-        }
-
-        if (isMatchOfficialWorkspace(activeWorkspace)) {
-            const nextAppointment = workspaceAppointments[0] ?? null;
-
-            return (
-                <div className={styles.overviewLayout}>
-                    <section className={styles.panelLarge}>
-                        <SectionHeader
-                            eyebrow="My official workspace"
-                            title={`Welcome${
-                                currentOfficial?.name
-                                    ? `, ${currentOfficial.name}`
-                                    : ""
-                            }`}
-                            description={`Your ${activeWorkspace.name} workspace only shows your appointments, availability, reports, documents, allowances and official profile.`}
-                            actions={
-                                <button
-                                    className={styles.primaryButton}
-                                    type="button"
-                                    onClick={() => resetSearch("appointments")}
-                                >
-                                    View appointments
-                                </button>
-                            }
-                        />
-
-                        <div className={styles.approvalSummaryGrid}>
-                            <article>
-                                <span>Official role</span>
-                                <strong>
-                                    {currentOfficial?.role ?? "Not linked"}
-                                </strong>
-                                <small>
-                                    {currentOfficial?.grade ||
-                                        "Certification pending"}
-                                </small>
-                            </article>
-
-                            <article>
-                                <span>Federation</span>
-                                <strong>{activeWorkspace.acronym}</strong>
-                                <small>{activeWorkspace.sport}</small>
-                            </article>
-
-                            <article>
-                                <span>Status</span>
-                                <strong>
-                                    {currentOfficial?.status ?? "Pending"}
-                                </strong>
-                                <small>Appointment eligibility</small>
-                            </article>
-                        </div>
-
-                        <DataTable
-                            columns={[
-                                {
-                                    key: "match",
-                                    label: "Match",
-                                    render: (item) => item.match,
-                                },
-                                {
-                                    key: "competition",
-                                    label: "Competition",
-                                    render: (item) => item.competition,
-                                },
-                                {
-                                    key: "date",
-                                    label: "Date",
-                                    render: (item) => item.date,
-                                },
-                                {
-                                    key: "venue",
-                                    label: "Venue",
-                                    render: (item) => item.venue,
-                                },
-                                {
-                                    key: "role",
-                                    label: "Role",
-                                    render: (item) => item.role,
-                                },
-                                {
-                                    key: "status",
-                                    label: "Status",
-                                    render: (item) => (
-                                        <StatusPill
-                                            label={
-                                                item.status ?? "Assigned"
-                                            }
-                                        />
-                                    ),
-                                },
-                            ]}
-                            data={workspaceAppointments.slice(0, 5)}
-                            emptyLabel="No appointments have been assigned to your official profile yet."
-                        />
-                    </section>
-
-                    <aside className={styles.sidePanel}>
-                        <SectionHeader
-                            eyebrow="Next appointment"
-                            title={
-                                nextAppointment?.match ??
-                                "No upcoming match"
-                            }
-                            description={
-                                nextAppointment
-                                    ? `${nextAppointment.competition} • ${nextAppointment.date}`
-                                    : "Your federation will assign upcoming matches here."
-                            }
-                        />
-
-                        <div className={styles.leagueSnapshotGrid}>
-                            <div>
-                                <span>Venue</span>
-                                <strong>
-                                    {nextAppointment?.venue ?? "TBC"}
-                                </strong>
-                            </div>
-
-                            <div>
-                                <span>Role</span>
-                                <strong>
-                                    {nextAppointment?.role ??
-                                        currentOfficial?.role ??
-                                        "TBC"}
-                                </strong>
-                            </div>
-
-                            <div>
-                                <span>Status</span>
-                                <strong>
-                                    {nextAppointment?.status ??
-                                        "Awaiting assignment"}
-                                </strong>
-                            </div>
-
-                            <div>
-                                <span>Report</span>
-                                <strong>
-                                    {nextAppointment?.report ?? "Not due"}
-                                </strong>
-                            </div>
-                        </div>
-                    </aside>
-                </div>
-            );
-        }
-
-        const activeCompetition = workspaceCompetitions[0];
-        const activeLeagueName =
-            activeCompetition?.name ?? `${activeWorkspace.acronym} active league`;
-        const topClubs = workspaceClubs.slice(0, 4);
-        const nextFixtures = workspaceAppointments.slice(0, 3);
-
-        const pendingApprovalRows = workspaceRegistrations.slice(0, 5).map((registration, index) => ({
-            item: registration.applicant,
-            type: registration.type,
-            submittedBy: registration.club,
-            status: registration.status,
-            due: index === 0 ? "Today" : registration.submitted,
-        }));
-
-        const pendingApprovalCount = Math.max(
-            summary.pendingApprovals,
-            workspaceRegistrations.length,
-        );
-
-        const totalPlayers = workspaceClubs.reduce(
-            (total, club) => total + Number(club.players || 0),
-            0,
-        );
-
-        const readyClubs = workspaceClubs.filter((club) =>
-            club.compliance.toLowerCase().includes("ready"),
-        ).length;
-
-        const reviewClubs = Math.max(workspaceClubs.length - readyClubs, 0);
-
-        const assignedOfficials = Math.min(
-            workspaceReferees.length,
-            workspaceAppointments.length,
-        );
-
-        const appointmentsNeedingOfficials = Math.max(
-            workspaceAppointments.length - assignedOfficials,
-            0,
-        );
-
-        const reportsDue = Math.max(
-            workspaceAppointments.filter((appointment) =>
-                appointment.report.toLowerCase().includes("due"),
-            ).length,
-            summary.pendingApprovals > 0 ? 1 : 0,
-        );
-
-        const fixtureReadiness = activeCompetition
-            ? `${activeCompetition.matches} fixtures • ${activeCompetition.status}`
-            : "Fixtures will appear once competitions are connected";
-
-        const financeGross = financeData?.kpis.gross_receipts.display ?? "Not loaded";
-        const financePending = financeData?.kpis.pending_payouts.display ?? "Not loaded";
-
-        const recommendedActions = [
-            {
-                label: `Review ${pendingApprovalCount} pending approval${
-                    pendingApprovalCount === 1 ? "" : "s"
-                }`,
-                detail: "Player registrations, club documents and competition approvals.",
-                action: "Open approvals",
-                tab: "registrations" as TabKey,
-            },
-            {
-                label: `Assign officials to ${
-                    appointmentsNeedingOfficials || workspaceAppointments.length
-                } match${
-                    (appointmentsNeedingOfficials || workspaceAppointments.length) === 1
-                        ? ""
-                        : "es"
-                }`,
-                detail: "Make sure upcoming fixtures have referees and match commissioners.",
-                action: "Open appointments",
-                tab: "appointments" as TabKey,
-            },
-            {
-                label: activeCompetition
-                    ? `Check ${activeCompetition.name}`
-                    : "Review competition setup",
-                detail: fixtureReadiness,
-                action: "Open competitions",
-                tab: "competitions" as TabKey,
-            },
-            {
-                label: "Review finance queue",
-                detail: `${financePending} pending payout or reconciliation value.`,
-                action: "Open finance",
-                tab: "finance" as TabKey,
-            },
-        ].filter((item) => availableTabs.some((tab) => tab.key === item.tab));
-
         return (
-            <div className={styles.overviewLayout}>
-                <section className={styles.panelLarge}>
-                    <SectionHeader
-                        eyebrow="Approvals centre"
-                        title="Pending approvals"
-                        description="A focused queue for registrar, competition and compliance actions that need attention today."
-                        actions={
-                            <button
-                                className={styles.primaryButton}
-                                type="button"
-                                onClick={() => resetSearch("registrations")}
-                            >
-                                Open approvals
-                            </button>
-                        }
-                    />
-
-                    <div className={styles.approvalSummaryGrid}>
-                        <article>
-                            <span>Pending</span>
-                            <strong>{pendingApprovalCount}</strong>
-                            <small>Needs review</small>
-                        </article>
-                        <article>
-                            <span>Club compliance</span>
-                            <strong>{reviewClubs}</strong>
-                            <small>Requires follow-up</small>
-                        </article>
-                        <article>
-                            <span>Reports due</span>
-                            <strong>{reportsDue}</strong>
-                            <small>After matchday</small>
-                        </article>
-                    </div>
-
-                    <DataTable
-                        columns={[
-                            { key: "item", label: "Approval Item", render: (item) => item.item },
-                            { key: "type", label: "Type", render: (item) => item.type },
-                            {
-                                key: "submittedBy",
-                                label: "Submitted By",
-                                render: (item) => item.submittedBy,
-                            },
-                            {
-                                key: "status",
-                                label: "Status",
-                                render: (item) => <StatusPill label={item.status} />,
-                            },
-                            { key: "due", label: "Due", render: (item) => item.due },
-                        ]}
-                        data={pendingApprovalRows}
-                        emptyLabel="No pending approval records for this workspace yet."
-                    />
-                </section>
-
-                <aside className={styles.sidePanel}>
-                    <SectionHeader
-                        eyebrow="League snapshot"
-                        title={activeLeagueName}
-                        description="A quick view of the active competition, top clubs, fixture state and next matchday readiness."
-                    />
-
-                    <div className={styles.leagueSnapshotGrid}>
-                        <div>
-                            <span>Season</span>
-                            <strong>{activeCompetition?.season ?? "TBC"}</strong>
-                        </div>
-                        <div>
-                            <span>Clubs</span>
-                            <strong>{activeCompetition?.clubs ?? workspaceClubs.length}</strong>
-                        </div>
-                        <div>
-                            <span>Fixtures</span>
-                            <strong>
-                                {activeCompetition?.matches ?? workspaceAppointments.length}
-                            </strong>
-                        </div>
-                        <div>
-                            <span>Status</span>
-                            <strong>{activeCompetition?.status ?? "Preview"}</strong>
-                        </div>
-                    </div>
-
-                    <div className={styles.snapshotList}>
-                        <h3>Club snapshot</h3>
-
-                        {topClubs.length > 0 ? (
-                            topClubs.map((club, index) => (
-                                <button
-                                    key={club.id}
-                                    type="button"
-                                    onClick={() => {
-                                        setSelectedClubId(club.id);
-                                        setClubView("detail");
-                                        resetSearch("clubs");
-                                    }}
-                                >
-                                    <span>{index + 1}</span>
-                                    <strong>{club.name}</strong>
-                                    <small>{club.players} players</small>
-                                </button>
-                            ))
-                        ) : (
-                            <p>No clubs connected yet.</p>
-                        )}
-                    </div>
-                </aside>
-
-                <section className={styles.overviewInsightsGrid}>
-                    <article className={styles.sidePanelCompact}>
-                        <SectionHeader
-                            eyebrow="Player pool"
-                            title={`${totalPlayers} registered players`}
-                            description="Snapshot of the workspace player base and registration readiness."
-                        />
-
-                        <div className={styles.playerPoolMetrics}>
-                            <div>
-                                <strong>{workspaceRegistrations.length}</strong>
-                                <span>Pending registrations</span>
-                            </div>
-                            <div>
-                                <strong>{readyClubs}</strong>
-                                <span>Ready clubs</span>
-                            </div>
-                            <div>
-                                <strong>{reviewClubs}</strong>
-                                <span>Compliance reviews</span>
-                            </div>
-                        </div>
-                    </article>
-
-                    <article className={styles.sidePanelCompact}>
-                        <SectionHeader
-                            eyebrow="Officials coverage"
-                            title={`${assignedOfficials}/${
-                                workspaceAppointments.length || assignedOfficials
-                            } covered`}
-                            description="Matchday readiness for referees, assistants and commissioners."
-                        />
-
-                        <div className={styles.coverageList}>
-                            <span>
-                                <strong>{workspaceReferees.length}</strong>
-                                Officials in pool
-                            </span>
-                            <span>
-                                <strong>{appointmentsNeedingOfficials}</strong>
-                                Matches need assignment
-                            </span>
-                            <span>
-                                <strong>{reportsDue}</strong>
-                                Reports due
-                            </span>
-                        </div>
-                    </article>
-
-                    <article className={styles.sidePanelCompact}>
-                        <SectionHeader
-                            eyebrow="Next fixtures"
-                            title="Upcoming matchday"
-                            description="The next scheduled fixtures that need operational readiness."
-                        />
-
-                        <div className={styles.fixtureMiniList}>
-                            {nextFixtures.length > 0 ? (
-                                nextFixtures.map((fixture) => (
-                                    <button
-                                        key={`${fixture.match}-${fixture.date}`}
-                                        type="button"
-                                        onClick={() => resetSearch("appointments")}
-                                    >
-                                        <strong>{fixture.match}</strong>
-                                        <span>{fixture.competition}</span>
-                                        <small>{fixture.date}</small>
-                                    </button>
-                                ))
-                            ) : (
-                                <p>No upcoming fixtures found.</p>
-                            )}
-                        </div>
-                    </article>
-                </section>
-
-                <section className={styles.panelFull}>
-                    <SectionHeader
-                        eyebrow="Next best actions"
-                        title="Recommended actions"
-                        description="Operational prompts based on approvals, fixtures, officials and finance status."
-                    />
-
-                    <div className={styles.recommendationGrid}>
-                        {recommendedActions.map((item) => (
-                            <article key={item.label}>
-                                <div>
-                                    <strong>{item.label}</strong>
-                                    <p>{item.detail}</p>
-                                </div>
-
-                                <button type="button" onClick={() => resetSearch(item.tab)}>
-                                    {item.action}
-                                </button>
-                            </article>
-                        ))}
-                    </div>
-
-                    <div className={styles.financeMiniSummary}>
-                        <span>Finance mini summary</span>
-                        <strong>{financeGross}</strong>
-                        <small>Gross workspace receipts</small>
-                        <em>{financePending} pending payout review</em>
-                    </div>
-                </section>
-            </div>
+            <UnionOverviewScreen
+                workspaceName={activeWorkspace.name}
+                workspaceAcronym={activeWorkspace.acronym}
+                workspaceSport={activeWorkspace.sport}
+                workspaceRoleLabel={
+                    activeWorkspace.roleDisplay || formatRole(activeWorkspace.role)
+                }
+                permissions={activeWorkspace.permissions}
+                summary={overview.summary}
+                workspaceUserCount={workspaceUsers.length}
+                grossReceipts={financeData?.kpis.gross_receipts.display}
+                pendingPayouts={financeData?.kpis.pending_payouts.display}
+                onNavigate={resetSearch}
+            />
         );
     }
 
@@ -2823,23 +2153,6 @@ export default function UnionAdminDashboard() {
                     </div>
                 </div>
 
-                <label className={styles.workspaceSelectLabel} htmlFor="workspace-select">
-                    Switch Workspace
-                </label>
-                <select
-                    id="workspace-select"
-                    className={styles.workspaceSelect}
-                    value={activeWorkspaceSlug}
-                    disabled={isSwitchingWorkspace}
-                    onChange={(event) => void handleWorkspaceChange(event.target.value)}
-                >
-                    {workspaces.map((workspace) => (
-                        <option key={workspace.entitlementId} value={workspace.slug}>
-                            {workspace.acronym} - {workspace.roleDisplay}
-                        </option>
-                    ))}
-                </select>
-
                 <nav
                     className={styles.navList}
                     aria-label="Union workspace modules"
@@ -2897,26 +2210,66 @@ export default function UnionAdminDashboard() {
             </aside>
 
             <section className={styles.contentArea}>
-                <header className={styles.heroHeader}>
-                    <div className={styles.heroIdentity}>
-                        <div className={styles.heroMetaRow}>
-                            <span className={styles.liveBadge}>
-                                <ActivePageIcon size={14} strokeWidth={2.4} aria-hidden="true" />
-                                {pageHeader.eyebrow}
-                            </span>
-                            <span className={styles.workspaceContext}>
-                                {activeWorkspace.acronym} · {activeWorkspace.sport} · {activeWorkspace.roleDisplay || formatRole(activeWorkspace.role)}
-                            </span>
+                {workspaces.length > 1 ? (
+                    <div className={styles.workspaceUtilityBar}>
+                        <span>Active workspace</span>
+
+                        <select
+                            className={styles.utilityWorkspaceSelect}
+                            value={activeWorkspaceSlug}
+                            disabled={isSwitchingWorkspace}
+                            aria-label="Switch Union workspace"
+                            onChange={(event) =>
+                                void handleWorkspaceChange(event.target.value)
+                            }
+                        >
+                            {workspaces.map((workspace) => (
+                                <option
+                                    key={workspace.entitlementId}
+                                    value={workspace.slug}
+                                >
+                                    {workspace.acronym} · {workspace.roleDisplay}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                ) : null}
+
+                {activeTab !== "overview" && activeTab !== "competitions" ? (
+                    <header className={styles.heroHeader}>
+                        <div className={styles.heroIdentity}>
+                            <div className={styles.heroMetaRow}>
+                                <span className={styles.liveBadge}>
+                                    <ActivePageIcon
+                                        size={14}
+                                        strokeWidth={2.4}
+                                        aria-hidden="true"
+                                    />
+                                    {pageHeader.eyebrow}
+                                </span>
+
+                                <span className={styles.workspaceContext}>
+                                    {activeWorkspace.acronym} ·{" "}
+                                    {activeWorkspace.sport} ·{" "}
+                                    {activeWorkspace.roleDisplay ||
+                                        formatRole(activeWorkspace.role)}
+                                </span>
+                            </div>
+
+                            <h1>{pageHeader.title}</h1>
+                            <p>{pageHeader.description}</p>
                         </div>
-                        <h1>{pageHeader.title}</h1>
-                        <p>{pageHeader.description}</p>
-                    </div>
-                    <div className={styles.headerActions}>
-                        <Link className={styles.headerActionPrimary} to={pageHeader.publicPath}>
-                            {pageHeader.publicLabel}
-                        </Link>
-                    </div>
-                </header>
+
+                        <div className={styles.headerActions}>
+                            <Link
+                                className={styles.headerActionPrimary}
+                                to={pageHeader.publicPath}
+                            >
+                                {pageHeader.publicLabel}
+                            </Link>
+                        </div>
+                    </header>
+                ) : null}
 
                 {workspaceError ? <div className={styles.alertBanner}>{workspaceError}</div> : null}
                 {activeStats ? (
