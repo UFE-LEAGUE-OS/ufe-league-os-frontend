@@ -1,0 +1,154 @@
+.shell {
+  display: grid;
+  gap: 18px;
+}
+
+.moduleHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 24px;
+  border: 1px solid rgba(139, 92, 246, 0.24);
+  border-radius: 18px;
+  background:
+    radial-gradient(
+      circle at top right,
+      rgba(124, 58, 237, 0.2),
+      transparent 34%
+    ),
+    rgba(10, 17, 36, 0.96);
+}
+
+.moduleHeader span,
+.unavailablePanel > span {
+  display: block;
+  margin-bottom: 6px;
+  color: #ff7a00;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.moduleHeader h2,
+.unavailablePanel h2 {
+  margin: 0;
+  color: #ffffff;
+  font-family:
+    var(
+      --font-heading,
+      "Shentox",
+      "League Spartan",
+      sans-serif
+    );
+  font-size: clamp(1.65rem, 2.5vw, 2.4rem);
+  font-style: italic;
+  font-weight: 800;
+}
+
+.moduleHeader p,
+.unavailablePanel p {
+  max-width: 820px;
+  margin: 8px 0 0;
+  color: #aeb8d4;
+  line-height: 1.6;
+}
+
+.scopeBadge {
+  flex: 0 0 auto;
+  padding: 8px 12px;
+  border: 1px solid rgba(52, 211, 153, 0.35);
+  border-radius: 999px;
+  color: #6ee7b7;
+  background: rgba(6, 78, 59, 0.28);
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.tabList {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 6px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 14px;
+  background: rgba(8, 14, 30, 0.9);
+  scrollbar-width: thin;
+}
+
+.tab,
+.activeTab {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 0 14px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  color: #aeb8d4;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.tab:hover {
+  color: #ffffff;
+  border-color: rgba(139, 92, 246, 0.25);
+  background: rgba(124, 58, 237, 0.08);
+}
+
+.activeTab {
+  color: #ffffff;
+  border-color: rgba(167, 139, 250, 0.55);
+  background:
+    linear-gradient(
+      135deg,
+      #6d28d9,
+      #8b5cf6
+    );
+  box-shadow:
+    0 10px 24px rgba(109, 40, 217, 0.24);
+}
+
+.content {
+  min-width: 0;
+}
+
+.unavailablePanel {
+  min-height: 320px;
+  padding: 30px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 18px;
+  background: rgba(10, 17, 36, 0.94);
+}
+
+.unavailableNotice {
+  max-width: 760px;
+  margin-top: 24px;
+  padding: 18px;
+  border: 1px solid rgba(139, 92, 246, 0.28);
+  border-radius: 12px;
+  color: #c4b5fd;
+  background: rgba(76, 29, 149, 0.16);
+  line-height: 1.55;
+}
+
+@media (max-width: 760px) {
+  .moduleHeader {
+    flex-direction: column;
+    padding: 20px;
+  }
+
+  .scopeBadge {
+    align-self: flex-start;
+  }
+
+  .unavailablePanel {
+    padding: 22px;
+  }
+}

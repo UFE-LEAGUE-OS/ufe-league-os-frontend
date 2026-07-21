@@ -3,8 +3,12 @@
     display: grid;
     grid-template-columns: 264px minmax(0, 1fr);
     background:
-        linear-gradient(90deg, rgba(5, 8, 18, 0.98) 0%, rgba(5, 8, 18, 0.9) 100%),
-        url("../../assets/cta-banner.png") center/cover fixed;
+        linear-gradient(180deg, rgba(2, 5, 18, 0.62) 0%, rgba(5, 10, 30, 0.75) 100%),
+        url("../../assets/cta-banner.png");
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-attachment: fixed;
     color: #ffffff;
     font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
@@ -4951,4 +4955,484 @@ tr:last-child td {
 .contentStack {
     display: grid;
     gap: 1.25rem;
+}
+
+
+/* UNION WORKSPACE SOLID UI V4 */
+
+.pageShell {
+    min-height: 100vh;
+    display: flex;
+    align-items: stretch;
+    background-color: #050817 !important;
+    background-image: url("/assets/auth/auth-stadium-bg.png") !important;
+    background-blend-mode: multiply;
+    background-position: center;
+    background-size: cover;
+    background-attachment: fixed;
+}
+
+.pageShell *,
+.pageShell *::before,
+.pageShell *::after {
+    background-image: none !important;
+}
+
+.sidebar {
+    position: sticky !important;
+    top: 0;
+    align-self: flex-start;
+    height: 100vh !important;
+    max-height: 100vh;
+    overflow-y: auto !important;
+    background: #050816 !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: none !important;
+}
+
+.sidebarToggle {
+    background: #6f38d9 !important;
+    border-color: #8755e8 !important;
+    box-shadow: none !important;
+}
+
+.workspaceCard {
+    background: #0d1328 !important;
+    border-color: rgba(255, 255, 255, 0.11) !important;
+}
+
+.workspaceAvatar {
+    background: #7138dc !important;
+    border: 1px solid #f59e0b;
+}
+
+.navList {
+    display: grid;
+    gap: 14px;
+}
+
+.navGroup {
+    display: grid;
+    gap: 4px;
+}
+
+.navGroupLabel {
+    padding: 0 10px 4px;
+    color: rgba(255, 255, 255, 0.38);
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.activeNavItem {
+    background: #6f38d9 !important;
+    border-color: #8755e8 !important;
+    box-shadow: none !important;
+}
+
+.navList button:hover,
+.logoutButton:hover {
+    background: #141c34 !important;
+}
+
+.contentArea {
+    max-width: 1500px;
+    padding-bottom: 48px;
+}
+
+.panelLarge,
+.panelFull,
+.sidePanel,
+.sidePanelCompact,
+.formPanel,
+.actionRail,
+.profileCard,
+.statCard {
+    background: #0b1124 !important;
+    border-color: rgba(255, 255, 255, 0.09) !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+}
+
+.primaryButton,
+.primaryAction,
+.headerActionPrimary {
+    background: #7138dc !important;
+    border-color: #8755e8 !important;
+    box-shadow: none !important;
+}
+
+.headerActionPrimary:hover,
+.primaryButton:hover,
+.primaryAction:hover {
+    background: #8050e4 !important;
+}
+
+.secondaryButton,
+.secondaryAction,
+.headerActionSecondary {
+    background: #141c34 !important;
+    border-color: rgba(255, 255, 255, 0.13) !important;
+    box-shadow: none !important;
+}
+
+.dashboardFooterWrap {
+    position: relative;
+    z-index: 70;
+    width: 100%;
+    margin: 0 !important;
+    background: #00030d;
+}
+
+.dashboardFooterWrap :global(footer) {
+    width: 100%;
+    margin: 0 !important;
+}
+
+.overviewDashboard {
+    display: grid;
+    grid-template-columns:
+        minmax(0, 1.65fr)
+        minmax(300px, 0.7fr);
+    gap: 18px;
+    align-items: start;
+}
+
+.overviewLeadPanel,
+.overviewActionPanel {
+    padding: 22px;
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 14px;
+    background: #0b1124;
+}
+
+.overviewLeadHeader {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 18px;
+}
+
+.sectionEyebrow {
+    color: #f59e0b;
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.overviewLeadHeader h2 {
+    margin: 6px 0 8px;
+    color: #ffffff;
+    font-family:
+        var(--font-heading, "League Spartan"),
+        Inter,
+        sans-serif;
+    font-size: clamp(28px, 3vw, 42px);
+    font-style: italic;
+    font-weight: 900;
+    line-height: 1;
+}
+
+.overviewLeadHeader p {
+    max-width: 720px;
+    margin: 0;
+    color: rgba(255, 255, 255, 0.64);
+    line-height: 1.55;
+}
+
+.workspaceStatusBadge {
+    flex: 0 0 auto;
+    padding: 7px 10px;
+    border: 1px solid rgba(34, 197, 94, 0.36);
+    border-radius: 999px;
+    color: #bbf7d0;
+    background: rgba(22, 101, 52, 0.22);
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.overviewMetricGrid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.overviewMetricGrid article {
+    min-height: 118px;
+    padding: 14px;
+    display: grid;
+    align-content: start;
+    gap: 5px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    background: #11192f;
+}
+
+.overviewMetricGrid article svg {
+    color: #8b5cf6;
+}
+
+.overviewMetricGrid article span,
+.overviewMetricGrid article small {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 10px;
+}
+
+.overviewMetricGrid article span {
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.overviewMetricGrid article strong {
+    color: #ffffff;
+    font-size: 26px;
+    line-height: 1;
+}
+
+.overviewActionPanel {
+    position: static;
+    top: auto;
+    align-self: start;
+    min-width: 0;
+}
+
+.overviewWorkflowGrid {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.overviewWorkflowGrid button {
+    min-height: 132px;
+    padding: 18px;
+    display: flex;
+    align-items: flex-start;
+    gap: 13px;
+    color: #ffffff;
+    text-align: left;
+    background: #0b1124;
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 12px;
+    cursor: pointer;
+}
+
+.overviewWorkflowGrid button:hover {
+    background: #11192f;
+    border-color: #7c3aed;
+}
+
+.overviewWorkflowGrid button > svg {
+    flex: 0 0 auto;
+    color: #8b5cf6;
+}
+
+.overviewWorkflowGrid span {
+    display: grid;
+    gap: 5px;
+}
+
+.overviewWorkflowGrid small {
+    color: #f59e0b;
+    font-size: 9px;
+    font-weight: 900;
+}
+
+.overviewWorkflowGrid strong {
+    font-family:
+        var(--font-subhead, "Space Grotesk"),
+        Inter,
+        sans-serif;
+    font-size: 14px;
+}
+
+.overviewWorkflowGrid p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.55);
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+@media (max-width: 1180px) {
+    .navGroupLabel {
+        display: none;
+    }
+
+    .navList {
+        gap: 6px;
+    }
+
+    .overviewMetricGrid,
+    .overviewWorkflowGrid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 980px) {
+    .pageShell {
+        min-height: auto;
+        display: block;
+        background-image:
+            url("/assets/auth/auth-stadium-bg.png") !important;
+        background-attachment: scroll;
+    }
+
+    .overviewDashboard {
+        grid-template-columns: 1fr;
+    }
+
+    .overviewActionPanel {
+        position: static;
+    }
+}
+
+@media (max-width: 680px) {
+    .overviewLeadHeader {
+        display: grid;
+    }
+
+    .workspaceStatusBadge {
+        width: fit-content;
+    }
+
+    .overviewMetricGrid,
+    .overviewWorkflowGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .overviewLeadPanel,
+    .overviewActionPanel {
+        padding: 18px;
+    }
+}
+
+
+/* OVERVIEW SCROLL COLLISION FIX V1 */
+
+.overviewLeadPanel,
+.overviewActionPanel,
+.overviewWorkflowGrid {
+    min-width: 0;
+}
+
+.overviewActionPanel .quickActionsList {
+    display: grid;
+    gap: 10px;
+}
+
+.overviewActionPanel .quickActionsList > * {
+    width: 100%;
+    min-width: 0;
+}
+
+.overviewWorkflowGrid {
+    position: relative;
+    z-index: 1;
+}
+
+.overviewWorkflowGrid button {
+    min-width: 0;
+}
+
+.overviewWorkflowGrid button span,
+.overviewWorkflowGrid button p {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+/* Unified login/fan dashboard background */
+.pageShell {
+    background:
+        linear-gradient(
+            180deg,
+            rgba(2, 5, 18, 0.64) 0%,
+            rgba(5, 10, 30, 0.78) 100%
+        ),
+        url("../../assets/cta-banner.png");
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-attachment: fixed;
+}
+
+.contentArea {
+    background: transparent;
+}
+
+.workspaceUtilityBar {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.workspaceUtilityBar > span {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.68rem;
+    font-weight: 900;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.utilityWorkspaceSelect {
+    min-width: 220px;
+    height: 40px;
+    padding: 0 38px 0 12px;
+    border-radius: 7px;
+    border: 1px solid rgba(123, 63, 242, 0.72);
+    color: #ffffff;
+    background: rgba(2, 6, 23, 0.82);
+    font: inherit;
+    font-size: 0.78rem;
+    font-weight: 800;
+    outline: none;
+}
+
+.utilityWorkspaceSelect option {
+    color: #111827;
+    background: #ffffff;
+}
+
+@media (max-width: 720px) {
+    .workspaceUtilityBar {
+        display: grid;
+        justify-content: stretch;
+    }
+
+    .utilityWorkspaceSelect {
+        width: 100%;
+        min-width: 0;
+    }
+}
+
+/* UNION DASHBOARD BACKGROUND VISIBILITY OVERRIDE */
+.pageShell {
+    background:
+        linear-gradient(
+            180deg,
+            rgba(2, 5, 18, 0.34) 0%,
+            rgba(5, 10, 30, 0.52) 100%
+        ),
+        url("../../assets/cta-banner.png") !important;
+    background-position: center center !important;
+    background-repeat: no-repeat !important;
+    background-size: cover !important;
+    background-attachment: fixed !important;
+}
+
+.contentArea {
+    background: rgba(2, 5, 18, 0.05) !important;
+}
+
+@media (max-width: 900px) {
+    .pageShell {
+        background-attachment: scroll !important;
+        background-position: center top !important;
+    }
 }

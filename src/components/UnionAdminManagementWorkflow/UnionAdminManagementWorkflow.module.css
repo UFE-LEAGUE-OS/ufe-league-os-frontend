@@ -411,3 +411,90 @@
     flex-direction: column;
   }
 }
+
+
+/* UNION COMPETITION SOLID WORKFLOW V2 */
+
+.workflow {
+    margin: 0;
+    padding: 22px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 14px;
+    background: #0b1124;
+    box-shadow: none;
+}
+
+.workflow *,
+.workflow *::before,
+.workflow *::after {
+    background-image: none !important;
+}
+
+.header {
+    padding-bottom: 18px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.header span {
+    color: #f59e0b;
+}
+
+.header h3 {
+    font-family:
+        var(--font-heading, "League Spartan"),
+        Inter,
+        sans-serif;
+    font-style: italic;
+    font-weight: 900;
+}
+
+.refreshButton,
+.primaryButton,
+.activeTab {
+    color: #ffffff;
+    background: #7138dc !important;
+    border: 1px solid #8755e8;
+    box-shadow: none;
+}
+
+.secondaryButton,
+.tabButton {
+    color: #e9e4ff;
+    background: #141c34 !important;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.tabButton {
+    border-radius: 8px;
+}
+
+.card,
+.reschedulePanel {
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 12px;
+    background: #0f172a;
+    box-shadow: none;
+}
+
+.formGrid input,
+.formGrid select,
+.formGrid textarea,
+.checkboxOption,
+.dayToggle,
+.listItem,
+.fixturePreview div {
+    border-color: rgba(255, 255, 255, 0.11);
+    border-radius: 8px;
+    background: #141c34;
+}
+
+.fixtureSummary {
+    border-radius: 8px;
+    background: #21182a;
+}
+
+@media (max-width: 720px) {
+    .workflow {
+        padding: 16px;
+    }
+}

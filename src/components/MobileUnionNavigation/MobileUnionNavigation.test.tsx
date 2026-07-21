@@ -1,8 +1,7 @@
 import { render, screen, within } from "@testing-library/react";
 import { BarChart3, DollarSign, FileText, TicketCheck } from "lucide-react";
 import { MemoryRouter } from "react-router-dom";
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { useAuthStore } from "../../store/authStore";
+import { describe, expect, it, vi } from "vitest";
 
 import MobileUnionNavigation from "./MobileUnionNavigation";
 
@@ -15,15 +14,7 @@ const items = [
 ];
 
 describe("MobileUnionNavigation", () => {
-  beforeEach(() => {
-    useAuthStore.setState({
-      user: null,
-      accessToken: null,
-      accessStatus: "unauthenticated",
-    });
-  });
-
-  it("does not expose a Fan link without an explicit route", () => {
+  it("keeps Union navigation separate from the Fan dashboard", () => {
     render(
       <MemoryRouter>
         <MobileUnionNavigation
@@ -40,47 +31,10 @@ describe("MobileUnionNavigation", () => {
     expect(
       screen.queryByRole("link", { name: /fan dashboard/i }),
     ).not.toBeInTheDocument();
-  });
-
-  it("shows the Fan link only when the validated route is supplied", () => {
-    useAuthStore.setState({
-      user: {
-        dashboard_access: {
-          version: 1,
-          default_entitlement_id: "fan",
-          entitlements: [
-            {
-              id: "fan",
-              dashboard: "FAN",
-              route: "/dashboard/fan",
-              scope_type: "ACCOUNT",
-              scope_id: 8,
-              workspace_role: null,
-              permissions: [],
-            },
-          ],
-        },
-      },
-      accessToken: "access-token",
-      accessStatus: "ready",
-    });
-
-    render(
-      <MemoryRouter>
-        <MobileUnionNavigation
-          activeKey="overview"
-          items={items}
-          workspaceName="Uganda Rugby Union"
-          workspaceRole="TICKETING_OFFICER"
-          onTabChange={vi.fn()}
-          onLogout={vi.fn()}
-        />
-      </MemoryRouter>,
-    );
 
     expect(
-      screen.getByRole("link", { name: /fan dashboard/i }),
-    ).toHaveAttribute("href", "/dashboard/fan");
+      screen.getByRole("link", { name: /league os home/i }),
+    ).toHaveAttribute("href", "/");
   });
 
   it("uses the exact Ticketing Officer role for restricted primary navigation", () => {

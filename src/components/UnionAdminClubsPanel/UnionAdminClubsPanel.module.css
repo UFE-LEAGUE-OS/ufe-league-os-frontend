@@ -595,3 +595,87 @@
     justify-self: start;
   }
 }
+
+
+/* UNION CLUBS SOLID WORKFLOW V2 */
+
+.panel {
+    padding: 22px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 14px;
+    background: #0b1124;
+    box-shadow: none;
+    backdrop-filter: none;
+}
+
+.panel *,
+.panel *::before,
+.panel *::after {
+    background-image: none !important;
+}
+
+.primaryButton {
+    background: #7138dc !important;
+    border: 1px solid #8755e8;
+    box-shadow: none;
+}
+
+.secondaryButton {
+    background: #141c34;
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+.searchBar,
+.card,
+.clubRow,
+.metaItem,
+.membership,
+.empty {
+    border-radius: 10px;
+    background: #0f172a;
+    box-shadow: none;
+}
+
+.card {
+    border-color: rgba(255, 255, 255, 0.09);
+}
+
+.clubRow {
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+.clubRow:hover,
+.clubRowActive {
+    background: #161f39;
+    border-color: #7c3aed;
+    transform: none;
+}
+
+.formGrid input,
+.formGrid select {
+    border-radius: 8px;
+    background: #141c34;
+}
+
+@media (max-width: 720px) {
+    .panel {
+        padding: 16px;
+    }
+}
+
+
+/* CLUB MEMBERSHIP TEXT LAYOUT FIX V1 */
+
+.membership {
+    display: grid;
+    gap: 4px;
+    min-width: 0;
+}
+
+.membership strong,
+.membership span {
+    display: block;
+    min-width: 0;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+}
