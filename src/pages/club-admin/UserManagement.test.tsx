@@ -2,16 +2,13 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
-  createClubRole,
   createClubUser,
   deleteClubUser,
   getClubManagedUsers,
   getClubRoles,
   getRolePermissionModules,
-  getUserPerformance,
   setClubUserStatus,
   updateClubUser,
-  updateRolePermissionModules,
   type ManagedUser,
   type PermissionModule,
   type RoleSummary,
