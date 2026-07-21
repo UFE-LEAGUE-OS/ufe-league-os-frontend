@@ -51,8 +51,7 @@ export interface UnionWorkspaceOption {
   permissions: UnionWorkspacePermission[];
 }
 
-export interface AuthorizedUnionWorkspaceOption
-  extends UnionWorkspaceOption {
+export interface AuthorizedUnionWorkspaceOption extends UnionWorkspaceOption {
   entitlementId: string;
   entitlementRoute: string;
   scopeId: string | number;
@@ -77,8 +76,7 @@ interface BackendUnionWorkspaceMembership {
   workspace: BackendUnionWorkspace;
 }
 
-interface BackendUnionWorkspaceSwitchResponse
-  extends BackendUnionWorkspaceMembership {
+interface BackendUnionWorkspaceSwitchResponse extends BackendUnionWorkspaceMembership {
   selected_entitlement_id: unknown;
   dashboard_access: unknown;
 }
@@ -209,10 +207,7 @@ export function intersectUnionWorkspaceOptions(
   );
   const seenScopes = new Set<string>();
 
-  return getEntitlementsForDashboard(
-    dashboardAccess,
-    "UNION_WORKSPACE",
-  )
+  return getEntitlementsForDashboard(dashboardAccess, "UNION_WORKSPACE")
     .filter(
       (entitlement) =>
         entitlement.scope_type === "UNION_WORKSPACE" &&
@@ -290,7 +285,9 @@ export async function switchUnionWorkspace(
     typeof selectedEntitlementId !== "string" ||
     !selectedEntitlementId
   ) {
-    throw new Error("The workspace switch response did not include valid access.");
+    throw new Error(
+      "The workspace switch response did not include valid access.",
+    );
   }
 
   const workspace = intersectUnionWorkspaceOptions(
@@ -299,7 +296,9 @@ export async function switchUnionWorkspace(
   ).find((option) => option.entitlementId === selectedEntitlementId);
 
   if (!workspace) {
-    throw new Error("The selected workspace is not authorized by dashboard access.");
+    throw new Error(
+      "The selected workspace is not authorized by dashboard access.",
+    );
   }
 
   return {
@@ -343,7 +342,6 @@ export async function createUnionWorkspaceUser(
 
   return response.data;
 }
-
 
 export interface UnionFinanceMoney {
   raw: string;
@@ -401,7 +399,6 @@ export async function getUnionFinanceDashboard(
 
   return response.data;
 }
-
 
 export interface UnionOperationsCompetition {
   id: string;
@@ -511,8 +508,6 @@ export async function getUnionOperationsDashboard(
 
   return response.data;
 }
-
-
 
 export interface UnionAuthoritativePlayerRegistration {
   id: number;
@@ -684,7 +679,9 @@ export async function getUnionPlayerEligibilities(
   workspaceSlug: string,
   query: UnionPlayerRecordsQuery = {},
 ): Promise<UnionAdminListResponse<UnionPlayerEligibility>> {
-  const response = await apiClient.get<UnionAdminListResponse<UnionPlayerEligibility>>(
+  const response = await apiClient.get<
+    UnionAdminListResponse<UnionPlayerEligibility>
+  >(
     `/dashboards/union-admin/player-eligibilities/?${unionPlayerRecordsParams(
       workspaceSlug,
       query,
@@ -697,7 +694,9 @@ export async function getUnionPlayerTransfers(
   workspaceSlug: string,
   query: UnionPlayerRecordsQuery = {},
 ): Promise<UnionAdminListResponse<UnionPlayerTransfer>> {
-  const response = await apiClient.get<UnionAdminListResponse<UnionPlayerTransfer>>(
+  const response = await apiClient.get<
+    UnionAdminListResponse<UnionPlayerTransfer>
+  >(
     `/dashboards/union-admin/player-transfers/?${unionPlayerRecordsParams(
       workspaceSlug,
       query,
@@ -706,10 +705,186 @@ export async function getUnionPlayerTransfers(
   return response.data;
 }
 
+export type UnionApprovalStatus =
+  | "PENDING"
+  | "APPROVED"
+  | "REJECTED"
+  | "CANCELLED";
 
-export type UnionNationalTeamStatus = "ACTIVE" | "CAMP" | "SELECTION" | "INACTIVE";
+export interface UnionApprovalRecord {
+  id: number;
+  workspace: number;
+  subject_type: string;
+  subject_id: number;
+  action: string;
+  status: UnionApprovalStatus;
+  requested_by: number | null;
+  requested_by_email: string | null;
+  reviewed_by: number | null;
+  reviewed_by_email: string | null;
+  reason: string;
+  decision_reason: string;
+  metadata: Record<string, unknown>;
+  reviewed_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UnionAuditEventRecord {
+  id: number;
+  workspace: number;
+  actor: number | null;
+  actor_email: string | null;
+  action: string;
+  target_type: string;
+  target_id: number | null;
+  metadata: Record<string, unknown>;
+  created_at: string;
+}
+
+export interface UnionReviewCommentRecord {
+  id: number;
+  workspace: number;
+  subject_type: string;
+  subject_id: number;
+  author: number | null;
+  author_email: string | null;
+  body: string;
+  is_internal: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UnionDocumentReferenceRecord {
+  id: number;
+  workspace: number;
+  subject_type: string;
+  subject_id: number;
+  document_type: string;
+  title: string;
+  file_url: string;
+  uploaded_by: number | null;
+  uploaded_by_email: string | null;
+  metadata: Record<string, unknown>;
+  created_at: string;
+}
+
+export interface UnionGovernanceQuery {
+  status?: string;
+  action?: string;
+  subjectType?: string;
+  subjectId?: number;
+  documentType?: string;
+}
+
+function unionGovernanceParams(
+  workspaceSlug: string,
+  query: UnionGovernanceQuery = {},
+) {
+  const params = new URLSearchParams({
+    workspace: workspaceSlug,
+    page_size: "100",
+  });
+
+  if (query.status && query.status !== "ALL") {
+    params.set("status", query.status);
+  }
+  if (query.action?.trim()) {
+    params.set("action", query.action.trim());
+  }
+  if (query.subjectType?.trim()) {
+    params.set("subject_type", query.subjectType.trim());
+  }
+  if (query.subjectId !== undefined) {
+    params.set("subject_id", String(query.subjectId));
+  }
+  if (query.documentType?.trim()) {
+    params.set("document_type", query.documentType.trim());
+  }
+
+  return params.toString();
+}
+
+export async function getUnionApprovals(
+  workspaceSlug: string,
+  query: UnionGovernanceQuery = {},
+): Promise<UnionAdminListResponse<UnionApprovalRecord>> {
+  const response = await apiClient.get<
+    UnionAdminListResponse<UnionApprovalRecord>
+  >(
+    `/dashboards/union-admin/approvals/?${unionGovernanceParams(
+      workspaceSlug,
+      query,
+    )}`,
+  );
+  return response.data;
+}
+
+export async function reviewUnionApproval(
+  workspaceSlug: string,
+  approvalId: number,
+  payload: {
+    decision: "APPROVED" | "REJECTED";
+    decision_reason?: string;
+  },
+): Promise<UnionApprovalRecord> {
+  const response = await apiClient.post<UnionApprovalRecord>(
+    `/dashboards/union-admin/approvals/${approvalId}/`,
+    { workspace: workspaceSlug, ...payload },
+  );
+  return response.data;
+}
+
+export async function getUnionAuditEvents(
+  workspaceSlug: string,
+  query: UnionGovernanceQuery = {},
+): Promise<UnionAdminListResponse<UnionAuditEventRecord>> {
+  const response = await apiClient.get<
+    UnionAdminListResponse<UnionAuditEventRecord>
+  >(
+    `/dashboards/union-admin/audit-events/?${unionGovernanceParams(
+      workspaceSlug,
+      query,
+    )}`,
+  );
+  return response.data;
+}
+
+export async function getUnionReviewComments(
+  workspaceSlug: string,
+  query: UnionGovernanceQuery = {},
+): Promise<UnionAdminListResponse<UnionReviewCommentRecord>> {
+  const response = await apiClient.get<
+    UnionAdminListResponse<UnionReviewCommentRecord>
+  >(
+    `/dashboards/union-admin/review-comments/?${unionGovernanceParams(
+      workspaceSlug,
+      query,
+    )}`,
+  );
+  return response.data;
+}
+
+export async function getUnionDocumentReferences(
+  workspaceSlug: string,
+  query: UnionGovernanceQuery = {},
+): Promise<UnionAdminListResponse<UnionDocumentReferenceRecord>> {
+  const response = await apiClient.get<
+    UnionAdminListResponse<UnionDocumentReferenceRecord>
+  >(
+    `/dashboards/union-admin/documents/?${unionGovernanceParams(
+      workspaceSlug,
+      query,
+    )}`,
+  );
+  return response.data;
+}
+
+export type UnionNationalTeamStatus =
+  "ACTIVE" | "CAMP" | "SELECTION" | "INACTIVE";
 export type UnionNationalTeamMemberType = "PLAYER" | "STAFF";
-export type UnionNationalTeamMemberStatus = "ACTIVE" | "INJURED" | "UNAVAILABLE" | "RELEASED";
+export type UnionNationalTeamMemberStatus =
+  "ACTIVE" | "INJURED" | "UNAVAILABLE" | "RELEASED";
 export type UnionRegistrationApplicationStatus =
   | "PENDING"
   | "UNDER_REVIEW"
@@ -853,7 +1028,9 @@ export interface CreateUnionNationalTeamMemberPayload {
 export async function getUnionNationalTeams(
   workspaceSlug: string,
 ): Promise<UnionAdminListResponse<UnionNationalTeam>> {
-  const response = await apiClient.get<UnionAdminListResponse<UnionNationalTeam>>(
+  const response = await apiClient.get<
+    UnionAdminListResponse<UnionNationalTeam>
+  >(
     `/dashboards/union-admin/national-teams/?workspace=${encodeURIComponent(workspaceSlug)}`,
   );
   return response.data;
@@ -894,7 +1071,9 @@ export async function getUnionNationalTeamMembers(
   teamId: number,
   workspaceSlug: string,
 ): Promise<UnionAdminListResponse<UnionNationalTeamMember>> {
-  const response = await apiClient.get<UnionAdminListResponse<UnionNationalTeamMember>>(
+  const response = await apiClient.get<
+    UnionAdminListResponse<UnionNationalTeamMember>
+  >(
     `/dashboards/union-admin/national-teams/${teamId}/members/?workspace=${encodeURIComponent(workspaceSlug)}`,
   );
   return response.data;
@@ -938,7 +1117,9 @@ export async function deleteUnionNationalTeamMember(
 export async function getUnionRegistrationApplications(
   workspaceSlug: string,
 ): Promise<UnionAdminListResponse<UnionRegistrationApplication>> {
-  const response = await apiClient.get<UnionAdminListResponse<UnionRegistrationApplication>>(
+  const response = await apiClient.get<
+    UnionAdminListResponse<UnionRegistrationApplication>
+  >(
     `/dashboards/union-admin/registration-applications/?workspace=${encodeURIComponent(workspaceSlug)}`,
   );
   return response.data;
@@ -947,7 +1128,12 @@ export async function getUnionRegistrationApplications(
 export async function updateUnionRegistrationApplication(
   applicationId: number,
   workspaceSlug: string,
-  payload: Partial<Pick<UnionRegistrationApplication, "status" | "documents_complete" | "reviewer_notes" | "metadata">>,
+  payload: Partial<
+    Pick<
+      UnionRegistrationApplication,
+      "status" | "documents_complete" | "reviewer_notes" | "metadata"
+    >
+  >,
 ): Promise<UnionRegistrationApplication> {
   const response = await apiClient.patch<UnionRegistrationApplication>(
     `/dashboards/union-admin/registration-applications/${applicationId}/`,
@@ -964,9 +1150,6 @@ export async function getUnionOfficialReadiness(
   );
   return response.data;
 }
-
-
-
 
 // UNION ADMIN MANAGEMENT API START
 
@@ -1021,12 +1204,7 @@ export interface UnionAdminCompetitionRecord {
 }
 
 export type UnionAdminClubMembershipStatus =
-  | "ACTIVE"
-  | "PROMOTED"
-  | "RELEGATED"
-  | "WITHDRAWN"
-  | "INVITED"
-  | "SUSPENDED";
+  "ACTIVE" | "PROMOTED" | "RELEGATED" | "WITHDRAWN" | "INVITED" | "SUSPENDED";
 
 export interface UnionAdminLeagueClubMembership {
   id: number;
@@ -1205,7 +1383,9 @@ export interface RescheduleUnionAdminFixtureResult {
 export async function getUnionAdminManagementLeagues(
   workspaceSlug: string,
 ): Promise<UnionAdminLeagueOption[]> {
-  const response = await apiClient.get<UnionAdminListResponse<UnionAdminLeagueOption>>(
+  const response = await apiClient.get<
+    UnionAdminListResponse<UnionAdminLeagueOption>
+  >(
     `/dashboards/union-admin/leagues/?workspace=${encodeURIComponent(workspaceSlug)}`,
   );
 
@@ -1215,7 +1395,9 @@ export async function getUnionAdminManagementLeagues(
 export async function getUnionAdminManagementSeasons(
   workspaceSlug: string,
 ): Promise<UnionAdminSeasonRecord[]> {
-  const response = await apiClient.get<UnionAdminListResponse<UnionAdminSeasonRecord>>(
+  const response = await apiClient.get<
+    UnionAdminListResponse<UnionAdminSeasonRecord>
+  >(
     `/dashboards/union-admin/seasons/?workspace=${encodeURIComponent(workspaceSlug)}`,
   );
 
@@ -1236,7 +1418,9 @@ export async function createUnionAdminSeason(
 export async function getUnionAdminManagementCompetitions(
   workspaceSlug: string,
 ): Promise<UnionAdminCompetitionRecord[]> {
-  const response = await apiClient.get<UnionAdminListResponse<UnionAdminCompetitionRecord>>(
+  const response = await apiClient.get<
+    UnionAdminListResponse<UnionAdminCompetitionRecord>
+  >(
     `/dashboards/union-admin/competitions/?workspace=${encodeURIComponent(workspaceSlug)}`,
   );
 
@@ -1257,7 +1441,9 @@ export async function createUnionAdminCompetition(
 export async function getUnionAdminLeagueClubMemberships(
   workspaceSlug: string,
 ): Promise<UnionAdminLeagueClubMembership[]> {
-  const response = await apiClient.get<UnionAdminListResponse<UnionAdminLeagueClubMembership>>(
+  const response = await apiClient.get<
+    UnionAdminListResponse<UnionAdminLeagueClubMembership>
+  >(
     `/dashboards/union-admin/league-clubs/?workspace=${encodeURIComponent(workspaceSlug)}`,
   );
 
@@ -1410,9 +1596,9 @@ export async function getUnionAdminClubs(
     params.set("q", query.trim());
   }
 
-  const response = await apiClient.get<UnionAdminListResponse<UnionAdminClubRecord>>(
-    `/dashboards/union-admin/clubs/?${params.toString()}`,
-  );
+  const response = await apiClient.get<
+    UnionAdminListResponse<UnionAdminClubRecord>
+  >(`/dashboards/union-admin/clubs/?${params.toString()}`);
 
   return response.data.results ?? [];
 }
@@ -1451,15 +1637,10 @@ export async function deleteUnionAdminClub(
 
 // UNION ADMIN CLUBS API END
 
-
-
 // UNION ADMIN REFEREES API START
 
 export type UnionAdminOfficialStatus =
-  | "AVAILABLE"
-  | "UNAVAILABLE"
-  | "SUSPENDED"
-  | "RETIRED";
+  "AVAILABLE" | "UNAVAILABLE" | "SUSPENDED" | "RETIRED";
 
 export interface UnionAdminOfficialRoleOption {
   value: string;
