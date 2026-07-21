@@ -21,6 +21,7 @@ import Navbar from '../../components/Navbar';
 import { useAuthStore } from '../../store/authStore';
 import { getToken } from '../../utils/tokenManager';
 import { LOGIN_ROUTE, type AuthFlowState } from '../../utils/authFlow';
+import { canAccessDashboardRoute } from '../../utils/dashboardAccess.js';
 import '../../styles/pages/landing.css';
 import './SponsorshipHub.css';
 
@@ -92,12 +93,11 @@ export default function SponsorshipHub() {
     accessToken || getToken(),
   );
 
-  const isSponsor = Boolean(
-    user?.is_sponsor ||
-      user?.sponsor_type,
-  );
+  const canReachSponsorDashboard =
+    isAuthenticated &&
+    canAccessDashboardRoute(user?.dashboard_access, '/sponsor/dashboard');
 
-  if (isAuthenticated && isSponsor) {
+  if (canReachSponsorDashboard) {
     return (
       <Navigate
         to="/sponsor/dashboard"

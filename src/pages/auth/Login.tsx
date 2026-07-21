@@ -1,4 +1,4 @@
-import { useState, type ChangeEvent, type FormEvent, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ChangeEvent, type FormEvent, type ReactNode } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { GoogleLogin, type CredentialResponse } from '@react-oauth/google';
 import PersonOutlinedIcon from '@mui/icons-material/PersonOutlined';
@@ -10,18 +10,24 @@ import EmojiEventsOutlinedIcon from '@mui/icons-material/EmojiEventsOutlined';
 import EventNoteOutlinedIcon from '@mui/icons-material/EventNoteOutlined';
 import { GlassCard, PageShell } from '../../components/site/LeagueUI.js';
 import { useAuth } from '../../hooks/useAuth.js';
+import { fetchCurrentUser } from '../../services/authService.js';
+import { useAuthStore } from '../../store/authStore.js';
 import {
     getSafeAuthRedirect,
     VERIFY_EMAIL_ROUTE,
     type AuthFlowState,
 } from '../../utils/authFlow.js';
 import BackButton from '../../components/BackButton.js';
+import RouteLoadingFallback from '../../components/RouteLoadingFallback.js';
 import {
     ACCESS_UNAVAILABLE_ROUTE,
     canAccessDashboardRoute,
     getDefaultDashboardRoute,
     validateDashboardAccess,
 } from '../../utils/dashboardAccess.js';
+import {
+    getDefaultDashboardRoute as getRoleDefaultDashboardRoute,
+} from '../../utils/roleRoutes.js';
 import type { AuthenticatedUser } from '../../types/dashboardAccess.js';
 
 import '../../styles/pages/auth/login.css';
@@ -110,6 +116,12 @@ function resolvePostLoginRoute(
     result: LoginResult,
     postLoginRedirect?: string | null,
 ) {
+    const hasDashboardAccessContract =
+        Boolean(result.user) &&
+        Object.prototype.hasOwnProperty.call(
+            result.user,
+            'dashboard_access',
+        );
     const dashboardAccess = validateDashboardAccess(
         result.user?.dashboard_access,
     );
@@ -121,8 +133,12 @@ function resolvePostLoginRoute(
         return postLoginRedirect;
     }
 
+    if (hasDashboardAccessContract) {
+        return getDefaultDashboardRoute(dashboardAccess) ?? ACCESS_UNAVAILABLE_ROUTE;
+    }
+
     return (
-        getDefaultDashboardRoute(dashboardAccess) ??
+        getRoleDefaultDashboardRoute(result.user) ??
         ACCESS_UNAVAILABLE_ROUTE
     );
 }
@@ -146,6 +162,58 @@ export default function Login() {
     const locationState = location.state as AuthFlowState | null;
     const locationMessage = locationState?.message ?? '';
     const postLoginRedirect = getSafeAuthRedirect(locationState?.postLoginRedirect);
+
+    const accessStatus = useAuthStore((state) => state.accessStatus);
+    const currentUser = useAuthStore((state) => state.user);
+    const setHydratedUser = useAuthStore((state) => state.setHydratedUser);
+    const hasRedirected = useRef(false);
+
+    // Someone can land here while already signed in — e.g. clicking a
+    // "Log in to your dashboard" link from a page like the Sponsorship Hub.
+    // Send them straight to their dashboard instead of making them submit
+    // the form again. accessStatus === 'ready' only means *some* valid
+    // entitlements are cached, not that they're current — e.g. this tab
+    // could have been hydrated before a sponsor application was approved —
+    // so refresh from the backend before deciding where to send them.
+    useEffect(() => {
+        if (accessStatus !== 'ready' || hasRedirected.current) return;
+
+        hasRedirected.current = true;
+        let isActive = true;
+
+        async function redirectToLatestDashboard() {
+            let dashboardAccess = currentUser?.dashboard_access;
+
+            try {
+                const { data } = await fetchCurrentUser();
+
+                if (!isActive) return;
+
+                setHydratedUser(data);
+                dashboardAccess = data?.dashboard_access;
+            } catch {
+                // Fall back to whatever entitlements are already cached.
+            }
+
+            const redirectRoute =
+                postLoginRedirect &&
+                canAccessDashboardRoute(dashboardAccess, postLoginRedirect)
+                    ? postLoginRedirect
+                    : getDefaultDashboardRoute(dashboardAccess) ?? ACCESS_UNAVAILABLE_ROUTE;
+
+            navigate(redirectRoute, { replace: true });
+        }
+
+        void redirectToLatestDashboard();
+
+        return () => {
+            isActive = false;
+        };
+    }, [accessStatus, currentUser, postLoginRedirect, navigate, setHydratedUser]);
+
+    if (accessStatus === 'loading' || accessStatus === 'ready') {
+        return <RouteLoadingFallback message="Restoring your session…" />;
+    }
 
     const clearError = (field: keyof LoginErrors) => {
         setErrors((current) => ({

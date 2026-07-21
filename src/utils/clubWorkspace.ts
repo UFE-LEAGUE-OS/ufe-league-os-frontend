@@ -90,7 +90,7 @@ export const CLUB_TAB_PERMISSIONS: Record<
   compliance: [],
   reports: ['club.reports.view'],
   communications: ['club.communications.manage'],
-  clubUsers: ['club.admin.manage'],
+  clubUsers: [],
   settings: ['club.settings.manage'],
 };
 
@@ -202,6 +202,10 @@ export function isClubTabPermitted(
   tab: ClubWorkspaceTab,
   permissions: readonly string[],
 ) {
+  if (tab === 'clubUsers') {
+    return true;
+  }
+
   const effectivePermissions = new Set(permissions);
 
   return CLUB_TAB_PERMISSIONS[tab].some((permission) =>
