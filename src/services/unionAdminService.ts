@@ -514,6 +514,199 @@ export async function getUnionOperationsDashboard(
 
 
 
+export interface UnionAuthoritativePlayerRegistration {
+  id: number;
+  workspace: number;
+  player: number;
+  union_player_number: string;
+  player_name: string;
+  club: number;
+  club_name: string;
+  team: number | null;
+  team_name: string | null;
+  season: number | null;
+  source_registration: number | null;
+  status: string;
+  registration_type: string;
+  effective_from: string;
+  effective_to: string | null;
+  approved_by: number | null;
+  approved_by_name: string | null;
+  approved_at: string | null;
+  decision_reason: string;
+  predecessor: number | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UnionPlayerRegistrationSubmission {
+  id: number;
+  registration_number: string;
+  full_name: string;
+  union_player_number: string | null;
+  club: number;
+  club_name: string;
+  team: number;
+  team_name: string;
+  season_record: number | null;
+  registration_type: string;
+  submission_status: string;
+  submission_revision: number;
+  submitted_at: string | null;
+  assigned_reviewer: number | null;
+  assigned_reviewer_name: string | null;
+  reviewed_at: string | null;
+  warning_count: number;
+  blocking_error_count: number;
+}
+
+export interface UnionPlayerEligibility {
+  id: number;
+  status: string;
+  player: number;
+  union_player_number: string;
+  player_name: string;
+  club: number;
+  club_name: string;
+  team: number | null;
+  team_name: string | null;
+  registration: number;
+  registration_type: string;
+  competition_identity: number;
+  competition_name: string;
+  competition_edition: number;
+  edition_name: string;
+  season: number;
+  season_name: string;
+  source_submission: number | null;
+  source_submission_status: string | null;
+  eligible_from: string | null;
+  eligible_until: string | null;
+  review_warning_count: number;
+  reviewed_by: number | null;
+  reviewed_by_name: string | null;
+  reviewed_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UnionPlayerTransfer {
+  id: number;
+  status: string;
+  transfer_type: string;
+  player: number;
+  union_player_number: string;
+  player_name: string;
+  source_registration: number;
+  source_club: number;
+  source_club_name: string;
+  destination_club: number;
+  destination_club_name: string;
+  destination_team: number | null;
+  destination_team_name: string | null;
+  effective_on: string;
+  loan_end_on: string | null;
+  source_club_response_status: string;
+  player_consent_status: string;
+  initiated_by: number | null;
+  initiated_by_name: string | null;
+  reviewed_by: number | null;
+  reviewed_by_name: string | null;
+  reviewed_at: string | null;
+  submission_revision: number;
+  submitted_at: string | null;
+  last_resubmitted_at: string | null;
+  activated_at: string | null;
+  returned_at: string | null;
+  completed_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UnionPlayerRecordsQuery {
+  search?: string;
+  status?: string;
+  transferType?: string;
+}
+
+function unionPlayerRecordsParams(
+  workspaceSlug: string,
+  query: UnionPlayerRecordsQuery = {},
+) {
+  const params = new URLSearchParams({ workspace: workspaceSlug });
+
+  if (query.search?.trim()) {
+    params.set("search", query.search.trim());
+  }
+  if (query.status && query.status !== "ALL") {
+    params.append("status", query.status);
+  }
+  if (query.transferType) {
+    params.set("transfer_type", query.transferType);
+  }
+
+  return params.toString();
+}
+
+export async function getUnionAuthoritativePlayerRegistrations(
+  workspaceSlug: string,
+  query: UnionPlayerRecordsQuery = {},
+): Promise<UnionAdminListResponse<UnionAuthoritativePlayerRegistration>> {
+  const response = await apiClient.get<
+    UnionAdminListResponse<UnionAuthoritativePlayerRegistration>
+  >(
+    `/dashboards/union-admin/player-registrations/?${unionPlayerRecordsParams(
+      workspaceSlug,
+      query,
+    )}`,
+  );
+  return response.data;
+}
+
+export async function getUnionPlayerRegistrationSubmissions(
+  workspaceSlug: string,
+  query: UnionPlayerRecordsQuery = {},
+): Promise<UnionAdminListResponse<UnionPlayerRegistrationSubmission>> {
+  const params = new URLSearchParams({ workspace: workspaceSlug });
+  if (query.search?.trim()) params.set("search", query.search.trim());
+  if (query.status && query.status !== "ALL") {
+    params.append("submission_status", query.status);
+  }
+  const response = await apiClient.get<
+    UnionAdminListResponse<UnionPlayerRegistrationSubmission>
+  >(
+    `/dashboards/union-admin/player-registration-submissions/?${params.toString()}`,
+  );
+  return response.data;
+}
+
+export async function getUnionPlayerEligibilities(
+  workspaceSlug: string,
+  query: UnionPlayerRecordsQuery = {},
+): Promise<UnionAdminListResponse<UnionPlayerEligibility>> {
+  const response = await apiClient.get<UnionAdminListResponse<UnionPlayerEligibility>>(
+    `/dashboards/union-admin/player-eligibilities/?${unionPlayerRecordsParams(
+      workspaceSlug,
+      query,
+    )}`,
+  );
+  return response.data;
+}
+
+export async function getUnionPlayerTransfers(
+  workspaceSlug: string,
+  query: UnionPlayerRecordsQuery = {},
+): Promise<UnionAdminListResponse<UnionPlayerTransfer>> {
+  const response = await apiClient.get<UnionAdminListResponse<UnionPlayerTransfer>>(
+    `/dashboards/union-admin/player-transfers/?${unionPlayerRecordsParams(
+      workspaceSlug,
+      query,
+    )}`,
+  );
+  return response.data;
+}
+
+
 export type UnionNationalTeamStatus = "ACTIVE" | "CAMP" | "SELECTION" | "INACTIVE";
 export type UnionNationalTeamMemberType = "PLAYER" | "STAFF";
 export type UnionNationalTeamMemberStatus = "ACTIVE" | "INJURED" | "UNAVAILABLE" | "RELEASED";

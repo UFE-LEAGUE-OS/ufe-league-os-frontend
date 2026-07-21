@@ -2035,7 +2035,12 @@ export default function UnionAdminDashboard() {
                     workspaceName={activeWorkspace.name}
                 />
             );
-            case "playersTransfers": return <UnionPlayersTransfersScreen />;
+            case "playersTransfers": return (
+                <UnionPlayersTransfersScreen
+                    workspaceSlug={activeWorkspace.slug}
+                    workspaceName={activeWorkspace.name}
+                />
+            );
             case "matchOfficials": return (
                 <UnionMatchOfficialsPanel
                     workspaceSlug={activeWorkspace.slug}
