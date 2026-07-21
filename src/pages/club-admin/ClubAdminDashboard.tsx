@@ -22,6 +22,7 @@ import {
   RefreshCw,
   ScanLine,
   Search,
+  Send,
   Settings as SettingsIcon,
   ShieldCheck,
   Tag,
@@ -120,6 +121,8 @@ import MediaAssetLibrary from "./MediaAssetLibrary";
 import PublicClubPagePreview from "./PublicClubPagePreview";
 import UserManagement from "./UserManagement";
 import VenueManagement from "./VenueManagement";
+import AnnouncementsCompose from "./AnnouncementsCompose";
+import AnnouncementsPublish from "./AnnouncementsPublish";
 
 type TabKey =
   | "overview"
@@ -158,6 +161,9 @@ type TabKey =
   | "complianceChecklist"
   | "reports"
   | "communications"
+  | "announcements"
+  | "announcementsCompose"
+  | "announcementsPublish"
   | "clubUsers"
   | "settings";
 
@@ -505,6 +511,29 @@ const navItems: AdminWorkspaceNavGroup<TabKey>[] = [
             requiredClubPermissions: [],
             clubWorkspaceFamily: "CLUB_ADMIN",
           },
+          {
+            key: "announcements",
+            label: "Announcements",
+            icon: Megaphone,
+            requiredClubPermissions: [],
+            clubWorkspaceFamily: "CLUB_ADMIN",
+            children: [
+              {
+                key: "announcementsCompose",
+                label: "Compose",
+                icon: Plus,
+                requiredClubPermissions: [],
+                clubWorkspaceFamily: "CLUB_ADMIN",
+              },
+              {
+                key: "announcementsPublish",
+                label: "Publish",
+                icon: Send,
+                requiredClubPermissions: [],
+                clubWorkspaceFamily: "CLUB_ADMIN",
+              },
+            ],
+          },
         ],
       },
     ],
@@ -576,6 +605,9 @@ const TAB_TO_PATH: Record<TabKey, string> = {
   complianceChecklist: `${CLUB_ADMIN_BASE_PATH}/compliance-checklist`,
   reports: `${CLUB_ADMIN_BASE_PATH}/reports`,
   communications: `${CLUB_ADMIN_BASE_PATH}/communications`,
+  announcements: `${CLUB_ADMIN_BASE_PATH}/announcements`,
+  announcementsCompose: `${CLUB_ADMIN_BASE_PATH}/announcements/compose`,
+  announcementsPublish: `${CLUB_ADMIN_BASE_PATH}/announcements/publish`,
   clubUsers: `${CLUB_ADMIN_BASE_PATH}/users`,
   settings: `${CLUB_ADMIN_BASE_PATH}/settings`,
 };
@@ -650,6 +682,9 @@ const TAB_TO_MODULE: Record<TabKey, ClubWorkspaceTab> = {
   complianceChecklist: "compliance",
   reports: "reports",
   communications: "communications",
+  announcements: "communications",
+  announcementsCompose: "communications",
+  announcementsPublish: "communications",
   clubUsers: "clubUsers",
   settings: "settings",
 };
@@ -690,6 +725,9 @@ const TAB_PERMISSION_OVERRIDES: Partial<
   ticketingEntryLogs: ["club.ticketing.validate"],
   compliance: [],
   communications: [],
+  announcements: [],
+  announcementsCompose: [],
+  announcementsPublish: [],
   clubUsers: [],
 };
 
@@ -3797,6 +3835,15 @@ export default function ClubAdminDashboard() {
       "Communications",
       "Messages and alerts for this club.",
     );
+  } else if (activeTab === "announcements") {
+    content = renderPlaceholder(
+      "Announcements",
+      "Compose and publish announcements for your club.",
+    );
+  } else if (activeTab === "announcementsCompose") {
+    content = <AnnouncementsCompose />;
+  } else if (activeTab === "announcementsPublish") {
+    content = <AnnouncementsPublish />;
   } else if (activeTab === "clubUsers") {
     content = data ? (
       <UserManagement clubId={data.club.id} />
@@ -3867,7 +3914,7 @@ export default function ClubAdminDashboard() {
       }
       eyebrow="Club administration"
       title={data?.club.name ?? "Club Operations"}
-      description="Review your club’s competitions, fixtures, ticketing activity and administrative users using live League OS records."
+      description="Review your club's competitions, fixtures, ticketing activity and administrative users using live League OS records."
       navItems={navItems}
       activeTab={activeTab}
       onTabChange={handleTabChange}
