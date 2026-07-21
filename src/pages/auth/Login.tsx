@@ -116,6 +116,12 @@ function resolvePostLoginRoute(
     result: LoginResult,
     postLoginRedirect?: string | null,
 ) {
+    const hasDashboardAccessContract =
+        Boolean(result.user) &&
+        Object.prototype.hasOwnProperty.call(
+            result.user,
+            'dashboard_access',
+        );
     const dashboardAccess = validateDashboardAccess(
         result.user?.dashboard_access,
     );
@@ -127,8 +133,11 @@ function resolvePostLoginRoute(
         return postLoginRedirect;
     }
 
+    if (hasDashboardAccessContract) {
+        return getDefaultDashboardRoute(dashboardAccess) ?? ACCESS_UNAVAILABLE_ROUTE;
+    }
+
     return (
-        getDefaultDashboardRoute(dashboardAccess) ??
         getRoleDefaultDashboardRoute(result.user) ??
         ACCESS_UNAVAILABLE_ROUTE
     );

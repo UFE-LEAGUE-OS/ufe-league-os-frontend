@@ -68,7 +68,6 @@ function getResetErrorMessage(error: unknown) {
 function PasswordStatusDisplay({
   status,
   message,
-  score,
 }: {
   status: string;
   message: string;
@@ -81,16 +80,6 @@ function PasswordStatusDisplay({
   return (
     <div className={`password-status ${statusClass}`}>
       <span className="password-status-text">{message}</span>
-      {status === 'medium' || status === 'strong' ? (
-        <div className="password-strength-bar" aria-hidden="true">
-          {[0, 1, 2, 3].map((i) => (
-            <span
-              key={i}
-              className={`password-strength-bar-segment${i <= score ? ' active' : ''}`}
-            />
-          ))}
-        </div>
-      ) : null}
     </div>
   );
 }

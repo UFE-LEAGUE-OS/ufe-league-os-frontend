@@ -109,7 +109,8 @@ import {
   type MatchSalesSummary,
   type TicketTypeApi,
   type TicketTypeStatus,
-} from "../../services/clubTicketingService";
+} 
+from "../../services/clubTicketingService";
 import "./ClubMembershipManagement.css";
 import "../../styles/pages/ClubAdmin.css";
 import ComplianceDocuments from "./ComplianceDocuments";
@@ -1267,6 +1268,7 @@ export default function ClubAdminDashboard() {
 
   function goToPricingForMatch(matchId: number) {
     setSelectedMatchId(matchId);
+    handleTabChange("ticketingPricing");
     handleTabChange("ticketingPricing");
   }
 
