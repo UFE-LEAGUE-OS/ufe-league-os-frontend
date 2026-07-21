@@ -8,6 +8,7 @@ import {
   MemoryRouter,
   Route,
   Routes,
+  useLocation,
 } from "react-router-dom";
 import {
   beforeEach,
@@ -158,6 +159,16 @@ function setAccess(contract: DashboardAccess) {
 function renderDashboard(
   initialPath = "/dashboard/club-admin",
 ) {
+  function LocationProbe() {
+    const location = useLocation();
+
+    return (
+      <output aria-label="current route">
+        {location.pathname}
+      </output>
+    );
+  }
+
   return render(
     <MemoryRouter
       initialEntries={[initialPath]}
@@ -169,11 +180,21 @@ function renderDashboard(
       <Routes>
         <Route
           path="/dashboard/club-admin/*"
-          element={<ClubAdminDashboard />}
+          element={
+            <>
+              <ClubAdminDashboard />
+              <LocationProbe />
+            </>
+          }
         />
         <Route
           path="/dashboard/ticketing-officer/*"
-          element={<ClubAdminDashboard />}
+          element={
+            <>
+              <ClubAdminDashboard />
+              <LocationProbe />
+            </>
+          }
         />
       </Routes>
     </MemoryRouter>,
@@ -195,6 +216,27 @@ beforeEach(() => {
 });
 
 describe("shared Club workspace", () => {
+  it("keeps the bare Club Admin route on the Dashboard overview", async () => {
+    const club = entitlement(
+      "club-7",
+      7,
+      "TREASURER",
+      ["club.finance.view"],
+    );
+    setAccess(access([club]));
+
+    renderDashboard();
+
+    expect(
+      await screen.findByRole("heading", {
+        name: "League memberships",
+      }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByLabelText("current route"),
+    ).toHaveTextContent("/dashboard/club-admin");
+  });
+
   it("automatically loads the one valid Club entitlement", async () => {
     const club = entitlement(
       "club-7",

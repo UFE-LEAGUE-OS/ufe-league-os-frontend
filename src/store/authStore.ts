@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import {
+  type DashboardAccess,
   type AuthenticatedUser,
   isAuthenticatedUser,
 } from '../types/dashboardAccess.js';
@@ -14,6 +15,83 @@ import {
   setStoredUser,
   setToken,
 } from '../utils/tokenManager.js';
+
+const CLUB_ADMIN_PERMISSIONS = [
+  'dashboard.club_admin',
+  'dashboard.me',
+  'club.profile.view',
+  'club.profile.edit',
+  'club.squad.manage',
+  'club.members.manage',
+  'club.ticketing.manage',
+  'club.ticketing.validate',
+  'club.events.manage',
+  'club.matches.manage',
+  'club.reports.view',
+  'club.finance.view',
+  'club.finance.manage',
+  'club.admin.manage',
+  'club.settings.manage',
+  'club.sponsorship.view',
+  'club.sponsorship.manage',
+  'club.training.manage',
+  'club.communications.manage',
+];
+
+const CLUB_WORKSPACE_ROLES = new Set([
+  'CLUB_ADMIN',
+  'CHAIRMAN',
+  'TREASURER',
+  'TEAM_MANAGER',
+  'CUSTOM',
+  'CUSTOM_ADMIN',
+]);
+
+function normalizeRole(value: unknown) {
+  return typeof value === 'string'
+    ? value.trim().toUpperCase().replace(/[\s-]+/g, '_')
+    : '';
+}
+
+function getLegacyClubId(user: AuthenticatedUser) {
+  const club = user.club;
+
+  if (
+    club &&
+    typeof club === 'object' &&
+    'id' in club &&
+    (typeof club.id === 'number' || typeof club.id === 'string') &&
+    String(club.id).trim()
+  ) {
+    return club.id;
+  }
+
+  return 1;
+}
+
+function buildLegacyDashboardAccess(user: AuthenticatedUser): DashboardAccess | null {
+  const role = normalizeRole(user.role);
+
+  if (!CLUB_WORKSPACE_ROLES.has(role)) {
+    return null;
+  }
+
+  return {
+    version: 1,
+    default_entitlement_id: 'legacy-club-admin',
+    entitlements: [
+      {
+        id: 'legacy-club-admin',
+        dashboard: 'CLUB_ADMIN',
+        route: '/dashboard/club-admin',
+        scope_type: 'CLUB',
+        scope_id: getLegacyClubId(user),
+        workspace_role: role || 'CLUB_ADMIN',
+        permissions: CLUB_ADMIN_PERMISSIONS,
+      },
+    ],
+  };
+}
 
 export type AuthUser = AuthenticatedUser | null;
 export type AccessStatus =
@@ -47,7 +125,9 @@ function sanitizeUser(value: unknown) {
     };
   }
 
-  const dashboardAccess = validateDashboardAccess(value.dashboard_access);
+  const dashboardAccess =
+    validateDashboardAccess(value.dashboard_access) ??
+    buildLegacyDashboardAccess(value);
 
   return {
     user: {

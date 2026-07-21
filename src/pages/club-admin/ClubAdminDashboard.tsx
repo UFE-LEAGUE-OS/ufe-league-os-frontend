@@ -109,7 +109,8 @@ import {
   type MatchSalesSummary,
   type TicketTypeApi,
   type TicketTypeStatus,
-} from "../../services/clubTicketingService";
+} 
+from "../../services/clubTicketingService";
 import "./ClubMembershipManagement.css";
 import "../../styles/pages/ClubAdmin.css";
 import ComplianceDocuments from "./ComplianceDocuments";
@@ -635,6 +636,10 @@ function isWorkspaceTabPermitted(
   const tabPermissions = TAB_PERMISSION_OVERRIDES[tab];
 
   if (tabPermissions) {
+    if (tabPermissions.length === 0) {
+      return true;
+    }
+
     return tabPermissions.some((permission) =>
       workspace.permissions.includes(permission),
     );
@@ -1263,6 +1268,7 @@ export default function ClubAdminDashboard() {
 
   function goToPricingForMatch(matchId: number) {
     setSelectedMatchId(matchId);
+    handleTabChange("ticketingPricing");
     handleTabChange("ticketingPricing");
   }
 

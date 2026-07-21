@@ -43,7 +43,7 @@ import AdminWorkspaceLayout, {
   WorkspaceStatGrid,
   adminWorkspaceStyles as styles,
   formatWorkspaceDate,
-} from "../../components/AdminWorkspaceLayout/AdminWorkspaceLayout";
+} from "../../../components/AdminWorkspaceLayout/AdminWorkspaceLayout";
 import {
   getApiErrorMessage,
   getTreasurerBudget,
@@ -53,9 +53,9 @@ import {
   type ClubBudget,
   type ClubBudgetCategoryAllocation,
   type TreasurerWorkspaceData,
-} from "../../services/adminWorkspaceService";
-import { BudgetStatusBadge } from "../../components/BudgetStatusBadge";
-import { formatCurrency } from "../../utils/budgetStatusMeta";
+} from "../../../services/adminWorkspaceService";
+import { BudgetStatusBadge } from "../../../components/BudgetStatusBadge";
+import { formatCurrency } from "../../../utils/budgetStatusMeta";
 
 type TabKey =
   | "overview"

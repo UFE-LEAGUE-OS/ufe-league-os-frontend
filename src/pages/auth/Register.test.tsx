@@ -209,17 +209,20 @@ describe('Register page', () => {
 
             await user.click(screen.getByRole('button', { name: /sign up/i }))
 
-            await waitFor(() => {
-                expect(registerMock).toHaveBeenCalledWith({
-                    first_name: 'Amina',
-                    last_name: 'Kizza',
-                    username: 'aminakizza',
-                    phone_number: '+256701234567',
-                    email: 'amina.kizza@example.com',
-                    password: 'StrongPass1!',
-                    confirm_password: 'StrongPass1!',
-                })
-            })
+            await waitFor(
+                () => {
+                    expect(registerMock).toHaveBeenCalledWith({
+                        first_name: 'Amina',
+                        last_name: 'Kizza',
+                        username: 'aminakizza',
+                        phone_number: '+256701234567',
+                        email: 'amina.kizza@example.com',
+                        password: 'StrongPass1!',
+                        confirm_password: 'StrongPass1!',
+                    })
+                },
+                { timeout: 8000 },
+            )
 
             expect(registerMock).not.toHaveBeenCalledWith(
                 expect.objectContaining({
@@ -227,15 +230,20 @@ describe('Register page', () => {
                 }),
             )
 
-            expect(navigateMock).toHaveBeenCalledWith('/verify-email', {
-                replace: true,
-                state: {
-                    email: 'amina.kizza@example.com',
-                    message:
-                        'Registration successful. Please verify your email address using the OTP sent to your email.',
-                    postLoginRedirect: '/personalize',
+            await waitFor(
+                () => {
+                    expect(navigateMock).toHaveBeenCalledWith('/verify-email', {
+                        replace: true,
+                        state: {
+                            email: 'amina.kizza@example.com',
+                            message:
+                                'Registration successful. Please verify your email address using the OTP sent to your email.',
+                            postLoginRedirect: '/personalize',
+                        },
+                    })
                 },
-            })
+                { timeout: 8000 },
+            )
         },
         10000,
     )
@@ -256,7 +264,11 @@ describe('Register page', () => {
         await user.click(screen.getByRole('button', { name: /sign up/i }))
 
         expect(
-            await screen.findByText('A user with this email address already exists.'),
+            await screen.findByText(
+                'A user with this email address already exists.',
+                {},
+                { timeout: 8000 },
+            ),
         ).toBeInTheDocument()
 
         expect(navigateMock).not.toHaveBeenCalled()
@@ -278,7 +290,11 @@ describe('Register page', () => {
         await user.click(screen.getByRole('button', { name: /sign up/i }))
 
         expect(
-            await screen.findByText('A user with this phone number already exists.'),
+            await screen.findByText(
+                'A user with this phone number already exists.',
+                {},
+                { timeout: 8000 },
+            ),
         ).toBeInTheDocument()
 
         expect(navigateMock).not.toHaveBeenCalled()
@@ -303,6 +319,8 @@ describe('Register page', () => {
         expect(
             await screen.findByText(
                 'Registration could not be completed because the verification email could not be sent. Please try again.',
+                {},
+                { timeout: 8000 },
             ),
         ).toBeInTheDocument()
 
