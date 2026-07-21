@@ -31,12 +31,12 @@ import AdminWorkspaceLayout, {
   WorkspacePanel,
   adminWorkspaceStyles as styles,
   formatWorkspaceDate,
-} from "../../components/AdminWorkspaceLayout/AdminWorkspaceLayout";
+} from "../../../components/AdminWorkspaceLayout/AdminWorkspaceLayout";
 import {
   getApiErrorMessage,
   getTeamManagerWorkspace,
   type TeamManagerWorkspaceData,
-} from "../../services/adminWorkspaceService";
+} from "../../../services/adminWorkspaceService";
 
 type TabKey =
   | "overview"

@@ -741,6 +741,8 @@ export default function AppRoutes() {
 
                     
 
+                    
+
                     {/*Sponsorship Management*/}
                     <Route path="frameworks" element={<SponsorFramework />} />
                     <Route path="visibility" element={<CampaignVisibility />} />
@@ -771,3 +773,4 @@ export default function AppRoutes() {
         </Router>
     );
 }
+

@@ -3,8 +3,6 @@ import { Building2, Home, LogOut, Menu, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import type { UnionWorkspaceRole } from "../../services/unionAdminService";
-import { useAuthStore } from "../../store/authStore";
-import { getEntitlementsForDashboard } from "../../utils/dashboardAccess";
 import styles from "./MobileUnionNavigation.module.css";
 
 export interface MobileUnionNavItem {
@@ -35,7 +33,7 @@ function getRolePreferredKeys(workspaceRole: UnionWorkspaceRole) {
         case "TICKETING_OFFICER":
             return ["overview", "ticketing", "entrylogs", "scanner"];
         case "MATCH_OFFICIAL":
-            return ["overview", "appointments", "matchreports", "availability"];
+            return ["overview", "matchofficials", "appointments", "profile"];
         case "REGISTRAR":
             return ["overview", "registrations", "clubs", "competitions"];
         case "FINANCE_OFFICER":
@@ -43,9 +41,9 @@ function getRolePreferredKeys(workspaceRole: UnionWorkspaceRole) {
         case "COMMUNICATIONS_OFFICER":
             return ["overview", "comms", "clubs", "competitions"];
         case "COMPETITIONS_MANAGER":
-            return ["overview", "competitions", "clubs", "appointments"];
+            return ["overview", "competitions", "clubs", "matchofficials"];
         case "REFEREE_MANAGER":
-            return ["overview", "referees", "appointments", "matchreports"];
+            return ["overview", "matchofficials", "competitions", "clubs"];
         default:
             return ["overview", "competitions", "clubs", "finance"];
     }
@@ -58,7 +56,6 @@ interface MobileUnionNavigationProps {
     items: MobileUnionNavItem[];
     workspaceName: string;
     workspaceRole: UnionWorkspaceRole;
-    fanDashboardRoute?: string;
     onTabChange: (key: string) => void;
     onLogout: () => void;
 }
@@ -72,13 +69,6 @@ function MobileUnionNavigation({
     onLogout,
 }: MobileUnionNavigationProps) {
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-    const user = useAuthStore((state) => state.user);
-    const explicitFanRoute = getEntitlementsForDashboard(
-        user?.dashboard_access,
-        "FAN",
-    )[0]?.route;
-    const effectiveFanDashboardRoute = explicitFanRoute ?? undefined;
-
     const visibleItems = useMemo(() => {
         const preferredKeys = getRolePreferredKeys(workspaceRole);
         const selectedItems: MobileUnionNavItem[] = [];
@@ -179,12 +169,17 @@ function MobileUnionNavigation({
                         <h2>Quick links</h2>
 
                         <div className={styles.drawerLinks}>
-                            {effectiveFanDashboardRoute ? (
-                                <Link className={styles.drawerLink} to={effectiveFanDashboardRoute}>
-                                    <Home size={19} strokeWidth={2.25} aria-hidden="true" />
-                                    <span>Fan Dashboard</span>
-                                </Link>
-                            ) : null}
+                            <Link
+                                className={styles.drawerLink}
+                                to="/"
+                            >
+                                <Home
+                                    size={19}
+                                    strokeWidth={2.25}
+                                    aria-hidden="true"
+                                />
+                                <span>League OS Home</span>
+                            </Link>
                             <Link className={styles.drawerLink} to="/unions">
                                 <Building2 size={19} strokeWidth={2.25} aria-hidden="true" />
                                 <span>Public Unions Page</span>

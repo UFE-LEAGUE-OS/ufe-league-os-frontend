@@ -185,10 +185,10 @@ describe('Club workspace permission defaults', () => {
     expect(getFirstPermittedClubTab(permissions)).toBe(expected);
   });
 
-  it('returns null when no Club module is permitted', () => {
+  it('falls back to user management when no other Club module is permitted', () => {
     expect(
       getFirstPermittedClubTab(['dashboard.club_admin']),
-    ).toBeNull();
-    expect(getFirstPermittedClubTab(['dashboard.me'])).toBeNull();
+    ).toBe('clubUsers');
+    expect(getFirstPermittedClubTab(['dashboard.me'])).toBe('clubUsers');
   });
 });

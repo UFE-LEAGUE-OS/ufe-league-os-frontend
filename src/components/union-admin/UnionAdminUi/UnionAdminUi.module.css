@@ -1,0 +1,194 @@
+.header,
+.header > div,
+.actions,
+.recordList,
+.recordList button,
+.empty,
+.error,
+.loading {
+  display: flex;
+}
+
+.header {
+  justify-content: space-between;
+  gap: 24px;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.header > div:first-child,
+.empty,
+.error,
+.loading {
+  flex-direction: column;
+}
+
+.header span {
+  color: #f5a623;
+  font: 600 0.75rem "Space Grotesk", sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.header h2 {
+  margin: 5px 0;
+  color: #fff;
+  font-size: 1.45rem;
+}
+
+.header p {
+  margin: 0;
+  color: #aeb8cc;
+  max-width: 760px;
+  line-height: 1.55;
+}
+
+.actions {
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  border-bottom: 1px solid #263450;
+  margin-bottom: 20px;
+}
+
+.tabs button {
+  border: 0;
+  border-bottom: 3px solid transparent;
+  background: transparent;
+  color: #aeb8cc;
+  padding: 11px 14px;
+  white-space: nowrap;
+  font-weight: 650;
+}
+
+.tabs button[aria-selected="true"] {
+  color: #fff;
+  border-color: #8455f5;
+  background: #19243a;
+}
+
+.badge {
+  align-self: flex-start;
+  border: 1px solid #46536d;
+  border-radius: 4px;
+  padding: 4px 7px;
+  color: #e3e8f3;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.recordList {
+  flex-direction: column;
+  gap: 8px;
+}
+
+.recordList button {
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  text-align: left;
+  gap: 16px;
+  padding: 14px;
+  background: #111c30;
+  border: 1px solid #263450;
+  border-radius: 5px;
+  color: #fff;
+}
+
+.recordList button:not(:disabled) {
+  cursor: pointer;
+}
+
+.recordList button:hover:not(:disabled),
+.selectedRecord {
+  border-color: #8455f5 !important;
+  background: #182440 !important;
+}
+
+.recordList button > span:first-child {
+  display: grid;
+  gap: 3px;
+}
+
+.recordList small {
+  color: #9daac1;
+}
+
+.empty,
+.error,
+.loading {
+  align-items: center;
+  text-align: center;
+  padding: 42px 20px;
+  border: 1px dashed #39465f;
+  background: #101a2d;
+  color: #dbe2ef;
+}
+
+.empty p,
+.error p,
+.loading p {
+  margin: 7px 0 0;
+  color: #9daac1;
+}
+
+.error {
+  border-style: solid;
+  border-color: #7d3440;
+}
+
+.loading {
+  flex-direction: row;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.loading span {
+  height: 8px;
+  width: 48px;
+  background: #263450;
+}
+
+.loading p {
+  width: 100%;
+}
+
+.demoNotice {
+  padding: 10px 12px;
+  border-left: 3px solid #f5a623;
+  background: #211d2a;
+  color: #f7d59a;
+}
+
+.actions button {
+  border: 1px solid #8455f5;
+  background: #7244df;
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 3px;
+  font-weight: 700;
+}
+
+@media (max-width: 700px) {
+  .header {
+    flex-direction: column;
+  }
+
+  .actions {
+    width: 100%;
+  }
+
+  .recordList button {
+    align-items: flex-start;
+  }
+
+  .tabs button {
+    padding-inline: 10px;
+  }
+}

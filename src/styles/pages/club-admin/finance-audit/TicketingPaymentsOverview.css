@@ -1,0 +1,86 @@
+/* TicketingPaymentsOverview reuses the .mpo-* classes from
+   MembershipPaymentsOverview.css. Import both stylesheets, or copy
+   this file's rules into that one under a shared name — either works,
+   since none of the class names below collide with the originals
+   except where explicitly overridden (the 6-column stat grid). */
+
+.mpo-stat-grid-6 {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+@media (max-width: 1300px) {
+  .mpo-stat-grid-6 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .mpo-stat-grid-6 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Small inline select used in a panel's `actions` slot (e.g. the
+   "Last 30 Days" trend-period toggle). */
+.mpo-inline-select {
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border, #232838);
+  background: var(--card, #12141c);
+  color: var(--text, #f5f6fa);
+  font-size: 12px;
+}
+
+/* "Revenue by Match" bar list */
+.mpo-match-revenue-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.mpo-match-revenue-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mpo-match-revenue-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.mpo-match-revenue-label {
+  font-size: 12px;
+  color: var(--text, #f5f6fa);
+  font-weight: 600;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mpo-match-revenue-amount {
+  font-size: 12px;
+  color: var(--muted, #8b93a7);
+  flex-shrink: 0;
+}
+
+.mpo-match-revenue-bar-track {
+  width: 100%;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+
+.mpo-match-revenue-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--purple, #7c5cff), #5b8cff);
+  transition: width 200ms ease;
+}

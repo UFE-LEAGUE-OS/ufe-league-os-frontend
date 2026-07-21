@@ -1,0 +1,313 @@
+.screen {
+    background: rgba(12, 21, 39, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 18px;
+    padding: 24px;
+    box-shadow:
+        0 18px 38px rgba(0, 0, 0, 0.24),
+        inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    color: #e8edf6;
+    backdrop-filter: blur(18px);
+}
+
+.toolbar,
+.actionRow,
+.inlineActionGroup {
+    display: flex;
+    gap: 10px;
+    align-items: end;
+    flex-wrap: wrap;
+    margin: 0 0 18px;
+}
+
+.inlineActionGroup {
+    margin: 0;
+}
+
+.toolbar label,
+.form label,
+.formCard label {
+    display: grid;
+    gap: 6px;
+    color: #b9c3d5;
+    font-size: 0.8rem;
+    font-weight: 650;
+}
+
+.toolbar input,
+.toolbar select,
+.form input,
+.form select,
+.form textarea,
+.formCard input,
+.formCard select,
+.formCard textarea {
+    background: rgba(9, 17, 31, 0.88);
+    border: 1px solid rgba(84, 98, 123, 0.8);
+    color: #ffffff;
+    padding: 10px 12px;
+    border-radius: 10px;
+}
+
+.toolbar input,
+.formCard input,
+.formCard select {
+    min-height: 44px;
+}
+
+.toolbar input {
+    min-width: 260px;
+}
+
+.screen button {
+    border: 1px solid rgba(133, 85, 245, 0.95);
+    background: linear-gradient(135deg, #8455f5, #6e3fe0);
+    color: #fff;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.subtleButton {
+    background: rgba(255, 255, 255, 0.03) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    color: #ffffff !important;
+}
+
+.screen button:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.workflowNotice {
+    margin: 0 0 18px;
+    padding: 12px 14px;
+    border-left: 4px solid #ff9b4c;
+    border-radius: 10px;
+    background: rgba(255, 155, 76, 0.08);
+    color: #ffd4b1;
+    font-size: 0.95rem;
+}
+
+.heroSummaryGrid,
+.miniStatGrid {
+    display: grid;
+    gap: 12px;
+}
+
+.heroSummaryGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin: 0 0 18px;
+}
+
+.heroSummaryGrid article,
+.miniStatGrid article,
+.detailGrid article,
+.detailGrid aside,
+.masterDetail > article,
+.cardGrid article,
+.timeline article,
+.publicPreview,
+.formCard,
+.supportCard {
+    background: rgba(17, 28, 48, 0.84);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 18px;
+    border-radius: 14px;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+.heroSummaryGrid span,
+.miniStatGrid span {
+    display: block;
+    color: #9eb0ca;
+    font-size: 0.76rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.heroSummaryGrid strong,
+.miniStatGrid strong {
+    display: block;
+    margin: 8px 0 6px;
+    color: #ffffff;
+    font-size: 1.35rem;
+    font-weight: 800;
+}
+
+.heroSummaryGrid small,
+.miniStatGrid small,
+.mutedText {
+    color: #9daac1;
+    line-height: 1.5;
+}
+
+.workflowGrid,
+.detailGrid,
+.masterDetail {
+    display: grid;
+    grid-template-columns: minmax(0, 1.45fr) minmax(280px, 0.85fr);
+    gap: 16px;
+}
+
+.fieldGrid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    margin-bottom: 14px;
+}
+
+.form,
+.formCard {
+    display: grid;
+    gap: 14px;
+}
+
+.formCard h3,
+.detailGrid h3,
+.masterDetail h3,
+.cardGrid h3,
+.timeline h3,
+.supportCard h3 {
+    margin: 6px 0;
+    color: #fff;
+    font-family: "League Spartan", Inter, sans-serif;
+    font-size: 1.7rem;
+    font-style: italic;
+    line-height: 0.98;
+    letter-spacing: -0.03em;
+    font-weight: 800;
+}
+
+.linkGroup {
+    display: grid;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.helperList {
+    display: grid;
+    gap: 10px;
+    padding-left: 18px;
+    color: #c8d3e8;
+    line-height: 1.55;
+}
+
+.screen dl {
+    display: grid;
+    grid-template-columns: minmax(120px, 0.45fr) 1fr;
+    gap: 8px 12px;
+}
+
+.screen dt {
+    color: #8f9db5;
+}
+
+.screen dd {
+    margin: 0;
+}
+
+.cardGrid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.timeline {
+    display: grid;
+    gap: 12px;
+}
+
+.form textarea,
+.formCard textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.previewWarning {
+    border-left: 3px solid #f5a623;
+    padding: 10px;
+    background: #211d2a;
+    color: #f5d39a;
+    border-radius: 10px;
+}
+
+.publicPreview img:first-child {
+    width: 100%;
+    height: 130px;
+    object-fit: cover;
+    margin-bottom: 12px;
+    border-radius: 10px;
+}
+
+.publicPreview img:not(:first-child) {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+.logoFallback {
+    width: 80px;
+    height: 80px;
+    display: grid;
+    place-items: center;
+    background: #7244df;
+    font-size: 1.3rem;
+    font-weight: 800;
+    border-radius: 12px;
+}
+
+.publicPreview small {
+    color: #9daac1;
+}
+
+.cardGrid label {
+    display: flex;
+    gap: 8px;
+    margin: 12px 0;
+}
+
+@media (max-width: 1100px) {
+    .cardGrid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .workflowGrid,
+    .detailGrid,
+    .masterDetail,
+    .heroSummaryGrid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 700px) {
+    .screen {
+        padding: 16px;
+        border-radius: 14px;
+    }
+
+    .cardGrid,
+    .fieldGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .toolbar > *,
+    .inlineActionGroup > * {
+        width: 100%;
+    }
+
+    .toolbar input {
+        min-width: 0;
+        width: 100%;
+    }
+
+    .screen dl {
+        grid-template-columns: 1fr;
+    }
+
+    .screen dt {
+        margin-top: 6px;
+    }
+}

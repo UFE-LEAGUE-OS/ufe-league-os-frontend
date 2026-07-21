@@ -1,0 +1,53 @@
+.toolbar {
+    display: flex;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.toolbar label {
+    display: grid;
+    gap: 7px;
+    color: rgba(255, 255, 255, 0.58);
+    font-size: 0.7rem;
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.toolbar input,
+.toolbar select {
+    min-height: 42px;
+    padding: 0 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.13);
+    color: #ffffff;
+    background: rgba(2, 6, 23, 0.72);
+    font: inherit;
+    outline: none;
+}
+
+.toolbar input {
+    min-width: 280px;
+}
+
+.toolbar input:focus,
+.toolbar select:focus {
+    border-color: rgba(123, 63, 242, 0.9);
+    box-shadow: 0 0 0 3px rgba(123, 63, 242, 0.12);
+}
+
+.toolbar select option {
+    color: #111827;
+}
+
+@media (max-width: 650px) {
+    .toolbar,
+    .toolbar label,
+    .toolbar input,
+    .toolbar select {
+        width: 100%;
+        min-width: 0;
+    }
+}

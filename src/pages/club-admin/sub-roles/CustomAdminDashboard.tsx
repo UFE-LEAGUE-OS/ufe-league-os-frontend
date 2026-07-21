@@ -30,13 +30,13 @@ import AdminWorkspaceLayout, {
   WorkspaceStatGrid,
   adminWorkspaceStyles as styles,
   formatWorkspaceDate,
-} from "../../components/AdminWorkspaceLayout/AdminWorkspaceLayout";
+} from "../../../components/AdminWorkspaceLayout/AdminWorkspaceLayout";
 import {
   getApiErrorMessage,
   getCustomAdminWorkspace,
   type CustomAdminPermissionKey,
   type CustomAdminWorkspaceData,
-} from "../../services/adminWorkspaceService";
+} from "../../../services/adminWorkspaceService";
 
 type TabKey =
   | "overview"
