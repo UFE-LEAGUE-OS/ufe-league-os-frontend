@@ -1,0 +1,195 @@
+.screen {
+  background: #0d1728;
+  border: 1px solid #263450;
+  border-radius: 6px;
+  padding: 22px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+  color: #e8edf6;
+}
+
+.toolbar,
+.actionRow {
+  display: flex;
+  gap: 10px;
+  align-items: end;
+  flex-wrap: wrap;
+  margin: 0 0 18px;
+}
+
+.toolbar label,
+.form label {
+  display: grid;
+  gap: 6px;
+  color: #b9c3d5;
+  font-size: 0.8rem;
+  font-weight: 650;
+}
+
+.toolbar input,
+.toolbar select,
+.form input,
+.form select,
+.form textarea {
+  background: #0a1323;
+  border: 1px solid #39465f;
+  color: #fff;
+  padding: 10px;
+  border-radius: 3px;
+}
+
+.toolbar input {
+  min-width: 260px;
+}
+
+.screen button {
+  border: 1px solid #8455f5;
+  background: #7244df;
+  color: #fff;
+  padding: 9px 13px;
+  border-radius: 3px;
+  font-weight: 700;
+}
+
+.screen button:disabled {
+  opacity: 0.55;
+}
+
+.detailGrid,
+.masterDetail {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(260px, 0.8fr);
+  gap: 16px;
+}
+
+.detailGrid article,
+.detailGrid aside,
+.masterDetail > article,
+.cardGrid article,
+.timeline article,
+.publicPreview {
+  background: #111c30;
+  border: 1px solid #263450;
+  padding: 18px;
+  border-radius: 5px;
+}
+
+.detailGrid h3,
+.masterDetail h3,
+.cardGrid h3,
+.timeline h3 {
+  margin: 10px 0;
+  color: #fff;
+}
+
+.screen dl {
+  display: grid;
+  grid-template-columns: minmax(110px, 0.45fr) 1fr;
+  gap: 8px 12px;
+}
+
+.screen dt {
+  color: #8f9db5;
+}
+
+.screen dd {
+  margin: 0;
+}
+
+.cardGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.timeline {
+  display: grid;
+  gap: 12px;
+}
+
+.form {
+  display: grid;
+  gap: 13px;
+}
+
+.form textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+
+.previewWarning {
+  border-left: 3px solid #f5a623;
+  padding: 10px;
+  background: #211d2a;
+  color: #f5d39a;
+}
+
+.publicPreview img:first-child {
+  width: 100%;
+  height: 130px;
+  object-fit: cover;
+  margin-bottom: 12px;
+}
+
+.publicPreview img:not(:first-child) {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+}
+
+.logoFallback {
+  width: 80px;
+  height: 80px;
+  display: grid;
+  place-items: center;
+  background: #7244df;
+  font-size: 1.3rem;
+  font-weight: 800;
+}
+
+.publicPreview small {
+  color: #9daac1;
+}
+
+.cardGrid label {
+  display: flex;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+@media (max-width: 900px) {
+  .cardGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .detailGrid,
+  .masterDetail {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .screen {
+    padding: 15px;
+  }
+
+  .cardGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .toolbar > * {
+    width: 100%;
+  }
+
+  .toolbar input {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .screen dl {
+    grid-template-columns: 1fr;
+  }
+
+  .screen dt {
+    margin-top: 6px;
+  }
+}

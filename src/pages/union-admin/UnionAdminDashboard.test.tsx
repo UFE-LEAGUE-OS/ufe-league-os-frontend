@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import UnionAdminDashboard from "./UnionAdminDashboard";
@@ -108,6 +109,8 @@ function renderDashboard() {
 describe("UnionAdminDashboard", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.unstubAllEnvs();
+    vi.stubEnv("VITE_UNION_DEMO_MODE", "false");
     serviceMock.getMyUnionWorkspaces.mockResolvedValue([workspace]);
     serviceMock.intersectUnionWorkspaceOptions.mockReturnValue([workspace]);
     serviceMock.getUnionDashboardOverview.mockResolvedValue(overviewFor());
@@ -126,7 +129,9 @@ describe("UnionAdminDashboard", () => {
     renderDashboard();
 
     await waitFor(() => expect(serviceMock.getUnionDashboardOverview).toHaveBeenCalledWith("union-a"));
-    fireEvent.click(screen.getAllByRole("button", { name: "National Teams" })[0]);
+    await userEvent.click(
+      screen.getAllByRole("button", { name: "National Teams" })[0],
+    );
 
     expect(screen.queryByText("Player Pool")).not.toBeInTheDocument();
     expect(screen.queryByText("52")).not.toBeInTheDocument();
@@ -140,7 +145,9 @@ describe("UnionAdminDashboard", () => {
     renderDashboard();
 
     await waitFor(() => expect(serviceMock.getUnionDashboardOverview).toHaveBeenCalledWith("union-a"));
-    fireEvent.click(screen.getAllByRole("button", { name: "Users & Access" })[0]);
+    await userEvent.click(
+      screen.getAllByRole("button", { name: "Users & Access" })[0],
+    );
 
     expect(await screen.findByText("User directory unavailable.")).toBeInTheDocument();
     expect(screen.queryByText(/workspace overview could not be loaded/i)).not.toBeInTheDocument();
@@ -173,19 +180,24 @@ describe("UnionAdminDashboard", () => {
     expect(screen.getAllByText("Approvals").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Officials").length).toBeGreaterThan(0);
     expect(screen.queryByText("Generated Club")).not.toBeInTheDocument();
+    await waitFor(() =>
+      expect(serviceMock.getUnionWorkspaceUsers).toHaveBeenCalledWith(
+        "union-a",
+      ),
+    );
 
-    fireEvent.click(
+    await userEvent.click(
       screen.getAllByRole("button", { name: "National Teams" })[0],
     );
     expect(
       screen.getByText("National Teams panel for union-a"),
     ).toBeInTheDocument();
 
-    fireEvent.click(
+    await userEvent.click(
       screen.getAllByRole("button", { name: "Registrations" })[0],
     );
     expect(
-      screen.getByText("Registrations panel for union-a"),
+      await screen.findByText("Registrations panel for union-a"),
     ).toBeInTheDocument();
   });
 
@@ -209,7 +221,9 @@ describe("UnionAdminDashboard", () => {
 
     renderDashboard();
     await screen.findByText("Workspace command centre");
-    fireEvent.click(screen.getAllByRole("button", { name: "Users & Access" })[0]);
+    await userEvent.click(
+      screen.getAllByRole("button", { name: "Users & Access" })[0],
+    );
 
     expect(await screen.findByText("Workspace users could not be loaded.")).toBeInTheDocument();
   });
@@ -221,7 +235,9 @@ describe("UnionAdminDashboard", () => {
     serviceMock.createUnionWorkspaceUser.mockResolvedValue(response);
     renderDashboard();
     await screen.findByText("Workspace command centre");
-    fireEvent.click(screen.getAllByRole("button", { name: "Users & Access" })[0]);
+    await userEvent.click(
+      screen.getAllByRole("button", { name: "Users & Access" })[0],
+    );
     fireEvent.change(screen.getByLabelText("Email"), { target: { value: "new@example.com" } });
     fireEvent.submit(screen.getByRole("button", { name: "Add user" }).closest("form")!);
 
@@ -236,7 +252,9 @@ describe("UnionAdminDashboard", () => {
     });
     renderDashboard();
     await screen.findByText("Workspace command centre");
-    fireEvent.click(screen.getAllByRole("button", { name: "Users & Access" })[0]);
+    await userEvent.click(
+      screen.getAllByRole("button", { name: "Users & Access" })[0],
+    );
     fireEvent.change(screen.getByLabelText("Email"), { target: { value: "new@example.com" } });
     const form = screen.getByRole("button", { name: "Add user" }).closest("form")!;
 

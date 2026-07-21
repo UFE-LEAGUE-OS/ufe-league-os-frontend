@@ -12,7 +12,6 @@ import {
     Megaphone,
     PanelLeftClose,
     PanelLeftOpen,
-    Search,
     ShieldCheck,
     TicketCheck,
     Trophy,
@@ -44,7 +43,6 @@ import {
 } from "../../services/unionAdminService";
 import AuthenticatedFooter from "../../components/AuthenticatedFooter/AuthenticatedFooter";
 import MobileUnionNavigation from "../../components/MobileUnionNavigation/MobileUnionNavigation";
-import UnionAdminManagementWorkflow from "../../components/UnionAdminManagementWorkflow/UnionAdminManagementWorkflow";
 import UnionAdminClubsPanel from "../../components/UnionAdminClubsPanel/UnionAdminClubsPanel";
 import UnionAdminRefereesPanel from "../../components/UnionAdminRefereesPanel/UnionAdminRefereesPanel";
 import OfficialAppointmentsPanel from "../../components/OfficialAppointmentsPanel/OfficialAppointmentsPanel";
@@ -53,13 +51,21 @@ import UnionMatchOfficialsPanel from "../../components/union-admin/UnionMatchOff
 import {
     UnionNationalTeamsPanel,
     UnionOfficialReadinessPanel,
-    UnionRegistrationsPanel,
 } from "../../components/UnionOperationalPanels/UnionOperationalPanels";
 import { useCurrentUser } from "../../hooks/useCurrentUser";
 import { getEntitlementsForDashboard } from "../../utils/dashboardAccess.js";
 import logoHorizontal from "../../assets/logos/league-os-horizontal.png";
 import logoMark from "../../assets/league-os-mark.svg";
 import styles from "./UnionAdminDashboard.module.css";
+import UnionAuditApprovalsScreen from "./UnionAuditApprovalsScreen";
+import UnionCommunicationsScreen from "./UnionCommunicationsScreen";
+import UnionCompetitionsScreen from "./UnionCompetitionsScreen";
+import UnionPlayersTransfersScreen from "./UnionPlayersTransfersScreen";
+import UnionProfileBrandingScreen from "./UnionProfileBrandingScreen";
+import UnionRegistrationsScreen from "./UnionRegistrationsScreen";
+import UnionSettingsScreen from "./UnionSettingsScreen";
+import UnionSponsorsScreen from "./UnionSponsorsScreen";
+import UnionStatisticsRecordsScreen from "./UnionStatisticsRecordsScreen";
 
 type TabKey =
     | "overview"
@@ -88,7 +94,6 @@ type TabKey =
     | "audit"
     | "settings";
 
-type CompetitionView = "list" | "detail" | "fixtures";
 type ClubView = "directory" | "detail";
 
 type TabDefinition = {
@@ -797,12 +802,8 @@ export default function UnionAdminDashboard() {
     const [isLoadingOverview, setIsLoadingOverview] = useState(false);
     const [workspaceUsersError, setWorkspaceUsersError] = useState("");
     const [isLoadingWorkspaceUsers, setIsLoadingWorkspaceUsers] = useState(false);
-    const [searchQuery, setSearchQuery] = useState("");
-    const [competitionView, setCompetitionView] = useState<CompetitionView>("list");
-    const [selectedCompetitionId, setSelectedCompetitionId] = useState("");
     const [clubView, setClubView] = useState<ClubView>("directory");
     const [selectedClubId, setSelectedClubId] = useState("");
-    const [fixtureStep, setFixtureStep] = useState(3);
     const [financeData, setFinanceData] = useState<UnionFinanceDashboard | null>(null);
     const [isLoadingFinance, setIsLoadingFinance] = useState(false);
     const [financeError, setFinanceError] = useState("");
@@ -1131,7 +1132,6 @@ export default function UnionAdminDashboard() {
             );
             setActiveWorkspaceSlug(result.workspace.slug);
             setActiveTab("overview");
-            setCompetitionView("list");
             setClubView("directory");
         } catch {
             if (latestSwitchRequestRef.current !== switchRequest) return;
@@ -1329,15 +1329,7 @@ export default function UnionAdminDashboard() {
     const workspacePlayerPositions = getSportPositionGroups(activeWorkspace.sport);
     const currentOfficial = operationsData?.current_official ?? null;
 
-    const selectedCompetition =
-        workspaceCompetitions.find((competition) => competition.id === selectedCompetitionId) ?? workspaceCompetitions[0];
     const selectedClub = workspaceClubs.find((club) => club.id === selectedClubId) ?? workspaceClubs[0];
-
-    const filteredCompetitions = workspaceCompetitions.filter((competition) =>
-        `${competition.name} ${competition.type ?? ""} ${competition.format} ${competition.season} ${competition.status} ${competition.fixtureStatus ?? ""}`
-            .toLowerCase()
-            .includes(searchQuery.toLowerCase()),
-    );
 
 
     const statsByTab: Record<TabKey, StatCard[] | null> = {
@@ -1388,7 +1380,6 @@ export default function UnionAdminDashboard() {
     const activeStats = statsByTab[activeTab];
 
     function resetSearch(nextTab: TabKey) {
-        setSearchQuery("");
         setActiveTab(nextTab);
     }
 
@@ -2068,548 +2059,6 @@ export default function UnionAdminDashboard() {
         );
     }
 
-    function renderCompetitions() {
-        return (
-            <div className={styles.contentStack}>
-                <UnionAdminManagementWorkflow
-                    workspaceSlug={activeWorkspace.slug}
-                    workspaceLabel={activeWorkspace.name}
-                />
-            </div>
-        );
-
-        if (competitionView === "fixtures") return renderFixtureGenerator();
-        if (competitionView === "detail") return renderCompetitionDetail();
-
-        const activeCompetitionCount = workspaceCompetitions.filter((competition) =>
-            competition.status.toLowerCase().includes("active"),
-        ).length;
-
-        const cupCount = workspaceCompetitions.filter((competition) =>
-            `${competition.type ?? ""} ${competition.name}`.toLowerCase().includes("cup"),
-        ).length;
-
-        const tournamentCount = workspaceCompetitions.filter((competition) =>
-            `${competition.type ?? ""} ${competition.name}`
-                .toLowerCase()
-                .match(/series|super|playoff|tournament/),
-        ).length;
-
-        const leagueCount = workspaceCompetitions.filter((competition) =>
-            `${competition.type ?? "league"} ${competition.format}`
-                .toLowerCase()
-                .includes("league"),
-        ).length;
-
-        const selectedSnapshot =
-            workspaceCompetitions.find((competition) => competition.id === selectedCompetitionId) ??
-            filteredCompetitions[0] ??
-            workspaceCompetitions[0];
-
-        return (
-            <section className={styles.panelLarge}>
-                <SectionHeader
-                    eyebrow={`${activeWorkspace.acronym} competitions`}
-                    title="Competition control room"
-                    description="A backend-connected view of league, cup and tournament records, with fixture readiness, club entries and competition actions."
-                    actions={
-                        <>
-                            <button
-                                className={styles.primaryButton}
-                                type="button"
-                                onClick={() =>
-                                    document
-                                        .getElementById("union-admin-management-workflow")
-                                        ?.scrollIntoView({ behavior: "smooth", block: "start" })
-                                }
-                            >
-                                Create Competition
-                            </button>
-                            <button
-                                className={styles.secondaryButton}
-                                type="button"
-                                onClick={() =>
-                                    document
-                                        .getElementById("union-admin-management-workflow")
-                                        ?.scrollIntoView({ behavior: "smooth", block: "start" })
-                                }
-                            >
-                                Generate Fixtures
-                            </button>
-                        </>
-                    }
-                />
-
-                <UnionAdminManagementWorkflow
-                    workspaceSlug={activeWorkspace.slug}
-                    workspaceLabel={activeWorkspace.name}
-                />
-
-                <div className={styles.competitionCommandGrid}>
-                    <article>
-                        <span>Total competitions</span>
-                        <strong>{workspaceCompetitions.length}</strong>
-                        <small>{activeCompetitionCount} active</small>
-                    </article>
-                    <article>
-                        <span>League records</span>
-                        <strong>{leagueCount}</strong>
-                        <small>Season-long competitions</small>
-                    </article>
-                    <article>
-                        <span>Cup records</span>
-                        <strong>{cupCount}</strong>
-                        <small>Knockout competitions</small>
-                    </article>
-                    <article>
-                        <span>Series / tournaments</span>
-                        <strong>{tournamentCount}</strong>
-                        <small>Super 8, sevens, playoffs</small>
-                    </article>
-                </div>
-
-                <div className={styles.competitionWorkspaceGrid}>
-                    <div className={styles.competitionMainPanel}>
-                        <div className={styles.competitionToolbar}>
-                            <div className={styles.searchBar}>
-                                <Search size={18} />
-                                <input
-                                    value={searchQuery}
-                                    onChange={(event) => setSearchQuery(event.target.value)}
-                                    placeholder="Search league, cup, tournament, season or status"
-                                />
-                            </div>
-
-                            <div className={styles.filterChips}>
-                                <button type="button">All</button>
-                                <button type="button">League</button>
-                                <button type="button">Cup</button>
-                                <button type="button">Tournament</button>
-                                <button type="button">Needs fixtures</button>
-                            </div>
-                        </div>
-
-                        <DataTable
-                            columns={[
-                                {
-                                    key: "name",
-                                    label: "Competition",
-                                    render: (competition) => (
-                                        <button
-                                            className={styles.inlineLink}
-                                            type="button"
-                                            onClick={() => {
-                                                setSelectedCompetitionId(competition.id);
-                                                setCompetitionView("detail");
-                                            }}
-                                        >
-                                            {competition.name}
-                                        </button>
-                                    ),
-                                },
-                                {
-                                    key: "type",
-                                    label: "Type",
-                                    render: (competition) => competition.type ?? competition.format,
-                                },
-                                { key: "season", label: "Season", render: (competition) => competition.season },
-                                { key: "clubs", label: "Entries", render: (competition) => competition.clubs },
-                                { key: "matches", label: "Fixtures", render: (competition) => competition.matches },
-                                {
-                                    key: "nextFixture",
-                                    label: "Next Fixture",
-                                    render: (competition) => competition.nextFixture ?? "No upcoming fixture",
-                                },
-                                {
-                                    key: "fixtureStatus",
-                                    label: "Readiness",
-                                    render: (competition) => (
-                                        <StatusPill label={competition.fixtureStatus ?? competition.status} />
-                                    ),
-                                },
-                                {
-                                    key: "action",
-                                    label: "Action",
-                                    render: (competition) => (
-                                        <button
-                                            className={styles.tableActionButton}
-                                            type="button"
-                                            onClick={() => {
-                                                setSelectedCompetitionId(competition.id);
-                                                setCompetitionView(
-                                                    competition.matches > 0 ? "detail" : "fixtures",
-                                                );
-                                            }}
-                                        >
-                                            {competition.nextAction}
-                                        </button>
-                                    ),
-                                },
-                            ]}
-                            data={filteredCompetitions}
-                            emptyLabel="No competitions found for this workspace yet."
-                        />
-                    </div>
-
-                    <aside className={styles.competitionInfoPanel}>
-                        <h3>Competition snapshot</h3>
-
-                        {selectedSnapshot ? (
-                            <>
-                                <div className={styles.competitionSnapshotTitle}>
-                                    <strong>{selectedSnapshot.name}</strong>
-                                    <StatusPill label={selectedSnapshot.status} />
-                                </div>
-
-                                <div className={styles.competitionMetaGrid}>
-                                    <div>
-                                        <span>Type</span>
-                                        <strong>{selectedSnapshot.type ?? selectedSnapshot.format}</strong>
-                                    </div>
-                                    <div>
-                                        <span>Phase</span>
-                                        <strong>{selectedSnapshot.phase ?? "In season"}</strong>
-                                    </div>
-                                    <div>
-                                        <span>Entries</span>
-                                        <strong>{selectedSnapshot.clubs}</strong>
-                                    </div>
-                                    <div>
-                                        <span>Fixtures</span>
-                                        <strong>{selectedSnapshot.matches}</strong>
-                                    </div>
-                                </div>
-
-                                <div className={styles.competitionReadinessList}>
-                                    <span>
-                                        <strong>Entry window</strong>
-                                        {selectedSnapshot.entryWindow ?? "Entries open"}
-                                    </span>
-                                    <span>
-                                        <strong>Registration</strong>
-                                        {selectedSnapshot.registrationStatus ?? "Open"}
-                                    </span>
-                                    <span>
-                                        <strong>Officials needed</strong>
-                                        {selectedSnapshot.officialsNeeded ?? 0}
-                                    </span>
-                                    <span>
-                                        <strong>Reports due</strong>
-                                        {selectedSnapshot.reportsDue ?? 0}
-                                    </span>
-                                </div>
-
-                                <button
-                                    className={styles.primaryAction}
-                                    type="button"
-                                    onClick={() => setCompetitionView("detail")}
-                                >
-                                    <Trophy size={18} strokeWidth={2.3} aria-hidden="true" />
-                                    <span>
-                                        <strong>Open competition detail</strong>
-                                        <small>Fixtures, teams, officials and reports</small>
-                                    </span>
-                                </button>
-                            </>
-                        ) : (
-                            <p>No competition selected.</p>
-                        )}
-
-                        <div className={styles.positionFramework}>
-                            <h3>{activeWorkspace.sport} player positions</h3>
-                            {workspacePlayerPositions.map((group) => (
-                                <div key={group.group}>
-                                    <strong>{group.group}</strong>
-                                    <p>{group.positions.join(" • ")}</p>
-                                </div>
-                            ))}
-                        </div>
-                    </aside>
-                </div>
-            </section>
-        );
-    }
-
-    function renderCompetitionDetail() {
-        const competitionFixtures = workspaceAppointments.filter((appointment) =>
-            appointment.competition
-                .toLowerCase()
-                .includes(selectedCompetition.name.toLowerCase().slice(0, 12)),
-        );
-        const visibleFixtures = competitionFixtures.length > 0 ? competitionFixtures : workspaceAppointments;
-        const competitionClubs = workspaceClubs.slice(0, Math.max(selectedCompetition.clubs, 4));
-        const officialCoverage = visibleFixtures.length
-            ? Math.min(workspaceReferees.length, visibleFixtures.length)
-            : 0;
-        const fixtureCompletion =
-            selectedCompetition.fixtureStatus ??
-            (selectedCompetition.matches > 0 ? "Published" : "Needs fixtures");
-
-        return (
-            <section className={styles.panelLarge}>
-                <SectionHeader
-                    eyebrow="Competition detail"
-                    title={selectedCompetition.name}
-                    description={`${selectedCompetition.type ?? selectedCompetition.format} • ${selectedCompetition.season} • ${selectedCompetition.phase ?? selectedCompetition.status}`}
-                    actions={
-                        <>
-                            <button
-                                className={styles.secondaryButton}
-                                type="button"
-                                onClick={() => setCompetitionView("list")}
-                            >
-                                Back to List
-                            </button>
-                            <button
-                                className={styles.primaryButton}
-                                type="button"
-                                onClick={() => setCompetitionView("fixtures")}
-                            >
-                                Generate Fixtures
-                            </button>
-                        </>
-                    }
-                />
-
-                <div className={styles.competitionDetailHero}>
-                    <article>
-                        <span>Clubs</span>
-                        <strong>{selectedCompetition.clubs}</strong>
-                        <small>Eligible competition entries</small>
-                    </article>
-                    <article>
-                        <span>Fixtures</span>
-                        <strong>{selectedCompetition.matches}</strong>
-                        <small>{fixtureCompletion}</small>
-                    </article>
-                    <article>
-                        <span>Officials</span>
-                        <strong>
-                            {officialCoverage}/{visibleFixtures.length || 0}
-                        </strong>
-                        <small>Coverage snapshot</small>
-                    </article>
-                    <article>
-                        <span>Reports</span>
-                        <strong>{selectedCompetition.reportsDue ?? 0}</strong>
-                        <small>Due after matchday</small>
-                    </article>
-                </div>
-
-                <div className={styles.competitionDetailGrid}>
-                    <div className={styles.competitionMainPanel}>
-                        <h3 className={styles.blockTitle}>Fixture calendar</h3>
-                        <DataTable
-                            columns={[
-                                { key: "match", label: "Match", render: (appointment) => appointment.match },
-                                { key: "date", label: "Date", render: (appointment) => appointment.date },
-                                { key: "venue", label: "Venue", render: (appointment) => appointment.venue },
-                                { key: "role", label: "Official Role", render: (appointment) => appointment.role },
-                                {
-                                    key: "report",
-                                    label: "Report",
-                                    render: (appointment) => <StatusPill label={appointment.report} />,
-                                },
-                            ]}
-                            data={visibleFixtures}
-                            emptyLabel="No fixtures have been generated for this competition yet."
-                        />
-
-                        <div className={styles.positionFrameworkWide}>
-                            <h3>{activeWorkspace.sport} player position framework</h3>
-                            <div>
-                                {workspacePlayerPositions.map((group) => (
-                                    <article key={group.group}>
-                                        <strong>{group.group}</strong>
-                                        <p>{group.positions.join(" • ")}</p>
-                                    </article>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-
-                    <aside className={styles.competitionSidePanel}>
-                        <h3>Eligible clubs</h3>
-                        <div className={styles.teamReadinessList}>
-                            {competitionClubs.slice(0, 5).map((club) => (
-                                <button
-                                    key={club.id}
-                                    type="button"
-                                    onClick={() => {
-                                        setSelectedClubId(club.id);
-                                        setClubView("detail");
-                                        resetSearch("clubs");
-                                    }}
-                                >
-                                    <strong>{club.name}</strong>
-                                    <span>{club.players} players</span>
-                                    <StatusPill label={club.compliance} />
-                                </button>
-                            ))}
-                            {competitionClubs.length > 5 ? (
-                                <button
-                                    className={styles.viewMoreClubButton}
-                                    type="button"
-                                    onClick={() => resetSearch("clubs")}
-                                >
-                                    View more eligible clubs
-                                </button>
-                            ) : null}
-                        </div>
-
-                        <div className={styles.fixtureStatusPanel}>
-                            <span>Next fixture</span>
-                            <strong>{selectedCompetition.nextFixture ?? "No upcoming fixture"}</strong>
-                            <small>{selectedCompetition.nextAction}</small>
-                        </div>
-                    </aside>
-                </div>
-            </section>
-        );
-    }
-
-    function renderFixtureGenerator() {
-        const fixtureSteps = ["Competition", "Teams", "Rules", "Venues", "Preview", "Publish"];
-        const selectedClubsForPreview = workspaceClubs.slice(0, 6);
-        const generatedPreview = [
-            {
-                round: "Round 1",
-                match:
-                    selectedClubsForPreview.length >= 2
-                        ? `${selectedClubsForPreview[0].name} vs ${selectedClubsForPreview[1].name}`
-                        : "Fixture preview pending clubs",
-                status: "Draft",
-            },
-            {
-                round: "Round 2",
-                match:
-                    selectedClubsForPreview.length >= 4
-                        ? `${selectedClubsForPreview[2].name} vs ${selectedClubsForPreview[3].name}`
-                        : "Fixture preview pending clubs",
-                status: "Draft",
-            },
-            {
-                round: "Round 3",
-                match:
-                    selectedClubsForPreview.length >= 6
-                        ? `${selectedClubsForPreview[4].name} vs ${selectedClubsForPreview[5].name}`
-                        : "Fixture preview pending clubs",
-                status: "Draft",
-            },
-        ];
-
-        return (
-            <section className={styles.panelLarge}>
-                <SectionHeader
-                    eyebrow="Fixture generator"
-                    title="Generate fixtures"
-                    description="Configure competition rules, eligible teams, venues, match windows and constraints before publishing."
-                    actions={
-                        <button
-                            className={styles.secondaryButton}
-                            type="button"
-                            onClick={() => setCompetitionView("list")}
-                        >
-                            Back to Competitions
-                        </button>
-                    }
-                />
-
-                <div className={styles.fixtureGeneratorShell}>
-                    <div className={styles.fixtureStepperPanel}>
-                        {fixtureSteps.map((step, index) => (
-                            <button
-                                key={step}
-                                className={index <= fixtureStep ? styles.completedStep : ""}
-                                type="button"
-                                onClick={() => setFixtureStep(index)}
-                            >
-                                <span>{index + 1}</span>
-                                <strong>{step}</strong>
-                            </button>
-                        ))}
-                    </div>
-
-                    <form className={styles.fixtureFormPanel}>
-                        <label>
-                            Competition
-                            <select
-                                value={selectedCompetition.id}
-                                onChange={(event) => setSelectedCompetitionId(event.target.value)}
-                            >
-                                {workspaceCompetitions.map((competition) => (
-                                    <option key={competition.id} value={competition.id}>
-                                        {competition.name}
-                                    </option>
-                                ))}
-                            </select>
-                        </label>
-                        <label>
-                            Format
-                            <select defaultValue={selectedCompetition.type ?? "League"}>
-                                <option value="League">League</option>
-                                <option value="Cup">Cup</option>
-                                <option value="Tournament">Tournament</option>
-                                <option value="Series">Series</option>
-                            </select>
-                        </label>
-                        <label>
-                            Match windows
-                            <input defaultValue="Saturday / Sunday" />
-                        </label>
-                        <label>
-                            Venue rule
-                            <select defaultValue="home-away">
-                                <option value="home-away">Home and away</option>
-                                <option value="central-venue">Central venue</option>
-                                <option value="regional-pools">Regional pools</option>
-                            </select>
-                        </label>
-                        <label>
-                            Blackout dates
-                            <textarea defaultValue="National team weekend, stadium maintenance weekend" />
-                        </label>
-                        <div className={styles.buttonRow}>
-                            <button className={styles.primaryButton} type="button">
-                                Save Fixture Draft
-                            </button>
-                            <button className={styles.secondaryButton} type="button">
-                                Check Conflicts
-                            </button>
-                        </div>
-                    </form>
-
-                    <div className={styles.fixturePreviewPanel}>
-                        <h3 className={styles.blockTitle}>Generated preview</h3>
-                        <DataTable
-                            columns={[
-                                { key: "round", label: "Round", render: (item) => item.round },
-                                { key: "match", label: "Fixtures", render: (item) => item.match },
-                                { key: "status", label: "Status", render: (item) => <StatusPill label={item.status} /> },
-                            ]}
-                            data={generatedPreview}
-                        />
-                        <div className={styles.fixturePublishPanel}>
-                            <span>Ready to publish?</span>
-                            <p>
-                                Publishing should notify clubs, make fixtures visible to fans and
-                                send matches to the officials appointment workflow.
-                            </p>
-                            <div className={styles.buttonRow}>
-                                <button className={styles.primaryButton} type="button">
-                                    Publish Fixtures
-                                </button>
-                                <button className={styles.secondaryButton} type="button">
-                                    Export CSV
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        );
-    }
-
     function renderClubs() {
         if (clubView === "detail") return renderClubDetail();
 
@@ -2717,77 +2166,6 @@ export default function UnionAdminDashboard() {
                 workspaceSlug={activeWorkspace.slug}
                 workspaceName={activeWorkspace.name}
             />
-        );
-    }
-
-    function renderRegistrations() {
-        return (
-            <UnionRegistrationsPanel
-                workspaceSlug={activeWorkspace.slug}
-                workspaceName={activeWorkspace.name}
-            />
-        );
-    }
-
-    function renderPlayersTransfers() {
-        return (
-            <section className={styles.panelLarge}>
-                <SectionHeader
-                    eyebrow="Player governance"
-                    title="Players & Transfers"
-                    description="The approved frontend module will combine the player registry, authoritative registrations, competition eligibility and transfer review."
-                />
-
-                <div className={styles.emptyState}>
-                    This screen is ready for the next frontend design slice.
-                    No hardcoded player or transfer records are being presented.
-                </div>
-            </section>
-        );
-    }
-
-    function renderMatchOfficials() {
-        return (
-            <UnionMatchOfficialsPanel
-                workspaceSlug={activeWorkspace.slug}
-                workspaceName={activeWorkspace.name}
-                workspaceSport={activeWorkspace.sport}
-                workspaceRole={activeWorkspace.role}
-                permissions={activeWorkspace.permissions}
-            />
-        );
-    }
-
-    function renderStatistics() {
-        return (
-            <section className={styles.panelLarge}>
-                <SectionHeader
-                    eyebrow="Union records"
-                    title="Statistics & Records"
-                    description="Historical records and maintained Union statistics will appear here after the frontend review and backend contract are completed."
-                />
-
-                <div className={styles.emptyState}>
-                    No synthetic statistics are displayed.
-                </div>
-            </section>
-        );
-    }
-
-    function renderProfileBranding() {
-        return (
-            <section className={styles.panelLarge}>
-                <SectionHeader
-                    eyebrow="Public identity"
-                    title="Profile & Branding"
-                    description="Review the Union logo, banner, public profile and brand presentation before enabling uploads."
-                />
-
-                <div className={styles.emptyState}>
-                    The logo and banner preview editor will be added in the
-                    next frontend-only slice.
-                </div>
-            </section>
         );
     }
 
@@ -3235,36 +2613,6 @@ export default function UnionAdminDashboard() {
     }
 
 
-    function renderSponsors() {
-        return (
-            <section className={styles.panelLarge}>
-                <SectionHeader
-                    eyebrow="Sponsors"
-                    title="Sponsor workspace integration"
-                    description="Union sponsorship management is not available in this workspace yet. Corporate Sponsor accounts are not used as a substitute for a Union sponsorship relationship."
-                />
-                <div className={styles.emptyState}>
-                    No maintained Union-specific sponsorship API is available.
-                </div>
-            </section>
-        );
-    }
-
-    function renderComms() {
-        return (
-            <section className={styles.panelLarge}>
-                <SectionHeader
-                    eyebrow="Communications"
-                    title="Communications integration"
-                    description="Announcements and workspace messaging will appear here when a maintained Union communications API is available."
-                />
-                <div className={styles.emptyState}>
-                    No communications records or send action are shown until the backend contract exists.
-                </div>
-            </section>
-        );
-    }
-
     function renderUsers() {
         const userRows = workspaceUsers.map((user) => ({
                 name: user.user_full_name || user.user_email,
@@ -3345,54 +2693,30 @@ export default function UnionAdminDashboard() {
         );
     }
 
-    function renderAudit() {
-        return (
-            <section className={styles.panelLarge}>
-                <SectionHeader
-                    eyebrow="Governance"
-                    title="Audit logs"
-                    description="Workspace audit records will be shown when a maintained Union audit-log API is available."
-                />
-                <div className={styles.emptyState}>No workspace audit-log API is available.</div>
-            </section>
-        );
-    }
-
-    function renderSettings() {
-        return (
-            <section className={styles.panelLarge}>
-                <SectionHeader
-                    eyebrow="Settings"
-                    title="Workspace settings"
-                    description="Workspace settings are read-only until a maintained Union settings update endpoint is available."
-                />
-                <div className={styles.contentSplit}>
-                    <div className={styles.formPanel}>
-                        <h3>{activeWorkspace.name}</h3>
-                        <p>{activeWorkspace.description || "No workspace description is available."}</p>
-                    </div>
-                    <aside className={styles.actionRail}>
-                        <h3>Default rules</h3>
-                        <p>National teams belong under the union workspace.</p>
-                        <p>Officials are created under the union and assigned to competitions.</p>
-                        <p>Ticketing officers use union ticketing only for union-owned events.</p>
-                    </aside>
-                </div>
-            </section>
-        );
-    }
-
     function renderActiveTab() {
         switch (activeTab) {
             case "overview": return renderOverview();
-            case "competitions": return renderCompetitions();
+            case "competitions": return <UnionCompetitionsScreen workspace={activeWorkspace} />;
             case "clubs": return renderClubs();
             case "nationalTeams": return renderNationalTeams();
-            case "registrations": return renderRegistrations();
-            case "playersTransfers": return renderPlayersTransfers();
-            case "matchOfficials": return renderMatchOfficials();
-            case "statistics": return renderStatistics();
-            case "profileBranding": return renderProfileBranding();
+            case "registrations": return (
+                <UnionRegistrationsScreen
+                    workspaceSlug={activeWorkspace.slug}
+                    workspaceName={activeWorkspace.name}
+                />
+            );
+            case "playersTransfers": return <UnionPlayersTransfersScreen />;
+            case "matchOfficials": return (
+                <UnionMatchOfficialsPanel
+                    workspaceSlug={activeWorkspace.slug}
+                    workspaceName={activeWorkspace.name}
+                    workspaceSport={activeWorkspace.sport}
+                    workspaceRole={activeWorkspace.role}
+                    permissions={activeWorkspace.permissions}
+                />
+            );
+            case "statistics": return <UnionStatisticsRecordsScreen />;
+            case "profileBranding": return <UnionProfileBrandingScreen workspace={activeWorkspace} />;
             case "referees": return renderReferees();
             case "appointments": return renderAppointments();
             case "availability": return renderAvailability();
@@ -3404,15 +2728,14 @@ export default function UnionAdminDashboard() {
             case "scanner": return renderScanner();
             case "entryLogs": return renderEntryLogs();
             case "finance": return renderFinance();
-            case "sponsors": return renderSponsors();
-            case "comms": return renderComms();
+            case "sponsors": return <UnionSponsorsScreen />;
+            case "comms": return <UnionCommunicationsScreen />;
             case "users": return renderUsers();
-            case "audit": return renderAudit();
-            case "settings": return renderSettings();
+            case "audit": return <UnionAuditApprovalsScreen />;
+            case "settings": return <UnionSettingsScreen workspace={activeWorkspace} />;
             default: return renderOverview();
         }
     }
-
 
     const ActivePageIcon =
         tabs.find((tab) => tab.key === activeTab)?.icon ?? BarChart3;
