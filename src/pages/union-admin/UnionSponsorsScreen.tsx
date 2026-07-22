@@ -1,13 +1,18 @@
-import { unionDemoData } from "../../data/unionAdminDemoData";
-import UnionRecordsScreenBase from "./UnionRecordsScreenBase";
+import { EmptyState, ScreenHeader } from "../../components/union-admin/UnionAdminUi";
+import styles from "./UnionAdminScreens.module.css";
 
 export default function UnionSponsorsScreen() {
   return (
-    <UnionRecordsScreenBase
-      eyebrow="Sponsors"
-      title="Union sponsorship relationships"
-      description="Search, filter and inspect workspace records when a maintained contract is available."
-      records={unionDemoData.sponsors}
-    />
+    <section className={styles.screen}>
+      <ScreenHeader
+        eyebrow="Sponsors"
+        title="Union sponsorships"
+        description="Union-owned sponsorship packages, agreements and payments will appear only after workspace ownership is enforced by the backend."
+      />
+      <EmptyState
+        title="No safe Union sponsorship contract"
+        description="Global sponsor-hub records are intentionally hidden because they are not filtered by the active Union workspace."
+      />
+    </section>
   );
 }

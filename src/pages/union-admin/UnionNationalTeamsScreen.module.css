@@ -1,0 +1,15 @@
+.screen { display:grid; gap:18px; min-width:0; padding:24px; border:1px solid rgba(255,255,255,.1); border-radius:18px; background:rgba(12,21,39,.9); color:#fff; overflow:hidden; }
+.screen button,.screen input,.screen select { min-height:44px; font:inherit; box-sizing:border-box; }
+.screen button { padding:10px 14px; border:1px solid #8755e8; border-radius:9px; background:#7138dc; color:#fff; font-weight:800; }
+.filters,.form { display:flex; flex-wrap:wrap; gap:12px; align-items:end; }
+.filters label,.form label { display:grid; flex:1 1 190px; gap:6px; color:rgba(255,255,255,.68); font-size:.82rem; font-weight:800; }
+.filters input,.filters select,.form input,.form select,.detail select,.roster select { width:100%; padding:9px 11px; border:1px solid rgba(255,255,255,.15); border-radius:8px; background:#141c34; color:#fff; }
+.masterDetail { display:grid; grid-template-columns:minmax(250px,.75fr) minmax(0,1.5fr); gap:18px; align-items:start; }
+.detail,.form { min-width:0; padding:18px; border:1px solid rgba(255,255,255,.1); border-radius:12px; background:#0f172a; }
+.heading { display:flex; justify-content:space-between; align-items:start; gap:12px; }
+.heading h3,.form h3 { margin:8px 0 16px; font-family:var(--font-heading,"League Spartan"),Inter,sans-serif; font-size:clamp(1.5rem,3vw,2.1rem); font-style:italic; }
+.detail dl { display:grid; grid-template-columns:130px minmax(0,1fr); gap:8px 12px; }
+.detail dt { color:rgba(255,255,255,.55); }.detail dd { margin:0; overflow-wrap:anywhere; }
+.roster { display:grid; gap:9px; }.roster article { display:grid; grid-template-columns:minmax(0,1fr) minmax(120px,.4fr) auto; gap:10px; align-items:center; padding:12px; border:1px solid rgba(255,255,255,.09); border-radius:9px; }.roster span { display:block; margin-top:4px; color:rgba(255,255,255,.62); overflow-wrap:anywhere; }
+.notice,.readOnly { padding:12px 14px; border-left:4px solid #ff9b4c; border-radius:8px; background:rgba(255,155,76,.09); color:#ffd4b1; }.error { display:grid; gap:10px; justify-items:start; }
+@media(max-width:900px){.masterDetail{grid-template-columns:1fr}}@media(max-width:600px){.screen{padding:16px}.filters>*,.form>*,.roster article>*{width:100%}.detail dl,.roster article{grid-template-columns:1fr}.heading{flex-direction:column}.heading select{width:100%}}

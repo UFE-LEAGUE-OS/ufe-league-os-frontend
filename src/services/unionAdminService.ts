@@ -541,8 +541,8 @@ export interface UnionPlayerRegistrationSubmission {
   union_player_number: string | null;
   club: number;
   club_name: string;
-  team: number;
-  team_name: string;
+  team: number | null;
+  team_name: string | null;
   season_record: number | null;
   registration_type: string;
   submission_status: string;
@@ -553,6 +553,72 @@ export interface UnionPlayerRegistrationSubmission {
   reviewed_at: string | null;
   warning_count: number;
   blocking_error_count: number;
+}
+
+export interface UnionRegistrationValidationItem {
+  code: string;
+  field: string;
+  message: string;
+  severity: string;
+}
+
+export interface UnionRegistrationValidation {
+  blocking_errors?: UnionRegistrationValidationItem[];
+  review_warnings?: UnionRegistrationValidationItem[];
+  passed_checks?: UnionRegistrationValidationItem[];
+  capability_notes?: UnionRegistrationValidationItem[];
+  version?: string;
+}
+
+export interface UnionPlayerRegistrationSubmissionDetail
+  extends UnionPlayerRegistrationSubmission {
+  first_name: string;
+  last_name: string;
+  date_of_birth: string | null;
+  nationality: string;
+  position: string;
+  secondary_positions: string[];
+  player_type: string;
+  jersey_number: number | null;
+  height_cm: string | null;
+  weight_kg: string | null;
+  preferred_foot: string;
+  registered_date: string | null;
+  expiry_date: string | null;
+  transfer_window: string;
+  previous_club: string;
+  contract_until: string | null;
+  is_captain: boolean;
+  is_vice_captain: boolean;
+  union_player: number | null;
+  permanent_player_summary: {
+    id: number;
+    union_player_number: string;
+    full_name: string;
+    nationality: string;
+    status: string;
+  } | null;
+  requested_competition_editions: number[];
+  supporting_documents: unknown[];
+  club_notes: string;
+  submitted_by: number | null;
+  submitted_by_name: string | null;
+  last_resubmitted_at: string | null;
+  change_request_reason: string;
+  union_decision_reason: string;
+  automatic_validation: UnionRegistrationValidation | null;
+  withdrawal_reason: string;
+  authoritative_registration_summary: UnionAuthoritativePlayerRegistration | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UnionPlayerRegistrationReviewResult {
+  submission: UnionPlayerRegistrationSubmissionDetail;
+  authoritative_registration: UnionAuthoritativePlayerRegistration | null;
+  automatic_validation: UnionRegistrationValidation | null;
+  idempotent_replay: boolean;
+  eligibility_review_required: boolean;
 }
 
 export interface UnionPlayerEligibility {
@@ -1157,6 +1223,290 @@ export type UnionAdminListResponse<T> = {
   count: number;
   results: T[];
 };
+
+export interface UnionCompetitionIdentity {
+  id: number;
+  union: number;
+  union_name: string;
+  primary_league: number | null;
+  primary_league_name: string | null;
+  name: string;
+  slug: string;
+  sport: string;
+  competition_type: string;
+  description: string;
+  branding: Record<string, unknown>;
+  default_format: Record<string, unknown>;
+  default_eligibility_rules: Record<string, unknown>;
+  tier: number | null;
+  higher_competition: number | null;
+  is_active: boolean;
+  editions_count: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UnionCompetitionEdition {
+  id: number;
+  identity: number;
+  identity_name: string;
+  competition: number;
+  competition_id: number;
+  competition_slug: string;
+  season: number | null;
+  season_name: string | null;
+  status: string;
+  registration_opens_at: string | null;
+  registration_closes_at: string | null;
+  entry_fee: string | null;
+  currency: string;
+  rules: Record<string, unknown>;
+  structure: Record<string, unknown>;
+  eligibility_rules: Record<string, unknown>;
+  copied_from: number | null;
+  published_at: string | null;
+  published_by: number | null;
+  published_by_email: string | null;
+  created_at: string;
+  updated_at: string;
+  allowed_transitions: string[];
+}
+
+export type UnionCompetitionFormat = {
+  version?: 1;
+  format: "SINGLE_ROUND_ROBIN" | "DOUBLE_ROUND_ROBIN" | "GROUPS_AND_KNOCKOUT" | "STRAIGHT_KNOCKOUT" | "LEAGUE_AND_PLAYOFFS" | "SERIES";
+  number_of_legs?: number;
+  number_of_groups?: number;
+  clubs_per_group?: number;
+  advancing_per_group?: number;
+  home_and_away: boolean;
+  match_duration_minutes: number;
+  points_for_win?: number;
+  points_for_draw?: number;
+  points_for_loss?: number;
+  tie_break_order?: string[];
+  gameweek_structure?: "WEEKLY" | "FORTNIGHTLY" | "TOURNAMENT_DAYS" | "CUSTOM";
+  minimum_clubs: number;
+  maximum_clubs: number;
+  promotion_enabled: boolean;
+  relegation_enabled: boolean;
+  number_promoted: number;
+  number_relegated: number;
+};
+
+export interface UnionCompetitionEligibleAdministrator {
+  id: number;
+  email: string;
+  name: string;
+  workspace_role: string;
+  effective_permissions: string[];
+}
+
+export interface UnionCompetitionAdministrator {
+  id: number;
+  user: number;
+  user_email: string;
+  user_name: string;
+  role: string;
+  is_active: boolean;
+  effective_permissions: string[];
+}
+
+export interface CreateUnionCompetitionWorkflowPayload {
+  workspace: string;
+  identity: {
+    name: string;
+    primary_league: number;
+    sport: string;
+    competition_type: string;
+    description: string;
+    tier?: number;
+    higher_competition?: number;
+    is_active: boolean;
+    default_format: UnionCompetitionFormat;
+    default_eligibility_rules: Record<string, unknown>;
+  };
+  first_edition: {
+    season: number;
+    registration_opens_at?: string;
+    registration_closes_at?: string;
+    entry_fee?: string;
+    currency: string;
+    eligibility_rules?: Record<string, unknown>;
+  };
+  administrators: Array<{ user: number; role: string }>;
+}
+
+export async function getUnionCompetitionEligibleAdministrators(workspaceSlug: string) {
+  const response = await apiClient.get<UnionAdminListResponse<UnionCompetitionEligibleAdministrator>>(
+    `/dashboards/union-admin/competition-administrators/eligible/?workspace=${encodeURIComponent(workspaceSlug)}`,
+  );
+  return response.data.results ?? [];
+}
+
+export async function createUnionCompetitionWorkflow(payload: CreateUnionCompetitionWorkflowPayload) {
+  const response = await apiClient.post<{
+    identity: UnionCompetitionIdentity;
+    edition: UnionCompetitionEdition;
+    administrators: UnionCompetitionAdministrator[];
+  }>("/dashboards/union-admin/competition-create/", payload);
+  return response.data;
+}
+
+export interface CreateUnionCompetitionIdentityPayload {
+  workspace: string;
+  name: string;
+  primary_league?: number;
+  sport?: string;
+  competition_type?: string;
+  description?: string;
+  tier?: number;
+  is_active?: boolean;
+}
+
+export async function getUnionCompetitionIdentities(
+  workspaceSlug: string,
+  query: { search?: string; isActive?: boolean } = {},
+): Promise<UnionAdminListResponse<UnionCompetitionIdentity>> {
+  const params = new URLSearchParams({ workspace: workspaceSlug });
+  if (query.search) params.set("search", query.search);
+  if (query.isActive !== undefined) params.set("is_active", String(query.isActive));
+  const response = await apiClient.get<UnionAdminListResponse<UnionCompetitionIdentity>>(
+    `/dashboards/union-admin/competition-identities/?${params.toString()}`,
+  );
+  return { count: response.data.count ?? response.data.results?.length ?? 0, results: response.data.results ?? [] };
+}
+
+export async function createUnionCompetitionIdentity(
+  payload: CreateUnionCompetitionIdentityPayload,
+): Promise<UnionCompetitionIdentity> {
+  const response = await apiClient.post<UnionCompetitionIdentity>(
+    "/dashboards/union-admin/competition-identities/",
+    payload,
+  );
+  return response.data;
+}
+
+export async function getUnionPlayerRegistrationSubmissionDetail(
+  workspaceSlug: string,
+  submissionId: number,
+): Promise<UnionPlayerRegistrationSubmissionDetail> {
+  const response = await apiClient.get<UnionPlayerRegistrationSubmissionDetail>(
+    `/dashboards/union-admin/player-registration-submissions/${submissionId}/?workspace=${encodeURIComponent(workspaceSlug)}`,
+  );
+  return response.data;
+}
+
+async function postUnionRegistrationAction<T>(
+  workspaceSlug: string,
+  submissionId: number,
+  action: string,
+  payload: Record<string, unknown> = {},
+): Promise<T> {
+  const response = await apiClient.post<T>(
+    `/dashboards/union-admin/player-registration-submissions/${submissionId}/${action}/`,
+    { workspace: workspaceSlug, ...payload },
+  );
+  return response.data;
+}
+
+export function assignUnionPlayerRegistrationReviewer(
+  workspaceSlug: string,
+  submissionId: number,
+  reviewer?: number,
+) {
+  return postUnionRegistrationAction<UnionPlayerRegistrationSubmissionDetail>(
+    workspaceSlug,
+    submissionId,
+    "assign-reviewer",
+    reviewer === undefined ? {} : { reviewer },
+  );
+}
+
+export function startUnionPlayerRegistrationReview(
+  workspaceSlug: string,
+  submissionId: number,
+) {
+  return postUnionRegistrationAction<UnionPlayerRegistrationSubmissionDetail>(
+    workspaceSlug,
+    submissionId,
+    "start-review",
+  );
+}
+
+export function requestUnionPlayerRegistrationChanges(
+  workspaceSlug: string,
+  submissionId: number,
+  reason: string,
+) {
+  return postUnionRegistrationAction<UnionPlayerRegistrationSubmissionDetail>(
+    workspaceSlug,
+    submissionId,
+    "request-changes",
+    { reason },
+  );
+}
+
+export function approveUnionPlayerRegistration(
+  workspaceSlug: string,
+  submissionId: number,
+  reason: string,
+) {
+  return postUnionRegistrationAction<UnionPlayerRegistrationReviewResult>(
+    workspaceSlug,
+    submissionId,
+    "approve",
+    { reason },
+  );
+}
+
+export function rejectUnionPlayerRegistration(
+  workspaceSlug: string,
+  submissionId: number,
+  reason: string,
+) {
+  return postUnionRegistrationAction<UnionPlayerRegistrationSubmissionDetail>(
+    workspaceSlug,
+    submissionId,
+    "reject",
+    { reason },
+  );
+}
+
+export async function getUnionCompetitionEditions(
+  workspaceSlug: string,
+  identityId: number,
+): Promise<UnionAdminListResponse<UnionCompetitionEdition>> {
+  const response = await apiClient.get<UnionAdminListResponse<UnionCompetitionEdition>>(
+    `/dashboards/union-admin/competition-identities/${identityId}/editions/?workspace=${encodeURIComponent(workspaceSlug)}`,
+  );
+  return { count: response.data.count ?? response.data.results?.length ?? 0, results: response.data.results ?? [] };
+}
+
+export async function createUnionCompetitionEdition(
+  workspaceSlug: string,
+  identityId: number,
+  payload: { season: number; copied_from?: number; copy?: string[] },
+): Promise<UnionCompetitionEdition> {
+  const response = await apiClient.post<UnionCompetitionEdition>(
+    `/dashboards/union-admin/competition-identities/${identityId}/editions/`,
+    { workspace: workspaceSlug, ...payload },
+  );
+  return response.data;
+}
+
+export async function transitionUnionCompetitionEdition(
+  workspaceSlug: string,
+  editionId: number,
+  status: string,
+  reason = "",
+): Promise<UnionCompetitionEdition> {
+  const response = await apiClient.post<UnionCompetitionEdition>(
+    `/dashboards/union-admin/competition-editions/${editionId}/transition/`,
+    { workspace: workspaceSlug, status, reason },
+  );
+  return response.data;
+}
 
 export interface UnionAdminLeagueOption {
   id: number;
