@@ -271,14 +271,35 @@ export interface InvoicesData {
 export interface AuditLogEntry {
   id: string;
   actorName: string;
+  actorEmail?: string;
   action: string;
+  category?: string;
+  categoryDisplay?: string;
   target: string;
+  targetEmail?: string;
   timestamp: string;
+  path?: string;
+  method?: string;
+  statusCode?: number | null;
+  ipAddress?: string;
   metadata?: Record<string, unknown>;
 }
 
 export interface AuditTrailData {
   entries: AuditLogEntry[];
+  count?: number;
+  limit?: number;
+  offset?: number;
+}
+
+export interface AuditTrailParams extends DateRangeParams {
+  category?: string;
+  action?: string;
+  search?: string;
+  page?: number;
+  page_size?: number;
+  limit?: number;
+  offset?: number;
 }
 
 /* ------------------------------------------------------------------ */
@@ -369,32 +390,105 @@ export async function getIncomeExpense(
 }
 
 /* ------------------------------------------------------------------ */
-/* Invoices & receipts                                                 */
-/* ------------------------------------------------------------------ */
-
-export async function getInvoices(
-  clubId: number,
-  params?: DateRangeParams & { status?: InvoiceStatus | "ALL" },
-): Promise<InvoicesData> {
-  const { data } = await apiClient.get(`${financeBase(clubId)}/invoices/`, {
-    params,
-  });
-  return data;
-}
-
-/* ------------------------------------------------------------------ */
 /* Audit trail log                                                     */
 /* ------------------------------------------------------------------ */
 
 export async function getAuditTrail(
   clubId: number,
-  params?: DateRangeParams & { page?: number; page_size?: number },
+  params?: AuditTrailParams,
 ): Promise<AuditTrailData> {
   const { data } = await apiClient.get(
     `${financeBase(clubId)}/audit-trail/`,
-    { params },
+    { params: cleanParams(params) },
   );
-  return data;
+  return normalizeAuditTrailData(data);
+}
+
+type RawAuditEntry = Record<string, unknown>;
+
+function readString(value: unknown, fallback = "") {
+  return typeof value === "string" ? value : fallback;
+}
+
+function readNumber(value: unknown) {
+  return typeof value === "number" ? value : null;
+}
+
+function readObject(value: unknown): Record<string, unknown> | undefined {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : undefined;
+}
+
+function normalizeAuditEntry(entry: RawAuditEntry): AuditLogEntry {
+  const actor = readObject(entry.actor);
+  const targetUser = readObject(entry.target_user);
+  const details = readObject(entry.details);
+  const metadata = readObject(entry.metadata) ?? details;
+
+  const actorName =
+    readString(entry.actorName) ||
+    readString(entry.actor_name) ||
+    readString(actor?.full_name) ||
+    readString(actor?.name) ||
+    readString(entry.actor_email) ||
+    readString(actor?.email) ||
+    "System";
+
+  const target =
+    readString(entry.target) ||
+    readString(entry.targetName) ||
+    readString(entry.target_name) ||
+    readString(entry.target_user_email) ||
+    readString(targetUser?.full_name) ||
+    readString(targetUser?.name) ||
+    readString(targetUser?.email) ||
+    readString(entry.path) ||
+    "League OS";
+
+  return {
+    id: String(entry.id ?? crypto.randomUUID()),
+    actorName,
+    actorEmail: readString(entry.actorEmail) || readString(entry.actor_email),
+    action: readString(entry.action, "audit_event"),
+    category: readString(entry.category),
+    categoryDisplay:
+      readString(entry.categoryDisplay) || readString(entry.category_display),
+    target,
+    targetEmail:
+      readString(entry.targetEmail) || readString(entry.target_user_email),
+    timestamp:
+      readString(entry.timestamp) ||
+      readString(entry.created_at) ||
+      readString(entry.updated_at),
+    path: readString(entry.path),
+    method: readString(entry.method),
+    statusCode:
+      readNumber(entry.statusCode) ?? readNumber(entry.status_code),
+    ipAddress:
+      readString(entry.ipAddress) || readString(entry.ip_address),
+    metadata,
+  };
+}
+
+function normalizeAuditTrailData(payload: unknown): AuditTrailData {
+  const response = readObject(payload);
+  const rawEntries =
+    (Array.isArray(payload) && payload) ||
+    (Array.isArray(response?.entries) && response.entries) ||
+    (Array.isArray(response?.results) && response.results) ||
+    [];
+
+  return {
+    entries: rawEntries
+      .filter((entry): entry is RawAuditEntry =>
+        Boolean(readObject(entry)),
+      )
+      .map((entry) => normalizeAuditEntry(entry)),
+    count: readNumber(response?.count) ?? undefined,
+    limit: readNumber(response?.limit) ?? undefined,
+    offset: readNumber(response?.offset) ?? undefined,
+  };
 }
 
 /* ------------------------------------------------------------------ */
@@ -463,6 +557,66 @@ export async function getIncomeExpenseSummary(
   const { data } = await apiClient.get(
     `${financeBase(clubId)}/income-expense/`,
     { params },
+  );
+  return data;
+}
+
+
+/* ------------------------------------------------------------------ */
+/* Invoices & receipts                                                 */
+/* ------------------------------------------------------------------ */
+
+// Strips "ALL" / empty-string sentinel values so the backend only ever
+// sees real filters, never the frontend's "no filter" placeholder.
+//
+// NOTE: constrained to `T extends object` (not `Record<string, unknown>`)
+// so callers can pass interfaces like `DateRangeParams & { status?: ... }`
+// that don't declare an index signature. We cast through
+// `Record<string, unknown>` internally instead of requiring the caller's
+// type to structurally satisfy it.
+function cleanParams<T extends object>(params?: T): Partial<T> | undefined {
+  if (!params) return undefined;
+
+  const entries = Object.entries(params as Record<string, unknown>).filter(
+    ([, value]) => {
+      if (value === undefined || value === null) return false;
+      if (typeof value === "string" && (value === "" || value === "ALL")) {
+        return false;
+      }
+      return true;
+    },
+  );
+
+  return Object.fromEntries(entries) as Partial<T>;
+}
+
+export async function getInvoices(
+  clubId: number,
+  params?: DateRangeParams & {
+    status?: InvoiceStatus | "ALL";
+    search?: string;
+    page?: number;
+    page_size?: number;
+  },
+): Promise<InvoicesData> {
+  const { data } = await apiClient.get(`${financeBase(clubId)}/invoices/`, {
+    params: cleanParams(params),
+  });
+  return data;
+}
+
+/**
+ * Triggers the backend to (re)send the invoice/receipt to the billed
+ * party's email on file. Used by the "Send Email" action in the
+ * Receipt Preview panel.
+ */
+export async function sendInvoiceReceiptEmail(
+  clubId: number,
+  invoiceId: string,
+): Promise<{ sent: boolean }> {
+  const { data } = await apiClient.post(
+    `${financeBase(clubId)}/invoices/${encodeURIComponent(invoiceId)}/send-receipt/`,
+    {},
   );
   return data;
 }
