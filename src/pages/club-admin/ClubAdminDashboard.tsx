@@ -129,6 +129,7 @@ import AnnouncementsCompose from "./AnnouncementsCompose";
 import AnnouncementsPublish from "./AnnouncementsPublish";
 import NoticesCirculars from "./NoticesCirculars";
 import CommunicationHistoryLog from "./CommunicationHistoryLog";
+import IncomeExpenseSummary from "./finance-audit/IncomeExpenseSummary";
 
 type TabKey =
   | "overview"
@@ -1944,50 +1945,6 @@ export default function ClubAdminDashboard() {
       >
         {renderFinancialChart()}
       </WorkspacePanel>
-    );
-  }
-
-  function renderFinanceIncomeExpense() {
-    const totals = (data?.financial_overview ?? []).reduce(
-      (summary, point) => ({
-        income: summary.income + point.income,
-        expense: summary.expense + point.expense,
-      }),
-      { income: 0, expense: 0 },
-    );
-
-    const financeStats = [
-      {
-        label: "Total Income",
-        value: formatTicketCurrency(totals.income),
-        detail: "Across available finance periods",
-        icon: Wallet,
-      },
-      {
-        label: "Total Expense",
-        value: formatTicketCurrency(totals.expense),
-        detail: "Across available finance periods",
-        icon: FileBarChart,
-      },
-      {
-        label: "Net Position",
-        value: formatTicketCurrency(totals.income - totals.expense),
-        detail: "Income less expense",
-        icon: BarChart3,
-      },
-    ];
-
-    return (
-      <>
-        <WorkspaceStatGrid stats={financeStats} />
-        <WorkspacePanel
-          eyebrow="Income & expense"
-          title="Income & expense summary"
-          description="Compare incoming funds and outgoing expenses across recent months."
-        >
-          {renderFinancialChart()}
-        </WorkspacePanel>
-      </>
     );
   }
 
@@ -3810,8 +3767,13 @@ export default function ClubAdminDashboard() {
     ) : (
       <WorkspaceLoading label="Loading ticketing payments…" />
     );
-  } else if (activeTab === "financeIncomeExpense") {
-    content = renderFinanceIncomeExpense();
+  } 
+    else if (activeTab === "financeIncomeExpense") {
+    content = data ? (
+      <IncomeExpenseSummary clubId={data.club.id} />
+    ) : (
+      <WorkspaceLoading label="Loading income & expense summary…" />
+    );
   } else if (activeTab === "financeInvoicesReceipts") {
     content = renderFinanceInvoicesReceipts();
   } else if (activeTab === "financeAuditTrail") {

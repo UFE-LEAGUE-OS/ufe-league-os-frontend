@@ -82,6 +82,10 @@ vi.mock('../pages/sponsor/SponsorPaymentProcessing', () => ({
   default: () => <h1>Sponsor Payment Processing Page</h1>,
 }));
 
+vi.mock('../pages/super-admin/SuperAdminHome', () => ({
+  default: () => <h1>Super Admin Home</h1>,
+}));
+
 vi.mock('../pages/super-admin/SuperAdminDashboard', async () => {
   const { Outlet } = await vi.importActual<
     typeof import('react-router-dom')
