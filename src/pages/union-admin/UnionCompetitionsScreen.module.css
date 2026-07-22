@@ -82,6 +82,35 @@
     background: rgba(255, 122, 26, 0.1);
 }
 
+.directorySections {
+    display: grid;
+    gap: 18px;
+    min-width: 0;
+}
+
+.passwordPanel {
+    grid-column: 1 / -1;
+    padding: 20px;
+    overflow-wrap: anywhere;
+    border: 1px solid rgba(34, 197, 94, 0.55);
+    border-radius: 12px;
+    background: rgba(20, 83, 45, 0.24);
+}
+
+.passwordPanel h3,
+.passwordPanel p {
+    margin-top: 0;
+}
+
+.passwordPanel code {
+    display: block;
+    margin: 12px 0;
+    padding: 12px;
+    overflow-wrap: anywhere;
+    border-radius: 8px;
+    background: rgba(2, 6, 23, 0.72);
+}
+
 .heroSummaryGrid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));

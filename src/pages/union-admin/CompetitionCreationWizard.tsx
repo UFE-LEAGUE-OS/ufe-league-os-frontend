@@ -8,12 +8,12 @@ import {
   type UnionCompetitionEligibleAdministrator,
   type UnionCompetitionIdentity,
   type UnionCompetitionFormat,
+  type UnionGovernanceOptions,
   type UnionWorkspaceOption,
 } from "../../services/unionAdminService";
 import styles from "./UnionCompetitionsScreen.module.css";
 
-const steps = ["Identity", "Format", "Administrators", "First season", "Club participation", "Review"];
-const types = ["LEAGUE", "KNOCKOUT", "GROUP_AND_KNOCKOUT", "TOURNAMENT", "SERIES", "COMMUNITY"];
+const steps = ["Parent League", "Competition Identity", "Sport Format", "First Season / Edition", "Club Participation", "Administrators", "Review"];
 
 function collectApiMessages(value: unknown): string[] {
   if (typeof value === "string") return [value];
@@ -27,12 +27,13 @@ type Props = {
   leagues: UnionAdminLeagueOption[];
   seasons: UnionAdminSeasonRecord[];
   identities: UnionCompetitionIdentity[];
+  options: UnionGovernanceOptions;
   onCancel: () => void;
   onCreated: (result: Awaited<ReturnType<typeof createUnionCompetitionWorkflow>>) => void;
   onError: (message: string) => void;
 };
 
-export default function CompetitionCreationWizard({ workspace, leagues, seasons, identities, onCancel, onCreated, onError }: Props) {
+export default function CompetitionCreationWizard({ workspace, leagues, seasons, identities, options, onCancel, onCreated, onError }: Props) {
   const [step, setStep] = useState(0);
   const [working, setWorking] = useState(false);
   const [eligible, setEligible] = useState<UnionCompetitionEligibleAdministrator[]>([]);
@@ -58,6 +59,7 @@ export default function CompetitionCreationWizard({ workspace, leagues, seasons,
   const [registrationOpen, setRegistrationOpen] = useState("");
   const [registrationClose, setRegistrationClose] = useState("");
   const [entryFee, setEntryFee] = useState("");
+  const [sport, setSport] = useState(options.workspace.is_multi_sport ? "" : options.workspace.sport);
 
   useEffect(() => {
     let current = true;
@@ -71,11 +73,14 @@ export default function CompetitionCreationWizard({ workspace, leagues, seasons,
   const availableSeasons = useMemo(() => seasons.filter((item) => item.league === Number(league)), [league, seasons]);
   function validateStep() {
     if (step === 0) {
-      if (!name.trim()) return "Enter a competition name before continuing.";
-      if (!league) return "Select a primary league before continuing.";
-      if (!Number.isInteger(Number(tier)) || Number(tier) < 1) return "Tier must be a whole number of 1 or more.";
+      if (!league) return "Select a parent League before continuing.";
     }
     if (step === 1) {
+      if (!name.trim()) return "Enter a competition name before continuing.";
+      if (!sport) return "Select a sport before continuing.";
+      if (!Number.isInteger(Number(tier)) || Number(tier) < 1) return "Tier must be a whole number of 1 or more.";
+    }
+    if (step === 2) {
       const minimum = Number(minimumClubs);
       const maximum = Number(maximumClubs);
       const minutes = Number(duration);
@@ -85,7 +90,7 @@ export default function CompetitionCreationWizard({ workspace, leagues, seasons,
       if (promotion && (!Number.isInteger(Number(promoted)) || Number(promoted) < 1 || Number(promoted) > 32)) return "Promoted clubs must be a whole number between 1 and 32.";
       if (relegation && (!Number.isInteger(Number(relegated)) || Number(relegated) < 1 || Number(relegated) > 32)) return "Relegated clubs must be a whole number between 1 and 32.";
     }
-    if (step === 2) {
+    if (step === 5) {
       if (administratorLoadFailed) return "Administrator choices could not be loaded. Close and reopen the wizard before continuing.";
       if (!admin) return "Select an active workspace administrator before continuing.";
     }
@@ -102,13 +107,13 @@ export default function CompetitionCreationWizard({ workspace, leagues, seasons,
     const invalid = validateStep();
     if (invalid) { setValidationMessage(invalid); return; }
     setValidationMessage("");
-    if (step < 5) { setStep((value) => value + 1); return; }
+    if (step < 6) { setStep((value) => value + 1); return; }
     setWorking(true);
     try {
       const result = await createUnionCompetitionWorkflow({
         workspace: workspace.slug,
         identity: {
-          name: name.trim(), description: description.trim(), primary_league: Number(league), sport: workspace.sport,
+          name: name.trim(), description: description.trim(), primary_league: Number(league), sport,
           competition_type: type, tier: Number(tier), ...(higher ? { higher_competition: Number(higher) } : {}), is_active: true,
           default_eligibility_rules: {},
           default_format: {
@@ -135,13 +140,14 @@ export default function CompetitionCreationWizard({ workspace, leagues, seasons,
   return <form className={styles.wizard} onSubmit={submit}>
     <div className={styles.wizardHeader}><div><span>Step {step + 1} of {steps.length}</span><h3>{steps[step]}</h3></div><button type="button" className={styles.subtleButton} onClick={onCancel}>Close wizard</button></div>
     <ol className={styles.stepper} aria-label="Competition creation progress">{steps.map((label, index) => <li key={label} aria-current={index === step ? "step" : undefined} className={index === step ? styles.activeStep : index < step ? styles.completeStep : ""}><span>{index + 1}</span>{label}</li>)}</ol>
-    {step === 0 ? <fieldset><legend>Permanent competition identity</legend><div className={styles.fieldGrid}><label>Competition name<input required value={name} onChange={(event) => setName(event.target.value)} /></label><label>Sport<input value={workspace.sport} disabled /></label><label>Competition type<select value={type} onChange={(event) => setType(event.target.value)}>{types.map((item) => <option key={item}>{item}</option>)}</select></label><label>Tier<input type="number" min="1" value={tier} onChange={(event) => setTier(event.target.value)} /></label><label>Primary league<select required value={league} onChange={(event) => setLeague(event.target.value)}><option value="">Select league</option>{leagues.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label><label>Higher competition<select value={higher} onChange={(event) => setHigher(event.target.value)}><option value="">None</option>{identities.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label></div><label>Description<textarea value={description} onChange={(event) => setDescription(event.target.value)} /></label></fieldset> : null}
-    {step === 1 ? <fieldset><legend>Validated competition format</legend><div className={styles.fieldGrid}><label>Format<select value={format} onChange={(event) => setFormat(event.target.value)}><option value="SINGLE_ROUND_ROBIN">Single round-robin</option><option value="DOUBLE_ROUND_ROBIN">Double round-robin</option><option value="STRAIGHT_KNOCKOUT">Straight knockout</option><option value="GROUPS_AND_KNOCKOUT">Groups and knockout</option><option value="LEAGUE_AND_PLAYOFFS">League and playoffs</option><option value="SERIES">Series</option></select></label><label>Match duration (minutes)<input type="number" min="10" max="240" value={duration} onChange={(event) => setDuration(event.target.value)} /></label><label>Minimum clubs<input type="number" min="2" value={minimumClubs} onChange={(event) => setMinimumClubs(event.target.value)} /></label><label>Maximum clubs<input type="number" min="2" value={maximumClubs} onChange={(event) => setMaximumClubs(event.target.value)} /></label></div><div className={styles.checkGrid}><label><input type="checkbox" checked={promotion} onChange={(event) => setPromotion(event.target.checked)} /> Promotion enabled</label><label><input type="checkbox" checked={relegation} onChange={(event) => setRelegation(event.target.checked)} /> Relegation enabled</label></div><div className={styles.fieldGrid}>{promotion ? <label>Number promoted<input type="number" min="1" value={promoted} onChange={(event) => setPromoted(event.target.value)} /></label> : null}{relegation ? <label>Number relegated<input type="number" min="1" value={relegated} onChange={(event) => setRelegated(event.target.value)} /></label> : null}</div></fieldset> : null}
-    {step === 2 ? <fieldset><legend>Administrator assignment</legend>{administratorLoadFailed ? <p role="alert">Administrator choices could not be loaded. Close and reopen the wizard to retry.</p> : null}<div className={styles.fieldGrid}><label>Active workspace user<select required value={admin} onChange={(event) => setAdmin(event.target.value)}><option value="">Select user</option>{eligible.map((item) => <option key={item.id} value={item.id}>{item.name} · {item.email}</option>)}</select></label><label>Responsibility<select value={adminRole} onChange={(event) => setAdminRole(event.target.value)}><option value="LEAGUE_ADMIN">Primary League Administrator</option><option value="COMPETITION_ADMIN">Competition Administrator</option><option value="FIXTURES_MANAGER">Fixtures Manager</option><option value="REGISTRAR">Registrar</option><option value="VIEWER">Read-only administrator</option></select></label></div><p className={styles.mutedText}>Only active maintained users in {workspace.name} are eligible. Backend permissions remain authoritative.</p></fieldset> : null}
+    {step === 0 ? <fieldset><legend>Parent League</legend><label>Parent League<select required value={league} onChange={(event) => setLeague(event.target.value)}><option value="">Select League</option>{leagues.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label><p className={styles.mutedText}>Choose the maintained League container for this permanent competition.</p></fieldset> : null}
+    {step === 1 ? <fieldset><legend>Permanent competition identity</legend><div className={styles.fieldGrid}><label>Competition name<input required value={name} onChange={(event) => setName(event.target.value)} /></label><label>Sport{options.workspace.is_multi_sport ? <select required value={sport} onChange={(event) => setSport(event.target.value)}><option value="">Select sport</option>{options.supported_sports.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select> : <input value={sport} disabled aria-describedby="workspace-sport-help" />}</label><label>Competition type<select value={type} onChange={(event) => setType(event.target.value)}>{options.competition_types.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label><label>Tier<input type="number" min="1" value={tier} onChange={(event) => setTier(event.target.value)} /></label><label>Higher competition<select value={higher} onChange={(event) => setHigher(event.target.value)}><option value="">None</option>{identities.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label></div><p id="workspace-sport-help" className={styles.mutedText}>Sport authority comes from {workspace.name}.</p><label>Description<textarea value={description} onChange={(event) => setDescription(event.target.value)} /></label></fieldset> : null}
+    {step === 2 ? <fieldset><legend>Validated competition format</legend><div className={styles.fieldGrid}><label>Format<select value={format} onChange={(event) => setFormat(event.target.value)}>{options.competition_format_types.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label><label>Match duration (minutes)<input type="number" min="10" max="240" value={duration} onChange={(event) => setDuration(event.target.value)} /></label><label>Minimum clubs<input type="number" min="2" value={minimumClubs} onChange={(event) => setMinimumClubs(event.target.value)} /></label><label>Maximum clubs<input type="number" min="2" value={maximumClubs} onChange={(event) => setMaximumClubs(event.target.value)} /></label></div><div className={styles.checkGrid}><label><input type="checkbox" checked={promotion} onChange={(event) => setPromotion(event.target.checked)} /> Promotion enabled</label><label><input type="checkbox" checked={relegation} onChange={(event) => setRelegation(event.target.checked)} /> Relegation enabled</label></div><div className={styles.fieldGrid}>{promotion ? <label>Number promoted<input type="number" min="1" value={promoted} onChange={(event) => setPromoted(event.target.value)} /></label> : null}{relegation ? <label>Number relegated<input type="number" min="1" value={relegated} onChange={(event) => setRelegated(event.target.value)} /></label> : null}</div></fieldset> : null}
     {step === 3 ? <fieldset><legend>First draft season</legend><div className={styles.fieldGrid}><label>Season<select required value={season} onChange={(event) => setSeason(event.target.value)}><option value="">Select season</option>{availableSeasons.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label><label>Currency<input value="UGX" disabled /></label><label>Registration opens<input type="datetime-local" value={registrationOpen} onChange={(event) => setRegistrationOpen(event.target.value)} /></label><label>Registration closes<input type="datetime-local" value={registrationClose} onChange={(event) => setRegistrationClose(event.target.value)} /></label><label>Entry fee<input inputMode="decimal" value={entryFee} onChange={(event) => setEntryFee(event.target.value)} /></label></div><p className={styles.mutedText}>The edition remains in DRAFT. It will not be published or activated automatically.</p></fieldset> : null}
-    {step === 4 ? <fieldset><legend>Season club participation</legend><p>No clubs are silently enrolled during creation. After the draft is created, use Club Entries to invite and confirm eligible Union clubs against the maintained season membership records.</p><p className={styles.mutedText}>This avoids deriving a final season list from incomplete paginated data.</p></fieldset> : null}
-    {step === 5 ? <fieldset><legend>Review before creation</legend><dl><dt>Identity</dt><dd>{name} · {workspace.sport} · {type}</dd><dt>Format</dt><dd>{format.replaceAll("_", " ")} · {minimumClubs}–{maximumClubs} clubs</dd><dt>Administrator</dt><dd>{eligible.find((item) => item.id === Number(admin))?.name ?? "Not selected"} · {adminRole.replaceAll("_", " ")}</dd><dt>First edition</dt><dd>{availableSeasons.find((item) => item.id === Number(season))?.name ?? "Not selected"} · DRAFT</dd><dt>Movements</dt><dd>{promotion ? `${promoted} promoted` : "Promotion disabled"}; {relegation ? `${relegated} relegated` : "relegation disabled"}</dd><dt>Club entries</dt><dd>None automatically enrolled</dd></dl></fieldset> : null}
+    {step === 4 ? <fieldset><legend>Season club participation</legend><p>No clubs are silently enrolled during creation. After the draft is created, use Seasons &amp; Club Entries to select maintained membership records.</p><p className={styles.mutedText}>Initial participation is optional and remains empty unless explicitly selected.</p></fieldset> : null}
+    {step === 5 ? <fieldset><legend>Administrator assignment</legend>{administratorLoadFailed ? <p role="alert">Administrator choices could not be loaded. Close and reopen the wizard to retry.</p> : null}<div className={styles.fieldGrid}><label>Active workspace user<select required value={admin} onChange={(event) => setAdmin(event.target.value)}><option value="">Select user</option>{eligible.map((item) => <option key={item.id} value={item.id}>{item.name} · {item.email}</option>)}</select></label><label>Responsibility<select value={adminRole} onChange={(event) => setAdminRole(event.target.value)}>{options.competition_administrator_roles.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label></div><p className={styles.mutedText}>The maintained scope—not the account email or base role—authorizes access.</p></fieldset> : null}
+    {step === 6 ? <fieldset><legend>Review before creation</legend><dl><dt>Parent League</dt><dd>{leagues.find((item) => item.id === Number(league))?.name}</dd><dt>Identity</dt><dd>{name} · {sport} · {type}</dd><dt>Format</dt><dd>{format.replaceAll("_", " ")} · {minimumClubs}–{maximumClubs} clubs</dd><dt>Administrator</dt><dd>{eligible.find((item) => item.id === Number(admin))?.name ?? "Not selected"} · {adminRole.replaceAll("_", " ")}</dd><dt>First edition</dt><dd>{availableSeasons.find((item) => item.id === Number(season))?.name ?? "Not selected"} · DRAFT</dd><dt>Club entries</dt><dd>None automatically enrolled</dd></dl></fieldset> : null}
     {validationMessage ? <p role="alert">{validationMessage}</p> : null}
-    <div className={styles.wizardActions}>{step > 0 ? <button type="button" className={styles.subtleButton} onClick={() => { setValidationMessage(""); setStep((value) => value - 1); }}>Back</button> : <span />}<button type="submit" disabled={working}>{step === 5 ? (working ? "Creating…" : "Create draft competition") : "Continue"}</button></div>
+    <div className={styles.wizardActions}>{step > 0 ? <button type="button" className={styles.subtleButton} onClick={() => { setValidationMessage(""); setStep((value) => value - 1); }}>Back</button> : <span />}<button type="submit" disabled={working}>{step === 6 ? (working ? "Creating…" : "Create draft competition") : "Continue"}</button></div>
   </form>;
 }

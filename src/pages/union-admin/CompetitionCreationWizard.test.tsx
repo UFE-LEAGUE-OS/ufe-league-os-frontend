@@ -5,6 +5,7 @@ import type {
   UnionAdminLeagueOption,
   UnionAdminSeasonRecord,
   UnionWorkspaceOption,
+  UnionGovernanceOptions,
 } from "../../services/unionAdminService";
 import CompetitionCreationWizard from "./CompetitionCreationWizard";
 
@@ -21,6 +22,18 @@ const workspace: UnionWorkspaceOption = {
 };
 const leagues = [{ id: 4, name: "Premiership" }] as UnionAdminLeagueOption[];
 const seasons = [{ id: 3, league: 4, name: "2027" }] as UnionAdminSeasonRecord[];
+const options: UnionGovernanceOptions = {
+  workspace: { slug: "uru", name: workspace.name, sport: "RUGBY", is_multi_sport: false },
+  supported_sports: [{ value: "RUGBY", label: "Rugby" }],
+  competition_types: [{ value: "LEAGUE", label: "League" }],
+  competition_format_types: [
+    { value: "DOUBLE_ROUND_ROBIN", label: "Double round robin" },
+  ],
+  sport_variants: { RUGBY: [] }, format_templates: { RUGBY: [] },
+  league_administrator_roles: [{ value: "LEAGUE_ADMIN", label: "League Administrator" }],
+  competition_administrator_roles: [{ value: "COMPETITION_ADMIN", label: "Competition Administrator" }],
+  club_administrator_roles: [], club_affiliation_statuses: [], league_membership_statuses: [],
+};
 
 function renderWizard(onError = vi.fn()) {
   render(
@@ -29,6 +42,7 @@ function renderWizard(onError = vi.fn()) {
       leagues={leagues}
       seasons={seasons}
       identities={[]}
+      options={options}
       onCancel={vi.fn()}
       onCreated={vi.fn()}
       onError={onError}
@@ -38,14 +52,15 @@ function renderWizard(onError = vi.fn()) {
 }
 
 async function reachReview() {
+  fireEvent.click(screen.getByRole("button", { name: "Continue" }));
   fireEvent.change(screen.getByLabelText("Competition name"), { target: { value: "National Championship" } });
+  fireEvent.click(screen.getByRole("button", { name: "Continue" }));
+  fireEvent.click(screen.getByRole("button", { name: "Continue" }));
+  fireEvent.change(screen.getByLabelText("Season"), { target: { value: "3" } });
   fireEvent.click(screen.getByRole("button", { name: "Continue" }));
   fireEvent.click(screen.getByRole("button", { name: "Continue" }));
   await screen.findByRole("option", { name: /Competition Owner/ });
   fireEvent.change(screen.getByLabelText("Active workspace user"), { target: { value: "11" } });
-  fireEvent.click(screen.getByRole("button", { name: "Continue" }));
-  fireEvent.change(screen.getByLabelText("Season"), { target: { value: "3" } });
-  fireEvent.click(screen.getByRole("button", { name: "Continue" }));
   fireEvent.click(screen.getByRole("button", { name: "Continue" }));
 }
 
@@ -59,6 +74,7 @@ describe("CompetitionCreationWizard", () => {
 
   it("retains entered values when moving backward", async () => {
     renderWizard();
+    fireEvent.click(screen.getByRole("button", { name: "Continue" }));
     fireEvent.change(screen.getByLabelText("Competition name"), { target: { value: "National Championship" } });
     fireEvent.click(screen.getByRole("button", { name: "Continue" }));
     expect(await screen.findByText("Validated competition format")).toBeInTheDocument();
@@ -68,6 +84,7 @@ describe("CompetitionCreationWizard", () => {
 
   it("prevents advancing when the current step is invalid", async () => {
     renderWizard();
+    fireEvent.click(screen.getByRole("button", { name: "Continue" }));
     fireEvent.change(screen.getByLabelText("Competition name"), { target: { value: "National Championship" } });
     fireEvent.click(screen.getByRole("button", { name: "Continue" }));
     fireEvent.change(screen.getByLabelText("Maximum clubs"), { target: { value: "3" } });
