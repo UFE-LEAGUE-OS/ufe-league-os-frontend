@@ -1,14 +1,18 @@
-import { unionDemoData } from "../../data/unionAdminDemoData";
-import UnionRecordsScreenBase from "./UnionRecordsScreenBase";
+import { EmptyState, ScreenHeader } from "../../components/union-admin/UnionAdminUi";
+import styles from "./UnionAdminScreens.module.css";
 
 export default function UnionCommunicationsScreen() {
   return (
-    <UnionRecordsScreenBase
-      eyebrow="Communications"
-      title="Announcements"
-      description="Search, filter and inspect workspace records when a maintained contract is available."
-      records={unionDemoData.announcements}
-      showCreateAnnouncement
-    />
+    <section className={styles.screen}>
+      <ScreenHeader
+        eyebrow="Communications"
+        title="Union communications"
+        description="Drafts, scheduled notices and published announcements will appear when a maintained Union-workspace contract is available."
+      />
+      <EmptyState
+        title="Union communications are not available"
+        description="Club-owned announcements are intentionally not shown in this workspace."
+      />
+    </section>
   );
 }

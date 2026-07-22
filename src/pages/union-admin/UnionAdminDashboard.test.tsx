@@ -76,6 +76,21 @@ vi.mock("../../components/UnionOperationalPanels/UnionOperationalPanels", () => 
   UnionRegistrationsPanel: ({ workspaceSlug }: { workspaceSlug: string }) => <div>Registrations panel for {workspaceSlug}</div>,
   UnionOfficialReadinessPanel: ({ workspaceSlug }: { workspaceSlug: string }) => <div>Official readiness panel for {workspaceSlug}</div>,
 }));
+vi.mock("./UnionRegistrationsScreen", () => ({
+  default: ({ workspaceSlug }: { workspaceSlug: string }) => (
+    <div>Registrations panel for {workspaceSlug}</div>
+  ),
+}));
+vi.mock("./UnionNationalTeamsScreen", () => ({
+  default: ({ workspaceSlug }: { workspaceSlug: string }) => (
+    <div>National Teams panel for {workspaceSlug}</div>
+  ),
+}));
+vi.mock("./UnionStatisticsRecordsScreen", () => ({
+  default: ({ workspaceSlug }: { workspaceSlug: string }) => (
+    <div>Statistics for {workspaceSlug}</div>
+  ),
+}));
 
 const workspace = {
   id: 1,

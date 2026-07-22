@@ -19,12 +19,12 @@ const workspace: UnionWorkspaceOption = {
 };
 
 describe("UnionProfileBrandingScreen", () => {
-  it("labels local branding files as preview-only", () => {
+  it("shows maintained workspace identity without non-persisting controls", () => {
     render(<UnionProfileBrandingScreen workspace={workspace} />);
 
-    expect(screen.getByText(/Preview only/)).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: /Save branding/ }),
-    ).toBeDisabled();
+    expect(screen.getByText("Uganda Rugby Union")).toBeInTheDocument();
+    expect(screen.getByText("Branding editing unavailable")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Save branding/ })).not.toBeInTheDocument();
+    expect(screen.getAllByRole("heading", { level: 2 })).toHaveLength(1);
   });
 });

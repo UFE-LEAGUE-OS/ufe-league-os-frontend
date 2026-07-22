@@ -1,774 +1,241 @@
-import { type ChangeEvent, type FormEvent, useMemo, useState } from "react";
-
-import UnionAdminManagementWorkflow from "../../components/UnionAdminManagementWorkflow/UnionAdminManagementWorkflow";
 import {
-    DemoNotice,
-    InternalTabs,
-    RecordList,
-    ScreenHeader,
-    StatusBadge,
+  type FormEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+
+import {
+  EmptyState,
+  ErrorState,
+  InternalTabs,
+  LoadingState,
+  RecordList,
+  ScreenHeader,
+  StatusBadge,
 } from "../../components/union-admin/UnionAdminUi";
-import { unionDemoData } from "../../data/unionAdminDemoData";
-import type { UnionWorkspaceOption } from "../../services/unionAdminService";
-import { getUnionAdminDataSourceMode } from "../../utils/unionAdminDemoMode";
-import UnionAdminScreenToolbar from "./UnionAdminScreenToolbar";
+import {
+  createUnionCompetitionEdition,
+  createUnionCompetitionIdentity,
+  generateUnionAdminFixtures,
+  getUnionAdminLeagueClubMemberships,
+  getUnionAdminManagementCompetitions,
+  getUnionAdminManagementLeagues,
+  getUnionAdminManagementSeasons,
+  getUnionCompetitionEditions,
+  getUnionCompetitionIdentities,
+  transitionUnionCompetitionEdition,
+  type UnionAdminCompetitionRecord,
+  type UnionAdminLeagueClubMembership,
+  type UnionAdminLeagueOption,
+  type UnionAdminSeasonRecord,
+  type UnionCompetitionEdition,
+  type UnionCompetitionIdentity,
+  type UnionWorkspaceOption,
+} from "../../services/unionAdminService";
 import styles from "./UnionCompetitionsScreen.module.css";
 
 type CompetitionView =
-    | "directory"
-    | "identity"
-    | "editions"
-    | "entries"
-    | "scheduling"
-    | "publication"
-    | "createCompetition"
-    | "addSeason";
-
+  | "directory"
+  | "identity"
+  | "editions"
+  | "entries"
+  | "scheduling"
+  | "publication"
+  | "createCompetition"
+  | "addSeason";
 const views: Array<{ key: CompetitionView; label: string }> = [
-    { key: "directory", label: "Competition Directory" },
-    { key: "identity", label: "Identity Detail" },
-    { key: "editions", label: "Editions / Seasons" },
-    { key: "entries", label: "Club Entries" },
-    { key: "scheduling", label: "Scheduling / Fixtures" },
-    { key: "publication", label: "Publication & Lifecycle" },
-    { key: "createCompetition", label: "Create Competition" },
-    { key: "addSeason", label: "Add Season" },
+  { key: "directory", label: "Competition Directory" },
+  { key: "identity", label: "Identity Detail" },
+  { key: "editions", label: "Editions / Seasons" },
+  { key: "entries", label: "Club Entries" },
+  { key: "scheduling", label: "Scheduling / Fixtures" },
+  { key: "publication", label: "Publication & Lifecycle" },
 ];
 
-interface CreateCompetitionFormState {
-    title: string;
-    slug: string;
-    competitionType: string;
-    format: string;
-    category: string;
-    gender: string;
-    ageGroup: string;
-    status: string;
-    description: string;
-}
-
-interface AddSeasonFormState {
-    competitionId: string;
-    title: string;
-    seasonLabel: string;
-    startDate: string;
-    endDate: string;
-    registrationStart: string;
-    registrationEnd: string;
-    entryCap: string;
-    status: string;
-    notes: string;
-}
-
-const initialCreateCompetitionForm: CreateCompetitionFormState = {
-    title: "",
-    slug: "",
-    competitionType: "LEAGUE",
-    format: "Rugby 15s",
-    category: "Senior",
-    gender: "Mixed / Open",
-    ageGroup: "Senior",
-    status: "DRAFT",
-    description: "",
+const nextStatuses: Record<string, string[]> = {
+  DRAFT: ["REGISTRATION_OPEN", "CANCELLED"],
+  REGISTRATION_OPEN: ["REGISTRATION_CLOSED", "CANCELLED"],
+  REGISTRATION_CLOSED: ["ENTRIES_UNDER_REVIEW", "SCHEDULING", "CANCELLED"],
+  ENTRIES_UNDER_REVIEW: ["SCHEDULING", "CANCELLED"],
+  SCHEDULING: ["READY_FOR_PUBLICATION", "CANCELLED"],
+  READY_FOR_PUBLICATION: ["PUBLISHED", "SCHEDULING", "CANCELLED"],
+  PUBLISHED: ["ACTIVE", "CANCELLED"],
+  ACTIVE: ["COMPLETED", "CANCELLED"],
+  COMPLETED: ["ARCHIVED"],
 };
 
-const initialAddSeasonForm: AddSeasonFormState = {
-    competitionId: "comp-rugby-prem",
-    title: "2027 Premiership",
-    seasonLabel: "2027",
-    startDate: "2027-02-06",
-    endDate: "2027-11-27",
-    registrationStart: "2026-10-01",
-    registrationEnd: "2027-01-15",
-    entryCap: "12",
-    status: "DRAFT",
-    notes: "",
-};
+function errorMessage(error: unknown) {
+  const candidate = error as {
+    response?: { status?: number; data?: { detail?: string } };
+    message?: string;
+  };
+  if (candidate.response?.status === 403) {
+    return "You do not have permission to view or change competitions in this workspace.";
+  }
+  return (
+    candidate.response?.data?.detail ||
+    candidate.message ||
+    "The competition service could not be reached. Please retry."
+  );
+}
 
 export interface UnionCompetitionsScreenProps {
-    workspace: UnionWorkspaceOption;
+  workspace: UnionWorkspaceOption;
 }
 
-export default function UnionCompetitionsScreen({
-    workspace,
-}: UnionCompetitionsScreenProps) {
-    const [view, setView] = useState<CompetitionView>("directory");
-    const [selectedId, setSelectedId] = useState(unionDemoData.competitions[0].id);
-    const [createForm, setCreateForm] = useState<CreateCompetitionFormState>(
-        initialCreateCompetitionForm,
-    );
-    const [seasonForm, setSeasonForm] = useState<AddSeasonFormState>(
-        initialAddSeasonForm,
-    );
-    const [workflowNotice, setWorkflowNotice] = useState("");
+export default function UnionCompetitionsScreen({ workspace }: UnionCompetitionsScreenProps) {
+  const [view, setView] = useState<CompetitionView>("directory");
+  const [identities, setIdentities] = useState<UnionCompetitionIdentity[]>([]);
+  const [editions, setEditions] = useState<UnionCompetitionEdition[]>([]);
+  const [leagues, setLeagues] = useState<UnionAdminLeagueOption[]>([]);
+  const [seasons, setSeasons] = useState<UnionAdminSeasonRecord[]>([]);
+  const [competitions, setCompetitions] = useState<UnionAdminCompetitionRecord[]>([]);
+  const [memberships, setMemberships] = useState<UnionAdminLeagueClubMembership[]>([]);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [working, setWorking] = useState(false);
+  const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [leagueId, setLeagueId] = useState("");
+  const [seasonId, setSeasonId] = useState("");
+  const [fixtureStart, setFixtureStart] = useState("");
+  const [generated, setGenerated] = useState(0);
+  const loadGeneration = useRef(0);
 
-    const competition =
-        unionDemoData.competitions.find((item) => item.id === selectedId) ??
-        unionDemoData.competitions[0];
+  const selected = identities.find((item) => item.id === selectedId) ?? null;
+  const canManage = workspace.permissions.includes("union.competitions.manage");
 
-    const editions = useMemo(
-        () =>
-            unionDemoData.editions.filter(
-                (item) => item.competitionId === competition.id,
-            ),
-        [competition.id],
-    );
-
-    const addSeasonCompetition =
-        unionDemoData.competitions.find(
-            (item) => item.id === seasonForm.competitionId,
-        ) ?? unionDemoData.competitions[0];
-
-    function handleCreateFormChange(
-        event: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
-    ) {
-        const { name, value } = event.target;
-
-        setCreateForm((current) => ({
-            ...current,
-            [name]: value,
-        }));
+  const load = useCallback(async () => {
+    const generation = ++loadGeneration.current;
+    setLoading(true);
+    setError("");
+    setNotice("");
+    setSelectedId(null);
+    setEditions([]);
+    setGenerated(0);
+    setSearch("");
+    setFixtureStart("");
+    try {
+      const [identityResult, leagueRows, seasonRows, competitionRows, membershipRows] = await Promise.all([
+        getUnionCompetitionIdentities(workspace.slug),
+        getUnionAdminManagementLeagues(workspace.slug),
+        getUnionAdminManagementSeasons(workspace.slug),
+        getUnionAdminManagementCompetitions(workspace.slug),
+        getUnionAdminLeagueClubMemberships(workspace.slug),
+      ]);
+      if (loadGeneration.current !== generation) return;
+      setIdentities(identityResult.results);
+      setLeagues(leagueRows);
+      setSeasons(seasonRows);
+      setCompetitions(competitionRows);
+      setMemberships(membershipRows);
+      setSelectedId(identityResult.results[0]?.id ?? null);
+      setLeagueId(String(leagueRows[0]?.id ?? ""));
+    } catch (loadError) {
+      if (loadGeneration.current === generation) setError(errorMessage(loadError));
+    } finally {
+      if (loadGeneration.current === generation) setLoading(false);
     }
+  }, [workspace.slug]);
 
-    function handleSeasonFormChange(
-        event: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
-    ) {
-        const { name, value } = event.target;
+  useEffect(() => {
+    void load();
+    return () => {
+      loadGeneration.current += 1;
+    };
+  }, [load]);
+  useEffect(() => {
+    if (!selectedId) { setEditions([]); return; }
+    let current = true;
+    getUnionCompetitionEditions(workspace.slug, selectedId).then((result) => { if (current) setEditions(result.results); }).catch((loadError) => { if (current) setError(errorMessage(loadError)); });
+    return () => { current = false; };
+  }, [selectedId, workspace.slug]);
 
-        setSeasonForm((current) => ({
-            ...current,
-            [name]: value,
-        }));
+  const filtered = useMemo(() => identities.filter((item) => `${item.name} ${item.sport} ${item.competition_type}`.toLowerCase().includes(search.toLowerCase())), [identities, search]);
+  const selectedCompetition = selected ? competitions.find((item) => editions.some((edition) => edition.identity === selected.id && edition.competition_id === item.id)) : undefined;
+  const selectedMemberships = selectedCompetition ? memberships.filter((item) => item.league === selectedCompetition.league && (!selectedCompetition.season_id || item.season === selectedCompetition.season_id)) : [];
+
+  async function createIdentity(event: FormEvent) {
+    event.preventDefault(); setWorking(true); setError("");
+    try {
+      const created = await createUnionCompetitionIdentity({ workspace: workspace.slug, name, description, primary_league: Number(leagueId), sport: workspace.sport, competition_type: "LEAGUE" });
+      setIdentities((items) => [created, ...items]); setSelectedId(created.id); setView("identity"); setNotice(`Competition identity “${created.name}” created.`); setName(""); setDescription("");
+    } catch (actionError) { setError(errorMessage(actionError)); } finally { setWorking(false); }
+  }
+
+  async function createEdition(event: FormEvent) {
+    event.preventDefault(); if (!selected) return; setWorking(true); setError("");
+    try {
+      const created = await createUnionCompetitionEdition(workspace.slug, selected.id, { season: Number(seasonId) });
+      setEditions((items) => [created, ...items]); setView("editions"); setNotice(`Edition for ${created.season_name} created.`); setSeasonId("");
+    } catch (actionError) { setError(errorMessage(actionError)); } finally { setWorking(false); }
+  }
+
+  async function transition(edition: UnionCompetitionEdition, status: string) {
+    const label = status.replaceAll("_", " ");
+    let reason = "";
+    if (status === "CANCELLED") {
+      const suppliedReason = window.prompt(
+        `Provide a reason for cancelling ${edition.season_name ?? edition.identity_name}.`,
+      );
+      if (!suppliedReason?.trim()) return;
+      reason = suppliedReason.trim();
+    } else if (!window.confirm(`Move ${edition.season_name} to ${label}?`)) {
+      return;
     }
-
-    function handleCreateCompetition(event: FormEvent<HTMLFormElement>) {
-        event.preventDefault();
-
-        setWorkflowNotice(
-            `Draft competition prepared: "${createForm.title || "Untitled competition"}". This is a local preview only and is not persisted yet.`,
-        );
-        setView("identity");
+    setWorking(true);
+    setError("");
+    try {
+      const updated = await transitionUnionCompetitionEdition(
+        workspace.slug,
+        edition.id,
+        status,
+        reason,
+      );
+      setEditions((items) =>
+        items.map((item) => (item.id === updated.id ? updated : item)),
+      );
+      setNotice(
+        `${updated.season_name} moved to ${updated.status.replaceAll("_", " ")}.`,
+      );
+    } catch (actionError) {
+      setError(errorMessage(actionError));
+    } finally {
+      setWorking(false);
     }
+  }
 
-    function handleAddSeason(event: FormEvent<HTMLFormElement>) {
-        event.preventDefault();
+  async function generateFixtures() {
+    if (!selectedCompetition || !fixtureStart || generated || !window.confirm("Generate fixtures for this edition? Existing fixtures will be preserved.")) return;
+    setWorking(true); setError("");
+    try {
+      const result = await generateUnionAdminFixtures({ workspace: workspace.slug, competition: selectedCompetition.id, start_date: fixtureStart, clear_existing: false });
+      setGenerated(result.created_count); setNotice(`${result.created_count} fixtures generated successfully.`);
+    } catch (actionError) { setError(errorMessage(actionError)); } finally { setWorking(false); }
+  }
 
-        setWorkflowNotice(
-            `Season draft prepared for "${addSeasonCompetition.title}" → "${seasonForm.title}". This is a local preview only and is not persisted yet.`,
-        );
-        setView("editions");
-    }
-
-    if (getUnionAdminDataSourceMode() === "api") {
-        return (
-            <section className={styles.screen}>
-                <ScreenHeader
-                    eyebrow="Competitions"
-                    title="Competition management"
-                    description="Create maintained competition editions, manage club entries, and prepare fixtures through the connected Union APIs."
-                />
-                <UnionAdminManagementWorkflow
-                    workspaceSlug={workspace.slug}
-                    workspaceLabel={workspace.name}
-                />
-            </section>
-        );
-    }
-
-    return (
-        <section className={styles.screen}>
-            <ScreenHeader
-                eyebrow="Competitions"
-                title="Competition control room"
-                description="Manage competition identities, create seasonal editions and prepare the competition lifecycle from setup through publication."
-                actions={
-                    <div className={styles.inlineActionGroup}>
-                        <button
-                            type="button"
-                            onClick={() => setView("createCompetition")}
-                        >
-                            Create Competition
-                        </button>
-                        <button
-                            type="button"
-                            className={styles.subtleButton}
-                            onClick={() => setView("addSeason")}
-                        >
-                            Add Season
-                        </button>
-                    </div>
-                }
-            />
-
-            <DemoNotice />
-
-            {workflowNotice ? (
-                <div className={styles.workflowNotice}>{workflowNotice}</div>
-            ) : null}
-
-            <InternalTabs<CompetitionView>
-                label="Competition views"
-                active={view}
-                onChange={setView}
-                items={views}
-            />
-
-            {(view === "directory" ||
-                view === "identity" ||
-                view === "editions" ||
-                view === "entries" ||
-                view === "scheduling" ||
-                view === "publication") && (
-                <div className={styles.heroSummaryGrid}>
-                    <article>
-                        <span>Total competition identities</span>
-                        <strong>{unionDemoData.competitions.length}</strong>
-                        <small>Managed under {workspace.name}</small>
-                    </article>
-                    <article>
-                        <span>Seasonal editions</span>
-                        <strong>{unionDemoData.editions.length}</strong>
-                        <small>Published and planned seasons</small>
-                    </article>
-                    <article>
-                        <span>Current selection</span>
-                        <strong>{competition.title}</strong>
-                        <small>{competition.subtitle}</small>
-                    </article>
-                </div>
-            )}
-
-            {view === "directory" ? (
-                <div className={styles.workflowGrid}>
-                    <div className={styles.formCard}>
-                        <UnionAdminScreenToolbar placeholder="Search competitions" />
-
-                        <RecordList
-                            records={unionDemoData.competitions}
-                            selectedId={selectedId}
-                            onSelect={(id) => {
-                                setSelectedId(id);
-                                setView("identity");
-                            }}
-                        />
-                    </div>
-
-                    <aside className={styles.supportCard}>
-                        <h3>Competition workflow</h3>
-                        <ul className={styles.helperList}>
-                            <li>Create the master competition identity.</li>
-                            <li>Add a new season / edition to that identity.</li>
-                            <li>Attach clubs and define participation rules.</li>
-                            <li>Prepare fixtures and publish the competition lifecycle.</li>
-                        </ul>
-
-                        <div className={styles.miniStatGrid}>
-                            <article>
-                                <strong>{unionDemoData.competitions.length}</strong>
-                                <span>identities</span>
-                            </article>
-                            <article>
-                                <strong>{unionDemoData.editions.length}</strong>
-                                <span>editions</span>
-                            </article>
-                            <article>
-                                <strong>{unionDemoData.clubs.length}</strong>
-                                <span>sample clubs</span>
-                            </article>
-                        </div>
-                    </aside>
-                </div>
-            ) : null}
-
-            {view === "identity" ? (
-                <div className={styles.detailGrid}>
-                    <article className={styles.formCard}>
-                        <h3>{competition.title}</h3>
-                        <dl>
-                            <dt>Short name</dt>
-                            <dd>National Premiership</dd>
-
-                            <dt>Slug</dt>
-                            <dd>{competition.meta}</dd>
-
-                            <dt>Sport</dt>
-                            <dd>{workspace.sport}</dd>
-
-                            <dt>Format</dt>
-                            <dd>{competition.subtitle}</dd>
-
-                            <dt>Workspace</dt>
-                            <dd>{workspace.name}</dd>
-
-                            <dt>Status</dt>
-                            <dd>{competition.status}</dd>
-                        </dl>
-                    </article>
-
-                    <aside className={styles.supportCard}>
-                        <h3>Identity actions</h3>
-                        <div className={styles.linkGroup}>
-                            <button
-                                type="button"
-                                onClick={() => setView("addSeason")}
-                            >
-                                Add season to this competition
-                            </button>
-                            <button
-                                type="button"
-                                className={styles.subtleButton}
-                                onClick={() => setView("publication")}
-                            >
-                                Review lifecycle
-                            </button>
-                        </div>
-                        <p className={styles.mutedText}>
-                            Use the master identity to control repeat seasons and
-                            preserve long-term competition history.
-                        </p>
-                    </aside>
-                </div>
-            ) : null}
-
-            {view === "editions" ? (
-                <div className={styles.cardGrid}>
-                    {editions.map((item) => (
-                        <article key={item.id}>
-                            <StatusBadge>{item.status.replaceAll("_", " ")}</StatusBadge>
-                            <h3>{item.title}</h3>
-                            <dl>
-                                <dt>Season</dt>
-                                <dd>{item.season}</dd>
-
-                                <dt>Dates</dt>
-                                <dd>
-                                    {item.startDate} — {item.endDate}
-                                </dd>
-
-                                <dt>Registration</dt>
-                                <dd>{item.registrationWindow}</dd>
-
-                                <dt>Club entries</dt>
-                                <dd>{item.clubEntries}</dd>
-
-                                <dt>Fixture readiness</dt>
-                                <dd>{item.fixtureReadiness}</dd>
-                            </dl>
-                        </article>
-                    ))}
-
-                    <article className={styles.formCard}>
-                        <StatusBadge>DRAFT WORKFLOW</StatusBadge>
-                        <h3>Add a new season</h3>
-                        <p className={styles.mutedText}>
-                            Create the next edition while keeping the competition
-                            identity consistent.
-                        </p>
-                        <button type="button" onClick={() => setView("addSeason")}>
-                            Open add season screen
-                        </button>
-                    </article>
-                </div>
-            ) : null}
-
-            {view === "entries" ? (
-                <>
-                    <div className={styles.actionRow}>
-                        <button type="button">Bulk-add Clubs</button>
-                        <button type="button" className={styles.subtleButton}>
-                            Promotion / Relegation
-                        </button>
-                    </div>
-
-                    <RecordList
-                        records={unionDemoData.clubs.map((club, index) => ({
-                            ...club,
-                            status:
-                                index === 2
-                                    ? "INVITED"
-                                    : index === 1
-                                      ? "PROMOTED"
-                                      : "ACTIVE",
-                        }))}
-                    />
-                </>
-            ) : null}
-
-            {view === "scheduling" ? (
-                <div className={styles.detailGrid}>
-                    <form className={styles.formCard}>
-                        <h3>Fixture generation preview</h3>
-
-                        <label>
-                            Edition
-                            <select defaultValue="2027 Premiership">
-                                <option>2027 Premiership</option>
-                            </select>
-                        </label>
-
-                        <label>
-                            First match date
-                            <input type="date" defaultValue="2027-02-06" />
-                        </label>
-
-                        <label>
-                            Match day
-                            <select defaultValue="Saturday">
-                                <option>Saturday</option>
-                                <option>Sunday</option>
-                            </select>
-                        </label>
-
-                        <label>
-                            Number of rounds
-                            <select defaultValue="Home and away">
-                                <option>Home and away</option>
-                                <option>Single round robin</option>
-                            </select>
-                        </label>
-
-                        <button type="button">Preview fixtures</button>
-                    </form>
-
-                    <aside className={styles.supportCard}>
-                        <h3>Preview only</h3>
-                        <p>
-                            Round 1 · Kampala Rugby Club vs Nile Rugby Club
-                        </p>
-                        <p>
-                            Saturday 6 February 2027 · Venue TBC
-                        </p>
-                        <small className={styles.mutedText}>
-                            No fixture history is persisted from demo mode.
-                        </small>
-                    </aside>
-                </div>
-            ) : null}
-
-            {view === "publication" ? (
-                <div className={styles.timeline}>
-                    <article>
-                        <StatusBadge>REGISTRATION OPEN</StatusBadge>
-                        <h3>2027 Premiership</h3>
-                        <p>Available local transition: Close registration.</p>
-                        <button type="button">Close registration (demo)</button>
-                    </article>
-
-                    <article>
-                        <StatusBadge>ACTIVE</StatusBadge>
-                        <h3>2026 Premiership</h3>
-                        <p>
-                            The active edition has no premature completion action in
-                            this review state.
-                        </p>
-                    </article>
-                </div>
-            ) : null}
-
-            {view === "createCompetition" ? (
-                <div className={styles.workflowGrid}>
-                    <form className={styles.formCard} onSubmit={handleCreateCompetition}>
-                        <h3>Create competition identity</h3>
-                        <p className={styles.mutedText}>
-                            Create the master competition record first. Seasonal
-                            editions can then be added underneath it.
-                        </p>
-
-                        <div className={styles.fieldGrid}>
-                            <label>
-                                Competition title
-                                <input
-                                    name="title"
-                                    value={createForm.title}
-                                    onChange={handleCreateFormChange}
-                                    placeholder="National Rugby Championship"
-                                />
-                            </label>
-
-                            <label>
-                                Slug
-                                <input
-                                    name="slug"
-                                    value={createForm.slug}
-                                    onChange={handleCreateFormChange}
-                                    placeholder="national-rugby-championship"
-                                />
-                            </label>
-
-                            <label>
-                                Competition type
-                                <select
-                                    name="competitionType"
-                                    value={createForm.competitionType}
-                                    onChange={handleCreateFormChange}
-                                >
-                                    <option value="LEAGUE">League</option>
-                                    <option value="KNOCKOUT">Knockout</option>
-                                    <option value="CUP">Cup</option>
-                                    <option value="FESTIVAL">Festival</option>
-                                </select>
-                            </label>
-
-                            <label>
-                                Format
-                                <select
-                                    name="format"
-                                    value={createForm.format}
-                                    onChange={handleCreateFormChange}
-                                >
-                                    <option value="Rugby 15s">Rugby 15s</option>
-                                    <option value="Rugby 7s">Rugby 7s</option>
-                                    <option value="Rugby 10s">Rugby 10s</option>
-                                </select>
-                            </label>
-
-                            <label>
-                                Category
-                                <select
-                                    name="category"
-                                    value={createForm.category}
-                                    onChange={handleCreateFormChange}
-                                >
-                                    <option value="Senior">Senior</option>
-                                    <option value="Women">Women</option>
-                                    <option value="Youth">Youth</option>
-                                    <option value="Schools">Schools</option>
-                                </select>
-                            </label>
-
-                            <label>
-                                Gender
-                                <select
-                                    name="gender"
-                                    value={createForm.gender}
-                                    onChange={handleCreateFormChange}
-                                >
-                                    <option value="Mixed / Open">Mixed / Open</option>
-                                    <option value="Women">Women</option>
-                                    <option value="Men">Men</option>
-                                </select>
-                            </label>
-
-                            <label>
-                                Age group
-                                <select
-                                    name="ageGroup"
-                                    value={createForm.ageGroup}
-                                    onChange={handleCreateFormChange}
-                                >
-                                    <option value="Senior">Senior</option>
-                                    <option value="U20">U20</option>
-                                    <option value="U18">U18</option>
-                                    <option value="U16">U16</option>
-                                </select>
-                            </label>
-
-                            <label>
-                                Initial status
-                                <select
-                                    name="status"
-                                    value={createForm.status}
-                                    onChange={handleCreateFormChange}
-                                >
-                                    <option value="DRAFT">Draft</option>
-                                    <option value="PUBLISHED">Published</option>
-                                    <option value="ACTIVE">Active</option>
-                                </select>
-                            </label>
-                        </div>
-
-                        <label>
-                            Description
-                            <textarea
-                                name="description"
-                                value={createForm.description}
-                                onChange={handleCreateFormChange}
-                                placeholder="Describe the competition, participation scope and governance notes."
-                            />
-                        </label>
-
-                        <div className={styles.inlineActionGroup}>
-                            <button type="submit">Save competition draft</button>
-                            <button
-                                type="button"
-                                className={styles.subtleButton}
-                                onClick={() => setView("directory")}
-                            >
-                                Back to directory
-                            </button>
-                        </div>
-                    </form>
-
-                    <aside className={styles.supportCard}>
-                        <h3>What this screen does</h3>
-                        <ul className={styles.helperList}>
-                            <li>Creates the permanent competition identity.</li>
-                            <li>Separates competition metadata from seasonal editions.</li>
-                            <li>Prepares the competition for later season setup.</li>
-                            <li>Allows consistent multi-season reporting over time.</li>
-                        </ul>
-                    </aside>
-                </div>
-            ) : null}
-
-            {view === "addSeason" ? (
-                <div className={styles.workflowGrid}>
-                    <form className={styles.formCard} onSubmit={handleAddSeason}>
-                        <h3>Add a new season / edition</h3>
-                        <p className={styles.mutedText}>
-                            Attach a new edition to an existing competition identity.
-                        </p>
-
-                        <div className={styles.fieldGrid}>
-                            <label>
-                                Competition
-                                <select
-                                    name="competitionId"
-                                    value={seasonForm.competitionId}
-                                    onChange={handleSeasonFormChange}
-                                >
-                                    {unionDemoData.competitions.map((item) => (
-                                        <option key={item.id} value={item.id}>
-                                            {item.title}
-                                        </option>
-                                    ))}
-                                </select>
-                            </label>
-
-                            <label>
-                                Edition title
-                                <input
-                                    name="title"
-                                    value={seasonForm.title}
-                                    onChange={handleSeasonFormChange}
-                                    placeholder="2027 Premiership"
-                                />
-                            </label>
-
-                            <label>
-                                Season label
-                                <input
-                                    name="seasonLabel"
-                                    value={seasonForm.seasonLabel}
-                                    onChange={handleSeasonFormChange}
-                                    placeholder="2027"
-                                />
-                            </label>
-
-                            <label>
-                                Status
-                                <select
-                                    name="status"
-                                    value={seasonForm.status}
-                                    onChange={handleSeasonFormChange}
-                                >
-                                    <option value="DRAFT">Draft</option>
-                                    <option value="REGISTRATION_OPEN">Registration Open</option>
-                                    <option value="ACTIVE">Active</option>
-                                </select>
-                            </label>
-
-                            <label>
-                                Start date
-                                <input
-                                    type="date"
-                                    name="startDate"
-                                    value={seasonForm.startDate}
-                                    onChange={handleSeasonFormChange}
-                                />
-                            </label>
-
-                            <label>
-                                End date
-                                <input
-                                    type="date"
-                                    name="endDate"
-                                    value={seasonForm.endDate}
-                                    onChange={handleSeasonFormChange}
-                                />
-                            </label>
-
-                            <label>
-                                Registration start
-                                <input
-                                    type="date"
-                                    name="registrationStart"
-                                    value={seasonForm.registrationStart}
-                                    onChange={handleSeasonFormChange}
-                                />
-                            </label>
-
-                            <label>
-                                Registration end
-                                <input
-                                    type="date"
-                                    name="registrationEnd"
-                                    value={seasonForm.registrationEnd}
-                                    onChange={handleSeasonFormChange}
-                                />
-                            </label>
-
-                            <label>
-                                Entry cap
-                                <input
-                                    name="entryCap"
-                                    value={seasonForm.entryCap}
-                                    onChange={handleSeasonFormChange}
-                                    placeholder="12"
-                                />
-                            </label>
-                        </div>
-
-                        <label>
-                            Notes
-                            <textarea
-                                name="notes"
-                                value={seasonForm.notes}
-                                onChange={handleSeasonFormChange}
-                                placeholder="Any season-specific governance or scheduling notes."
-                            />
-                        </label>
-
-                        <div className={styles.inlineActionGroup}>
-                            <button type="submit">Save season draft</button>
-                            <button
-                                type="button"
-                                className={styles.subtleButton}
-                                onClick={() => setView("editions")}
-                            >
-                                Back to editions
-                            </button>
-                        </div>
-                    </form>
-
-                    <aside className={styles.supportCard}>
-                        <h3>Selected competition</h3>
-                        <p>
-                            <strong>{addSeasonCompetition.title}</strong>
-                        </p>
-                        <p className={styles.mutedText}>
-                            {addSeasonCompetition.subtitle}
-                        </p>
-
-                        <div className={styles.miniStatGrid}>
-                            <article>
-                                <strong>{editions.length}</strong>
-                                <span>existing editions</span>
-                            </article>
-                            <article>
-                                <strong>{seasonForm.entryCap}</strong>
-                                <span>club entry cap</span>
-                            </article>
-                        </div>
-
-                        <ul className={styles.helperList}>
-                            <li>Preserve competition identity across seasons.</li>
-                            <li>Track registration windows and entry readiness.</li>
-                            <li>Prepare the edition before club assignment and fixtures.</li>
-                        </ul>
-                    </aside>
-                </div>
-            ) : null}
-        </section>
-    );
+  return <section className={styles.screen}>
+    <ScreenHeader eyebrow="Competitions" title="Competition control room" description="Manage maintained competition identities, seasonal editions, club entries and fixture preparation." actions={canManage ? <div className={styles.inlineActionGroup}><button type="button" onClick={() => setView("createCompetition")}>Create Competition</button><button type="button" className={styles.subtleButton} disabled={!selected} onClick={() => setView("addSeason")}>Add Season</button></div> : undefined} />
+    {notice ? <div className={styles.workflowNotice} role="status" aria-live="polite">{notice}</div> : null}
+    {error ? <div><ErrorState message={error} /><button type="button" onClick={() => void load()}>Retry</button></div> : null}
+    {loading ? <LoadingState label="Loading competitions…" /> : null}
+    {!loading && !error ? <>
+      <InternalTabs<CompetitionView> label="Competition views" active={view === "createCompetition" || view === "addSeason" ? "directory" : view} onChange={setView} items={views} />
+      <div className={styles.heroSummaryGrid}><article><span>Competition identities</span><strong>{identities.length}</strong><small>Maintained in {workspace.name}</small></article><article><span>Selected editions</span><strong>{editions.length}</strong><small>{selected?.name ?? "Select a competition"}</small></article><article><span>Club entries</span><strong>{selectedMemberships.length}</strong><small>For the selected edition</small></article></div>
+      {view === "directory" ? <div className={styles.formCard}><label>Search competitions<input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Name, sport or format" /></label>{filtered.length ? <RecordList records={filtered.map((item) => ({ id: String(item.id), title: item.name, subtitle: `${item.sport} · ${item.competition_type}`, status: item.is_active ? "ACTIVE" : "INACTIVE", meta: `${item.editions_count} edition${item.editions_count === 1 ? "" : "s"}` }))} selectedId={String(selectedId ?? "")} onSelect={(id) => { setSelectedId(Number(id)); setView("identity"); }} /> : <EmptyState title={identities.length ? "No competitions match" : "No competitions yet"} description={identities.length ? "Change the search term to see other maintained identities." : "Create the first competition identity for this workspace."} />}</div> : null}
+      {view === "identity" ? selected ? <div className={styles.detailGrid}><article><h3>{selected.name}</h3><dl><dt>Slug</dt><dd>{selected.slug}</dd><dt>Sport</dt><dd>{selected.sport}</dd><dt>Type</dt><dd>{selected.competition_type}</dd><dt>Primary league</dt><dd>{selected.primary_league_name ?? "Not assigned"}</dd><dt>Description</dt><dd>{selected.description || "No description provided."}</dd><dt>Status</dt><dd><StatusBadge>{selected.is_active ? "ACTIVE" : "INACTIVE"}</StatusBadge></dd></dl></article><aside><h3>Maintained record</h3><p className={styles.mutedText}>This identity groups editions across seasons. Editing is unavailable until the backend exposes an update contract.</p></aside></div> : <EmptyState title="Select a competition" description="Choose a maintained identity from the directory." /> : null}
+      {view === "editions" ? editions.length ? <div className={styles.cardGrid}>{editions.map((edition) => <article key={edition.id}><StatusBadge>{edition.status.replaceAll("_", " ")}</StatusBadge><h3>{edition.season_name}</h3><dl><dt>League competition</dt><dd>{edition.competition_slug}</dd><dt>Registration opens</dt><dd>{edition.registration_opens_at ?? "Not set"}</dd><dt>Registration closes</dt><dd>{edition.registration_closes_at ?? "Not set"}</dd></dl></article>)}</div> : <EmptyState title="No editions yet" description="Add a workspace season to the selected competition identity." /> : null}
+      {view === "entries" ? selected ? selectedMemberships.length ? <RecordList records={selectedMemberships.map((item) => ({ id: String(item.id), title: item.club_name, subtitle: `${item.league_name} · ${item.season_name ?? "No season"}`, status: item.status, meta: item.notes }))} /> : <EmptyState title="No club entries" description="No workspace membership records are attached to the selected competition edition." /> : <EmptyState title="Select a competition" description="Choose an identity before reviewing entries." /> : null}
+      {view === "scheduling" ? selectedCompetition ? <div className={styles.detailGrid}><div className={styles.formCard}><h3>Generate fixtures</h3><label>First match date<input type="date" value={fixtureStart} onChange={(event) => setFixtureStart(event.target.value)} /></label><button type="button" disabled={!canManage || working || !fixtureStart || generated > 0} onClick={() => void generateFixtures()}>{generated ? `${generated} fixtures generated` : "Generate fixtures"}</button></div><aside className={styles.supportCard}><h3>{selectedCompetition.name}</h3><p>{selectedCompetition.matches_count} existing fixtures · {selectedCompetition.clubs_count} clubs</p><p className={styles.mutedText}>Generation uses the backend schedule validator and will not clear existing fixtures.</p></aside></div> : <EmptyState title="No schedulable edition" description="Create an edition before generating fixtures." /> : null}
+      {view === "publication" ? editions.length ? <div className={styles.timeline}>{editions.map((edition) => <article key={edition.id}><StatusBadge>{edition.status.replaceAll("_", " ")}</StatusBadge><h3>{edition.season_name}</h3><div className={styles.linkGroup}>{(nextStatuses[edition.status] ?? []).map((status) => <button key={status} type="button" className={status === "CANCELLED" ? styles.subtleButton : undefined} disabled={!canManage || working} onClick={() => void transition(edition, status)}>Move to {status.replaceAll("_", " ").toLowerCase()}</button>)}</div>{!(nextStatuses[edition.status]?.length) ? <p className={styles.mutedText}>No further lifecycle actions are available.</p> : null}</article>)}</div> : <EmptyState title="No lifecycle records" description="Create an edition to begin the competition lifecycle." /> : null}
+      {view === "createCompetition" ? <form className={styles.formCard} onSubmit={createIdentity}><h3>Create competition identity</h3><div className={styles.fieldGrid}><label>Name<input required value={name} onChange={(event) => setName(event.target.value)} /></label><label>Primary league<select required value={leagueId} onChange={(event) => setLeagueId(event.target.value)}><option value="">Select league</option>{leagues.map((league) => <option key={league.id} value={league.id}>{league.name}</option>)}</select></label></div><label>Description<textarea value={description} onChange={(event) => setDescription(event.target.value)} /></label><button disabled={working || !canManage}>Create identity</button></form> : null}
+      {view === "addSeason" ? selected ? <form className={styles.formCard} onSubmit={createEdition}><h3>Add season to {selected.name}</h3><label>Workspace season<select required value={seasonId} onChange={(event) => setSeasonId(event.target.value)}><option value="">Select season</option>{seasons.filter((season) => season.league === selected.primary_league && !editions.some((edition) => edition.season === season.id)).map((season) => <option key={season.id} value={season.id}>{season.name}</option>)}</select></label><button disabled={working || !canManage}>Create draft edition</button></form> : <EmptyState title="Select a competition" description="Choose an identity before adding a season." /> : null}
+    </> : null}
+  </section>;
 }

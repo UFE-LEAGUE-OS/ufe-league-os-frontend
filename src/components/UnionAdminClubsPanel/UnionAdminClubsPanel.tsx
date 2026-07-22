@@ -73,6 +73,7 @@ export default function UnionAdminClubsPanel({
   const [clubs, setClubs] = useState<UnionAdminClubRecord[]>([]);
   const [selectedClubId, setSelectedClubId] = useState<number | null>(null);
   const [query, setQuery] = useState("");
+  const [affiliationStatus, setAffiliationStatus] = useState("ALL");
   const [showForm, setShowForm] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -88,16 +89,20 @@ export default function UnionAdminClubsPanel({
     admin_email: "",
   });
 
-  const filteredClubs = clubs.filter((club) =>
-    `${club.name} ${club.short_name} ${club.sport_display} ${club.admin_name} ${club.compliance}`
-      .toLowerCase()
-      .includes(query.toLowerCase()),
-  );
+  const filteredClubs = clubs.filter((club) => {
+    const matchesQuery =
+      `${club.name} ${club.short_name} ${club.sport_display} ${club.admin_name} ${club.compliance}`
+        .toLowerCase()
+        .includes(query.toLowerCase());
+    const matchesStatus =
+      affiliationStatus === "ALL" ||
+      club.memberships.some((membership) => membership.status === affiliationStatus);
+    return matchesQuery && matchesStatus;
+  });
 
   const selectedClub =
-    clubs.find((club) => club.id === selectedClubId) ??
+    filteredClubs.find((club) => club.id === selectedClubId) ??
     filteredClubs[0] ??
-    clubs[0] ??
     null;
 
   function resetForm(nextSport = sport) {
@@ -159,6 +164,10 @@ export default function UnionAdminClubsPanel({
 
     workspaceGenerationRef.current += 1;
     resetForm(sport);
+    setQuery("");
+    setAffiliationStatus("ALL");
+    setSelectedClubId(null);
+    setClubs([]);
     setIsSaving(false);
     setSuccessMessage("");
     setFailureMessage("");
@@ -218,6 +227,13 @@ export default function UnionAdminClubsPanel({
 
   function deleteSelectedClub() {
     if (!selectedClub) return;
+    if (
+      !window.confirm(
+        `Delete ${selectedClub.name}? This is only allowed when the club has no league, fixture or standings records.`,
+      )
+    ) {
+      return;
+    }
 
     const mutationWorkspaceSlug = workspaceSlug;
     const mutationGeneration = workspaceGenerationRef.current;
@@ -252,7 +268,7 @@ export default function UnionAdminClubsPanel({
       <div className={styles.toolbar}>
         <div className={styles.toolbarText}>
           <span>Club directory</span>
-          <h3>Clubs and teams</h3>
+          <h2>Clubs and teams</h2>
           <p>
             Manage real club profiles for {workspaceLabel}, assign existing admins, review membership status
             and prepare clubs for league seasons and fixtures.
@@ -284,23 +300,40 @@ export default function UnionAdminClubsPanel({
         </div>
       </div>
 
-      {successMessage ? <div className={`${styles.alert} ${styles.success}`}>{successMessage}</div> : null}
-      {failureMessage ? <div className={`${styles.alert} ${styles.failure}`}>{failureMessage}</div> : null}
+      {successMessage ? <div className={`${styles.alert} ${styles.success}`} role="status" aria-live="polite">{successMessage}</div> : null}
+      {failureMessage ? <div className={`${styles.alert} ${styles.failure}`} role="alert">{failureMessage}<button type="button" onClick={() => void refreshClubs()}>Retry</button></div> : null}
 
       <div className={styles.searchBar}>
         <Search size={18} />
         <input
+          aria-label="Search clubs"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           onBlur={() => void refreshClubs(query)}
           placeholder="Search clubs, admins, compliance or sport"
         />
+        <select
+          aria-label="Affiliation status"
+          value={affiliationStatus}
+          onChange={(event) => setAffiliationStatus(event.target.value)}
+        >
+          <option value="ALL">All affiliations</option>
+          <option value="ACTIVE">Active</option>
+          <option value="INVITED">Invited</option>
+          <option value="PROMOTED">Promoted</option>
+          <option value="RELEGATED">Relegated</option>
+          <option value="SUSPENDED">Suspended</option>
+          <option value="WITHDRAWN">Withdrawn</option>
+        </select>
       </div>
 
       <div className={styles.grid}>
         <div className={styles.card}>
           <div className={styles.clubList}>
-            {filteredClubs.map((club) => (
+            {isLoading && clubs.length === 0 ? (
+              <div className={styles.empty} role="status">Loading clubs…</div>
+            ) : null}
+            {!isLoading && filteredClubs.map((club) => (
               <button
                 className={`${styles.clubRow} ${
                   selectedClub?.id === club.id
@@ -337,7 +370,7 @@ export default function UnionAdminClubsPanel({
               </button>
             ))}
 
-            {filteredClubs.length === 0 ? <div className={styles.empty}>No clubs found.</div> : null}
+            {!isLoading && filteredClubs.length === 0 ? <div className={styles.empty}>{clubs.length ? "No clubs match the current filters." : "No clubs are affiliated with this workspace yet."}</div> : null}
           </div>
         </div>
 
@@ -478,6 +511,12 @@ export default function UnionAdminClubsPanel({
                     to add it to a league and season.
                   </div>
                 ) : null}
+              </div>
+
+              <div className={styles.actions}>
+                <a className={styles.secondaryButton} href={`/clubs/${selectedClub.slug}`}>
+                  View public club page
+                </a>
               </div>
 
               {canManageClubs ? (

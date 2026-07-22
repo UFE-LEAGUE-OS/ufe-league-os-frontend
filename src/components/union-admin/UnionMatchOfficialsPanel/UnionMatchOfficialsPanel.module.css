@@ -31,7 +31,7 @@
   text-transform: uppercase;
 }
 
-.moduleHeader h2,
+.moduleTitle,
 .unavailablePanel h2 {
   margin: 0;
   color: #ffffff;
@@ -45,6 +45,10 @@
   font-size: clamp(1.65rem, 2.5vw, 2.4rem);
   font-style: italic;
   font-weight: 800;
+}
+
+.moduleTitle {
+  overflow-wrap: anywhere;
 }
 
 .moduleHeader p,
@@ -94,6 +98,12 @@
   font: inherit;
   font-size: 0.82rem;
   font-weight: 700;
+}
+
+.tab:focus-visible,
+.activeTab:focus-visible {
+  outline: 3px solid rgba(255, 155, 76, 0.65);
+  outline-offset: 2px;
 }
 
 .tab:hover {

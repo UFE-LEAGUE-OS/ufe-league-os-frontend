@@ -48,7 +48,6 @@ import UnionAdminRefereesPanel from "../../components/UnionAdminRefereesPanel/Un
 import OfficialAppointmentsPanel from "../../components/OfficialAppointmentsPanel/OfficialAppointmentsPanel";
 import UnionMatchOfficialsPanel from "../../components/union-admin/UnionMatchOfficialsPanel";
 import {
-  UnionNationalTeamsPanel,
   UnionOfficialReadinessPanel,
 } from "../../components/UnionOperationalPanels/UnionOperationalPanels";
 import { useCurrentUser } from "../../hooks/useCurrentUser";
@@ -63,6 +62,7 @@ import UnionCompetitionsScreen from "./UnionCompetitionsScreen";
 import UnionPlayersTransfersScreen from "./UnionPlayersTransfersScreen";
 import UnionProfileBrandingScreen from "./UnionProfileBrandingScreen";
 import UnionRegistrationsScreen from "./UnionRegistrationsScreen";
+import UnionNationalTeamsScreen from "./UnionNationalTeamsScreen";
 import UnionSettingsScreen from "./UnionSettingsScreen";
 import UnionSponsorsScreen from "./UnionSponsorsScreen";
 import UnionStatisticsRecordsScreen from "./UnionStatisticsRecordsScreen";
@@ -592,6 +592,7 @@ export default function UnionAdminDashboard() {
   );
   const [isLoadingFinance, setIsLoadingFinance] = useState(false);
   const [financeError, setFinanceError] = useState("");
+  const [financeReload, setFinanceReload] = useState(0);
   const [operationsData, setOperationsData] =
     useState<UnionOperationsDashboard | null>(null);
   const [workspaceUserEmail, setWorkspaceUserEmail] = useState("");
@@ -877,7 +878,7 @@ export default function UnionAdminDashboard() {
 
         setFinanceData(null);
         setFinanceError(
-          "Finance data could not be loaded. Confirm the backend finance endpoint is deployed and the workspace has seeded finance records.",
+          "Finance data could not be loaded for this workspace. Please retry.",
         );
       } finally {
         if (isMounted) setIsLoadingFinance(false);
@@ -894,6 +895,7 @@ export default function UnionAdminDashboard() {
     activeWorkspace?.slug,
     activeWorkspace?.permissions,
     isLoadingWorkspaces,
+    financeReload,
   ]);
 
   async function handleWorkspaceChange(nextSlug: string) {
@@ -1278,33 +1280,11 @@ export default function UnionAdminDashboard() {
   }
 
   function renderClubDetail() {
-    const positionPool = workspacePlayerPositions.flatMap(
-      (group) => group.positions,
-    );
-    const fallbackPositions = getSportPositionGroups(
-      activeWorkspace.sport,
-    ).flatMap((group) => group.positions);
-
-    const safePositions =
-      positionPool.length > 0 ? positionPool : fallbackPositions;
-
-    const samplePlayers = [
-      {
-        name: `${selectedClub.name.split(" ")[0]} Player 1`,
-        position: safePositions[0] ?? "Player",
-        status: "Approved",
-      },
-      {
-        name: `${selectedClub.name.split(" ")[0]} Player 2`,
-        position: safePositions[1] ?? safePositions[0] ?? "Player",
-        status: "Document review",
-      },
-      {
-        name: `${selectedClub.name.split(" ")[0]} Player 3`,
-        position: safePositions[2] ?? safePositions[0] ?? "Player",
-        status: "Approved",
-      },
-    ];
+    const playerRecords: Array<{
+      name: string;
+      position: string;
+      status: string;
+    }> = [];
 
     return (
       <section className={styles.panelLarge}>
@@ -1356,22 +1336,22 @@ export default function UnionAdminDashboard() {
                 render: (item) => <StatusPill label={item.status} />,
               },
             ]}
-            data={samplePlayers}
+            data={playerRecords}
           />
           <aside className={styles.sidePanelCompact}>
             <h3>Club compliance</h3>
             <div className={styles.progressBlock}>
               <span>Documents</span>
-              <strong>83%</strong>
+              <strong>Not available</strong>
               <div>
-                <i style={{ width: "83%" }} />
+                <i style={{ width: "0%" }} />
               </div>
             </div>
             <div className={styles.progressBlock}>
               <span>Player registration</span>
-              <strong>91%</strong>
+              <strong>Not available</strong>
               <div>
-                <i style={{ width: "91%" }} />
+                <i style={{ width: "0%" }} />
               </div>
             </div>
             <div className={styles.positionFramework}>
@@ -1396,9 +1376,10 @@ export default function UnionAdminDashboard() {
 
   function renderNationalTeams() {
     return (
-      <UnionNationalTeamsPanel
+      <UnionNationalTeamsScreen
         workspaceSlug={activeWorkspace.slug}
         workspaceName={activeWorkspace.name}
+        canManage={activeWorkspace.permissions.includes("union.teams.manage")}
       />
     );
   }
@@ -1638,6 +1619,15 @@ export default function UnionAdminDashboard() {
           <div className={styles.emptyState}>
             {financeError ||
               "No finance records are available for this workspace."}
+            {financeError ? (
+              <button
+                className={styles.secondaryButton}
+                type="button"
+                onClick={() => setFinanceReload((current) => current + 1)}
+              >
+                Retry finance
+              </button>
+            ) : null}
           </div>
         </section>
       );
@@ -2023,6 +2013,12 @@ export default function UnionAdminDashboard() {
           <UnionRegistrationsScreen
             workspaceSlug={activeWorkspace.slug}
             workspaceName={activeWorkspace.name}
+            canManage={activeWorkspace.permissions.includes(
+              "union.registrations.manage",
+            )}
+            canApprove={activeWorkspace.permissions.includes(
+              "union.players.approve",
+            )}
           />
         );
       case "playersTransfers":
@@ -2043,7 +2039,12 @@ export default function UnionAdminDashboard() {
           />
         );
       case "statistics":
-        return <UnionStatisticsRecordsScreen />;
+        return (
+          <UnionStatisticsRecordsScreen
+            workspaceSlug={activeWorkspace.slug}
+            workspaceName={activeWorkspace.name}
+          />
+        );
       case "profileBranding":
         return <UnionProfileBrandingScreen workspace={activeWorkspace} />;
       case "referees":

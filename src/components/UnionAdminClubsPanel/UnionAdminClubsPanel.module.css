@@ -20,7 +20,7 @@
   text-transform: uppercase;
 }
 
-.toolbarText h3 {
+.toolbarText h2 {
   margin: 0.25rem 0;
   color: #160e39;
   font-size: clamp(1.35rem, 2vw, 2rem);
@@ -83,6 +83,24 @@
   outline: none;
   color: #160e39;
   min-width: 220px;
+}
+
+.searchBar select {
+  min-height: 44px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  background: #141c34;
+  color: #fff;
+  padding: 0.6rem 0.75rem;
+}
+
+.actions a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  text-decoration: none;
+  box-sizing: border-box;
 }
 
 .grid {
@@ -614,6 +632,24 @@
     background-image: none !important;
 }
 
+.toolbarText h2,
+.clubRow strong,
+.detailHeader strong,
+.metaItem strong,
+.formGrid label,
+.membership strong {
+    color: #ffffff;
+}
+
+.toolbarText p,
+.clubRow span,
+.clubRow small,
+.detailHeader span,
+.metaItem span,
+.membership span {
+    color: rgba(255, 255, 255, 0.66);
+}
+
 .primaryButton {
     background: #7138dc !important;
     border: 1px solid #8755e8;
@@ -660,6 +696,17 @@
 @media (max-width: 720px) {
     .panel {
         padding: 16px;
+    }
+
+    .searchBar {
+        align-items: stretch;
+        flex-wrap: wrap;
+    }
+
+    .searchBar input,
+    .searchBar select {
+        width: 100%;
+        min-width: 0;
     }
 }
 
