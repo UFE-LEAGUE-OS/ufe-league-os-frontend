@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
   FiCheckCircle,
   FiArrowRight,
@@ -7,6 +7,11 @@ import {
 } from 'react-icons/fi';
 import '../../styles/pages/landing.css';
 import './IndividualSponsorComplete.css';
+
+type CompleteLocationState = {
+  accountId?: number;
+  createdAt?: string;
+} | null;
 
 const steps = [
   { number: 1, label: 'Basic Info', sub: 'Tell us about yourself' },
@@ -35,6 +40,16 @@ const nextSteps = [
 
 export default function IndividualSponsorComplete() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const state = location.state as CompleteLocationState;
+
+  const reference = state?.accountId
+    ? `ISP-${
+        state.createdAt
+          ? new Date(state.createdAt).getFullYear()
+          : new Date().getFullYear()
+      }-${String(state.accountId).padStart(5, '0')}`
+    : null;
 
   return (
     <div className="isc-page">
@@ -77,9 +92,11 @@ export default function IndividualSponsorComplete() {
             Thank you for applying to become an individual sponsor on League OS.
             Your application has been successfully submitted and is now under review.
           </p>
-          <div className="isc-ref-badge">
-            Reference: <span className="isc-ref-num">ISP-2026-00089</span>
-          </div>
+          {reference && (
+            <div className="isc-ref-badge">
+              Reference: <span className="isc-ref-num">{reference}</span>
+            </div>
+          )}
         </div>
 
         {/* What happens next */}

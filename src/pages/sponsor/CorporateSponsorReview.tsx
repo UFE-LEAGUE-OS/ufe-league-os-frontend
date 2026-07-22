@@ -195,15 +195,20 @@ try {
       }
 
       try {
-        const { data } = await fetchCurrentUser();
-        setHydratedUser(data);
+        const { data: userData } = await fetchCurrentUser();
+        setHydratedUser(userData);
       } catch {
         // Non-critical — dashboard routing will just fall back to the
         // pre-sponsor entitlements until the user's session next refreshes.
       }
 
       resetCorporate();
-      navigate('/sponsor/corporatesetup/complete');
+      navigate('/sponsor/corporatesetup/complete', {
+        state: {
+          accountId,
+          createdAt: data.sponsor_account.created_at,
+        },
+      });
     } catch (error) {
       const status = (error as { response?: { status?: number } })?.response?.status;
 
