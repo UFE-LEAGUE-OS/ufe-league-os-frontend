@@ -42,6 +42,7 @@ import {
   type UnionWorkspaceUsersResult,
 } from "../../services/unionAdminService";
 import AuthenticatedFooter from "../../components/AuthenticatedFooter/AuthenticatedFooter";
+import adminSidebarStyles from "../../components/AdminWorkspaceLayout/AdminWorkspaceLayout.module.css";
 import MobileUnionNavigation from "../../components/MobileUnionNavigation/MobileUnionNavigation";
 import UnionAdminClubsPanel from "../../components/UnionAdminClubsPanel/UnionAdminClubsPanel";
 import UnionAdminRefereesPanel from "../../components/UnionAdminRefereesPanel/UnionAdminRefereesPanel";
@@ -174,7 +175,7 @@ const tabs: TabDefinition[] = [
   },
   {
     key: "competitions",
-    label: "Competitions",
+    label: "Leagues / Competitions",
     icon: Trophy,
     permission: "union.competitions.manage",
   },
@@ -186,7 +187,7 @@ const tabs: TabDefinition[] = [
   },
   {
     key: "registrations",
-    label: "Registrations",
+    label: "Compliance",
     icon: ClipboardCheck,
     anyPermissions: [
       "union.registrations.view",
@@ -196,7 +197,7 @@ const tabs: TabDefinition[] = [
   },
   {
     key: "playersTransfers",
-    label: "Players & Transfers",
+    label: "Players",
     icon: UserCheck,
     anyPermissions: [
       "union.players.view",
@@ -226,7 +227,7 @@ const tabs: TabDefinition[] = [
   },
   {
     key: "statistics",
-    label: "Statistics & Records",
+    label: "Reporting",
     icon: BarChart3,
     permission: "union.reports.view",
   },
@@ -275,7 +276,7 @@ const tabs: TabDefinition[] = [
   },
   {
     key: "users",
-    label: "Users & Access",
+    label: "User Management",
     icon: Users,
     permission: "union.users.manage",
   },
@@ -287,7 +288,7 @@ const tabs: TabDefinition[] = [
   },
   {
     key: "profileBranding",
-    label: "Profile & Branding",
+    label: "Union Profile",
     icon: Building2,
     permission: "union.dashboard.view",
   },
@@ -299,31 +300,32 @@ const tabs: TabDefinition[] = [
   },
 ];
 
-const sidebarSections: Array<{ label: string; keys: TabKey[] }> = [
+const sidebarSections: Array<{
+  label: string;
+  keys: TabKey[];
+}> = [
   {
-    label: "Operations",
+    label: "Overview",
+    keys: ["overview"],
+  },
+  {
+    label: "Union Operations",
     keys: [
-      "overview",
       "competitions",
       "clubs",
-      "registrations",
       "playersTransfers",
-      "nationalTeams",
       "matchOfficials",
-      "statistics",
-      "profile",
-      "ticketing",
-      "scanner",
-      "entryLogs",
+      "registrations",
     ],
   },
   {
-    label: "Business",
-    keys: ["finance", "comms", "sponsors"],
-  },
-  {
-    label: "Administration",
-    keys: ["users", "audit", "profileBranding", "settings"],
+    label: "Management",
+    keys: [
+      "finance",
+      "statistics",
+      "profileBranding",
+      "users",
+    ],
   },
 ];
 
@@ -701,6 +703,16 @@ export default function UnionAdminDashboard() {
 
     return tabs.filter((tab) => canAccessTab(activeWorkspace, tab));
   }, [activeWorkspace]);
+
+  const sidebarNavigationTabs = useMemo(() => {
+    const visibleSidebarKeys = new Set(
+      sidebarSections.flatMap((section) => section.keys),
+    );
+
+    return availableTabs.filter((tab) =>
+      visibleSidebarKeys.has(tab.key),
+    );
+  }, [availableTabs]);
 
   useEffect(() => {
     if (!availableTabs.some((tab) => tab.key === activeTab)) {
@@ -2093,7 +2105,9 @@ export default function UnionAdminDashboard() {
     .map((section) => ({
       ...section,
       items: section.keys
-        .map((key) => availableTabs.find((tab) => tab.key === key))
+        .map((key) =>
+          sidebarNavigationTabs.find((tab) => tab.key === key),
+        )
         .filter((tab): tab is TabDefinition => Boolean(tab)),
     }))
     .filter((section) => section.items.length > 0);
@@ -2102,12 +2116,14 @@ export default function UnionAdminDashboard() {
     <>
       <main
         className={`${styles.pageShell} ${
-          isSidebarCollapsed ? styles.collapsedShell : ""
+          isSidebarCollapsed
+            ? `${styles.collapsedShell} ${adminSidebarStyles.bodySidebarCollapsed}`
+            : ""
         }`}
       >
-        <aside className={styles.sidebar}>
+        <aside className={adminSidebarStyles.sidebar}>
           <button
-            className={styles.sidebarToggle}
+            className={adminSidebarStyles.sidebarToggle}
             type="button"
             onClick={() =>
               setIsSidebarCollapsed((currentValue) => !currentValue)
@@ -2131,42 +2147,44 @@ export default function UnionAdminDashboard() {
           </button>
 
           <Link
-            className={styles.logoLink}
+            className={adminSidebarStyles.brand}
             to="/"
             aria-label="Open League OS home"
           >
             <img
-              className={styles.logoHorizontal}
+              className={adminSidebarStyles.logoHorizontal}
               src={logoHorizontal}
               alt="League OS"
             />
             <img
-              className={styles.logoMark}
+              className={adminSidebarStyles.logoMark}
               src={logoMark}
               alt=""
               aria-hidden="true"
             />
           </Link>
 
-          <span className={styles.portalLabel}>Union Workspace</span>
+          <span className={adminSidebarStyles.portalLabel}>
+            UNION WORKSPACE
+          </span>
 
-          <div className={styles.workspaceCard}>
-            <div className={styles.workspaceAvatar}>
+          <div className={adminSidebarStyles.workspaceBadge}>
+            <div className={adminSidebarStyles.workspaceAvatar}>
               {getWorkspaceInitials(activeWorkspace)}
             </div>
-            <div>
+            <div className={adminSidebarStyles.workspaceDetails}>
               <strong>{activeWorkspace.name}</strong>
-              <span>
+              <small>
                 {activeWorkspace.roleDisplay ||
                   formatRole(activeWorkspace.role)}
-              </span>
+              </small>
             </div>
           </div>
 
-          <nav className={styles.navList} aria-label="Union workspace modules">
+          <nav className={adminSidebarStyles.nav} aria-label="Union workspace modules">
             {groupedSidebarTabs.map((section) => (
-              <div className={styles.navGroup} key={section.label}>
-                <span className={styles.navGroupLabel}>{section.label}</span>
+              <div key={section.label}>
+                <span className={adminSidebarStyles.navGroupLabel}>{section.label}</span>
 
                 {section.items.map((tab) => {
                   const Icon = tab.icon;
@@ -2175,7 +2193,9 @@ export default function UnionAdminDashboard() {
                     <button
                       key={tab.key}
                       className={
-                        activeTab === tab.key ? styles.activeNavItem : ""
+                        activeTab === tab.key
+                          ? adminSidebarStyles.activeNavButton
+                          : adminSidebarStyles.navButton
                       }
                       type="button"
                       onClick={() => resetSearch(tab.key)}
@@ -2192,7 +2212,7 @@ export default function UnionAdminDashboard() {
           </nav>
 
           <button
-            className={styles.logoutButton}
+            className={adminSidebarStyles.logout}
             type="button"
             onClick={handleLogout}
             aria-label="Log out"
@@ -2254,7 +2274,7 @@ export default function UnionAdminDashboard() {
 
       <MobileUnionNavigation
         activeKey={activeTab}
-        items={availableTabs.map((tab) => ({
+        items={sidebarNavigationTabs.map((tab) => ({
           key: tab.key,
           label: tab.label,
           icon: tab.icon,
