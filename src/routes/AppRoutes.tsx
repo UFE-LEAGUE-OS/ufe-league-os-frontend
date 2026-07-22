@@ -183,13 +183,6 @@ const LeagueAdminDashboard = lazy(() => import('../pages/league-admin/LeagueAdmi
 const ClubAdminDashboard = lazy(() => import('../pages/club-admin/ClubAdminDashboard'));
 const ClubTicketingOfficer = lazy(() => import('../pages/club-admin/sub-roles/ClubTicketingOfficer'));
 
-// Club management — lazy-loaded
-const TeamsManagement = lazy(() => import('../pages/club-admin/club-management/TeamsManagement'));
-const PlayerRegistration = lazy(() => import('../pages/club-admin/club-management/PlayerRegistration'));
-const StaffOfficials = lazy(() => import('../pages/club-admin/club-management/StaffOfficials'));
-const RosterUpdate = lazy(() => import('../pages/club-admin/club-management/RoasterUpdate'));
-const SquadSubmission = lazy(() => import('../pages/club-admin/club-management/SquadSubmision'));
-
 function protectedPage(page: ReactNode) {
     return <ProtectedRoute>{page}</ProtectedRoute>;
 }
@@ -323,59 +316,6 @@ export default function AppRoutes() {
                         />
                     }
                 />
-
-                
-                    <Route
-                        path="/dashboard/club-admin/teams"
-                        element={dashboardProtectedPage(
-                            <TeamsManagement />,
-                            'CLUB_ADMIN',
-                            undefined,
-                            undefined,
-                            'CLUB',
-                        )}
-                    />
-                    <Route
-                        path="/dashboard/club-admin/players"
-                        element={dashboardProtectedPage(
-                            <PlayerRegistration />,
-                            'CLUB_ADMIN',
-                            undefined,
-                            undefined,
-                            'CLUB',
-                        )}
-                    />
-                    <Route
-                      path="/dashboard/club-admin/staff"
-                        element={dashboardProtectedPage(
-                            <StaffOfficials />,
-                            'CLUB_ADMIN',
-                            undefined,
-                            undefined,
-                            'CLUB',
-                        )}
-                    />
-                    <Route
-                       path="/dashboard/club-admin/roster"
-                        element={dashboardProtectedPage(
-                            <RosterUpdate />,
-                            'CLUB_ADMIN',
-                            undefined,
-                            undefined,
-                            'CLUB',
-                        )}
-                    />
-                    <Route
-                        path="/dashboard/club-admin/squad-submission"
-                        element={dashboardProtectedPage(
-                            <SquadSubmission />,
-                            'CLUB_ADMIN',
-                            undefined,
-                            undefined,
-                            'CLUB',
-                        )}
-                    />
-               
 
                 <Route
                     path="/dashboard/chairman/*"

@@ -1,9 +1,7 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Plus, Search, Pencil, Trash2, ArrowRightLeft, X, Eye, Shield, UserCog, ClipboardList, Send } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, ArrowRightLeft, X, Eye } from "lucide-react";
 
 import "../../../styles/pages/club-admin/ClubManagement.css";
-import AdminWorkspaceLayout from "../../../components/AdminWorkspaceLayout/AdminWorkspaceLayout";
 
 interface Player {
   id: number;
@@ -32,22 +30,7 @@ const emptyForm = {
 
 const emptyTransferForm = { playerName: "", transferTo: "", reason: "" };
 
-const navItems = [
-  {
-    label: "Club Management",
-    items: [
-      { key: "teams", label: "Teams & Squads", icon: Shield, path: "/club-management/teams" },
-      { key: "players", label: "Player Registration", icon: UserCog, path: "/club-management/players" },
-      { key: "staff", label: "Staff & Officials", icon: UserCog, path: "/club-management/staff" },
-      { key: "roster", label: "Roster Update", icon: ClipboardList, path: "/club-management/roster" },
-      { key: "squad-submission", label: "Squad Submission", icon: Send, path: "/club-management/squad-submission" },
-    ],
-  },
-];
-
 const PlayerRegistration = () => {
-  const navigate = useNavigate();
-
   const [players, setPlayers] = useState<Player[]>(playersData);
 const [showProfile, setShowProfile] = useState(false);
 const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
@@ -151,172 +134,157 @@ const [search, setSearch] = useState("");
   };
 
   return (
-    <AdminWorkspaceLayout
-      workspaceTitle={loggedInClub.name}
-      workspaceSubtitle={`${loggedInClub.sport} Club`}
-      eyebrow="Club Management"
-      title="Player Registration"
-      description="Register, edit and transfer players for your club."
-      navItems={navItems}
-      activeTab="players"
-      hideAdminSidebar
-      onTabChange={(key: string) => {
-        const allItems = navItems.flatMap((g) => g.items);
-        const item = allItems.find((i) => i.key === key);
-        if (item) navigate(item.path);
-      }}
-    >
-      <div className="club-page">
-        <div className="club-header">
-          <div>
-            <h1>{loggedInClub.name}</h1>
-            <p>{loggedInClub.sport} Player Registration</p>
-          </div>
-
-          <button className="primary-btn" onClick={openRegister}>
-            <Plus size={18} />
-            Register Player
-          </button>
+    <div className="club-page">
+      <div className="club-header">
+        <div>
+          <h1>{loggedInClub.name}</h1>
+          <p>{loggedInClub.sport} Player Registration</p>
         </div>
 
-        <div className="club-toolbar">
-          <div className="search-box">
-            <Search size={18} />
-            <input
-              placeholder="Search players..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-        </div>
+        <button className="primary-btn" onClick={openRegister}>
+          <Plus size={18} />
+          Register Player
+        </button>
+      </div>
 
-        <div className="club-card">
-          <div className="table-wrapper">
-            <table className="club-table">
-              <thead>
+      <div className="club-toolbar">
+        <div className="search-box">
+          <Search size={18} />
+          <input
+            placeholder="Search players..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+      </div>
+
+      <div className="club-card">
+        <div className="table-wrapper">
+          <table className="club-table">
+            <thead>
+              <tr>
+                <th>Player</th>
+                <th>Team</th>
+                <th>Position</th>
+                <th>Jersey</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {filteredPlayers.length === 0 && (
                 <tr>
-                  <th>Player</th>
-                  <th>Team</th>
-                  <th>Position</th>
-                  <th>Jersey</th>
-                  <th>Status</th>
-                  <th>Actions</th>
+                  <td colSpan={6} className="empty-row">
+                    No players match your search.
+                  </td>
                 </tr>
-              </thead>
-
-              <tbody>
-                {filteredPlayers.length === 0 && (
-                  <tr>
-                    <td colSpan={6} className="empty-row">
-                      No players match your search.
-                    </td>
-                  </tr>
-                )}
-                {filteredPlayers.map((player) => (
-                  <tr key={player.id}>
-                    <td>
-                      <strong>{player.name}</strong>
-                    </td>
-                    <td>{player.team}</td>
-                    <td>{player.position}</td>
-                    <td>{player.jersey}</td>
-                    <td>
-                      <span
-                        className={player.status === "Active" ? "status active" : "status expired"}
+              )}
+              {filteredPlayers.map((player) => (
+                <tr key={player.id}>
+                  <td>
+                    <strong>{player.name}</strong>
+                  </td>
+                  <td>{player.team}</td>
+                  <td>{player.position}</td>
+                  <td>{player.jersey}</td>
+                  <td>
+                    <span
+                      className={player.status === "Active" ? "status active" : "status expired"}
+                    >
+                      {player.status}
+                    </span>
+                  </td>
+                  <td>
+                    <div className="action-buttons">
+                      <button
+                        title="View Profile"
+                        onClick={() => openProfile(player)}
                       >
-                        {player.status}
-                      </span>
-                    </td>
-                    <td>
-                      <div className="action-buttons">
-                        <button
-                          title="View Profile"
-                          onClick={() => openProfile(player)}
-                        >
-                          <Eye size={16} />
-                        </button>
-                        <button title="Edit" onClick={() => openEdit(player)}>
-                          <Pencil size={16} />
-                        </button>
-                        <button title="Transfer" onClick={() => openTransfer(player)}>
-                          <ArrowRightLeft size={16} />
-                        </button>
-                        <button title="Delete" onClick={() => deletePlayer(player.id)}>
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                        <Eye size={16} />
+                      </button>
+                      <button title="Edit" onClick={() => openEdit(player)}>
+                        <Pencil size={16} />
+                      </button>
+                      <button title="Transfer" onClick={() => openTransfer(player)}>
+                        <ArrowRightLeft size={16} />
+                      </button>
+                      <button title="Delete" onClick={() => deletePlayer(player.id)}>
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
+      </div>
 
-        {showForm && (
-          <div className="modal-overlay">
-            <div className="club-modal">
-              <div className="modal-header">
-                <h4>{editingId ? "Edit Player" : "Register Player"}</h4>
-                <button onClick={() => setShowForm(false)}>
-                  <X />
-                </button>
-              </div>
+      {showForm && (
+        <div className="modal-overlay">
+          <div className="club-modal">
+            <div className="modal-header">
+              <h4>{editingId ? "Edit Player" : "Register Player"}</h4>
+              <button onClick={() => setShowForm(false)}>
+                <X />
+              </button>
+            </div>
 
-              <div className="form-grid">
-                <input
-                  placeholder="Player Name"
-                  value={form.name}
-                  onChange={(e) => setForm({ ...form, name: e.target.value })}
-                />
+            <div className="form-grid">
+              <input
+                placeholder="Player Name"
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+              />
 
-                <div className="readonly-field">Club: {loggedInClub.name}</div>
-                <div className="readonly-field">Sport: {loggedInClub.sport}</div>
+              <div className="readonly-field">Club: {loggedInClub.name}</div>
+              <div className="readonly-field">Sport: {loggedInClub.sport}</div>
 
-                <input
-                  placeholder="Team"
-                  value={form.team}
-                  onChange={(e) => setForm({ ...form, team: e.target.value })}
-                />
+              <input
+                placeholder="Team"
+                value={form.team}
+                onChange={(e) => setForm({ ...form, team: e.target.value })}
+              />
 
-                <input
-                  placeholder="Position"
-                  value={form.position}
-                  onChange={(e) => setForm({ ...form, position: e.target.value })}
-                />
+              <input
+                placeholder="Position"
+                value={form.position}
+                onChange={(e) => setForm({ ...form, position: e.target.value })}
+              />
 
-                <input
-                  type="number"
-                  placeholder="Jersey Number"
-                  value={form.jersey}
-                  onChange={(e) => setForm({ ...form, jersey: Number(e.target.value) })}
-                />
+              <input
+                type="number"
+                placeholder="Jersey Number"
+                value={form.jersey}
+                onChange={(e) => setForm({ ...form, jersey: Number(e.target.value) })}
+              />
 
-                <select
-                  value={form.status}
-                  onChange={(e) =>
-                    setForm({ ...form, status: e.target.value as "Active" | "Inactive" })
-                  }
-                >
-                  <option>Active</option>
-                  <option>Inactive</option>
-                </select>
-              </div>
+              <select
+                value={form.status}
+                onChange={(e) =>
+                  setForm({ ...form, status: e.target.value as "Active" | "Inactive" })
+                }
+              >
+                <option>Active</option>
+                <option>Inactive</option>
+              </select>
+            </div>
 
-              <div className="modal-actions">
-                <button className="secondary-btn" onClick={() => setShowForm(false)}>
-                  Cancel
-                </button>
-                <button className="primary-btn" onClick={savePlayer}>
-                  Save Player
-                </button>
-              </div>
+            <div className="modal-actions">
+              <button className="secondary-btn" onClick={() => setShowForm(false)}>
+                Cancel
+              </button>
+              <button className="primary-btn" onClick={savePlayer}>
+                Save Player
+              </button>
             </div>
           </div>
-        )}
+        </div>
+      )}
 
 
-        {showProfile && selectedPlayer && (
+      {showProfile && selectedPlayer && (
   <div className="modal-overlay">
 
     <div className="club-modal">
@@ -389,45 +357,44 @@ const [search, setSearch] = useState("");
   </div>
 )}
 
-        {showTransfer && transferringPlayer && (
-          <div className="modal-overlay">
-            <div className="club-modal">
-              <div className="modal-header">
-                <h4>Transfer Player</h4>
-                <button onClick={() => setShowTransfer(false)}>
-                  <X />
-                </button>
-              </div>
+      {showTransfer && transferringPlayer && (
+        <div className="modal-overlay">
+          <div className="club-modal">
+            <div className="modal-header">
+              <h4>Transfer Player</h4>
+              <button onClick={() => setShowTransfer(false)}>
+                <X />
+              </button>
+            </div>
 
-              <div className="form-grid">
-                <div className="readonly-field">Player: {transferringPlayer.name}</div>
+            <div className="form-grid">
+              <div className="readonly-field">Player: {transferringPlayer.name}</div>
 
-                <input
-                  placeholder="Transfer To"
-                  value={transferForm.transferTo}
-                  onChange={(e) => setTransferForm({ ...transferForm, transferTo: e.target.value })}
-                />
+              <input
+                placeholder="Transfer To"
+                value={transferForm.transferTo}
+                onChange={(e) => setTransferForm({ ...transferForm, transferTo: e.target.value })}
+              />
 
-                <textarea
-                  placeholder="Reason"
-                  value={transferForm.reason}
-                  onChange={(e) => setTransferForm({ ...transferForm, reason: e.target.value })}
-                />
-              </div>
+              <textarea
+                placeholder="Reason"
+                value={transferForm.reason}
+                onChange={(e) => setTransferForm({ ...transferForm, reason: e.target.value })}
+              />
+            </div>
 
-              <div className="modal-actions">
-                <button className="secondary-btn" onClick={() => setShowTransfer(false)}>
-                  Cancel
-                </button>
-                <button className="primary-btn" onClick={confirmTransfer}>
-                  Transfer
-                </button>
-              </div>
+            <div className="modal-actions">
+              <button className="secondary-btn" onClick={() => setShowTransfer(false)}>
+                Cancel
+              </button>
+              <button className="primary-btn" onClick={confirmTransfer}>
+                Transfer
+              </button>
             </div>
           </div>
-        )}
-      </div>
-    </AdminWorkspaceLayout>
+        </div>
+      )}
+    </div>
   );
 };
 
