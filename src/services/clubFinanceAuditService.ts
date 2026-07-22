@@ -397,4 +397,74 @@ export async function getAuditTrail(
   return data;
 }
 
+/* ------------------------------------------------------------------ */
+/* Income & expense summary (dashboard-style view)                     */
+/* ------------------------------------------------------------------ */
+
+export interface IncomeExpenseStats {
+  totalIncome: FinanceStat;
+  totalExpenses: FinanceStat;
+  netProfit: FinanceStat;
+  operatingCosts: FinanceStat;
+  sponsorshipIncome: FinanceStat;
+  membershipIncome: FinanceStat;
+}
+
+export interface IncomeSourceSlice {
+  source: string; // e.g. "Ticket Sales", "Sponsorships", "Memberships", "Others"
+  amount: number;
+  share: number; // 0..1
+  color: string;
+}
+
+export interface CashFlowPoint {
+  month: string;
+  cashIn: number;
+  cashOut: number;
+  netCashFlow: number;
+}
+
+export interface ExpenseBreakdownRow {
+  category: string;
+  amount: number;
+  percentOfExpenses: number; // 0..100
+}
+
+export interface FinancialSummaryRow {
+  month: string;
+  income: number;
+  expenses: number;
+  netProfit: number;
+}
+
+export type IncomeExpenseTrendPeriod =
+  | "thisYear"
+  | "last12Months"
+  | "lastYear";
+
+export interface IncomeExpenseSummaryData {
+  stats: IncomeExpenseStats;
+  incomeVsExpenseTrend: IncomeExpensePoint[]; // reuses existing { month, income, expense }
+  incomeSources: IncomeSourceSlice[];
+  totalIncomeSources: number;
+  monthlyCashFlow: CashFlowPoint[];
+  expenseBreakdown: ExpenseBreakdownRow[];
+  financialSummary: FinancialSummaryRow[];
+}
+
+export interface IncomeExpenseSummaryParams extends DateRangeParams {
+  trend_period?: IncomeExpenseTrendPeriod;
+}
+
+export async function getIncomeExpenseSummary(
+  clubId: number,
+  params?: IncomeExpenseSummaryParams,
+): Promise<IncomeExpenseSummaryData> {
+  const { data } = await apiClient.get(
+    `${financeBase(clubId)}/income-expense/`,
+    { params },
+  );
+  return data;
+}
+
 export { getApiErrorMessage };
