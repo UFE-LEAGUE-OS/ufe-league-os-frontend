@@ -371,3 +371,186 @@
     align-items: flex-start;
   }
 }
+
+/* ------------------------------------------------------------------ */
+/* Search input (table controls)                                       */
+/* ------------------------------------------------------------------ */
+
+.searchWrap {
+  flex: 1 1 260px;
+  min-width: 220px;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 12px;
+  color: rgba(255, 255, 255, 0.4);
+  pointer-events: none;
+}
+
+.searchInput {
+  width: 100%;
+  padding-left: 32px;
+  text-align: left;
+  font-weight: 600;
+}
+
+/* ------------------------------------------------------------------ */
+/* Row actions / icon buttons                                          */
+/* ------------------------------------------------------------------ */
+
+.rowActions {
+  display: flex;
+  gap: 6px;
+}
+
+.iconButton {
+  width: 28px;
+  height: 28px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  color: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+
+  cursor: pointer;
+  transition: background 150ms ease, color 150ms ease;
+}
+
+.iconButton:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+}
+
+.iconButton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.tableRowSelected {
+  background: rgba(123, 63, 242, 0.12);
+}
+
+.tableRow {
+  cursor: pointer;
+}
+
+/* ------------------------------------------------------------------ */
+/* Pagination                                                           */
+/* ------------------------------------------------------------------ */
+
+.paginationFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.pageInfo {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.pagination {
+  display: flex;
+  gap: 4px;
+}
+
+.pageButton {
+  min-width: 30px;
+  min-height: 30px;
+  padding: 0 8px;
+
+  color: rgba(255, 255, 255, 0.78);
+  background: rgba(2, 6, 23, 0.38);
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 7px;
+
+  font: inherit;
+  font-size: 11px;
+  font-weight: 800;
+
+  cursor: pointer;
+}
+
+.pageButton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pageButtonActive {
+  background: rgba(123, 63, 242, 0.9);
+  border-color: rgba(123, 63, 242, 0.9);
+  color: #ffffff;
+}
+
+/* ------------------------------------------------------------------ */
+/* Receipt preview panel                                               */
+/* ------------------------------------------------------------------ */
+
+.previewTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.previewLabel {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.previewDetailList {
+  margin: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.previewDetailRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.previewTerm {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.previewValue {
+  margin: 0;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 800;
+  text-align: right;
+}
+
+.previewActions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.previewFeedback {
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.previewFeedbackSuccess {
+  color: #4ade80;
+}
+
+.previewFeedbackError {
+  color: #ff9b9b;
+}

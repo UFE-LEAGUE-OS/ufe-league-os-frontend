@@ -125,11 +125,14 @@ import UserManagement from "./UserManagement";
 import VenueManagement from "./VenueManagement";
 import MembershipPaymentsOverview from "./finance-audit/MembershipPaymentsOverview";
 import TicketingPaymentsOverview from "./finance-audit/TicketingPaymentsOverview";
+import IncomeExpenseSummary from "./finance-audit/IncomeExpenseSummary";
+import InvoicesReceiptsOverview from "./finance-audit/InvoicesReceipts";
+import AuditTrailLog from "./finance-audit/AuditTrailLog";
 import AnnouncementsCompose from "./AnnouncementsCompose";
 import AnnouncementsPublish from "./AnnouncementsPublish";
 import NoticesCirculars from "./NoticesCirculars";
 import CommunicationHistoryLog from "./CommunicationHistoryLog";
-import IncomeExpenseSummary from "./finance-audit/IncomeExpenseSummary";
+
 
 type TabKey =
   | "overview"
@@ -1948,61 +1951,6 @@ export default function ClubAdminDashboard() {
     );
   }
 
-  function renderFinanceInvoicesReceipts() {
-    return (
-      <WorkspacePanel
-        eyebrow="Invoices & receipts"
-        title="Invoices & receipts list"
-        description="Central register for generated invoices, receipts, payment references, and exportable finance documents."
-      >
-        <WorkspaceEmpty
-          title="No invoices or receipts yet"
-          description="Invoice and receipt records will appear here once finance document endpoints are connected."
-        />
-      </WorkspacePanel>
-    );
-  }
-
-  function renderFinanceAuditTrail() {
-    return (
-      <WorkspacePanel
-        eyebrow="Audit trail"
-        title="Audit trail log viewer"
-        description="Review recent club finance and administration activity for audit follow-up."
-      >
-        {data?.recent_activity?.length ? (
-          <div className={styles.tableShell}>
-            <table>
-              <thead>
-                <tr>
-                  <th>Event</th>
-                  <th>Details</th>
-                  <th>Time</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.recent_activity.map((item) => (
-                  <tr key={item.id}>
-                    <td>
-                      <span className={styles.tablePrimary}>{item.title}</span>
-                    </td>
-                    <td>{item.description}</td>
-                    <td>{formatWorkspaceDate(item.timestamp)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <WorkspaceEmpty
-            title="No audit activity yet"
-            description="Finance audit events will appear here as tracked actions are recorded."
-          />
-        )}
-      </WorkspacePanel>
-    );
-  }
-
   /* ------------------------------------------------------------------ */
   /* Membership sub-pages (real content, ported from                    */
   /* ClubMembershipManagement.tsx so both entry points stay in sync)     */
@@ -3775,9 +3723,18 @@ export default function ClubAdminDashboard() {
       <WorkspaceLoading label="Loading income & expense summary…" />
     );
   } else if (activeTab === "financeInvoicesReceipts") {
-    content = renderFinanceInvoicesReceipts();
+  content = data ? (
+    <InvoicesReceiptsOverview clubId={data.club.id} />
+  ) : (
+    <WorkspaceLoading label="Loading invoices & receipts…" />
+  );
+  
   } else if (activeTab === "financeAuditTrail") {
-    content = renderFinanceAuditTrail();
+    content = data ? (
+      <AuditTrailLog clubId={data.club.id} />
+    ) : (
+      <WorkspaceLoading label="Loading audit trail..." />
+    );
   } else if (activeTab === "ticketing") {
     content = renderTicketingOverview();
   } else if (activeTab === "ticketingGames") {
