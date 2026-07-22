@@ -1,0 +1,213 @@
+.sas-page {
+  min-height: 100vh;
+  background:
+    radial-gradient(
+      circle at 75% 5%,
+      rgba(129, 53, 250, 0.14),
+      transparent 30%
+    ),
+    #00030d;
+  color: #fff;
+  font-family: 'Inter', sans-serif;
+}
+
+.sas-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sas-main {
+  flex: 1;
+  min-width: 0;
+  padding: 35px 40px 60px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.sas-back {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  align-self: flex-start;
+  background: none;
+  border: none;
+  color: #9299ab;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+}
+.sas-back:hover { color: #fff; }
+
+.sas-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 60px 20px;
+  color: #9299ab;
+  text-align: center;
+}
+.sas-state h2 { color: #fff; margin: 0; }
+
+.sas-spin { animation: sas-spin 0.8s linear infinite; }
+@keyframes sas-spin {
+  to { transform: rotate(360deg); }
+}
+
+.sas-header h1 {
+  margin: 0 0 6px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(24px, 4vw, 32px);
+}
+
+.sas-header p {
+  margin: 0;
+  color: #9299ab;
+  font-size: 13px;
+}
+
+.sas-signed-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+  border: 1px solid #242a43;
+  border-radius: 13px;
+  background: rgba(15, 18, 31, 0.96);
+  padding: 48px 24px;
+  color: #16a34a;
+}
+.sas-signed-card h2 { color: #fff; margin: 0; }
+.sas-signed-card p { color: #9299ab; margin: 0; font-size: 13px; }
+
+.sas-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.sas-panel {
+  border: 1px solid #242a43;
+  border-radius: 13px;
+  background: rgba(15, 18, 31, 0.96);
+  padding: 22px;
+}
+
+.sas-panel h2 {
+  margin: 0 0 14px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 16px;
+}
+
+.sas-document-body {
+  max-height: 520px;
+  overflow-y: auto;
+  border: 1px solid #1a1e33;
+  border-radius: 10px;
+  background: #0d0f1a;
+}
+
+.sas-document-frame {
+  width: 100%;
+  height: 520px;
+  border: none;
+  border-radius: 10px;
+}
+
+.sas-document-html {
+  padding: 20px;
+  color: #d1d5db;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.sas-document-fallback {
+  padding: 20px;
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.sas-hint {
+  color: #9299ab;
+  font-size: 12px;
+  margin: 0 0 12px;
+  line-height: 1.5;
+}
+
+.sas-canvas-wrap {
+  border: 1px dashed #242a43;
+  border-radius: 10px;
+  background: #ffffff;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.sas-canvas {
+  width: 100%;
+  height: 180px;
+  display: block;
+}
+
+.sas-clear-btn {
+  background: none;
+  border: 1px solid #242a43;
+  color: #9299ab;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 7px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-bottom: 16px;
+}
+.sas-clear-btn:hover { color: #fff; border-color: #8135fa; }
+
+.sas-declaration {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 12px;
+  color: #d1d5db;
+  line-height: 1.5;
+  cursor: pointer;
+  margin-bottom: 16px;
+}
+
+.sas-declaration input {
+  margin-top: 2px;
+}
+
+.sas-error {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #f97316;
+  font-size: 12px;
+  margin: 0 0 14px;
+}
+
+.sas-primary-btn {
+  width: 100%;
+  background: #8135fa;
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 13px 0;
+  cursor: pointer;
+}
+.sas-primary-btn:hover { background: #9b55fb; }
+.sas-primary-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+@media (max-width: 900px) {
+  .sas-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 620px) {
+  .sas-main { padding: 24px 16px 40px; }
+}

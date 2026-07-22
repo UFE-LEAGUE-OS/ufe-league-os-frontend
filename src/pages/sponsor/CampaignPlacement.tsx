@@ -6,6 +6,7 @@ import {
 } from 'react-icons/fi';
 import SponsorSidebar from '../../components/SponsorSidebar';
 import { useSponsorCampaignStore } from '../../store/sponsorCampaignStore';
+import { placementOptions } from './campaignPlacementOptions';
 import '../../styles/pages/landing.css';
 import './CampaignPlacement.css';
 
@@ -20,15 +21,6 @@ const steps = [
 ];
 
 const currentStep = 4;
-
-const placementOptions = [
-  { id: 'Landing Page Hero', desc: 'Homepage hero banner' },
-  { id: 'Fixtures Page Card', desc: 'Sponsored fixture highlight' },
-  { id: 'Team Profile Banner', desc: 'Partner banner on team pages' },
-  { id: 'Match Center Branding', desc: 'In-game branding & overlays' },
-  { id: 'Membership Section', desc: 'Sponsor tile in membership' },
-  { id: 'Ticketing Flow Branding', desc: 'Branding in ticket purchase flow' },
-];
 
 export default function CampaignPlacement() {
   const navigate = useNavigate();
@@ -87,6 +79,13 @@ export default function CampaignPlacement() {
           <div className="cp-form-card">
             <h2 className="cp-form-title">Placement Preferences</h2>
             <p className="cp-section-hint">Select all the placements you'd like your campaign considered for.</p>
+            <button
+              type="button"
+              className="cp-preview-link"
+              onClick={() => navigate('/sponsor/campaigns/preview')}
+            >
+              Preview selected placements
+            </button>
 
             <div className="cp-placement-grid">
               {placementOptions.map((option) => {

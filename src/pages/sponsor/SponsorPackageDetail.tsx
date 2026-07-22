@@ -24,6 +24,7 @@ import {
   type SponsorAgreement,
   type SponsorPackage,
 } from '../../services/sponsorshipService';
+import { useSponsorCampaignStore } from '../../store/sponsorCampaignStore';
 import './SponsorPackages.css';
 
 function money(
@@ -40,6 +41,10 @@ function money(
 export default function SponsorPackageDetail() {
   const navigate = useNavigate();
   const { packageId } = useParams();
+  const startCampaignFromAgreement =
+    useSponsorCampaignStore(
+      (state) => state.startFromAgreement,
+    );
 
   const parsedPackageId =
     Number(packageId);
@@ -484,11 +489,39 @@ export default function SponsorPackageDetail() {
                           className="spkg-primary-btn"
                           onClick={() =>
                             navigate(
+                              `/sponsor/agreements/${createdAgreement.id}/sign`,
+                            )
+                          }
+                        >
+                          Review & Sign Agreement
+                        </button>
+
+                        <button
+                          type="button"
+                          className="spkg-secondary-btn"
+                          onClick={() =>
+                            navigate(
                               `/sponsor/payments?agreement=${createdAgreement.id}`,
                             )
                           }
                         >
                           View Agreements & Payments
+                        </button>
+
+                        <button
+                          type="button"
+                          className="spkg-secondary-btn"
+                          onClick={() => {
+                            startCampaignFromAgreement(
+                              createdAgreement.sponsor_account,
+                              createdAgreement.id,
+                            );
+                            navigate(
+                              '/sponsor/campaigns/new',
+                            );
+                          }}
+                        >
+                          Create Campaign for this Sponsorship
                         </button>
                       </div>
                     ) : (

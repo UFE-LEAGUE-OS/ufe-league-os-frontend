@@ -25,6 +25,8 @@ import {
   addSponsorAccountMember,
   getSponsorAccountMembers,
   getSponsorAccounts,
+  removeSponsorAccountMember,
+  updateSponsorAccountMember,
   type AddSponsorMemberPayload,
   type SponsorAccountMember,
   type SponsorAccountResponse,
@@ -293,6 +295,13 @@ export default function CorporateTeamManagement() {
     useState('');
   const [successMessage, setSuccessMessage] =
     useState('');
+  const [
+    rowActionMemberId,
+    setRowActionMemberId,
+  ] = useState<number | null>(null);
+  const [rowError, setRowError] = useState<
+    Record<number, string>
+  >({});
 
   const corporateAccounts = useMemo(
     () =>
@@ -705,6 +714,101 @@ export default function CorporateTeamManagement() {
     }
   }
 
+  async function handleChangeRole(
+    member: SponsorAccountMember,
+    newRole: SponsorMemberRole,
+  ) {
+    if (
+      !selectedAccountId ||
+      newRole === member.member_role
+    ) {
+      return;
+    }
+
+    setRowActionMemberId(member.id);
+    setRowError((current) => {
+      const next = { ...current };
+      delete next[member.id];
+      return next;
+    });
+
+    try {
+      const response =
+        await updateSponsorAccountMember(
+          selectedAccountId,
+          member.id,
+          newRole,
+        );
+
+      setMembers((currentMembers) =>
+        sortMembers(
+          currentMembers.map((existing) =>
+            existing.id === member.id
+              ? response.data
+              : existing,
+          ),
+        ),
+      );
+    } catch (error) {
+      setRowError((current) => ({
+        ...current,
+        [member.id]: getApiErrorMessage(
+          error,
+          'We could not update this member’s role.',
+        ),
+      }));
+    } finally {
+      setRowActionMemberId(null);
+    }
+  }
+
+  async function handleRemoveMember(
+    member: SponsorAccountMember,
+  ) {
+    if (!selectedAccountId) {
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Remove ${getMemberName(member)} from this sponsor account? They will immediately lose access.`,
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setRowActionMemberId(member.id);
+    setRowError((current) => {
+      const next = { ...current };
+      delete next[member.id];
+      return next;
+    });
+
+    try {
+      await removeSponsorAccountMember(
+        selectedAccountId,
+        member.id,
+      );
+
+      setMembers((currentMembers) =>
+        currentMembers.filter(
+          (existing) =>
+            existing.id !== member.id,
+        ),
+      );
+    } catch (error) {
+      setRowError((current) => ({
+        ...current,
+        [member.id]: getApiErrorMessage(
+          error,
+          'We could not remove this member.',
+        ),
+      }));
+    } finally {
+      setRowActionMemberId(null);
+    }
+  }
+
   function renderAccountsState() {
     if (accountsLoading) {
       return (
@@ -802,19 +906,6 @@ export default function CorporateTeamManagement() {
             </div>
 
             <div className="ctm-header-actions">
-              <button
-                type="button"
-                className="ctm-secondary-btn"
-                onClick={() =>
-                  navigate(
-                    '/sponsor/permissions',
-                  )
-                }
-              >
-                <FiShield size={16} />
-                View permissions
-              </button>
-
               {selectedAccount &&
                 canManageMembers && (
                   <button
@@ -1306,7 +1397,9 @@ export default function CorporateTeamManagement() {
                         </div>
                       ) : (
                         <>
-                          <div className="ctm-table-header">
+                          <div
+                            className={`ctm-table-header ${canManageMembers ? 'ctm-table-with-actions' : ''}`}
+                          >
                             <div>
                               Member
                             </div>
@@ -1319,6 +1412,11 @@ export default function CorporateTeamManagement() {
                             <div>
                               Status
                             </div>
+                            {canManageMembers && (
+                              <div>
+                                Actions
+                              </div>
+                            )}
                           </div>
 
                           <div className="ctm-table-body">
@@ -1335,7 +1433,7 @@ export default function CorporateTeamManagement() {
                                     key={
                                       member.id
                                     }
-                                    className="ctm-table-row"
+                                    className={`ctm-table-row ${canManageMembers ? 'ctm-table-with-actions' : ''}`}
                                   >
                                     <div className="ctm-member-cell">
                                       <div className="ctm-avatar">
@@ -1396,6 +1494,107 @@ export default function CorporateTeamManagement() {
                                           : 'Inactive'}
                                       </span>
                                     </div>
+
+                                    {canManageMembers && (
+                                      <div className="ctm-actions-cell">
+                                        {member.member_role !==
+                                          'OWNER' &&
+                                        !isCurrentUser(
+                                          member,
+                                        ) ? (
+                                          <>
+                                            <div className="ctm-select-wrap ctm-role-select">
+                                              <select
+                                                value={
+                                                  member.member_role
+                                                }
+                                                disabled={
+                                                  rowActionMemberId ===
+                                                  member.id
+                                                }
+                                                onChange={(
+                                                  event,
+                                                ) =>
+                                                  void handleChangeRole(
+                                                    member,
+                                                    event
+                                                      .target
+                                                      .value as SponsorMemberRole,
+                                                  )
+                                                }
+                                                aria-label={`Change role for ${getMemberName(member)}`}
+                                              >
+                                                {assignableRoles.map(
+                                                  (
+                                                    role,
+                                                  ) => (
+                                                    <option
+                                                      key={
+                                                        role.value
+                                                      }
+                                                      value={
+                                                        role.value
+                                                      }
+                                                    >
+                                                      {
+                                                        role.label
+                                                      }
+                                                    </option>
+                                                  ),
+                                                )}
+                                              </select>
+                                              <FiChevronDown
+                                                size={
+                                                  13
+                                                }
+                                              />
+                                            </div>
+
+                                            <button
+                                              type="button"
+                                              className="ctm-remove-btn"
+                                              disabled={
+                                                rowActionMemberId ===
+                                                member.id
+                                              }
+                                              onClick={() =>
+                                                void handleRemoveMember(
+                                                  member,
+                                                )
+                                              }
+                                            >
+                                              Remove
+                                            </button>
+                                          </>
+                                        ) : (
+                                          <span className="ctm-actions-locked">
+                                            {isCurrentUser(
+                                              member,
+                                            )
+                                              ? 'This is you'
+                                              : 'Owner'}
+                                          </span>
+                                        )}
+
+                                        {rowError[
+                                          member.id
+                                        ] && (
+                                          <div className="ctm-row-error">
+                                            <FiAlertCircle
+                                              size={
+                                                13
+                                              }
+                                            />
+                                            {
+                                              rowError[
+                                                member
+                                                  .id
+                                              ]
+                                            }
+                                          </div>
+                                        )}
+                                      </div>
+                                    )}
                                   </article>
                                 );
                               },

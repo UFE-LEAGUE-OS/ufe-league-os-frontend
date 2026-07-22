@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   FiUser,
   FiBell,
@@ -7,20 +8,43 @@ import {
   FiCamera,
   FiMail,
   FiPhone,
-  FiGlobe,
   FiMapPin,
   FiToggleLeft,
   FiToggleRight,
-  FiLock,
-  FiTrash2,
-  FiAlertTriangle,
   FiCheck,
+  FiAlertCircle,
+  FiRefreshCw,
+  FiClock,
+  FiXCircle,
+  FiCheckCircle,
 } from 'react-icons/fi';
 import SponsorSidebar from '../../components/SponsorSidebar';
-import { useAuthStore } from '../../store/authStore';
+import { fetchProfile, updateProfile, uploadAvatar } from '../../services/authService.js';
+import {
+  getSponsorAccounts,
+  getSponsorAgreements,
+  getSponsorNotificationPreferences,
+  getSponsorVerificationDocuments,
+  updateSponsorNotificationPreferences,
+  uploadSponsorVerificationDocument,
+  type SponsorAccountResponse,
+  type SponsorAgreement,
+  type SponsorNotificationPreferences,
+  type SponsorVerificationDocType,
+  type SponsorVerificationDocument,
+} from '../../services/sponsorshipService';
 import './SponsorSettings.css';
 
 type Tab = 'profile' | 'notifications' | 'security' | 'billing';
+
+type ProfileData = {
+  email?: string;
+  phone_number?: string;
+  first_name?: string;
+  last_name?: string;
+  location?: string;
+  avatar_url?: string;
+};
 
 const tabs: { id: Tab; label: string; icon: React.ElementType }[] = [
   { id: 'profile', label: 'Profile', icon: FiUser },
@@ -29,87 +53,381 @@ const tabs: { id: Tab; label: string; icon: React.ElementType }[] = [
   { id: 'billing', label: 'Billing & Payments', icon: FiCreditCard },
 ];
 
-const sportOptions = [
-  'Football', 'Rugby', 'Basketball', 'Athletics',
-  'Swimming', 'Cricket', 'Volleyball', 'Netball',
+const verificationDocLabels: Record<SponsorVerificationDocType, string> = {
+  incorporation: 'Certificate of Incorporation',
+  tin: 'Tax Identification Number (TIN)',
+  logo: 'Company Logo',
+};
+
+const notificationCopy: {
+  key: keyof SponsorNotificationPreferences;
+  label: string;
+  desc: string;
+  corporateOnly?: boolean;
+}[] = [
+  {
+    key: 'campaign_performance',
+    label: 'Campaign Performance',
+    desc: 'Weekly reports on reach, engagements and ROI',
+  },
+  {
+    key: 'approval_updates',
+    label: 'Approval Updates',
+    desc: 'Notifications when campaigns or documents are approved or rejected',
+  },
+  {
+    key: 'payment_alerts',
+    label: 'Payment Alerts',
+    desc: 'Alerts for upcoming payments, receipts and billing updates',
+  },
+  {
+    key: 'new_packages',
+    label: 'New Packages Available',
+    desc: 'Get notified when new sponsorship packages are listed',
+  },
+  {
+    key: 'weekly_digest',
+    label: 'Weekly Digest',
+    desc: 'A summary of your sponsorship activity every week',
+  },
+  {
+    key: 'team_activity',
+    label: 'Team Activity',
+    desc: 'Notifications when team members make changes',
+    corporateOnly: true,
+  },
+  {
+    key: 'marketing_emails',
+    label: 'Marketing Emails',
+    desc: 'Promotional content, offers and platform updates',
+  },
 ];
 
-const budgetOptions = [
-  'Under UGX 1M', 'UGX 1M – 5M', 'UGX 5M – 20M', 'Above UGX 20M',
-];
+function amount(value: string) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
 
-const sponsorshipTypeOptions = [
-  'Club Sponsorship', 'League Sponsorship', 'Player Sponsorship',
-  'Event Sponsorship', 'Grassroots Development', 'Digital Campaigns',
-];
+function money(value: number) {
+  return new Intl.NumberFormat('en-UG', {
+    style: 'currency',
+    currency: 'UGX',
+    maximumFractionDigits: 0,
+  }).format(value);
+}
 
 export default function SponsorSettings() {
-  const user = useAuthStore((state) => state.user);
-  const sponsorType = (user?.sponsor_type as string) ?? 'CORPORATE';
-  const isIndividual = sponsorType === 'INDIVIDUAL';
-
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<Tab>('profile');
-  const [saved, setSaved] = useState(false);
 
-  // Profile state
-  const [profile, setProfile] = useState({
-    fullName: isIndividual ? 'Jane Kintu' : 'Nile Breweries Limited',
-    email: isIndividual ? 'jane.kintu@email.com' : 'partnerships@nilebreweries.co.ug',
-    phone: '+256 700 123 456',
-    website: isIndividual ? '' : 'https://www.nilebreweries.co.ug',
-    city: 'Kampala',
-    country: 'Uganda',
-    bio: '',
-    preferredBudget: 'UGX 1M – 5M',
-    preferredSports: ['Football', 'Rugby'],
-    preferredTypes: ['Club Sponsorship'],
-  });
+  const [profile, setProfile] = useState<ProfileData | null>(null);
+  const [account, setAccount] = useState<SponsorAccountResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
 
-  // Notifications state
-  const [notifications, setNotifications] = useState({
-    campaignPerformance: true,
-    approvalUpdates: true,
-    paymentAlerts: true,
-    newPackages: false,
-    weeklyDigest: true,
-    teamActivity: !isIndividual,
-    marketingEmails: false,
-  });
+  const isIndividual = account?.sponsor_type === 'INDIVIDUAL';
 
-  // Security state
-  const [security, setSecurity] = useState({
-    twoFactor: false,
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: '',
-  });
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [location, setLocation] = useState('');
+  const [profileSaving, setProfileSaving] = useState(false);
+  const [profileSaved, setProfileSaved] = useState(false);
+  const [profileError, setProfileError] = useState('');
 
-  const handleSave = () => {
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [avatarError, setAvatarError] = useState('');
+  const avatarInputRef = useRef<HTMLInputElement | null>(null);
+
+  const [docs, setDocs] = useState<SponsorVerificationDocument[]>([]);
+  const [docsError, setDocsError] = useState('');
+  const [reuploadingType, setReuploadingType] =
+    useState<SponsorVerificationDocType | null>(null);
+  const reuploadInputRefs = useRef<
+    Record<string, HTMLInputElement | null>
+  >({});
+
+  const [notifications, setNotifications] =
+    useState<SponsorNotificationPreferences | null>(null);
+  const [notificationsError, setNotificationsError] = useState('');
+  const [savingNotificationKey, setSavingNotificationKey] = useState<
+    string | null
+  >(null);
+
+  const [agreements, setAgreements] = useState<SponsorAgreement[]>([]);
+
+  useEffect(() => {
+    let active = true;
+
+    async function load() {
+      try {
+        const [profileResponse, accountsResponse] = await Promise.all([
+          fetchProfile(),
+          getSponsorAccounts(),
+        ]);
+
+        if (!active) return;
+
+        const profileData = profileResponse.data as ProfileData;
+        setProfile(profileData);
+        setFirstName(profileData.first_name ?? '');
+        setLastName(profileData.last_name ?? '');
+        setPhone(profileData.phone_number ?? '');
+        setLocation(profileData.location ?? '');
+        setAccount(accountsResponse.data.results[0] ?? null);
+      } catch {
+        if (active) {
+          setLoadError('We could not load your settings right now.');
+        }
+      } finally {
+        if (active) {
+          setLoading(false);
+        }
+      }
+    }
+
+    void load();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!account || account.sponsor_type !== 'CORPORATE') {
+      return;
+    }
+
+    let active = true;
+
+    getSponsorVerificationDocuments(account.id)
+      .then((response) => {
+        if (active) setDocs(response.data);
+      })
+      .catch(() => {
+        if (active) {
+          setDocsError('We could not load your verification documents.');
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [account]);
+
+  useEffect(() => {
+    if (!account) return;
+
+    let active = true;
+
+    getSponsorNotificationPreferences(account.id)
+      .then((response) => {
+        if (active) setNotifications(response.data);
+      })
+      .catch(() => {
+        if (active) {
+          setNotificationsError(
+            'We could not load your notification preferences.',
+          );
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [account]);
+
+  useEffect(() => {
+    if (!account || account.sponsor_type !== 'CORPORATE') return;
+
+    let active = true;
+
+    getSponsorAgreements({ sponsor_account: account.id })
+      .then((response) => {
+        if (active) setAgreements(response.data.results);
+      })
+      .catch(() => {
+        // Billing summary is supplementary — SponsorPayments.tsx is the
+        // source of truth and has its own error handling.
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [account]);
+
+  const handleAvatarChange = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setAvatarError('');
+
+    const allowedTypes = [
+      'image/jpeg',
+      'image/jpg',
+      'image/png',
+      'image/webp',
+      'image/gif',
+    ];
+    if (!allowedTypes.includes(file.type)) {
+      setAvatarError('Please upload a JPEG, PNG, WEBP, or GIF image.');
+      return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+      setAvatarError('File size must not exceed 2MB.');
+      return;
+    }
+
+    setIsUploadingAvatar(true);
+
+    try {
+      const response = await uploadAvatar(file);
+      setProfile((prev) =>
+        prev
+          ? { ...prev, avatar_url: (response.data as ProfileData).avatar_url }
+          : prev,
+      );
+    } catch {
+      setAvatarError('We could not upload this file. Please try again.');
+    } finally {
+      setIsUploadingAvatar(false);
+      if (avatarInputRef.current) avatarInputRef.current.value = '';
+    }
   };
 
-  const toggleSport = (sport: string) => {
-    setProfile((prev) => ({
-      ...prev,
-      preferredSports: prev.preferredSports.includes(sport)
-        ? prev.preferredSports.filter((s) => s !== sport)
-        : [...prev.preferredSports, sport],
-    }));
+  const handleSaveProfile = async () => {
+    setProfileSaving(true);
+    setProfileError('');
+
+    try {
+      await updateProfile({
+        first_name: firstName.trim(),
+        last_name: lastName.trim(),
+        phone_number: phone.trim(),
+        location: location.trim(),
+      });
+      setProfileSaved(true);
+      setTimeout(() => setProfileSaved(false), 3000);
+    } catch {
+      setProfileError('We could not save your profile. Please try again.');
+    } finally {
+      setProfileSaving(false);
+    }
   };
 
-  const toggleType = (type: string) => {
-    setProfile((prev) => ({
-      ...prev,
-      preferredTypes: prev.preferredTypes.includes(type)
-        ? prev.preferredTypes.filter((t) => t !== type)
-        : [...prev.preferredTypes, type],
-    }));
+  const handleReuploadDoc = async (
+    docType: SponsorVerificationDocType,
+    file: File,
+  ) => {
+    if (!account) return;
+
+    setReuploadingType(docType);
+    setDocsError('');
+
+    try {
+      const response = await uploadSponsorVerificationDocument(
+        account.id,
+        docType,
+        file,
+      );
+
+      setDocs((prev) => [
+        ...prev.filter((doc) => doc.doc_type !== docType),
+        response.data,
+      ]);
+    } catch {
+      setDocsError('We could not upload this document. Please try again.');
+    } finally {
+      setReuploadingType(null);
+    }
   };
 
-  const toggleNotification = (key: keyof typeof notifications) => {
-    setNotifications((prev) => ({ ...prev, [key]: !prev[key] }));
+  const toggleNotification = async (
+    key: keyof SponsorNotificationPreferences,
+  ) => {
+    if (!account || !notifications) return;
+
+    const nextValue = !notifications[key];
+    const previous = notifications;
+
+    setNotifications({ ...notifications, [key]: nextValue });
+    setSavingNotificationKey(key);
+    setNotificationsError('');
+
+    try {
+      const response = await updateSponsorNotificationPreferences(
+        account.id,
+        { [key]: nextValue },
+      );
+      setNotifications(response.data);
+    } catch {
+      setNotifications(previous);
+      setNotificationsError(
+        'We could not save this preference. Please try again.',
+      );
+    } finally {
+      setSavingNotificationKey(null);
+    }
   };
+
+  const billingConfirmedPaid = agreements.reduce(
+    (total, agreement) =>
+      total +
+      agreement.payments
+        .filter((payment) => payment.status === 'CONFIRMED')
+        .reduce(
+          (paymentTotal, payment) =>
+            paymentTotal + amount(payment.amount_paid),
+          0,
+        ),
+    0,
+  );
+
+  const billingTotalValue = agreements.reduce(
+    (total, agreement) => total + amount(agreement.total_value),
+    0,
+  );
+
+  const billingOutstanding = Math.max(
+    billingTotalValue - billingConfirmedPaid,
+    0,
+  );
+
+  if (loading) {
+    return (
+      <div className="ss-page">
+        <div className="ss-layout">
+          <SponsorSidebar />
+          <main className="ss-main landing-page">
+            <div className="ss-state">
+              <FiRefreshCw className="ss-spin" size={28} />
+              <h2>Loading settings</h2>
+            </div>
+          </main>
+        </div>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="ss-page">
+        <div className="ss-layout">
+          <SponsorSidebar />
+          <main className="ss-main landing-page">
+            <div className="ss-state">
+              <FiAlertCircle size={28} />
+              <h2>Settings unavailable</h2>
+              <p>{loadError}</p>
+            </div>
+          </main>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="ss-page">
@@ -117,18 +435,15 @@ export default function SponsorSettings() {
         <SponsorSidebar />
 
         <main className="ss-main landing-page">
-
-          {/* Header */}
           <div className="ss-header">
             <h1 className="ss-title">Settings</h1>
             <p className="ss-subtitle">
-              Manage your {isIndividual ? 'personal' : 'corporate'} sponsor account settings and preferences.
+              Manage your {isIndividual ? 'personal' : 'corporate'} sponsor
+              account settings and preferences.
             </p>
           </div>
 
           <div className="ss-body">
-
-            {/* Tabs */}
             <div className="ss-tabs">
               {tabs.map((tab) => {
                 const Icon = tab.icon;
@@ -146,52 +461,85 @@ export default function SponsorSettings() {
               })}
             </div>
 
-            {/* Tab content */}
             <div className="ss-content">
-
-              {/* ── Profile Tab ── */}
               {activeTab === 'profile' && (
                 <div className="ss-tab-content">
-
-                  {/* Avatar */}
                   <div className="ss-section">
                     <h3 className="ss-section-title">
                       {isIndividual ? 'Profile Photo' : 'Company Logo'}
                     </h3>
                     <div className="ss-avatar-row">
                       <div className="ss-avatar">
-                        {profile.fullName.charAt(0).toUpperCase()}
+                        {profile?.avatar_url ? (
+                          <img
+                            src={profile.avatar_url}
+                            alt="Avatar"
+                            className="ss-avatar-img"
+                          />
+                        ) : (
+                          (firstName || 'S').charAt(0).toUpperCase()
+                        )}
                       </div>
                       <div className="ss-avatar-actions">
-                        <button className="ss-btn-secondary">
-                          <FiCamera size={14} /> Upload {isIndividual ? 'Photo' : 'Logo'}
+                        <input
+                          type="file"
+                          ref={avatarInputRef}
+                          className="ss-avatar-input"
+                          accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
+                          onChange={(event) => void handleAvatarChange(event)}
+                        />
+                        <button
+                          className="ss-btn-secondary"
+                          disabled={isUploadingAvatar}
+                          onClick={() => avatarInputRef.current?.click()}
+                        >
+                          <FiCamera size={14} />{' '}
+                          {isUploadingAvatar
+                            ? 'Uploading…'
+                            : `Upload ${isIndividual ? 'Photo' : 'Logo'}`}
                         </button>
                         <p className="ss-avatar-hint">
-                          {isIndividual
-                            ? 'JPG, PNG or GIF. Max size 2MB.'
-                            : 'PNG, JPG or SVG. Recommended 512×512px. Max 5MB.'}
+                          JPEG, PNG, WEBP or GIF. Max size 2MB.
                         </p>
+                        {avatarError && (
+                          <p className="ss-error-text">{avatarError}</p>
+                        )}
                       </div>
                     </div>
                   </div>
 
-                  {/* Basic Info */}
                   <div className="ss-section">
                     <h3 className="ss-section-title">
-                      {isIndividual ? 'Personal Information' : 'Company Information'}
+                      {isIndividual
+                        ? 'Personal Information'
+                        : 'Contact Information'}
                     </h3>
                     <div className="ss-field-grid">
                       <div className="ss-field-group">
-                        <label className="ss-label">
-                          {isIndividual ? 'Full Name' : 'Company Name'}
-                        </label>
+                        <label className="ss-label">First Name</label>
                         <div className="ss-input-wrap">
                           <FiUser size={15} className="ss-input-icon" />
                           <input
                             className="ss-input"
                             type="text"
-                            value={profile.fullName}
-                            onChange={(e) => setProfile({ ...profile, fullName: e.target.value })}
+                            value={firstName}
+                            onChange={(event) =>
+                              setFirstName(event.target.value)
+                            }
+                          />
+                        </div>
+                      </div>
+                      <div className="ss-field-group">
+                        <label className="ss-label">Last Name</label>
+                        <div className="ss-input-wrap">
+                          <FiUser size={15} className="ss-input-icon" />
+                          <input
+                            className="ss-input"
+                            type="text"
+                            value={lastName}
+                            onChange={(event) =>
+                              setLastName(event.target.value)
+                            }
                           />
                         </div>
                       </div>
@@ -202,8 +550,8 @@ export default function SponsorSettings() {
                           <input
                             className="ss-input"
                             type="email"
-                            value={profile.email}
-                            onChange={(e) => setProfile({ ...profile, email: e.target.value })}
+                            value={profile?.email ?? ''}
+                            disabled
                           />
                         </div>
                       </div>
@@ -214,25 +562,11 @@ export default function SponsorSettings() {
                           <input
                             className="ss-input"
                             type="tel"
-                            value={profile.phone}
-                            onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
+                            value={phone}
+                            onChange={(event) => setPhone(event.target.value)}
                           />
                         </div>
                       </div>
-                      {!isIndividual && (
-                        <div className="ss-field-group">
-                          <label className="ss-label">Company Website</label>
-                          <div className="ss-input-wrap">
-                            <FiGlobe size={15} className="ss-input-icon" />
-                            <input
-                              className="ss-input"
-                              type="url"
-                              value={profile.website}
-                              onChange={(e) => setProfile({ ...profile, website: e.target.value })}
-                            />
-                          </div>
-                        </div>
-                      )}
                       <div className="ss-field-group">
                         <label className="ss-label">City</label>
                         <div className="ss-input-wrap">
@@ -240,400 +574,285 @@ export default function SponsorSettings() {
                           <input
                             className="ss-input"
                             type="text"
-                            value={profile.city}
-                            onChange={(e) => setProfile({ ...profile, city: e.target.value })}
-                          />
-                        </div>
-                      </div>
-                      <div className="ss-field-group">
-                        <label className="ss-label">Country</label>
-                        <div className="ss-input-wrap">
-                          <FiGlobe size={15} className="ss-input-icon" />
-                          <input
-                            className="ss-input"
-                            type="text"
-                            value={profile.country}
-                            onChange={(e) => setProfile({ ...profile, country: e.target.value })}
+                            value={location}
+                            onChange={(event) =>
+                              setLocation(event.target.value)
+                            }
                           />
                         </div>
                       </div>
                     </div>
-                  </div>
 
-                  {/* Sponsorship Preferences */}
-                  <div className="ss-section">
-                    <h3 className="ss-section-title">Sponsorship Preferences</h3>
-
-                    <div className="ss-field-group ss-field-full">
-                      <label className="ss-label">Default Budget Range</label>
-                      <div className="ss-budget-grid">
-                        {budgetOptions.map((b) => (
-                          <div
-                            key={b}
-                            className={`ss-budget-option ${profile.preferredBudget === b ? 'ss-budget-selected' : ''}`}
-                            onClick={() => setProfile({ ...profile, preferredBudget: b })}
-                          >
-                            <div className={`ss-radio ${profile.preferredBudget === b ? 'ss-radio-on' : ''}`} />
-                            {b}
+                    {!isIndividual && account && (
+                      <div className="ss-field-grid ss-mt-16">
+                        <div className="ss-field-group">
+                          <label className="ss-label">Company Name</label>
+                          <div className="ss-static-value">
+                            {account.name}
                           </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="ss-field-group ss-field-full">
-                      <label className="ss-label">Preferred Sports</label>
-                      <div className="ss-chips-grid">
-                        {sportOptions.map((sport) => (
-                          <div
-                            key={sport}
-                            className={`ss-chip ${profile.preferredSports.includes(sport) ? 'ss-chip-selected' : ''}`}
-                            onClick={() => toggleSport(sport)}
-                          >
-                            {profile.preferredSports.includes(sport) && <FiCheck size={12} />}
-                            {sport}
+                        </div>
+                        <div className="ss-field-group">
+                          <label className="ss-label">BRN</label>
+                          <div className="ss-static-value">
+                            {account.brn || '—'}
                           </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="ss-field-group ss-field-full">
-                      <label className="ss-label">Preferred Sponsorship Types</label>
-                      <div className="ss-chips-grid">
-                        {sponsorshipTypeOptions.map((type) => (
-                          <div
-                            key={type}
-                            className={`ss-chip ${profile.preferredTypes.includes(type) ? 'ss-chip-selected' : ''}`}
-                            onClick={() => toggleType(type)}
-                          >
-                            {profile.preferredTypes.includes(type) && <FiCheck size={12} />}
-                            {type}
+                        </div>
+                        <div className="ss-field-group">
+                          <label className="ss-label">TIN</label>
+                          <div className="ss-static-value">
+                            {account.tin || '—'}
                           </div>
-                        ))}
+                        </div>
                       </div>
+                    )}
+
+                    {profileError && (
+                      <p className="ss-error-text">{profileError}</p>
+                    )}
+
+                    <div className="ss-save-row">
+                      <button
+                        className="ss-save-btn"
+                        disabled={profileSaving}
+                        onClick={() => void handleSaveProfile()}
+                      >
+                        {profileSaving ? (
+                          'Saving…'
+                        ) : profileSaved ? (
+                          <>
+                            <FiCheck size={15} /> Saved!
+                          </>
+                        ) : (
+                          'Save Changes'
+                        )}
+                      </button>
                     </div>
                   </div>
 
-                  <div className="ss-save-row">
-                    <button className="ss-save-btn" onClick={handleSave}>
-                      {saved ? <><FiCheck size={15} /> Saved!</> : 'Save Changes'}
-                    </button>
-                  </div>
+                  {!isIndividual && account && (
+                    <div className="ss-section">
+                      <h3 className="ss-section-title">
+                        Verification Documents
+                      </h3>
+                      <p className="ss-section-desc">
+                        Your company&apos;s incorporation, TIN and logo
+                        documents, and their review status.
+                      </p>
+
+                      {docsError && (
+                        <p className="ss-error-text">{docsError}</p>
+                      )}
+
+                      <div className="ss-doc-list">
+                        {(
+                          Object.keys(
+                            verificationDocLabels,
+                          ) as SponsorVerificationDocType[]
+                        ).map((docType) => {
+                          const doc = docs.find(
+                            (item) => item.doc_type === docType,
+                          );
+                          const isReuploading =
+                            reuploadingType === docType;
+
+                          return (
+                            <div className="ss-doc-item" key={docType}>
+                              {doc?.status === 'approved' ? (
+                                <FiCheckCircle
+                                  size={16}
+                                  className="ss-doc-icon-approved"
+                                />
+                              ) : doc?.status === 'rejected' ? (
+                                <FiXCircle
+                                  size={16}
+                                  className="ss-doc-icon-rejected"
+                                />
+                              ) : (
+                                <FiClock
+                                  size={16}
+                                  className="ss-doc-icon-pending"
+                                />
+                              )}
+
+                              <div className="ss-doc-info">
+                                <span className="ss-doc-name">
+                                  {verificationDocLabels[docType]}
+                                </span>
+                                {doc?.status === 'rejected' &&
+                                  doc.rejection_reason && (
+                                    <span className="ss-doc-reason">
+                                      {doc.rejection_reason}
+                                    </span>
+                                  )}
+                              </div>
+
+                              <span
+                                className={`ss-doc-status ${
+                                  doc?.status
+                                    ? `ss-doc-status-${doc.status}`
+                                    : 'ss-doc-status-pending'
+                                }`}
+                              >
+                                {doc
+                                  ? doc.status.charAt(0).toUpperCase() +
+                                    doc.status.slice(1)
+                                  : 'Not submitted'}
+                              </span>
+
+                              <input
+                                type="file"
+                                accept="application/pdf,image/jpeg,image/jpg,image/png"
+                                className="ss-doc-input"
+                                ref={(el) => {
+                                  reuploadInputRefs.current[docType] = el;
+                                }}
+                                onChange={(event) => {
+                                  const file = event.target.files?.[0];
+                                  if (file) {
+                                    void handleReuploadDoc(docType, file);
+                                  }
+                                  event.target.value = '';
+                                }}
+                              />
+                              <button
+                                className="ss-btn-secondary"
+                                disabled={isReuploading}
+                                onClick={() =>
+                                  reuploadInputRefs.current[
+                                    docType
+                                  ]?.click()
+                                }
+                              >
+                                {isReuploading
+                                  ? 'Uploading…'
+                                  : doc
+                                    ? 'Re-upload'
+                                    : 'Upload'}
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
-              {/* ── Notifications Tab ── */}
               {activeTab === 'notifications' && (
                 <div className="ss-tab-content">
                   <div className="ss-section">
                     <h3 className="ss-section-title">Email Notifications</h3>
                     <p className="ss-section-desc">
-                      Choose which email notifications you'd like to receive.
+                      Choose which email notifications you&apos;d like to
+                      receive.
                     </p>
-                    <div className="ss-toggle-list">
-                      <div className="ss-toggle-row">
-                        <div>
-                          <div className="ss-toggle-label">Campaign Performance</div>
-                          <div className="ss-toggle-desc">Weekly reports on reach, engagements and ROI</div>
-                        </div>
-                        <button
-                          className="ss-toggle"
-                          onClick={() => toggleNotification('campaignPerformance')}
-                        >
-                          {notifications.campaignPerformance
-                            ? <FiToggleRight size={28} className="ss-toggle-on" />
-                            : <FiToggleLeft size={28} className="ss-toggle-off" />}
-                        </button>
+
+                    {notificationsError && (
+                      <p className="ss-error-text">{notificationsError}</p>
+                    )}
+
+                    {!notifications ? (
+                      <p className="ss-section-desc">
+                        Loading your notification preferences…
+                      </p>
+                    ) : (
+                      <div className="ss-toggle-list">
+                        {notificationCopy
+                          .filter(
+                            (item) => !item.corporateOnly || !isIndividual,
+                          )
+                          .map((item) => (
+                            <div className="ss-toggle-row" key={item.key}>
+                              <div>
+                                <div className="ss-toggle-label">
+                                  {item.label}
+                                </div>
+                                <div className="ss-toggle-desc">
+                                  {item.desc}
+                                </div>
+                              </div>
+                              <button
+                                className="ss-toggle"
+                                disabled={savingNotificationKey === item.key}
+                                onClick={() =>
+                                  void toggleNotification(item.key)
+                                }
+                              >
+                                {notifications[item.key] ? (
+                                  <FiToggleRight
+                                    size={28}
+                                    className="ss-toggle-on"
+                                  />
+                                ) : (
+                                  <FiToggleLeft
+                                    size={28}
+                                    className="ss-toggle-off"
+                                  />
+                                )}
+                              </button>
+                            </div>
+                          ))}
                       </div>
-                      <div className="ss-toggle-row">
-                        <div>
-                          <div className="ss-toggle-label">Approval Updates</div>
-                          <div className="ss-toggle-desc">Notifications when campaigns or documents are approved or rejected</div>
-                        </div>
-                        <button
-                          className="ss-toggle"
-                          onClick={() => toggleNotification('approvalUpdates')}
-                        >
-                          {notifications.approvalUpdates
-                            ? <FiToggleRight size={28} className="ss-toggle-on" />
-                            : <FiToggleLeft size={28} className="ss-toggle-off" />}
-                        </button>
-                      </div>
-                      <div className="ss-toggle-row">
-                        <div>
-                          <div className="ss-toggle-label">Payment Alerts</div>
-                          <div className="ss-toggle-desc">Alerts for upcoming payments, receipts and billing updates</div>
-                        </div>
-                        <button
-                          className="ss-toggle"
-                          onClick={() => toggleNotification('paymentAlerts')}
-                        >
-                          {notifications.paymentAlerts
-                            ? <FiToggleRight size={28} className="ss-toggle-on" />
-                            : <FiToggleLeft size={28} className="ss-toggle-off" />}
-                        </button>
-                      </div>
-                      <div className="ss-toggle-row">
-                        <div>
-                          <div className="ss-toggle-label">New Packages Available</div>
-                          <div className="ss-toggle-desc">Get notified when new sponsorship packages are listed</div>
-                        </div>
-                        <button
-                          className="ss-toggle"
-                          onClick={() => toggleNotification('newPackages')}
-                        >
-                          {notifications.newPackages
-                            ? <FiToggleRight size={28} className="ss-toggle-on" />
-                            : <FiToggleLeft size={28} className="ss-toggle-off" />}
-                        </button>
-                      </div>
-                      <div className="ss-toggle-row">
-                        <div>
-                          <div className="ss-toggle-label">Weekly Digest</div>
-                          <div className="ss-toggle-desc">A summary of your sponsorship activity every week</div>
-                        </div>
-                        <button
-                          className="ss-toggle"
-                          onClick={() => toggleNotification('weeklyDigest')}
-                        >
-                          {notifications.weeklyDigest
-                            ? <FiToggleRight size={28} className="ss-toggle-on" />
-                            : <FiToggleLeft size={28} className="ss-toggle-off" />}
-                        </button>
-                      </div>
-                      {!isIndividual && (
-                        <div className="ss-toggle-row">
-                          <div>
-                            <div className="ss-toggle-label">Team Activity</div>
-                            <div className="ss-toggle-desc">Notifications when team members make changes</div>
-                          </div>
-                          <button
-                            className="ss-toggle"
-                            onClick={() => toggleNotification('teamActivity')}
-                          >
-                            {notifications.teamActivity
-                              ? <FiToggleRight size={28} className="ss-toggle-on" />
-                              : <FiToggleLeft size={28} className="ss-toggle-off" />}
-                          </button>
-                        </div>
-                      )}
-                      <div className="ss-toggle-row">
-                        <div>
-                          <div className="ss-toggle-label">Marketing Emails</div>
-                          <div className="ss-toggle-desc">Promotional content, offers and platform updates</div>
-                        </div>
-                        <button
-                          className="ss-toggle"
-                          onClick={() => toggleNotification('marketingEmails')}
-                        >
-                          {notifications.marketingEmails
-                            ? <FiToggleRight size={28} className="ss-toggle-on" />
-                            : <FiToggleLeft size={28} className="ss-toggle-off" />}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="ss-save-row">
-                    <button className="ss-save-btn" onClick={handleSave}>
-                      {saved ? <><FiCheck size={15} /> Saved!</> : 'Save Preferences'}
-                    </button>
+                    )}
                   </div>
                 </div>
               )}
 
-              {/* ── Security Tab ── */}
               {activeTab === 'security' && (
                 <div className="ss-tab-content">
-
-                  {/* Change Password */}
                   <div className="ss-section">
-                    <h3 className="ss-section-title">Change Password</h3>
-                    <div className="ss-field-grid">
-                      <div className="ss-field-group ss-field-full">
-                        <label className="ss-label">Current Password</label>
-                        <div className="ss-input-wrap">
-                          <FiLock size={15} className="ss-input-icon" />
-                          <input
-                            className="ss-input"
-                            type="password"
-                            placeholder="Enter current password"
-                            value={security.currentPassword}
-                            onChange={(e) => setSecurity({ ...security, currentPassword: e.target.value })}
-                          />
-                        </div>
-                      </div>
-                      <div className="ss-field-group">
-                        <label className="ss-label">New Password</label>
-                        <div className="ss-input-wrap">
-                          <FiLock size={15} className="ss-input-icon" />
-                          <input
-                            className="ss-input"
-                            type="password"
-                            placeholder="Enter new password"
-                            value={security.newPassword}
-                            onChange={(e) => setSecurity({ ...security, newPassword: e.target.value })}
-                          />
-                        </div>
-                      </div>
-                      <div className="ss-field-group">
-                        <label className="ss-label">Confirm New Password</label>
-                        <div className="ss-input-wrap">
-                          <FiLock size={15} className="ss-input-icon" />
-                          <input
-                            className="ss-input"
-                            type="password"
-                            placeholder="Confirm new password"
-                            value={security.confirmPassword}
-                            onChange={(e) => setSecurity({ ...security, confirmPassword: e.target.value })}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                    <button className="ss-save-btn ss-mt-16" onClick={handleSave}>
-                      {saved ? <><FiCheck size={15} /> Updated!</> : 'Update Password'}
-                    </button>
+                    <h3 className="ss-section-title">Password</h3>
+                    <p className="ss-section-desc">
+                      Changing your password from here is coming soon.
+                    </p>
                   </div>
 
-                  {/* Two Factor */}
                   <div className="ss-section">
-                    <h3 className="ss-section-title">Two-Factor Authentication</h3>
-                    <div className="ss-2fa-card">
-                      <div className="ss-2fa-info">
-                        <FiShield size={20} className="ss-2fa-icon" />
-                        <div>
-                          <div className="ss-2fa-label">
-                            Two-Factor Authentication is currently{' '}
-                            <span className={security.twoFactor ? 'ss-2fa-on' : 'ss-2fa-off'}>
-                              {security.twoFactor ? 'enabled' : 'disabled'}
-                            </span>
-                          </div>
-                          <div className="ss-2fa-desc">
-                            Add an extra layer of security to your account by requiring a verification code in addition to your password.
-                          </div>
-                        </div>
-                      </div>
-                      <button
-                        className={security.twoFactor ? 'ss-btn-secondary' : 'ss-save-btn'}
-                        onClick={() => setSecurity({ ...security, twoFactor: !security.twoFactor })}
-                      >
-                        {security.twoFactor ? 'Disable 2FA' : 'Enable 2FA'}
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Danger Zone */}
-                  <div className="ss-section ss-danger-section">
-                    <h3 className="ss-section-title ss-danger-title">
-                      <FiAlertTriangle size={16} /> Danger Zone
+                    <h3 className="ss-section-title">
+                      Two-Factor Authentication
                     </h3>
-                    <div className="ss-danger-card">
-                      <div>
-                        <div className="ss-danger-label">Deactivate Account</div>
-                        <div className="ss-danger-desc">
-                          Temporarily disable your sponsor account. You can reactivate it at any time.
-                        </div>
-                      </div>
-                      <button className="ss-btn-warning">Deactivate</button>
-                    </div>
-                    <div className="ss-danger-card">
-                      <div>
-                        <div className="ss-danger-label">Delete Account</div>
-                        <div className="ss-danger-desc">
-                          Permanently delete your account and all associated data. This action cannot be undone.
-                        </div>
-                      </div>
-                      <button className="ss-btn-danger">
-                        <FiTrash2 size={14} /> Delete Account
-                      </button>
-                    </div>
+                    <p className="ss-section-desc">
+                      Two-factor authentication is not yet available for
+                      sponsor accounts.
+                    </p>
+                  </div>
+
+                  <div className="ss-section">
+                    <h3 className="ss-section-title">Account</h3>
+                    <p className="ss-section-desc">
+                      Deactivating or deleting your sponsor account from here
+                      is coming soon. Contact support if you need help with
+                      your account.
+                    </p>
                   </div>
                 </div>
               )}
 
-              {/* ── Billing Tab (Corporate only) ── */}
               {activeTab === 'billing' && !isIndividual && (
                 <div className="ss-tab-content">
-
-                  {/* Payment Method */}
                   <div className="ss-section">
-                    <h3 className="ss-section-title">Payment Method</h3>
-                    <div className="ss-payment-card">
-                      <div className="ss-payment-icon">💳</div>
-                      <div className="ss-payment-info">
-                        <div className="ss-payment-name">Mobile Money — MTN</div>
-                        <div className="ss-payment-detail">+256 700 123 456 · Added Jan 2024</div>
-                      </div>
-                      <span className="ss-payment-default">Default</span>
-                      <button className="ss-btn-secondary">Change</button>
-                    </div>
-                    <button className="ss-btn-secondary ss-mt-16">
-                      + Add Payment Method
-                    </button>
-                  </div>
-
-                  {/* Invoice Preferences */}
-                  <div className="ss-section">
-                    <h3 className="ss-section-title">Invoice Preferences</h3>
+                    <h3 className="ss-section-title">Payments Summary</h3>
                     <div className="ss-field-grid">
                       <div className="ss-field-group">
-                        <label className="ss-label">Billing Name</label>
-                        <div className="ss-input-wrap">
-                          <FiUser size={15} className="ss-input-icon" />
-                          <input
-                            className="ss-input"
-                            type="text"
-                            defaultValue="Nile Breweries Limited"
-                          />
+                        <label className="ss-label">Confirmed Paid</label>
+                        <div className="ss-static-value">
+                          {money(billingConfirmedPaid)}
                         </div>
                       </div>
                       <div className="ss-field-group">
-                        <label className="ss-label">Billing Email</label>
-                        <div className="ss-input-wrap">
-                          <FiMail size={15} className="ss-input-icon" />
-                          <input
-                            className="ss-input"
-                            type="email"
-                            defaultValue="billing@nilebreweries.co.ug"
-                          />
-                        </div>
-                      </div>
-                      <div className="ss-field-group ss-field-full">
-                        <label className="ss-label">Billing Address</label>
-                        <div className="ss-input-wrap">
-                          <FiMapPin size={15} className="ss-input-icon" />
-                          <input
-                            className="ss-input"
-                            type="text"
-                            defaultValue="Plot 1, Kampala Road, Kampala, Uganda"
-                          />
+                        <label className="ss-label">Outstanding</label>
+                        <div className="ss-static-value">
+                          {money(billingOutstanding)}
                         </div>
                       </div>
                     </div>
                     <div className="ss-save-row">
-                      <button className="ss-save-btn" onClick={handleSave}>
-                        {saved ? <><FiCheck size={15} /> Saved!</> : 'Save Billing Info'}
+                      <button
+                        className="ss-btn-secondary"
+                        onClick={() => navigate('/sponsor/payments')}
+                      >
+                        View Payment History
                       </button>
-                    </div>
-                  </div>
-
-                  {/* Billing History */}
-                  <div className="ss-section">
-                    <h3 className="ss-section-title">Recent Invoices</h3>
-                    <div className="ss-invoice-list">
-                      {[
-                        { id: 'INV-2024-001', date: '01 May 2024', amount: 'UGX 50,000,000', status: 'Paid' },
-                        { id: 'INV-2024-002', date: '01 Apr 2024', amount: 'UGX 30,000,000', status: 'Paid' },
-                        { id: 'INV-2024-003', date: '01 Mar 2024', amount: 'UGX 20,000,000', status: 'Pending' },
-                      ].map((inv) => (
-                        <div key={inv.id} className="ss-invoice-row">
-                          <span className="ss-invoice-id">{inv.id}</span>
-                          <span className="ss-invoice-date">{inv.date}</span>
-                          <span className="ss-invoice-amount">{inv.amount}</span>
-                          <span className={`ss-invoice-status ${inv.status === 'Paid' ? 'ss-invoice-paid' : 'ss-invoice-pending'}`}>
-                            {inv.status}
-                          </span>
-                          <button className="ss-btn-secondary ss-invoice-dl">Download</button>
-                        </div>
-                      ))}
                     </div>
                   </div>
                 </div>

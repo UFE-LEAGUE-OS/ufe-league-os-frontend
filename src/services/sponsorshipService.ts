@@ -312,6 +312,8 @@ export interface SponsorPayment {
   status: SponsorPaymentStatus;
   status_display: string;
   proof_url: string;
+  invoice_url: string | null;
+  receipt_url: string | null;
   notes: string;
   recorded_by: number | null;
   recorded_by_email?: string | null;
@@ -390,6 +392,8 @@ export interface SponsorAgreement {
     SponsorRevenueDistribution[];
   workflow_events:
     SponsorWorkflowEvent[];
+  signed_at: string | null;
+  signed_by_email?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -458,6 +462,25 @@ export interface FlutterwaveVerifyResponse {
     SponsorRevenueDistribution[];
 }
 
+export type SponsorVerificationDocType =
+  | 'incorporation'
+  | 'tin'
+  | 'logo';
+
+export type SponsorVerificationDocStatus =
+  | 'pending'
+  | 'approved'
+  | 'rejected';
+
+export interface SponsorVerificationDocument {
+  id: number;
+  doc_type: SponsorVerificationDocType;
+  file_url: string;
+  status: SponsorVerificationDocStatus;
+  rejection_reason: string | null;
+  uploaded_at: string;
+}
+
 export const becomeSponsor = (
   payload: BecomeSponsorPayload,
 ) =>
@@ -476,6 +499,73 @@ export const getSponsorAccount = (
 ) =>
   apiClient.get<SponsorAccountResponse>(
     `/sponsorships/accounts/${accountId}/`,
+  );
+
+export const uploadSponsorVerificationDocument = (
+  accountId: number,
+  docType: SponsorVerificationDocType,
+  file: File,
+) => {
+  const formData = new FormData();
+  formData.append('doc_type', docType);
+  formData.append('file', file);
+
+  return apiClient.post<SponsorVerificationDocument>(
+    `/sponsorships/accounts/${accountId}/verification-documents/`,
+    formData,
+    { headers: { 'Content-Type': 'multipart/form-data' } },
+  );
+};
+
+export const getSponsorVerificationDocuments = (
+  accountId: number,
+) =>
+  apiClient.get<SponsorVerificationDocument[]>(
+    `/sponsorships/accounts/${accountId}/verification-documents/`,
+  );
+
+export interface SponsorNotificationPreferences {
+  campaign_performance: boolean;
+  approval_updates: boolean;
+  payment_alerts: boolean;
+  new_packages: boolean;
+  weekly_digest: boolean;
+  team_activity: boolean;
+  marketing_emails: boolean;
+}
+
+export const getSponsorNotificationPreferences = (
+  accountId: number,
+) =>
+  apiClient.get<SponsorNotificationPreferences>(
+    `/sponsorships/accounts/${accountId}/notification-preferences/`,
+  );
+
+export const updateSponsorNotificationPreferences = (
+  accountId: number,
+  payload: Partial<SponsorNotificationPreferences>,
+) =>
+  apiClient.patch<SponsorNotificationPreferences>(
+    `/sponsorships/accounts/${accountId}/notification-preferences/`,
+    payload,
+  );
+
+export const updateSponsorAccountMember = (
+  accountId: number,
+  memberId: number,
+  memberRole: SponsorMemberRole,
+) =>
+  apiClient.patch<SponsorAccountMember>(
+    `/sponsorships/accounts/${accountId}/members/${memberId}/`,
+    { member_role: memberRole },
+  );
+
+export const removeSponsorAccountMember = (
+  accountId: number,
+  memberId: number,
+) =>
+  apiClient.delete(
+    `/sponsorships/accounts/${accountId}/members/${memberId}/`,
   );
 
 export const getSponsorAccountMembers = (
@@ -537,6 +627,32 @@ export const getSponsorAgreement = (
 ) =>
   apiClient.get<SponsorAgreement>(
     `/sponsorships/agreements/${agreementId}/`,
+  );
+
+export interface SponsorAgreementDocument {
+  html_content?: string;
+  pdf_url?: string;
+}
+
+export const getSponsorAgreementDocument = (
+  agreementId: number,
+) =>
+  apiClient.get<SponsorAgreementDocument>(
+    `/sponsorships/agreements/${agreementId}/document/`,
+  );
+
+export interface SignSponsorAgreementPayload {
+  signature_data: string;
+  signed_at: string;
+}
+
+export const signSponsorAgreement = (
+  agreementId: number,
+  payload: SignSponsorAgreementPayload,
+) =>
+  apiClient.post<SponsorAgreement>(
+    `/sponsorships/agreements/${agreementId}/sign/`,
+    payload,
   );
 
 export const createSponsorAgreement = (

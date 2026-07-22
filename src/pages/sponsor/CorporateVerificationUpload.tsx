@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   FiArrowLeft,
@@ -12,6 +12,10 @@ import {
   FiCheckCircle,
   FiAlertCircle,
 } from 'react-icons/fi';
+import {
+  useSponsorFormStore,
+  type CorporateVerificationDocType,
+} from '../../store/sponsorFormStore';
 import '../../styles/pages/landing.css';
 import './CorporateVerificationUpload.css';
 
@@ -106,11 +110,10 @@ function getImageDimensions(file: File): Promise<{ width: number; height: number
 
 export default function CorporateVerificationUpload() {
   const navigate = useNavigate();
-  const [uploads, setUploads] = useState<Record<string, File | null>>({
-    incorporation: null,
-    tin: null,
-    logo: null,
-  });
+  const uploads = useSponsorFormStore((state) => state.corporateDocuments);
+  const updateCorporateDocuments = useSponsorFormStore(
+    (state) => state.updateCorporateDocuments,
+  );
   const [fileErrors, setFileErrors] = useState<Record<string, string>>({});
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -158,7 +161,9 @@ export default function CorporateVerificationUpload() {
       delete next[docId];
       return next;
     });
-    setUploads((prev) => ({ ...prev, [docId]: file }));
+    updateCorporateDocuments({
+      [docId as CorporateVerificationDocType]: file,
+    });
     setErrorMessage('');
   }
 
@@ -174,7 +179,9 @@ export default function CorporateVerificationUpload() {
   };
 
   const handleNext = () => {
-    const missing = uploadDocs.filter((doc) => !uploads[doc.id]);
+    const missing = uploadDocs.filter(
+      (doc) => !uploads[doc.id as CorporateVerificationDocType],
+    );
 
     if (missing.length > 0) {
       setErrorMessage(
@@ -274,10 +281,12 @@ export default function CorporateVerificationUpload() {
                     ref={(el) => { inputRefs.current[doc.id] = el; }}
                     onChange={(e) => handleFileChange(doc.id, e)}
                   />
-                  {uploads[doc.id] ? (
+                  {uploads[doc.id as CorporateVerificationDocType] ? (
                     <div className="cvu-uploaded">
                       <FiCheckCircle size={22} className="cvu-uploaded-icon" />
-                      <span className="cvu-uploaded-name">{uploads[doc.id]!.name}</span>
+                      <span className="cvu-uploaded-name">
+                        {uploads[doc.id as CorporateVerificationDocType]!.name}
+                      </span>
                     </div>
                   ) : (
                     <>

@@ -121,6 +121,8 @@ import MediaAssetLibrary from "./MediaAssetLibrary";
 import PublicClubPagePreview from "./PublicClubPagePreview";
 import UserManagement from "./UserManagement";
 import VenueManagement from "./VenueManagement";
+import MembershipPaymentsOverview from "./finance-audit/MembershipPaymentsOverview";
+import TicketingPaymentsOverview from "./finance-audit/TicketingPaymentsOverview";
 import AnnouncementsCompose from "./AnnouncementsCompose";
 import AnnouncementsPublish from "./AnnouncementsPublish";
 
@@ -1380,7 +1382,6 @@ export default function ClubAdminDashboard() {
   function goToPricingForMatch(matchId: number) {
     setSelectedMatchId(matchId);
     handleTabChange("ticketingPricing");
-    handleTabChange("ticketingPricing");
   }
 
   const selectedTicketTypes = selectedMatchId
@@ -1866,60 +1867,6 @@ export default function ClubAdminDashboard() {
       >
         {renderFinancialChart()}
       </WorkspacePanel>
-    );
-  }
-
-  function renderFinanceMembershipPayments() {
-    const membershipStats = [
-      {
-        label: "Subscriptions",
-        value: subscriptions.length,
-        detail: "Membership payment records tracked",
-        icon: CreditCard,
-      },
-      {
-        label: "Active Members",
-        value: subscriptions.filter((sub) => sub.status === "ACTIVE").length,
-        detail: "Paid or currently valid subscriptions",
-        icon: Users,
-      },
-      {
-        label: "Pending Payment",
-        value: pendingSubscriptions.length,
-        detail: "Memberships awaiting payment completion",
-        icon: Inbox,
-      },
-      {
-        label: "Expired",
-        value: expiredSubscriptions.length,
-        detail: "Past-due or expired memberships",
-        icon: RefreshCw,
-      },
-    ];
-
-    return (
-      <>
-        <WorkspaceStatGrid stats={membershipStats} />
-        {renderMembershipDirectory()}
-      </>
-    );
-  }
-
-  function renderFinanceTicketingPayments() {
-    return (
-      <>
-        <WorkspacePanel
-          eyebrow="Ticketing payments"
-          title="Ticketing payments overview"
-          description="Review ticket revenue, sales volume, and sell-through across home fixtures."
-        >
-          <WorkspaceEmpty
-            title="Ticketing payment summary"
-            description="The detailed sales performance section below uses current ticketing revenue and inventory records."
-          />
-        </WorkspacePanel>
-        {renderTicketingPerformance()}
-      </>
     );
   }
 
@@ -3776,9 +3723,17 @@ export default function ClubAdminDashboard() {
   } else if (activeTab === "finances") {
     content = renderFinances();
   } else if (activeTab === "financeMembershipPayments") {
-    content = renderFinanceMembershipPayments();
+    content = data ? (
+      <MembershipPaymentsOverview clubId={data.club.id} />
+    ) : (
+      <WorkspaceLoading label="Loading membership payments…" />
+    );
   } else if (activeTab === "financeTicketingPayments") {
-    content = renderFinanceTicketingPayments();
+    content = data ? (
+      <TicketingPaymentsOverview clubId={data.club.id} />
+    ) : (
+      <WorkspaceLoading label="Loading ticketing payments…" />
+    );
   } else if (activeTab === "financeIncomeExpense") {
     content = renderFinanceIncomeExpense();
   } else if (activeTab === "financeInvoicesReceipts") {

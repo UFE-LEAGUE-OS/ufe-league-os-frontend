@@ -153,15 +153,20 @@ const CorporateSponsorDashboard = lazy(() => import('../pages/sponsor/CorporateS
 const SponsorPayments = lazy(() => import('../pages/sponsor/SponsorPayments'));
 const SponsorPaymentProcessing = lazy(() => import('../pages/sponsor/SponsorPaymentProcessing'));
 const CorporateTeamManagement = lazy(() => import('../pages/sponsor/CorporateTeamManagement'));
-const SponsorPermissions = lazy(() => import('../pages/sponsor/SponsorPermissions'));
 const SponsorPackages = lazy(() => import('../pages/sponsor/SponsorPackages'));
 const SponsorPackageDetail = lazy(() => import('../pages/sponsor/SponsorPackageDetail'));
 const CampaignCreation = lazy(() => import('../pages/sponsor/CampaignCreation'));
 const CampaignAnalytics = lazy(() => import('../pages/sponsor/CampaignAnalytics'));
+const SponsorAuditLog = lazy(() => import('../pages/sponsor/SponsorAuditLog'));
+const SponsorAgreementSign = lazy(() => import('../pages/sponsor/SponsorAgreementSign'));
+const SponsorAssetLibrary = lazy(() => import('../pages/sponsor/SponsorAssetLibrary'));
+const SponsorNotifications = lazy(() => import('../pages/sponsor/SponsorNotifications'));
 const CampaignPlacementPreview = lazy(() => import('../pages/sponsor/CampaignPlacementPreview'));
 const CorporateSponsorReview = lazy(() => import('../pages/sponsor/CorporateSponsorReview'));
 const CorporateSponsorComplete = lazy(() => import('../pages/sponsor/CorporateSponsorComplete'));
 const SponsorCampaigns = lazy(() => import('../pages/sponsor/SponsorCampaigns'));
+const SponsorCampaignsList = lazy(() => import('../pages/sponsor/SponsorCampaignsList'));
+const SponsorCampaignDetail = lazy(() => import('../pages/sponsor/SponsorCampaignDetail'));
 const SponsorSettings = lazy(() => import('../pages/sponsor/SponsorSettings'));
 const SponsorHelp = lazy(() => import('../pages/sponsor/SponsorHelp'));
 const CampaignTargeting = lazy(() => import('../pages/sponsor/CampaignTargeting'));
@@ -494,141 +499,183 @@ export default function AppRoutes() {
                     <Route path="/support" element={<Support />} />
                     <Route path="/about" element={<AboutUs />} />
 
-                    {/* Sponsor routes */}
-                    <Route path="/sponsorhub" element={<SponsorshipHub />} />
-                    <Route path="/sponsor/individualsetup" element={<IndividualSponsorSetup />} />
-                    <Route path="/sponsor/individual/preferences" element={<IndividualSponsorPreferences />} />
-                    <Route path="/sponsor/individual/review" element={<IndividualSponsorReview />} />
-                    <Route path="/sponsor/individual/complete" element={<IndividualSponsorComplete />} />
-                    <Route path="/sponsor/corporatesetup" element={<CorporateSponsorSetup />} />
-                    <Route path="/sponsor/corporatesetup/contact" element={<CorporateContactPerson />} />
-                    <Route path="/sponsor/corporatesetup/verification" element={<CorporateVerificationUpload />} />
-                    <Route path="/sponsor/corporatesetup/review" element={<CorporateSponsorReview />} />
-                    <Route path="/sponsor/corporatesetup/complete" element={<CorporateSponsorComplete />} />
-                    <Route
-                        path="/sponsor/payment/processing"
-                        element={<SponsorPaymentProcessing />}
-                    />
-                    <Route
-                        path="/dashboard/sponsor"
-                        element={dashboardProtectedPage(
-                            <Navigate to="/sponsor/dashboard" replace />,
-                            'SPONSOR',
-                        )}
-                    />
-                    <Route
-                        path="/sponsor/dashboard"
-                        element={dashboardProtectedPage(
-                            <CorporateSponsorDashboard />,
-                            'SPONSOR',
-                        )}
-                    />
-                    <Route
-                        path="/sponsor/team"
-                        element={dashboardProtectedPage(
-                            <CorporateTeamManagement />,
-                            'SPONSOR',
-                        )}
-                    />
-                    <Route
-                        path="/sponsor/payments"
-                        element={dashboardProtectedPage(
-                            <SponsorPayments />,
-                            'SPONSOR',
-                        )}
-                    />
-                    <Route
-                        path="/sponsor/permissions"
-                        element={dashboardProtectedPage(
-                            <SponsorPermissions />,
-                            'SPONSOR',
-                        )}
-                    />
-                    <Route
-                        path="/sponsor/packages"
-                        element={dashboardProtectedPage(
-                            <SponsorPackages />,
-                            'SPONSOR',
-                        )}
-                    />
-                    <Route
-                        path="/sponsor/packages/:packageId"
-                        element={dashboardProtectedPage(
-                            <SponsorPackageDetail />,
-                            'SPONSOR',
-                        )}
-                    />
-                    <Route
-                        path="/sponsor/campaigns/new"
-                        element={dashboardProtectedPage(
-                            <CampaignCreation />,
-                            'SPONSOR',
-                        )}
-                    />
-                    <Route
-                        path="/sponsor/analytics"
-                        element={dashboardProtectedPage(
-                            <CampaignAnalytics />,
-                            'SPONSOR',
-                        )}
-                    />
-                    <Route
-                        path="/sponsor/campaigns/preview"
-                        element={dashboardProtectedPage(
-                            <CampaignPlacementPreview />,
-                            'SPONSOR',
-                        )}
-                    />
-                    <Route
-                        path="/sponsor/activations"
-                        element={dashboardProtectedPage(
-                            <SponsorCampaigns />,
-                            'SPONSOR',
-                        )}
-                    />
-                    <Route
-                        path="/sponsor/campaigns"
-                        element={dashboardProtectedPage(
-                            <Navigate to="/sponsor/activations" replace />,
-                            'SPONSOR',
-                        )}
-                    />
-                    <Route
-                        path="/sponsor/settings"
-                        element={dashboardProtectedPage(<SponsorSettings />, 'SPONSOR')}
-                    />
-                    <Route
-                        path="/sponsor/support"
-                        element={dashboardProtectedPage(<SponsorHelp />, 'SPONSOR')}
-                    />
-                    <Route
-                        path="/sponsor/campaigns/new/targeting"
-                        element={dashboardProtectedPage(<CampaignTargeting />, 'SPONSOR')}
-                    />
-                    <Route
-                        path="/sponsor/campaigns/new/assets"
-                        element={dashboardProtectedPage(<CampaignAssets />, 'SPONSOR')}
-                    />
-                    <Route
-                        path="/sponsor/campaigns/new/placement"
-                        element={dashboardProtectedPage(<CampaignPlacement />, 'SPONSOR')}
-                    />
-                    <Route
-                        path="/sponsor/campaigns/new/budget"
-                        element={dashboardProtectedPage(<CampaignBudget />, 'SPONSOR')}
-                    />
-                    <Route
-                        path="/sponsor/campaigns/new/review"
-                        element={dashboardProtectedPage(<CampaignReview />, 'SPONSOR')}
-                    />
-                    <Route
-                        path="/sponsor/campaigns/new/launch"
-                        element={dashboardProtectedPage(<CampaignLaunch />, 'SPONSOR')}
-                    />
-                    <Route
-                        path="/sponsor/profile"
-                        element={dashboardProtectedPage(<SponsorProfile />, 'SPONSOR')}
-                    />
+                {/* Sponsor routes */}
+                <Route path="/sponsorhub" element={<SponsorshipHub />} />
+                <Route path="/sponsor/individualsetup" element={<IndividualSponsorSetup />} />
+                <Route path="/sponsor/individual/preferences" element={<IndividualSponsorPreferences />} />
+                <Route path="/sponsor/individual/review" element={<IndividualSponsorReview />} />
+                <Route path="/sponsor/individual/complete" element={<IndividualSponsorComplete />} />
+                <Route path="/sponsor/corporatesetup" element={<CorporateSponsorSetup />} />
+                <Route path="/sponsor/corporatesetup/contact" element={<CorporateContactPerson />} />
+                <Route path="/sponsor/corporatesetup/verification" element={<CorporateVerificationUpload />} />
+                <Route path="/sponsor/corporatesetup/review" element={<CorporateSponsorReview />} />
+                <Route path="/sponsor/corporatesetup/complete" element={<CorporateSponsorComplete />} />
+                <Route
+                    path="/sponsor/payment/processing"
+                    element={<SponsorPaymentProcessing />}
+                />
+                <Route
+                    path="/dashboard/sponsor"
+                    element={dashboardProtectedPage(
+                        <Navigate to="/sponsor/dashboard" replace />,
+                        'SPONSOR',
+                    )}
+                />
+                <Route
+                    path="/sponsor/dashboard"
+                    element={dashboardProtectedPage(
+                        <CorporateSponsorDashboard />,
+                        'SPONSOR',
+                    )}
+                />
+                <Route
+                    path="/sponsor/team"
+                    element={dashboardProtectedPage(
+                        <CorporateTeamManagement />,
+                        'SPONSOR',
+                    )}
+                />
+                <Route
+                    path="/sponsor/payments"
+                    element={dashboardProtectedPage(
+                        <SponsorPayments />,
+                        'SPONSOR',
+                    )}
+                />
+                <Route
+                    path="/sponsor/permissions"
+                    element={dashboardProtectedPage(
+                        <Navigate to="/sponsor/team" replace />,
+                        'SPONSOR',
+                    )}
+                />
+                <Route
+                    path="/sponsor/packages"
+                    element={dashboardProtectedPage(
+                        <SponsorPackages />,
+                        'SPONSOR',
+                    )}
+                />
+                <Route
+                    path="/sponsor/packages/:packageId"
+                    element={dashboardProtectedPage(
+                        <SponsorPackageDetail />,
+                        'SPONSOR',
+                    )}
+                />
+                <Route
+                    path="/sponsor/campaigns/new"
+                    element={dashboardProtectedPage(
+                        <CampaignCreation />,
+                        'SPONSOR',
+                    )}
+                />
+                <Route
+                    path="/sponsor/analytics"
+                    element={dashboardProtectedPage(
+                        <CampaignAnalytics />,
+                        'SPONSOR',
+                    )}
+                />
+                <Route
+                    path="/sponsor/audit-log"
+                    element={dashboardProtectedPage(
+                        <SponsorAuditLog />,
+                        'SPONSOR',
+                    )}
+                />
+                <Route
+                    path="/sponsor/agreements/:agreementId/sign"
+                    element={dashboardProtectedPage(
+                        <SponsorAgreementSign />,
+                        'SPONSOR',
+                    )}
+                />
+                <Route
+                    path="/sponsor/assets"
+                    element={dashboardProtectedPage(
+                        <SponsorAssetLibrary />,
+                        'SPONSOR',
+                    )}
+                />
+                <Route
+                    path="/sponsor/notifications"
+                    element={dashboardProtectedPage(
+                        <SponsorNotifications />,
+                        'SPONSOR',
+                    )}
+                />
+                <Route
+                    path="/sponsor/campaigns/preview"
+                    element={dashboardProtectedPage(
+                        <CampaignPlacementPreview />,
+                        'SPONSOR',
+                    )}
+                />
+                <Route
+                    path="/sponsor/campaigns/preview/:campaignId"
+                    element={dashboardProtectedPage(
+                        <CampaignPlacementPreview />,
+                        'SPONSOR',
+                    )}
+                />
+                <Route
+                    path="/sponsor/activations"
+                    element={dashboardProtectedPage(
+                        <SponsorCampaigns />,
+                        'SPONSOR',
+                    )}
+                />
+                <Route
+                    path="/sponsor/campaigns"
+                    element={dashboardProtectedPage(
+                        <SponsorCampaignsList />,
+                        'SPONSOR',
+                    )}
+                />
+                <Route
+                    path="/sponsor/campaigns/:campaignId"
+                    element={dashboardProtectedPage(
+                        <SponsorCampaignDetail />,
+                        'SPONSOR',
+                    )}
+                />
+                <Route
+                    path="/sponsor/settings"
+                    element={dashboardProtectedPage(<SponsorSettings />, 'SPONSOR')}
+                />
+                <Route
+                    path="/sponsor/support"
+                    element={dashboardProtectedPage(<SponsorHelp />, 'SPONSOR')}
+                />
+                <Route
+                    path="/sponsor/campaigns/new/targeting"
+                    element={dashboardProtectedPage(<CampaignTargeting />, 'SPONSOR')}
+                />
+                <Route
+                    path="/sponsor/campaigns/new/assets"
+                    element={dashboardProtectedPage(<CampaignAssets />, 'SPONSOR')}
+                />
+                <Route
+                    path="/sponsor/campaigns/new/placement"
+                    element={dashboardProtectedPage(<CampaignPlacement />, 'SPONSOR')}
+                />
+                <Route
+                    path="/sponsor/campaigns/new/budget"
+                    element={dashboardProtectedPage(<CampaignBudget />, 'SPONSOR')}
+                />
+                <Route
+                    path="/sponsor/campaigns/new/review"
+                    element={dashboardProtectedPage(<CampaignReview />, 'SPONSOR')}
+                />
+                <Route
+                    path="/sponsor/campaigns/new/launch"
+                    element={dashboardProtectedPage(<CampaignLaunch />, 'SPONSOR')}
+                />
+                <Route
+                    path="/sponsor/profile"
+                    element={dashboardProtectedPage(<SponsorProfile />, 'SPONSOR')}
+                />
 
                     <Route
                         path="/payments"

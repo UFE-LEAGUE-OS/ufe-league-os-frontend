@@ -1,11 +1,14 @@
 import { create } from 'zustand';
 import {
   createSponsorCampaignDraft,
+  getSponsorCampaign,
   saveSponsorCampaignDraft,
   submitSponsorCampaign,
   type CampaignStatus,
   type SponsorCampaign,
   type SponsorCampaignAsset,
+  type SponsorCampaignAudience,
+  type SponsorCampaignBudget,
   type SponsorCampaignDraftPayload,
 } from '../services/sponsorCampaignService';
 import { getSponsorAccounts } from '../services/sponsorshipService';
@@ -64,9 +67,29 @@ const initialBudget: CampaignBudgetFormData = {
   endDate: '',
 };
 
+const audienceFromApi = (audience: SponsorCampaignAudience): CampaignAudienceFormData => ({
+  sports: audience.sports ?? [],
+  leagues: audience.leagues ?? [],
+  ageGroups: audience.age_groups ?? [],
+  gender: audience.gender ?? '',
+  locations: audience.locations ?? [],
+  fanInterests: audience.fan_interests ?? [],
+});
+
+const budgetFromApi = (budget: SponsorCampaignBudget): CampaignBudgetFormData => ({
+  presetId: budget.is_custom_amount ? 'custom' : 'premium',
+  isCustom: budget.is_custom_amount,
+  amount: budget.amount,
+  duration: budget.duration,
+  paymentSchedule: budget.payment_schedule,
+  startDate: budget.starts_at ?? '',
+  endDate: budget.ends_at ?? '',
+});
+
 type SponsorCampaignStore = {
   campaignId: number | null;
   sponsorAccountId: number | null;
+  agreementId: number | null;
   status: CampaignStatus | null;
   info: CampaignInfoFormData;
   audience: CampaignAudienceFormData;
@@ -74,6 +97,7 @@ type SponsorCampaignStore = {
   placements: string[];
   budget: CampaignBudgetFormData;
   saving: boolean;
+  hydrating: boolean;
   error: string | null;
 
   updateInfo: (patch: Partial<CampaignInfoFormData>) => void;
@@ -82,6 +106,12 @@ type SponsorCampaignStore = {
   updateBudget: (patch: Partial<CampaignBudgetFormData>) => void;
   addAsset: (asset: SponsorCampaignAsset) => void;
   removeAsset: (assetId: number) => void;
+  setAgreementId: (agreementId: number | null) => void;
+  startFromAgreement: (
+    sponsorAccountId: number,
+    agreementId: number,
+  ) => void;
+  hydrate: (campaignId: number) => Promise<SponsorCampaign>;
   saveDraft: () => Promise<SponsorCampaign>;
   submit: () => Promise<SponsorCampaign>;
   reset: () => void;
@@ -90,6 +120,7 @@ type SponsorCampaignStore = {
 export const useSponsorCampaignStore = create<SponsorCampaignStore>()((set, get) => ({
   campaignId: null,
   sponsorAccountId: null,
+  agreementId: null,
   status: null,
   info: initialInfo,
   audience: initialAudience,
@@ -97,6 +128,7 @@ export const useSponsorCampaignStore = create<SponsorCampaignStore>()((set, get)
   placements: [],
   budget: initialBudget,
   saving: false,
+  hydrating: false,
   error: null,
 
   updateInfo: (patch) =>
@@ -118,6 +150,60 @@ export const useSponsorCampaignStore = create<SponsorCampaignStore>()((set, get)
       assets: state.assets.filter((a) => a.id !== assetId),
     })),
 
+  setAgreementId: (agreementId) => set({ agreementId }),
+
+  startFromAgreement: (sponsorAccountId, agreementId) =>
+    set({
+      campaignId: null,
+      sponsorAccountId,
+      agreementId,
+      status: null,
+      info: initialInfo,
+      audience: initialAudience,
+      assets: [],
+      placements: [],
+      budget: initialBudget,
+      saving: false,
+      hydrating: false,
+      error: null,
+    }),
+
+  hydrate: async (campaignId) => {
+    set({ hydrating: true, error: null });
+
+    try {
+      const response = await getSponsorCampaign(campaignId);
+      const campaign = response.data;
+
+      set({
+        campaignId: campaign.id,
+        sponsorAccountId: campaign.sponsor_account,
+        agreementId: campaign.agreement_id,
+        status: campaign.status,
+        info: {
+          campaignName: campaign.name,
+          property: campaign.property,
+          campaignType: campaign.campaign_type,
+          description: campaign.description,
+          goals: campaign.goals,
+        },
+        audience: audienceFromApi(campaign.audience),
+        assets: campaign.assets,
+        placements: campaign.placement_preferences,
+        budget: budgetFromApi(campaign.budget),
+        hydrating: false,
+      });
+
+      return campaign;
+    } catch (err) {
+      set({
+        hydrating: false,
+        error: 'We could not load this campaign. Please try again.',
+      });
+      throw err;
+    }
+  },
+
   saveDraft: async () => {
     const state = get();
 
@@ -134,6 +220,7 @@ export const useSponsorCampaignStore = create<SponsorCampaignStore>()((set, get)
 
     const payload: SponsorCampaignDraftPayload = {
       sponsor_account: sponsorAccountId,
+      agreement_id: state.agreementId,
       name: state.info.campaignName,
       property: state.info.property,
       campaign_type: state.info.campaignType,
@@ -209,6 +296,7 @@ export const useSponsorCampaignStore = create<SponsorCampaignStore>()((set, get)
     set({
       campaignId: null,
       sponsorAccountId: null,
+      agreementId: null,
       status: null,
       info: initialInfo,
       audience: initialAudience,
@@ -216,6 +304,7 @@ export const useSponsorCampaignStore = create<SponsorCampaignStore>()((set, get)
       placements: [],
       budget: initialBudget,
       saving: false,
+      hydrating: false,
       error: null,
     }),
 }));

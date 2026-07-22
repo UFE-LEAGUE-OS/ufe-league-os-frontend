@@ -221,10 +221,13 @@ function isSponsorCapability(pathname: string) {
     matchesPath(pathname, '/sponsor/dashboard') ||
     matchesPath(pathname, '/sponsor/team') ||
     matchesPath(pathname, '/sponsor/payments') ||
-    matchesPath(pathname, '/sponsor/permissions') ||
     matchesPath(pathname, '/sponsor/packages') ||
     matchesPath(pathname, '/sponsor/campaigns') ||
     matchesPath(pathname, '/sponsor/analytics') ||
+    matchesPath(pathname, '/sponsor/audit-log') ||
+    matchesPath(pathname, '/sponsor/agreements') ||
+    matchesPath(pathname, '/sponsor/assets') ||
+    matchesPath(pathname, '/sponsor/notifications') ||
     matchesPath(pathname, '/sponsor/activations') ||
     matchesPath(pathname, '/sponsor/settings') ||
     matchesPath(pathname, '/sponsor/support') ||

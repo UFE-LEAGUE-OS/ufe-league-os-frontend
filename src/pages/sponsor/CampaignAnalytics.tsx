@@ -8,11 +8,8 @@ import {
   FiCheckCircle,
   FiClock,
   FiCreditCard,
-  FiEye,
   FiFileText,
-  FiMousePointer,
   FiRefreshCw,
-  FiTag,
 } from 'react-icons/fi';
 import SponsorSidebar from '../../components/SponsorSidebar';
 import {
@@ -37,12 +34,52 @@ function money(value: number) {
   }).format(value);
 }
 
+function downloadCsv(
+  rows: string[][],
+  headers: string[],
+  filename: string,
+) {
+  const escapeCell = (value: string) => {
+    if (
+      value.includes(',') ||
+      value.includes('"') ||
+      value.includes('\n')
+    ) {
+      return `"${value.replace(/"/g, '""')}"`;
+    }
+    return value;
+  };
+
+  const csvLines = [
+    headers.join(','),
+    ...rows.map((row) =>
+      row.map(escapeCell).join(','),
+    ),
+  ];
+
+  const blob = new Blob([csvLines.join('\n')], {
+    type: 'text/csv;charset=utf-8;',
+  });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.setAttribute('download', filename);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
 export default function CampaignAnalytics() {
   const [agreements, setAgreements] =
     useState<SponsorAgreement[]>([]);
   const [loading, setLoading] =
     useState(true);
   const [error, setError] =
+    useState('');
+  const [fromDate, setFromDate] =
+    useState('');
+  const [toDate, setToDate] =
     useState('');
 
   useEffect(() => {
@@ -178,6 +215,54 @@ export default function CampaignAnalytics() {
     };
   }, [agreements]);
 
+  const exportableAgreements = useMemo(() => {
+    return agreements.filter((agreement) => {
+      const createdAt = agreement.created_at.slice(0, 10);
+      if (fromDate && createdAt < fromDate) {
+        return false;
+      }
+      if (toDate && createdAt > toDate) {
+        return false;
+      }
+      return true;
+    });
+  }, [agreements, fromDate, toDate]);
+
+  const handleExportCsv = () => {
+    const rows = exportableAgreements.map((agreement) => {
+      const paidForAgreement = agreement.payments
+        .filter((payment) => payment.status === 'CONFIRMED')
+        .reduce(
+          (total, payment) => total + amount(payment.amount_paid),
+          0,
+        );
+
+      return [
+        agreement.reference,
+        agreement.sponsor_package_detail.name,
+        agreement.status_display,
+        agreement.currency,
+        agreement.total_value,
+        paidForAgreement.toString(),
+        agreement.created_at.slice(0, 10),
+      ];
+    });
+
+    downloadCsv(
+      rows,
+      [
+        'Reference',
+        'Package',
+        'Status',
+        'Currency',
+        'Total Value',
+        'Confirmed Paid',
+        'Created',
+      ],
+      `sponsorship-performance-${new Date().toISOString().slice(0, 10)}.csv`,
+    );
+  };
+
   return (
     <div className="ca-page">
       <div className="ca-layout">
@@ -200,6 +285,40 @@ export default function CampaignAnalytics() {
               </p>
             </div>
           </header>
+
+          {!loading && !error && (
+            <div className="ca-export-toolbar">
+              <label>
+                From
+                <input
+                  type="date"
+                  value={fromDate}
+                  onChange={(event) =>
+                    setFromDate(event.target.value)
+                  }
+                />
+              </label>
+              <label>
+                To
+                <input
+                  type="date"
+                  value={toDate}
+                  onChange={(event) =>
+                    setToDate(event.target.value)
+                  }
+                />
+              </label>
+              <button
+                type="button"
+                onClick={handleExportCsv}
+                disabled={
+                  exportableAgreements.length === 0
+                }
+              >
+                Export CSV
+              </button>
+            </div>
+          )}
 
           {loading && (
             <div className="ca-state">
@@ -304,60 +423,11 @@ export default function CampaignAnalytics() {
                     </strong>
                   </div>
 
-                  <div className="ca-row">
-                    <span>
-                      Benefits completed
-                    </span>
-                    <strong>
-                      Not yet tracked
-                    </strong>
-                  </div>
-
                   <p>
                     Benefit-completion records
                     will appear after property
                     administrators confirm each
                     delivery item.
-                  </p>
-                </article>
-
-                <article className="ca-card">
-                  <h2>
-                    League OS Digital Metrics
-                  </h2>
-
-                  <div className="ca-row">
-                    <span>
-                      <FiEye size={15} />
-                      Placement impressions
-                    </span>
-                    <strong>0</strong>
-                  </div>
-
-                  <div className="ca-row">
-                    <span>
-                      <FiMousePointer
-                        size={15}
-                      />
-                      Sponsor-link clicks
-                    </span>
-                    <strong>0</strong>
-                  </div>
-
-                  <div className="ca-row">
-                    <span>
-                      <FiTag size={15} />
-                      QR or promo redemptions
-                    </span>
-                    <strong>0</strong>
-                  </div>
-
-                  <p>
-                    These figures will only
-                    increase when placements,
-                    links or codes are served
-                    and recorded inside League
-                    OS.
                   </p>
                 </article>
               </section>

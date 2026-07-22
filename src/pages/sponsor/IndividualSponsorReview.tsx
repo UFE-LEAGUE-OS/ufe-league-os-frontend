@@ -162,7 +162,7 @@ export default function IndividualSponsorReview() {
     setIsSubmitting(true);
 
     try {
-      await becomeSponsor({
+      const { data } = await becomeSponsor({
         sponsor_type: 'INDIVIDUAL',
         name: fullName.trim(),
         registration_country: countryIsoCodes[form.country] ?? 'UG',
@@ -175,15 +175,20 @@ export default function IndividualSponsorReview() {
       }
 
       try {
-        const { data } = await fetchCurrentUser();
-        setHydratedUser(data);
+        const { data: userData } = await fetchCurrentUser();
+        setHydratedUser(userData);
       } catch {
         // Non-critical — dashboard routing will just fall back to the
         // pre-sponsor entitlements until the user's session next refreshes.
       }
 
       resetIndividual();
-      navigate('/sponsor/individual/complete');
+      navigate('/sponsor/individual/complete', {
+        state: {
+          accountId: data.sponsor_account.id,
+          createdAt: data.sponsor_account.created_at,
+        },
+      });
     } catch (error) {
       setErrorMessage(extractErrorMessage(error));
       setHasExistingAccount(isExistingAccountError(error));

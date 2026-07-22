@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
   FiCheckCircle,
   FiArrowRight,
@@ -7,6 +7,11 @@ import {
 } from 'react-icons/fi';
 import '../../styles/pages/landing.css';
 import './CorporateSponsorComplete.css';
+
+type CompleteLocationState = {
+  accountId?: number;
+  createdAt?: string;
+} | null;
 
 const steps = [
   { number: 1, label: 'Company Info' },
@@ -36,6 +41,16 @@ const nextSteps = [
 
 export default function CorporateSponsorComplete() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const state = location.state as CompleteLocationState;
+
+  const reference = state?.accountId
+    ? `SPO-${
+        state.createdAt
+          ? new Date(state.createdAt).getFullYear()
+          : new Date().getFullYear()
+      }-${String(state.accountId).padStart(5, '0')}`
+    : null;
 
   return (
     <div className="csc-page">
@@ -75,9 +90,11 @@ export default function CorporateSponsorComplete() {
             Thank you for applying to become a corporate sponsor on League OS.
             Your application has been successfully submitted and is now under review.
           </p>
-          <div className="csc-ref-badge">
-            Reference: <span className="csc-ref-num">SPO-2026-00142</span>
-          </div>
+          {reference && (
+            <div className="csc-ref-badge">
+              Reference: <span className="csc-ref-num">{reference}</span>
+            </div>
+          )}
         </div>
 
         {/* What happens next */}
