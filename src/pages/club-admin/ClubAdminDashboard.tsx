@@ -125,6 +125,8 @@ import MembershipPaymentsOverview from "./finance-audit/MembershipPaymentsOvervi
 import TicketingPaymentsOverview from "./finance-audit/TicketingPaymentsOverview";
 import AnnouncementsCompose from "./AnnouncementsCompose";
 import AnnouncementsPublish from "./AnnouncementsPublish";
+import NoticesCirculars from "./NoticesCirculars";
+import CommunicationHistoryLog from "./CommunicationHistoryLog";
 
 type TabKey =
   | "overview"
@@ -166,6 +168,8 @@ type TabKey =
   | "announcements"
   | "announcementsCompose"
   | "announcementsPublish"
+  | "noticesCirculars"
+  | "communicationHistoryLog"
   | "clubUsers"
   | "settings";
 
@@ -527,17 +531,31 @@ const navItems: AdminWorkspaceNavGroup<TabKey>[] = [
                 requiredClubPermissions: [],
                 clubWorkspaceFamily: "CLUB_ADMIN",
               },
-              {
-                key: "announcementsPublish",
-                label: "Publish",
-                icon: Send,
-                requiredClubPermissions: [],
-                clubWorkspaceFamily: "CLUB_ADMIN",
-              },
-            ],
+          {
+            key: "announcementsPublish",
+            label: "Publish",
+            icon: Send,
+            requiredClubPermissions: [],
+            clubWorkspaceFamily: "CLUB_ADMIN",
           },
         ],
       },
+      {
+        key: "noticesCirculars",
+        label: "Notices & Circulars",
+        icon: FileText,
+        requiredClubPermissions: [],
+        clubWorkspaceFamily: "CLUB_ADMIN",
+      },
+      {
+        key: "communicationHistoryLog",
+        label: "Communication History Log",
+        icon: MessageSquare,
+        requiredClubPermissions: [],
+        clubWorkspaceFamily: "CLUB_ADMIN",
+      },
+    ],
+  },
     ],
   },
   {
@@ -610,6 +628,8 @@ const TAB_TO_PATH: Record<TabKey, string> = {
   announcements: `${CLUB_ADMIN_BASE_PATH}/announcements`,
   announcementsCompose: `${CLUB_ADMIN_BASE_PATH}/announcements/compose`,
   announcementsPublish: `${CLUB_ADMIN_BASE_PATH}/announcements/publish`,
+  noticesCirculars: `${CLUB_ADMIN_BASE_PATH}/notices-circulars`,
+  communicationHistoryLog: `${CLUB_ADMIN_BASE_PATH}/communication-history-log`,
   clubUsers: `${CLUB_ADMIN_BASE_PATH}/users`,
   settings: `${CLUB_ADMIN_BASE_PATH}/settings`,
 };
@@ -687,6 +707,8 @@ const TAB_TO_MODULE: Record<TabKey, ClubWorkspaceTab> = {
   announcements: "communications",
   announcementsCompose: "communications",
   announcementsPublish: "communications",
+  noticesCirculars: "communications",
+  communicationHistoryLog: "communications",
   clubUsers: "clubUsers",
   settings: "settings",
 };
@@ -3799,6 +3821,10 @@ export default function ClubAdminDashboard() {
     content = <AnnouncementsCompose />;
   } else if (activeTab === "announcementsPublish") {
     content = <AnnouncementsPublish />;
+  } else if (activeTab === "noticesCirculars") {
+    content = <NoticesCirculars />;
+  } else if (activeTab === "communicationHistoryLog") {
+    content = <CommunicationHistoryLog />;
   } else if (activeTab === "clubUsers") {
     content = data ? (
       <UserManagement clubId={data.club.id} />
