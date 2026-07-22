@@ -132,6 +132,11 @@ import AnnouncementsCompose from "./AnnouncementsCompose";
 import AnnouncementsPublish from "./AnnouncementsPublish";
 import NoticesCirculars from "./NoticesCirculars";
 import CommunicationHistoryLog from "./CommunicationHistoryLog";
+import TeamsManagement from "./club-management/TeamsManagement";
+import PlayerRegistration from "./club-management/PlayerRegistration";
+import StaffOfficials from "./club-management/StaffOfficials";
+import RosterUpdate from "./club-management/RoasterUpdate";
+import SquadSubmission from "./club-management/SquadSubmision";
 
 
 type TabKey =
@@ -3695,10 +3700,17 @@ export default function ClubAdminDashboard() {
   } else if (activeTab === "membershipReports") {
     content = renderMembershipReports();
   } else if (activeTab === "teams") {
-    content = renderPlaceholder(
-      "Teams",
-      "Manage all teams belonging to this club.",
-    );
+    content = <TeamsManagement />;
+  } else if (activeTab === "teamsManagement") {
+    content = <TeamsManagement />;
+  } else if (activeTab === "playerRegistration") {
+    content = <PlayerRegistration />;
+  } else if (activeTab === "staffOfficials") {
+    content = <StaffOfficials />;
+  } else if (activeTab === "rosterUpdate") {
+    content = <RosterUpdate />;
+  } else if (activeTab === "squadSubmission") {
+    content = <SquadSubmission />;
   } else if (activeTab === "matches") {
     content = renderMatches();
   } else if (activeTab === "finances") {

@@ -1,10 +1,7 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { ArrowLeftRight, Search, Save, CheckCircle2, Shield, UserCog, ClipboardList, Send } from "lucide-react";
+import { ArrowLeftRight, Search, Save, CheckCircle2 } from "lucide-react";
 
 import "../../../styles/pages/club-admin/ClubManagement.css";
-
-import AdminWorkspaceLayout from "../../../components/AdminWorkspaceLayout/AdminWorkspaceLayout";
 
 interface Player {
   id: number;
@@ -86,22 +83,7 @@ const availablePlayersData: Player[] = [
   }
 ];
 
-const navItems = [
-  {
-    label: "Club Management",
-    items: [
-      { key: "teams", label: "Teams & Squads", icon: Shield, path: "/club-management/teams" },
-      { key: "players", label: "Player Registration", icon: UserCog, path: "/club-management/players" },
-      { key: "staff", label: "Staff & Officials", icon: UserCog, path: "/club-management/staff" },
-      { key: "roster", label: "Roster Update", icon: ClipboardList, path: "/club-management/roster" },
-      { key: "squad-submission", label: "Squad Submission", icon: Send, path: "/club-management/squad-submission" },
-    ],
-  },
-];
-
 export default function RosterUpdate() {
-  const navigate = useNavigate();
-
   const loggedInClub = {
     id: 1,
     name: "KCCA FC",
@@ -179,34 +161,18 @@ export default function RosterUpdate() {
   };
 
   return (
-    <AdminWorkspaceLayout
-      workspaceTitle={loggedInClub.name}
-      workspaceSubtitle="Football Club"
-      eyebrow="Club Management"
-      title="Roster Update"
-      description="Manage club player rosters."
-      navItems={navItems}
-      activeTab="roster"
-      hideAdminSidebar
-      onTabChange={(key: string) => {
-        const allItems = navItems.flatMap((g) => g.items);
-        const item = allItems.find((i) => i.key === key);
-        if (item) navigate(item.path);
-      }}
-    >
+    <div className="club-page">
       
-      <div className="club-page">
-        
 
-        <div className="club-header">
-          <div>
-            <h1>   {loggedInClub.name}</h1>
-            <p>
-              {loggedInClub.sport}
-            </p>
-          </div>
-          <div className="button-group">
-            <button
+      <div className="club-header">
+        <div>
+          <h1>   {loggedInClub.name}</h1>
+          <p>
+            {loggedInClub.sport}
+          </p>
+        </div>
+        <div className="button-group">
+          <button
             className="secondary-btn"
             disabled={dirty}
             onClick={() => setSavedMessage(
@@ -220,21 +186,21 @@ export default function RosterUpdate() {
             <Save size={18} />
             Save Roster
           </button>
-          </div>
-          
-
-          
-
         </div>
+        
 
-        {savedMessage && (
-          <div className="review-box success-box">
-            <CheckCircle2 size={18} />
-            <p>{savedMessage}</p>
-          </div>
-        )}
+        
 
-        <div className="club-toolbar">
+      </div>
+
+      {savedMessage && (
+        <div className="review-box success-box">
+          <CheckCircle2 size={18} />
+          <p>{savedMessage}</p>
+        </div>
+      )}
+
+      <div className="club-toolbar">
 
     <div className="toolbar-group">
         <label>Team</label>
@@ -293,94 +259,93 @@ export default function RosterUpdate() {
 
 </div>
 
-        <div className="roster-container">
-          <div className="roster-card">
-            <h4>Current Squad</h4>
-            <p>
-              {team} - {squad}
-            </p>
+      <div className="roster-container">
+        <div className="roster-card">
+          <h4>Current Squad</h4>
+          <p>
+            {team} - {squad}
+          </p>
 
-            <div className="player-list">
-              {currentPlayers
-                .filter(
-                  (player) =>
-                    player.clubId === loggedInClub.id &&
-                    player.name
-                      .toLowerCase()
-                      .includes(search.toLowerCase())
-                    &&
-                    (position === "All" || player.position === position)
-                )
-                .map((player) => (
-                  <div className="player-item" key={player.id}>
-                    <div>
-                      <strong>
-                        {player.jerseyNumber} {player.name}
-                      </strong>
+          <div className="player-list">
+            {currentPlayers
+              .filter(
+                (player) =>
+                  player.clubId === loggedInClub.id &&
+                  player.name
+                    .toLowerCase()
+                    .includes(search.toLowerCase())
+                  &&
+                  (position === "All" || player.position === position)
+              )
+              .map((player) => (
+                <div className="player-item" key={player.id}>
+                  <div>
+                    <strong>
+                      {player.jerseyNumber} {player.name}
+                    </strong>
 
-                      <span>
-                        {player.position}
-                      </span>
+                    <span>
+                      {player.position}
+                    </span>
 
-                      <span>
-                        Status: {player.status}
-                      </span>
-                    </div>
-
-                    <button className="remove-btn" onClick={() => removePlayer(player)}>
-                      Remove
-                    </button>
+                    <span>
+                      Status: {player.status}
+                    </span>
                   </div>
-                ))}
-              {currentPlayers.filter((p) => p.clubId === loggedInClub.id).length === 0 && (
-                <p className="empty-row">No players assigned to this squad yet.</p>
-              )}
-            </div>
+
+                  <button className="remove-btn" onClick={() => removePlayer(player)}>
+                    Remove
+                  </button>
+                </div>
+              ))}
+            {currentPlayers.filter((p) => p.clubId === loggedInClub.id).length === 0 && (
+              <p className="empty-row">No players assigned to this squad yet.</p>
+            )}
           </div>
+        </div>
 
-          <div className="roster-middle">
-            <ArrowLeftRight size={30} />
-          </div>
+        <div className="roster-middle">
+          <ArrowLeftRight size={30} />
+        </div>
 
-          <div className="roster-card">
-            <h4>Available Players</h4>
-            <p>Unassigned {loggedInClub.sport} players</p>
+        <div className="roster-card">
+          <h4>Available Players</h4>
+          <p>Unassigned {loggedInClub.sport} players</p>
 
-            <div className="player-list">
-              {availablePlayers
-                .filter(
-                  (player) =>
-                    player.clubId === loggedInClub.id &&
-                    player.name.toLowerCase().includes(search.toLowerCase())
-                )
-                .map((player) => (
-                  <div className="player-item" key={player.id}>
-                    <div>
-                      <strong>
-                        {player.jerseyNumber} {player.name}
-                      </strong>
+          <div className="player-list">
+            {availablePlayers
+              .filter(
+                (player) =>
+                  player.clubId === loggedInClub.id &&
+                  player.name.toLowerCase().includes(search.toLowerCase())
+              )
+              .map((player) => (
+                <div className="player-item" key={player.id}>
+                  <div>
+                    <strong>
+                      {player.jerseyNumber} {player.name}
+                    </strong>
 
-                      <span>
-                        {player.position}
-                      </span>
+                    <span>
+                      {player.position}
+                    </span>
 
-                      <span>
-                        Status: {player.status}
-                      </span>
-                    </div>
-
-                    <button className="add-btn" onClick={() => addPlayer(player)}>
-                      Add
-                    </button>
+                    <span>
+                      Status: {player.status}
+                    </span>
                   </div>
-                ))}
-              {availablePlayers.filter((p) => p.clubId === loggedInClub.id).length === 0 && (
-                <p className="empty-row">No unassigned players remaining.</p>
-              )}
-            </div>
+
+                  <button className="add-btn" onClick={() => addPlayer(player)}>
+                    Add
+                  </button>
+                </div>
+              ))}
+            {availablePlayers.filter((p) => p.clubId === loggedInClub.id).length === 0 && (
+              <p className="empty-row">No unassigned players remaining.</p>
+            )}
           </div>
         </div>
       </div>
-    </AdminWorkspaceLayout>
+    </div>
   );
 }

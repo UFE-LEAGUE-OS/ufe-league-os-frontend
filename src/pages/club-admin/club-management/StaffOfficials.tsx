@@ -1,9 +1,7 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Plus, Search, Pencil, Trash2, X, Shield, UserCog, ClipboardList, Send } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, X } from "lucide-react";
 
 import "../../../styles/pages/club-admin/ClubManagement.css";
-import AdminWorkspaceLayout from "../../../components/AdminWorkspaceLayout/AdminWorkspaceLayout";
 
 interface StaffMember {
   id: number;
@@ -96,22 +94,7 @@ const emptyForm = {
   status: "Active" as "Active" | "Inactive",
 };
 
-const navItems = [
-  {
-    label: "Club Management",
-    items: [
-      { key: "teams", label: "Teams & Squads", icon: Shield, path: "/club-management/teams" },
-      { key: "players", label: "Player Registration", icon: UserCog, path: "/club-management/players" },
-      { key: "staff", label: "Staff & Officials", icon: UserCog, path: "/club-management/staff" },
-      { key: "roster", label: "Roster Update", icon: ClipboardList, path: "/club-management/roster" },
-      { key: "squad-submission", label: "Squad Submission", icon: Send, path: "/club-management/squad-submission" },
-    ],
-  },
-];
-
 const StaffOfficials = () => {
-  const navigate = useNavigate();
-
  const [staff, setStaff] = useState<StaffMember[]>(
   staffData.filter(
     (member) =>
@@ -194,173 +177,157 @@ const StaffOfficials = () => {
   };
 
   return (
-    <AdminWorkspaceLayout
-      workspaceTitle="KCCA FC"
-      workspaceSubtitle="Football Club"
-      eyebrow="Club Management"
-      title="Staff & Officials"
-      description="Manage coaches, officials and club technical staff."
-      navItems={navItems}
-      activeTab="staff"
-      hideAdminSidebar
-      onTabChange={(key: string) => {
-        const allItems = navItems.flatMap((g) => g.items);
-        const item = allItems.find((i) => i.key === key);
-        if (item) navigate(item.path);
-      }}
-    >
-      <div className="club-page">
-        <div className="club-header">
-          <div>
-            <h1>KCCA</h1>
-            <p>Football </p>
-          </div>
-
-          <button className="primary-btn" onClick={openCreate}>
-            <Plus size={18} />
-            Add Staff
-          </button>
+    <div className="club-page">
+      <div className="club-header">
+        <div>
+          <h1>KCCA</h1>
+          <p>Football </p>
         </div>
 
-        <div className="club-toolbar">
-          <div className="search-box">
-            <Search size={18} />
-            <input
-              placeholder="Search staff..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-        </div>
+        <button className="primary-btn" onClick={openCreate}>
+          <Plus size={18} />
+          Add Staff
+        </button>
+      </div>
 
-        <div className="club-card">
-          <div className="table-wrapper">
-            <table className="club-table">
-              <thead>
+      <div className="club-toolbar">
+        <div className="search-box">
+          <Search size={18} />
+          <input
+            placeholder="Search staff..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+      </div>
+
+      <div className="club-card">
+        <div className="table-wrapper">
+          <table className="club-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Role</th>
+                <th>Sport</th>
+                <th>Team</th>
+                <th>Phone</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {filteredStaff.length === 0 && (
                 <tr>
-                  <th>Name</th>
-                  <th>Role</th>
-                  <th>Sport</th>
-                  <th>Team</th>
-                  <th>Phone</th>
-                  <th>Status</th>
-                  <th>Actions</th>
+                  <td colSpan={7} className="empty-row">
+                    No staff match your search.
+                  </td>
                 </tr>
-              </thead>
-
-              <tbody>
-                {filteredStaff.length === 0 && (
-                  <tr>
-                    <td colSpan={7} className="empty-row">
-                      No staff match your search.
-                    </td>
-                  </tr>
-                )}
-                {filteredStaff.map((member) => (
-                  <tr key={member.id}>
-                    <td>
-                      <strong>{member.name}</strong>
-                    </td>
-                    <td>{member.role}</td>
-                    <td>
-                      <span className="sport-badge">{member.sport}</span>
-                    </td>
-                    <td>{member.team}</td>
-                    <td>{member.phone}</td>
-                    <td>
-                      <span
-                        className={member.status === "Active" ? "status active" : "status expired"}
-                      >
-                        {member.status}
-                      </span>
-                    </td>
-                    <td>
-                      <div className="action-buttons">
-                        <button title="Edit" onClick={() => openEdit(member)}>
-                          <Pencil size={16} />
-                        </button>
-                        <button title="Delete" onClick={() => deleteStaff(member.id)}>
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              )}
+              {filteredStaff.map((member) => (
+                <tr key={member.id}>
+                  <td>
+                    <strong>{member.name}</strong>
+                  </td>
+                  <td>{member.role}</td>
+                  <td>
+                    <span className="sport-badge">{member.sport}</span>
+                  </td>
+                  <td>{member.team}</td>
+                  <td>{member.phone}</td>
+                  <td>
+                    <span
+                      className={member.status === "Active" ? "status active" : "status expired"}
+                    >
+                      {member.status}
+                    </span>
+                  </td>
+                  <td>
+                    <div className="action-buttons">
+                      <button title="Edit" onClick={() => openEdit(member)}>
+                        <Pencil size={16} />
+                      </button>
+                      <button title="Delete" onClick={() => deleteStaff(member.id)}>
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
+      </div>
 
-        {showModal && (
-          <div className="modal-overlay">
-            <div className="club-modal">
-              <div className="modal-header">
-                <h2>{editingId ? "Edit Staff Member" : "Add Staff Member"}</h2>
-                <button onClick={() => setShowModal(false)}>
-                  <X />
-                </button>
-              </div>
+      {showModal && (
+        <div className="modal-overlay">
+          <div className="club-modal">
+            <div className="modal-header">
+              <h2>{editingId ? "Edit Staff Member" : "Add Staff Member"}</h2>
+              <button onClick={() => setShowModal(false)}>
+                <X />
+              </button>
+            </div>
 
-              <div className="form-grid">
-                <input
-                  placeholder="Full Name"
-                  value={form.name}
-                  onChange={(e) => setForm({ ...form, name: e.target.value })}
-                />
+            <div className="form-grid">
+              <input
+                placeholder="Full Name"
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+              />
 
-                <select value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })}>
-                  {roles.map((role) => (
-                    <option key={role}>{role}</option>
-                  ))}
-                </select>
+              <select value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })}>
+                {roles.map((role) => (
+                  <option key={role}>{role}</option>
+                ))}
+              </select>
 
-                <select
-                  value={form.sport}
-                  onChange={(e) =>
-                    setForm({ ...form, sport: e.target.value as StaffMember["sport"] })
-                  }
-                >
-                  {sports.map((sport) => (
-                    <option key={sport}>{sport}</option>
-                  ))}
-                </select>
+              <select
+                value={form.sport}
+                onChange={(e) =>
+                  setForm({ ...form, sport: e.target.value as StaffMember["sport"] })
+                }
+              >
+                {sports.map((sport) => (
+                  <option key={sport}>{sport}</option>
+                ))}
+              </select>
 
-                <input
-                  placeholder="Assigned Team"
-                  value={form.team}
-                  onChange={(e) => setForm({ ...form, team: e.target.value })}
-                />
+              <input
+                placeholder="Assigned Team"
+                value={form.team}
+                onChange={(e) => setForm({ ...form, team: e.target.value })}
+              />
 
-                <input
-                  placeholder="Phone Number"
-                  value={form.phone}
-                  onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                />
+              <input
+                placeholder="Phone Number"
+                value={form.phone}
+                onChange={(e) => setForm({ ...form, phone: e.target.value })}
+              />
 
-                <select
-                  value={form.status}
-                  onChange={(e) =>
-                    setForm({ ...form, status: e.target.value as "Active" | "Inactive" })
-                  }
-                >
-                  <option>Active</option>
-                  <option>Inactive</option>
-                </select>
-              </div>
+              <select
+                value={form.status}
+                onChange={(e) =>
+                  setForm({ ...form, status: e.target.value as "Active" | "Inactive" })
+                }
+              >
+                <option>Active</option>
+                <option>Inactive</option>
+              </select>
+            </div>
 
-              <div className="modal-actions">
-                <button className="secondary-btn" onClick={() => setShowModal(false)}>
-                  Cancel
-                </button>
-                <button className="primary-btn" onClick={saveStaff}>
-                  Save Staff
-                </button>
-              </div>
+            <div className="modal-actions">
+              <button className="secondary-btn" onClick={() => setShowModal(false)}>
+                Cancel
+              </button>
+              <button className="primary-btn" onClick={saveStaff}>
+                Save Staff
+              </button>
             </div>
           </div>
-        )}
-      </div>
-    </AdminWorkspaceLayout>
+        </div>
+      )}
+    </div>
   );
 };
 
