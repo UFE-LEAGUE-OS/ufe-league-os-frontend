@@ -1,4 +1,5 @@
 import {
+  fireEvent,
   render,
   screen,
   waitFor,
@@ -98,6 +99,21 @@ describe(
             'LOS-SPONSOR-201-TEST',
           );
         });
+
+        expect(
+          await screen.findByRole(
+            'heading',
+            {
+              name: /payment verified/i,
+            },
+          ),
+        ).toBeInTheDocument();
+
+        fireEvent.click(
+          screen.getByRole('button', {
+            name: /continue to agreements & payments/i,
+          }),
+        );
 
         expect(
           await screen.findByRole(

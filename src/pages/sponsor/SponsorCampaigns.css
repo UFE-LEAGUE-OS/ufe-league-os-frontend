@@ -129,6 +129,16 @@
   width: 100%;
 }
 
+.sc-card-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.sc-card-actions button {
+  width: auto;
+  flex: 1;
+}
+
 .sc-state {
   width: min(560px, 100%);
   margin: 55px auto;

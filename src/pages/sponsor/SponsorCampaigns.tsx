@@ -18,6 +18,8 @@ import {
   getSponsorAgreements,
   type SponsorAgreement,
 } from '../../services/sponsorshipService';
+import { getSponsorCampaigns } from '../../services/sponsorCampaignService';
+import { useSponsorCampaignStore } from '../../store/sponsorCampaignStore';
 import './SponsorCampaigns.css';
 
 function date(value: string | null) {
@@ -37,9 +39,15 @@ function date(value: string | null) {
 
 export default function SponsorCampaigns() {
   const navigate = useNavigate();
+  const startCampaignFromAgreement =
+    useSponsorCampaignStore(
+      (state) => state.startFromAgreement,
+    );
 
   const [agreements, setAgreements] =
     useState<SponsorAgreement[]>([]);
+  const [campaignByAgreement, setCampaignByAgreement] =
+    useState<Record<number, number>>({});
   const [loading, setLoading] =
     useState(true);
   const [error, setError] =
@@ -61,17 +69,29 @@ export default function SponsorCampaigns() {
           return;
         }
 
-        const agreementResponse =
-          await getSponsorAgreements({
-            sponsor_account:
-              account.id,
-          });
+        const [agreementResponse, campaignsResponse] =
+          await Promise.all([
+            getSponsorAgreements({
+              sponsor_account: account.id,
+            }),
+            getSponsorCampaigns({
+              sponsor_account: account.id,
+            }),
+          ]);
 
         if (active) {
           setAgreements(
             agreementResponse.data
               .results,
           );
+
+          const lookup: Record<number, number> = {};
+          for (const campaign of campaignsResponse.data.results) {
+            if (campaign.agreement_id) {
+              lookup[campaign.agreement_id] = campaign.id;
+            }
+          }
+          setCampaignByAgreement(lookup);
         }
       } catch {
         if (active) {
@@ -233,16 +253,44 @@ export default function SponsorCampaigns() {
                         </strong>
                       </div>
 
-                      <button
-                        type="button"
-                        onClick={() =>
-                          navigate(
-                            `/sponsor/payments?agreement=${agreement.id}`,
-                          )
-                        }
-                      >
-                        View Agreement
-                      </button>
+                      <div className="sc-card-actions">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            navigate(
+                              `/sponsor/payments?agreement=${agreement.id}`,
+                            )
+                          }
+                        >
+                          View Agreement
+                        </button>
+
+                        {campaignByAgreement[agreement.id] ? (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              navigate(
+                                `/sponsor/campaigns/${campaignByAgreement[agreement.id]}`,
+                              )
+                            }
+                          >
+                            View Campaign
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              startCampaignFromAgreement(
+                                agreement.sponsor_account,
+                                agreement.id,
+                              );
+                              navigate('/sponsor/campaigns/new');
+                            }}
+                          >
+                            Create Campaign
+                          </button>
+                        )}
+                      </div>
                     </article>
                   ),
                 )}

@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 
+export type CorporateVerificationDocType = 'incorporation' | 'tin' | 'logo';
+
 export type CorporateSponsorFormData = {
   companyName: string;
   companyEmail: string;
@@ -72,11 +74,28 @@ const initialIndividual: IndividualSponsorFormData = {
   duration: '',
 };
 
+const initialCorporateDocuments: Record<
+  CorporateVerificationDocType,
+  File | null
+> = {
+  incorporation: null,
+  tin: null,
+  logo: null,
+};
+
 type SponsorFormStore = {
   corporate: CorporateSponsorFormData;
   individual: IndividualSponsorFormData;
+  // The sponsor account doesn't exist until the Review step calls
+  // becomeSponsor(), so verification files can't be uploaded to an
+  // account id at the Verification step — they're held here and
+  // uploaded once the account id is known.
+  corporateDocuments: Record<CorporateVerificationDocType, File | null>;
   updateCorporate: (patch: Partial<CorporateSponsorFormData>) => void;
   updateIndividual: (patch: Partial<IndividualSponsorFormData>) => void;
+  updateCorporateDocuments: (
+    patch: Partial<Record<CorporateVerificationDocType, File | null>>,
+  ) => void;
   resetCorporate: () => void;
   resetIndividual: () => void;
 };
@@ -84,6 +103,7 @@ type SponsorFormStore = {
 export const useSponsorFormStore = create<SponsorFormStore>()((set) => ({
   corporate: initialCorporate,
   individual: initialIndividual,
+  corporateDocuments: initialCorporateDocuments,
 
   updateCorporate: (patch) =>
     set((state) => ({ corporate: { ...state.corporate, ...patch } })),
@@ -91,6 +111,15 @@ export const useSponsorFormStore = create<SponsorFormStore>()((set) => ({
   updateIndividual: (patch) =>
     set((state) => ({ individual: { ...state.individual, ...patch } })),
 
-  resetCorporate: () => set({ corporate: initialCorporate }),
+  updateCorporateDocuments: (patch) =>
+    set((state) => ({
+      corporateDocuments: { ...state.corporateDocuments, ...patch },
+    })),
+
+  resetCorporate: () =>
+    set({
+      corporate: initialCorporate,
+      corporateDocuments: initialCorporateDocuments,
+    }),
   resetIndividual: () => set({ individual: initialIndividual }),
 }));

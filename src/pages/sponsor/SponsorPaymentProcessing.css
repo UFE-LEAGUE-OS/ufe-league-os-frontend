@@ -53,6 +53,11 @@
   color: #f87171;
 }
 
+.sppc-icon-success {
+  background: rgba(22, 163, 74, 0.13);
+  color: #4ade80;
+}
+
 .sppc-eyebrow {
   margin-bottom: 8px;
   color: #aa7dff;
@@ -132,6 +137,12 @@
   color: #b68dff;
   font-size: 11px;
   text-decoration: none;
+}
+
+.sppc-card a.sppc-retry {
+  color: #fff;
+  font-size: 12px;
+  justify-content: center;
 }
 
 .sppc-card a:hover {

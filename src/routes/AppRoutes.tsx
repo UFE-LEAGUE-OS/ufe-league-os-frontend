@@ -153,15 +153,19 @@ const CorporateSponsorDashboard = lazy(() => import('../pages/sponsor/CorporateS
 const SponsorPayments = lazy(() => import('../pages/sponsor/SponsorPayments'));
 const SponsorPaymentProcessing = lazy(() => import('../pages/sponsor/SponsorPaymentProcessing'));
 const CorporateTeamManagement = lazy(() => import('../pages/sponsor/CorporateTeamManagement'));
-const SponsorPermissions = lazy(() => import('../pages/sponsor/SponsorPermissions'));
 const SponsorPackages = lazy(() => import('../pages/sponsor/SponsorPackages'));
 const SponsorPackageDetail = lazy(() => import('../pages/sponsor/SponsorPackageDetail'));
 const CampaignCreation = lazy(() => import('../pages/sponsor/CampaignCreation'));
 const CampaignAnalytics = lazy(() => import('../pages/sponsor/CampaignAnalytics'));
+const SponsorAuditLog = lazy(() => import('../pages/sponsor/SponsorAuditLog'));
+const SponsorAgreementSign = lazy(() => import('../pages/sponsor/SponsorAgreementSign'));
+const SponsorAssetLibrary = lazy(() => import('../pages/sponsor/SponsorAssetLibrary'));
 const CampaignPlacementPreview = lazy(() => import('../pages/sponsor/CampaignPlacementPreview'));
 const CorporateSponsorReview = lazy(() => import('../pages/sponsor/CorporateSponsorReview'));
 const CorporateSponsorComplete = lazy(() => import('../pages/sponsor/CorporateSponsorComplete'));
 const SponsorCampaigns = lazy(() => import('../pages/sponsor/SponsorCampaigns'));
+const SponsorCampaignsList = lazy(() => import('../pages/sponsor/SponsorCampaignsList'));
+const SponsorCampaignDetail = lazy(() => import('../pages/sponsor/SponsorCampaignDetail'));
 const SponsorSettings = lazy(() => import('../pages/sponsor/SponsorSettings'));
 const SponsorHelp = lazy(() => import('../pages/sponsor/SponsorHelp'));
 const CampaignTargeting = lazy(() => import('../pages/sponsor/CampaignTargeting'));
@@ -537,7 +541,7 @@ export default function AppRoutes() {
                 <Route
                     path="/sponsor/permissions"
                     element={dashboardProtectedPage(
-                        <SponsorPermissions />,
+                        <Navigate to="/sponsor/team" replace />,
                         'SPONSOR',
                     )}
                 />
@@ -570,7 +574,35 @@ export default function AppRoutes() {
                     )}
                 />
                 <Route
+                    path="/sponsor/audit-log"
+                    element={dashboardProtectedPage(
+                        <SponsorAuditLog />,
+                        'SPONSOR',
+                    )}
+                />
+                <Route
+                    path="/sponsor/agreements/:agreementId/sign"
+                    element={dashboardProtectedPage(
+                        <SponsorAgreementSign />,
+                        'SPONSOR',
+                    )}
+                />
+                <Route
+                    path="/sponsor/assets"
+                    element={dashboardProtectedPage(
+                        <SponsorAssetLibrary />,
+                        'SPONSOR',
+                    )}
+                />
+                <Route
                     path="/sponsor/campaigns/preview"
+                    element={dashboardProtectedPage(
+                        <CampaignPlacementPreview />,
+                        'SPONSOR',
+                    )}
+                />
+                <Route
+                    path="/sponsor/campaigns/preview/:campaignId"
                     element={dashboardProtectedPage(
                         <CampaignPlacementPreview />,
                         'SPONSOR',
@@ -586,7 +618,14 @@ export default function AppRoutes() {
                 <Route
                     path="/sponsor/campaigns"
                     element={dashboardProtectedPage(
-                        <Navigate to="/sponsor/activations" replace />,
+                        <SponsorCampaignsList />,
+                        'SPONSOR',
+                    )}
+                />
+                <Route
+                    path="/sponsor/campaigns/:campaignId"
+                    element={dashboardProtectedPage(
+                        <SponsorCampaignDetail />,
                         'SPONSOR',
                     )}
                 />

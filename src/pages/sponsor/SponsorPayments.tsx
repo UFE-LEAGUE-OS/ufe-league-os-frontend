@@ -1495,10 +1495,85 @@ export default function SponsorPayments() {
                                                 payment.created_at,
                                             )}
                                           </small>
+                                          {(payment.invoice_url ||
+                                            payment.receipt_url) && (
+                                            <div className="spp-doc-links">
+                                              {payment.invoice_url && (
+                                                <a
+                                                  className="spp-doc-link"
+                                                  href={
+                                                    payment.invoice_url
+                                                  }
+                                                  target="_blank"
+                                                  rel="noreferrer"
+                                                >
+                                                  Invoice
+                                                </a>
+                                              )}
+                                              {payment.receipt_url && (
+                                                <a
+                                                  className="spp-doc-link"
+                                                  href={
+                                                    payment.receipt_url
+                                                  }
+                                                  target="_blank"
+                                                  rel="noreferrer"
+                                                >
+                                                  Receipt
+                                                </a>
+                                              )}
+                                            </div>
+                                          )}
                                         </div>
                                       </div>
                                     ),
                                   )}
+                              </div>
+                            )}
+                          </section>
+
+                          <section>
+                            <div className="spp-section-title">
+                              <FiShield size={16} />
+                              Revenue split
+                            </div>
+
+                            {agreement.revenue_share_rules
+                              .length === 0 ? (
+                              <p className="spp-empty-copy">
+                                No revenue split policy has been set
+                                for this agreement.
+                              </p>
+                            ) : (
+                              <div className="spp-revenue-list">
+                                {agreement.revenue_share_rules.map(
+                                  (rule) => (
+                                    <div
+                                      key={rule.id}
+                                      className="spp-revenue-row"
+                                    >
+                                      <div className="spp-revenue-recipient">
+                                        <strong>
+                                          {rule.recipient_name ||
+                                            rule.recipient_type_display}
+                                        </strong>
+                                        <span>
+                                          {rule.is_platform_share
+                                            ? 'League OS platform fee'
+                                            : rule.recipient_type_display}
+                                        </span>
+                                      </div>
+                                      <strong>
+                                        {Number(rule.percentage) > 0
+                                          ? `${rule.percentage}%`
+                                          : formatMoney(
+                                              rule.fixed_amount,
+                                              agreement.currency,
+                                            )}
+                                      </strong>
+                                    </div>
+                                  ),
+                                )}
                               </div>
                             )}
                           </section>
@@ -1537,6 +1612,22 @@ export default function SponsorPayments() {
                               disabled
                             >
                               Payment pending
+                            </button>
+                          ) : canPay &&
+                            !agreement.signed_at ? (
+                            <button
+                              type="button"
+                              className="spp-primary-btn"
+                              onClick={() =>
+                                navigate(
+                                  `/sponsor/agreements/${agreement.id}/sign`,
+                                )
+                              }
+                            >
+                              <FiFileText
+                                size={16}
+                              />
+                              Review & Sign Agreement
                             </button>
                           ) : canPay ? (
                             <button

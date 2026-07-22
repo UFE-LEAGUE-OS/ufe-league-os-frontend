@@ -12,12 +12,14 @@ import {
 import {
   FiAlertTriangle,
   FiCheckCircle,
+  FiDownload,
   FiLoader,
   FiRefreshCw,
   FiShield,
 } from 'react-icons/fi';
 import {
   verifySponsorFlutterwavePayment,
+  type SponsorPayment,
 } from '../../services/sponsorshipService';
 import './SponsorPaymentProcessing.css';
 
@@ -57,6 +59,8 @@ export default function SponsorPaymentProcessing() {
     useState(0);
   const [verificationError, setVerificationError] =
     useState('');
+  const [verifiedPayment, setVerifiedPayment] =
+    useState<SponsorPayment | null>(null);
 
   const pendingCheckout = useMemo(
     () => readPendingCheckout(),
@@ -135,17 +139,7 @@ export default function SponsorPaymentProcessing() {
           'league_os_pending_sponsor_checkout',
         );
 
-        const agreementId =
-          response.data.payment.agreement;
-
-        navigate(
-          `/sponsor/payments?payment=success&agreement=${agreementId}&tx_ref=${encodeURIComponent(
-            txRef,
-          )}`,
-          {
-            replace: true,
-          },
-        );
+        setVerifiedPayment(response.data.payment);
       } catch {
         if (!active) {
           return;
@@ -168,6 +162,71 @@ export default function SponsorPaymentProcessing() {
     retryKey,
     txRef,
   ]);
+
+  function handleContinue() {
+    if (!verifiedPayment) {
+      return;
+    }
+
+    navigate(
+      `/sponsor/payments?payment=success&agreement=${verifiedPayment.agreement}&tx_ref=${encodeURIComponent(
+        txRef,
+      )}`,
+      {
+        replace: true,
+      },
+    );
+  }
+
+  if (verifiedPayment) {
+    return (
+      <main className="sppc-page">
+        <section className="sppc-card">
+          <div className="sppc-icon sppc-icon-success">
+            <FiCheckCircle size={40} />
+          </div>
+
+          <div>
+            <div className="sppc-eyebrow">
+              Secure sponsorship checkout
+            </div>
+            <h1>Payment Verified</h1>
+            <p>
+              Your sponsorship payment of{' '}
+              {verifiedPayment.amount_paid}{' '}
+              {verifiedPayment.currency} has been
+              confirmed.
+            </p>
+          </div>
+
+          <div className="sppc-reference">
+            <span>Transaction reference</span>
+            <strong>{txRef || 'Missing reference'}</strong>
+          </div>
+
+          {verifiedPayment.receipt_url && (
+            <a
+              className="sppc-retry"
+              href={verifiedPayment.receipt_url}
+              target="_blank"
+              rel="noreferrer"
+            >
+              <FiDownload size={16} />
+              Download receipt
+            </a>
+          )}
+
+          <button
+            type="button"
+            className="sppc-retry"
+            onClick={handleContinue}
+          >
+            Continue to Agreements & Payments
+          </button>
+        </section>
+      </main>
+    );
+  }
 
   return (
     <main className="sppc-page">

@@ -139,6 +139,19 @@
   margin: -8px 0 4px;
 }
 
+.cp-preview-link {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  color: #8135FA;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+  margin: -4px 0 10px;
+}
+.cp-preview-link:hover { text-decoration: underline; }
+
 .cp-placement-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
