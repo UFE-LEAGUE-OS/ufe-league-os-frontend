@@ -17,8 +17,8 @@ import {
   StatusBadge,
 } from "../../components/union-admin/UnionAdminUi";
 import {
-  createUnionCompetitionEdition,
   createUnionCompetitionIdentity,
+  createUnionCompetitionEdition,
   generateUnionAdminFixtures,
   getUnionAdminLeagueClubMemberships,
   getUnionAdminManagementCompetitions,
@@ -36,6 +36,7 @@ import {
   type UnionWorkspaceOption,
 } from "../../services/unionAdminService";
 import styles from "./UnionCompetitionsScreen.module.css";
+import CompetitionCreationWizard from "./CompetitionCreationWizard";
 
 type CompetitionView =
   | "directory"
@@ -54,18 +55,6 @@ const views: Array<{ key: CompetitionView; label: string }> = [
   { key: "scheduling", label: "Scheduling / Fixtures" },
   { key: "publication", label: "Publication & Lifecycle" },
 ];
-
-const nextStatuses: Record<string, string[]> = {
-  DRAFT: ["REGISTRATION_OPEN", "CANCELLED"],
-  REGISTRATION_OPEN: ["REGISTRATION_CLOSED", "CANCELLED"],
-  REGISTRATION_CLOSED: ["ENTRIES_UNDER_REVIEW", "SCHEDULING", "CANCELLED"],
-  ENTRIES_UNDER_REVIEW: ["SCHEDULING", "CANCELLED"],
-  SCHEDULING: ["READY_FOR_PUBLICATION", "CANCELLED"],
-  READY_FOR_PUBLICATION: ["PUBLISHED", "SCHEDULING", "CANCELLED"],
-  PUBLISHED: ["ACTIVE", "CANCELLED"],
-  ACTIVE: ["COMPLETED", "CANCELLED"],
-  COMPLETED: ["ARCHIVED"],
-};
 
 function errorMessage(error: unknown) {
   const candidate = error as {
@@ -220,6 +209,10 @@ export default function UnionCompetitionsScreen({ workspace }: UnionCompetitions
     } catch (actionError) { setError(errorMessage(actionError)); } finally { setWorking(false); }
   }
 
+  // Retained for compatibility with the legacy identity endpoint while the
+  // guided workflow uses the atomic creation contract.
+  void createIdentity;
+
   return <section className={styles.screen}>
     <ScreenHeader eyebrow="Competitions" title="Competition control room" description="Manage maintained competition identities, seasonal editions, club entries and fixture preparation." actions={canManage ? <div className={styles.inlineActionGroup}><button type="button" onClick={() => setView("createCompetition")}>Create Competition</button><button type="button" className={styles.subtleButton} disabled={!selected} onClick={() => setView("addSeason")}>Add Season</button></div> : undefined} />
     {notice ? <div className={styles.workflowNotice} role="status" aria-live="polite">{notice}</div> : null}
@@ -233,8 +226,8 @@ export default function UnionCompetitionsScreen({ workspace }: UnionCompetitions
       {view === "editions" ? editions.length ? <div className={styles.cardGrid}>{editions.map((edition) => <article key={edition.id}><StatusBadge>{edition.status.replaceAll("_", " ")}</StatusBadge><h3>{edition.season_name}</h3><dl><dt>League competition</dt><dd>{edition.competition_slug}</dd><dt>Registration opens</dt><dd>{edition.registration_opens_at ?? "Not set"}</dd><dt>Registration closes</dt><dd>{edition.registration_closes_at ?? "Not set"}</dd></dl></article>)}</div> : <EmptyState title="No editions yet" description="Add a workspace season to the selected competition identity." /> : null}
       {view === "entries" ? selected ? selectedMemberships.length ? <RecordList records={selectedMemberships.map((item) => ({ id: String(item.id), title: item.club_name, subtitle: `${item.league_name} · ${item.season_name ?? "No season"}`, status: item.status, meta: item.notes }))} /> : <EmptyState title="No club entries" description="No workspace membership records are attached to the selected competition edition." /> : <EmptyState title="Select a competition" description="Choose an identity before reviewing entries." /> : null}
       {view === "scheduling" ? selectedCompetition ? <div className={styles.detailGrid}><div className={styles.formCard}><h3>Generate fixtures</h3><label>First match date<input type="date" value={fixtureStart} onChange={(event) => setFixtureStart(event.target.value)} /></label><button type="button" disabled={!canManage || working || !fixtureStart || generated > 0} onClick={() => void generateFixtures()}>{generated ? `${generated} fixtures generated` : "Generate fixtures"}</button></div><aside className={styles.supportCard}><h3>{selectedCompetition.name}</h3><p>{selectedCompetition.matches_count} existing fixtures · {selectedCompetition.clubs_count} clubs</p><p className={styles.mutedText}>Generation uses the backend schedule validator and will not clear existing fixtures.</p></aside></div> : <EmptyState title="No schedulable edition" description="Create an edition before generating fixtures." /> : null}
-      {view === "publication" ? editions.length ? <div className={styles.timeline}>{editions.map((edition) => <article key={edition.id}><StatusBadge>{edition.status.replaceAll("_", " ")}</StatusBadge><h3>{edition.season_name}</h3><div className={styles.linkGroup}>{(nextStatuses[edition.status] ?? []).map((status) => <button key={status} type="button" className={status === "CANCELLED" ? styles.subtleButton : undefined} disabled={!canManage || working} onClick={() => void transition(edition, status)}>Move to {status.replaceAll("_", " ").toLowerCase()}</button>)}</div>{!(nextStatuses[edition.status]?.length) ? <p className={styles.mutedText}>No further lifecycle actions are available.</p> : null}</article>)}</div> : <EmptyState title="No lifecycle records" description="Create an edition to begin the competition lifecycle." /> : null}
-      {view === "createCompetition" ? <form className={styles.formCard} onSubmit={createIdentity}><h3>Create competition identity</h3><div className={styles.fieldGrid}><label>Name<input required value={name} onChange={(event) => setName(event.target.value)} /></label><label>Primary league<select required value={leagueId} onChange={(event) => setLeagueId(event.target.value)}><option value="">Select league</option>{leagues.map((league) => <option key={league.id} value={league.id}>{league.name}</option>)}</select></label></div><label>Description<textarea value={description} onChange={(event) => setDescription(event.target.value)} /></label><button disabled={working || !canManage}>Create identity</button></form> : null}
+      {view === "publication" ? editions.length ? <div className={styles.timeline}>{editions.map((edition) => <article key={edition.id}><StatusBadge>{edition.status.replaceAll("_", " ")}</StatusBadge><h3>{edition.season_name}</h3><div className={styles.linkGroup}>{(edition.allowed_transitions ?? []).map((status) => <button key={status} type="button" className={status === "CANCELLED" ? styles.subtleButton : undefined} disabled={!canManage || working} onClick={() => void transition(edition, status)}>Move to {status.replaceAll("_", " ").toLowerCase()}</button>)}</div>{!edition.allowed_transitions?.length ? <p className={styles.mutedText}>No further lifecycle actions are available.</p> : null}</article>)}</div> : <EmptyState title="No lifecycle records" description="Create an edition to begin the competition lifecycle." /> : null}
+      {view === "createCompetition" ? <CompetitionCreationWizard workspace={workspace} leagues={leagues} seasons={seasons} identities={identities} onCancel={() => setView("directory")} onError={setError} onCreated={(result) => { setIdentities((items) => [result.identity, ...items]); setSelectedId(result.identity.id); setEditions([result.edition]); setView("identity"); setNotice(`Competition identity “${result.identity.name}” and its first draft edition were created.`); }} /> : null}
       {view === "addSeason" ? selected ? <form className={styles.formCard} onSubmit={createEdition}><h3>Add season to {selected.name}</h3><label>Workspace season<select required value={seasonId} onChange={(event) => setSeasonId(event.target.value)}><option value="">Select season</option>{seasons.filter((season) => season.league === selected.primary_league && !editions.some((edition) => edition.season === season.id)).map((season) => <option key={season.id} value={season.id}>{season.name}</option>)}</select></label><button disabled={working || !canManage}>Create draft edition</button></form> : <EmptyState title="Select a competition" description="Choose an identity before adding a season." /> : null}
     </> : null}
   </section>;

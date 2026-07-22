@@ -1269,6 +1269,88 @@ export interface UnionCompetitionEdition {
   published_by_email: string | null;
   created_at: string;
   updated_at: string;
+  allowed_transitions: string[];
+}
+
+export type UnionCompetitionFormat = {
+  version?: 1;
+  format: "SINGLE_ROUND_ROBIN" | "DOUBLE_ROUND_ROBIN" | "GROUPS_AND_KNOCKOUT" | "STRAIGHT_KNOCKOUT" | "LEAGUE_AND_PLAYOFFS" | "SERIES";
+  number_of_legs?: number;
+  number_of_groups?: number;
+  clubs_per_group?: number;
+  advancing_per_group?: number;
+  home_and_away: boolean;
+  match_duration_minutes: number;
+  points_for_win?: number;
+  points_for_draw?: number;
+  points_for_loss?: number;
+  tie_break_order?: string[];
+  gameweek_structure?: "WEEKLY" | "FORTNIGHTLY" | "TOURNAMENT_DAYS" | "CUSTOM";
+  minimum_clubs: number;
+  maximum_clubs: number;
+  promotion_enabled: boolean;
+  relegation_enabled: boolean;
+  number_promoted: number;
+  number_relegated: number;
+};
+
+export interface UnionCompetitionEligibleAdministrator {
+  id: number;
+  email: string;
+  name: string;
+  workspace_role: string;
+  effective_permissions: string[];
+}
+
+export interface UnionCompetitionAdministrator {
+  id: number;
+  user: number;
+  user_email: string;
+  user_name: string;
+  role: string;
+  is_active: boolean;
+  effective_permissions: string[];
+}
+
+export interface CreateUnionCompetitionWorkflowPayload {
+  workspace: string;
+  identity: {
+    name: string;
+    primary_league: number;
+    sport: string;
+    competition_type: string;
+    description: string;
+    tier?: number;
+    higher_competition?: number;
+    is_active: boolean;
+    default_format: UnionCompetitionFormat;
+    default_eligibility_rules: Record<string, unknown>;
+  };
+  first_edition: {
+    season: number;
+    registration_opens_at?: string;
+    registration_closes_at?: string;
+    entry_fee?: string;
+    currency: string;
+    eligibility_rules?: Record<string, unknown>;
+  };
+  administrators: Array<{ user: number; role: string }>;
+}
+
+export async function getUnionCompetitionEligibleAdministrators(workspaceSlug: string) {
+  const response = await apiClient.get<UnionAdminListResponse<UnionCompetitionEligibleAdministrator>>(
+    `/dashboards/union-admin/competition-administrators/eligible/?workspace=${encodeURIComponent(workspaceSlug)}`,
+  );
+  return response.data.results ?? [];
+}
+
+export async function createUnionCompetitionWorkflow(payload: CreateUnionCompetitionWorkflowPayload) {
+  const response = await apiClient.post<{
+    identity: UnionCompetitionIdentity;
+    edition: UnionCompetitionEdition;
+    administrators: UnionCompetitionAdministrator[];
+  }>("/dashboards/union-admin/competition-create/", payload);
+  return response.data;
 }
 
 export interface CreateUnionCompetitionIdentityPayload {
