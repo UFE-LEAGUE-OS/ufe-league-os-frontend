@@ -1,9 +1,11 @@
+import { useEffect, useState } from 'react';
 import {
   useLocation,
   useNavigate,
 } from 'react-router-dom';
 import {
   FiBarChart2,
+  FiBell,
   FiCreditCard,
   FiFileText,
   FiGrid,
@@ -17,6 +19,7 @@ import {
   FiZap,
 } from 'react-icons/fi';
 import logo from '../assets/logo.png';
+import { getNotificationInbox } from '../services/notificationService';
 import './SponsorSidebar.css';
 
 const sidebarLinks = [
@@ -24,6 +27,11 @@ const sidebarLinks = [
     label: 'Dashboard',
     icon: FiGrid,
     route: '/sponsor/dashboard',
+  },
+  {
+    label: 'Notifications',
+    icon: FiBell,
+    route: '/sponsor/notifications',
   },
   {
     label: 'Profile',
@@ -88,9 +96,30 @@ const bottomLinks = [
 export default function SponsorSidebar() {
   const navigate = useNavigate();
   const location = useLocation();
+  const [unreadCount, setUnreadCount] = useState(0);
 
   const isActive = (route: string) =>
     location.pathname === route;
+
+  useEffect(() => {
+    let active = true;
+
+    getNotificationInbox({
+      category: 'SPONSORSHIP',
+      unreadOnly: true,
+      limit: 1,
+    })
+      .then((response) => {
+        if (active) setUnreadCount(response.unread_count);
+      })
+      .catch(() => {
+        // Non-critical — the nav item still works without a badge.
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [location.pathname]);
 
   return (
     <aside className="sp-sidebar">
@@ -129,6 +158,12 @@ export default function SponsorSidebar() {
                     className="sp-nav-icon"
                   />
                   <span>{link.label}</span>
+                  {link.route === '/sponsor/notifications' &&
+                    unreadCount > 0 && (
+                      <span className="sp-nav-badge">
+                        {unreadCount > 99 ? '99+' : unreadCount}
+                      </span>
+                    )}
                 </button>
               </li>
             );
