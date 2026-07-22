@@ -86,6 +86,15 @@ vi.mock("./UnionNationalTeamsScreen", () => ({
     <div>National Teams panel for {workspaceSlug}</div>
   ),
 }));
+vi.mock("./UnionCompetitionsScreen", () => ({
+  default: ({
+    workspace,
+  }: {
+    workspace: { slug: string };
+  }) => (
+    <div>Competitions panel for {workspace.slug}</div>
+  ),
+}));
 vi.mock("./UnionStatisticsRecordsScreen", () => ({
   default: ({ workspaceSlug }: { workspaceSlug: string }) => (
     <div>Statistics for {workspaceSlug}</div>
@@ -152,7 +161,7 @@ describe("UnionAdminDashboard", () => {
 
     await waitFor(() => expect(serviceMock.getUnionDashboardOverview).toHaveBeenCalledWith("union-a"));
     await userEvent.click(
-      screen.getAllByRole("button", { name: "National Teams" })[0],
+      screen.getAllByRole("button", { name: "Compliance" })[0],
     );
 
     expect(screen.queryByText("Player Pool")).not.toBeInTheDocument();
@@ -168,7 +177,7 @@ describe("UnionAdminDashboard", () => {
 
     await waitFor(() => expect(serviceMock.getUnionDashboardOverview).toHaveBeenCalledWith("union-a"));
     await userEvent.click(
-      screen.getAllByRole("button", { name: "Users & Access" })[0],
+      screen.getAllByRole("button", { name: "User Management" })[0],
     );
 
     expect(await screen.findByText("User directory unavailable.")).toBeInTheDocument();
@@ -212,7 +221,7 @@ describe("UnionAdminDashboard", () => {
     await userEvent.click(
       screen.getAllByRole(
         "button",
-        { name: "Users & Access" },
+        { name: "User Management" },
       )[0],
     );
 
@@ -276,14 +285,14 @@ describe("UnionAdminDashboard", () => {
     );
 
     await userEvent.click(
-      screen.getAllByRole("button", { name: "National Teams" })[0],
+      screen.getAllByRole("button", { name: "Leagues / Competitions" })[0],
     );
     expect(
-      screen.getByText("National Teams panel for union-a"),
+      screen.getByText("Competitions panel for union-a"),
     ).toBeInTheDocument();
 
     await userEvent.click(
-      screen.getAllByRole("button", { name: "Registrations" })[0],
+      screen.getAllByRole("button", { name: "Compliance" })[0],
     );
     expect(
       await screen.findByText("Registrations panel for union-a"),
@@ -311,7 +320,7 @@ describe("UnionAdminDashboard", () => {
     renderDashboard();
     await screen.findByText("Workspace command centre");
     await userEvent.click(
-      screen.getAllByRole("button", { name: "Users & Access" })[0],
+      screen.getAllByRole("button", { name: "User Management" })[0],
     );
 
     expect(await screen.findByText("Workspace users could not be loaded.")).toBeInTheDocument();
@@ -325,7 +334,7 @@ describe("UnionAdminDashboard", () => {
     renderDashboard();
     await screen.findByText("Workspace command centre");
     await userEvent.click(
-      screen.getAllByRole("button", { name: "Users & Access" })[0],
+      screen.getAllByRole("button", { name: "User Management" })[0],
     );
     fireEvent.change(screen.getByLabelText("Email"), { target: { value: "new@example.com" } });
     fireEvent.submit(screen.getByRole("button", { name: "Add user" }).closest("form")!);
@@ -342,7 +351,7 @@ describe("UnionAdminDashboard", () => {
     renderDashboard();
     await screen.findByText("Workspace command centre");
     await userEvent.click(
-      screen.getAllByRole("button", { name: "Users & Access" })[0],
+      screen.getAllByRole("button", { name: "User Management" })[0],
     );
     fireEvent.change(screen.getByLabelText("Email"), { target: { value: "new@example.com" } });
     const form = screen.getByRole("button", { name: "Add user" }).closest("form")!;
