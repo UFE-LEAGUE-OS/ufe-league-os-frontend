@@ -300,9 +300,11 @@
 }
 
 .ct-reach-value {
-  font-size: 22px;
-  font-weight: 800;
+  font-size: 18px;
+  font-weight: 700;
   color: #ffffff;
+  max-width: 360px;
+  line-height: 1.35;
 }
 
 .ct-reach-breakdown {

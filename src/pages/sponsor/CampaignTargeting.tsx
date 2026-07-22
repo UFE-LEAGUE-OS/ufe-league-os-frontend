@@ -88,6 +88,20 @@ export default function CampaignTargeting() {
     }
   };
 
+  const targetingParts = [
+    audience.sports.length > 0 &&
+      `${audience.sports.length} sport${audience.sports.length === 1 ? '' : 's'}`,
+    audience.leagues.length > 0 &&
+      `${audience.leagues.length} league${audience.leagues.length === 1 ? '' : 's'}`,
+    audience.locations.length > 0 &&
+      `${audience.locations.length} location${audience.locations.length === 1 ? '' : 's'}`,
+  ].filter(Boolean);
+
+  const targetingHeadline =
+    targetingParts.length > 0
+      ? targetingParts.join(' · ')
+      : 'Select sports, leagues or locations to build your targeting';
+
   return (
     <div className="ct-page">
       <div className="ct-layout">
@@ -260,27 +274,42 @@ export default function CampaignTargeting() {
               </div>
             </div>
 
-            {/* Estimated Reach */}
+            {/* Targeting Summary */}
             <div className="ct-reach-card">
               <div className="ct-reach-info">
                 <FiUsers size={18} className="ct-reach-icon" />
                 <div>
-                  <div className="ct-reach-label">Estimated Reach</div>
-                  <div className="ct-reach-value">850K – 1.2M fans</div>
+                  <div className="ct-reach-label">Your Targeting Summary</div>
+                  <div className="ct-reach-value">
+                    {targetingHeadline}
+                  </div>
                 </div>
               </div>
               <div className="ct-reach-breakdown">
                 <div className="ct-reach-item">
-                  <span className="ct-reach-item-label">Football fans</span>
-                  <span className="ct-reach-item-val">520K</span>
+                  <span className="ct-reach-item-label">Sports</span>
+                  <span className="ct-reach-item-val">
+                    {audience.sports.length}
+                  </span>
                 </div>
                 <div className="ct-reach-item">
-                  <span className="ct-reach-item-label">Rugby fans</span>
-                  <span className="ct-reach-item-val">330K</span>
+                  <span className="ct-reach-item-label">Leagues</span>
+                  <span className="ct-reach-item-val">
+                    {audience.leagues.length}
+                  </span>
                 </div>
                 <div className="ct-reach-item">
-                  <span className="ct-reach-item-label">Age 18–44</span>
-                  <span className="ct-reach-item-val">78%</span>
+                  <span className="ct-reach-item-label">Locations</span>
+                  <span className="ct-reach-item-val">
+                    {audience.locations.length}
+                  </span>
+                </div>
+                <div className="ct-reach-item">
+                  <span className="ct-reach-item-label">Age &amp; Gender</span>
+                  <span className="ct-reach-item-val">
+                    {audience.ageGroups.length}
+                    {audience.gender ? ` · ${audience.gender}` : ''}
+                  </span>
                 </div>
               </div>
             </div>
