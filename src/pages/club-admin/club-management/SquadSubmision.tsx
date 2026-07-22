@@ -1,10 +1,8 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Check, ChevronRight, ChevronLeft, Send, CheckCircle2 } from "lucide-react";
+import { Check, ChevronLeft, Send, CheckCircle2 } from "lucide-react";
 
 import "../../../styles/pages/club-admin/ClubManagement.css";
-import AdminWorkspaceLayout from "../../../components/AdminWorkspaceLayout/AdminWorkspaceLayout";
-import { clubAdminNavItems } from "./clubAdminNav";
+
 
 interface Player {
   id: number;
@@ -93,8 +91,6 @@ const officialsData: Official[] = [
 ];
 
 const SquadSubmission = () => {
-  const navigate = useNavigate();
-
   const [step, setStep] = useState(1);
   const [competition, setCompetition] = useState(competitions[0]);
   const [fixture, setFixture] = useState(fixturesByCompetition[competitions[0]][0]);
@@ -200,22 +196,7 @@ const SquadSubmission = () => {
   };
 
   return (
-    <AdminWorkspaceLayout
-      workspaceTitle={loggedInClub.name}
-      workspaceSubtitle={`${loggedInClub.sport} Club`}
-      eyebrow="Club Management"
-      title="Squad Sheet Submission"
-      description="Submit an official squad sheet to the union for a fixture."
-      navItems={clubAdminNavItems}
-      activeTab="squad-submission"
-      onTabChange={(key) => {
-        const item = clubAdminNavItems.find((i) => i.key === key);
-        if (item) navigate(item.path);
-      }}
-    >
-
-      
-      <div className="club-page">
+    <div className="club-page">
         <div className="club-header">
           <div>
             <h1> {loggedInClub.name}  </h1>
@@ -397,18 +378,16 @@ const SquadSubmission = () => {
               Previous
             </button>
 
-            <button
+            <button 
               className="primary-btn"
-              disabled={step === 5}
               onClick={handleNext}
+              disabled={!canGoNext()}
             >
               Next
-              <ChevronRight />
             </button>
           </div>
         </div>
       </div>
-    </AdminWorkspaceLayout>
   );
 };
 

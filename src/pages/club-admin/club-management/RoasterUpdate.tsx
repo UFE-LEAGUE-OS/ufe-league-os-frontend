@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeftRight, Search, Save, CheckCircle2 } from "lucide-react";
+import { ArrowLeftRight, Search, Save, CheckCircle2, Shield, UserCog, ClipboardList, Send } from "lucide-react";
 
 import "../../../styles/pages/club-admin/ClubManagement.css";
 
 import AdminWorkspaceLayout from "../../../components/AdminWorkspaceLayout/AdminWorkspaceLayout";
-import { clubAdminNavItems } from "./clubAdminNav";
 
 interface Player {
   id: number;
@@ -85,6 +84,19 @@ const availablePlayersData: Player[] = [
     team: "",
     status: "Active"
   }
+];
+
+const navItems = [
+  {
+    label: "Club Management",
+    items: [
+      { key: "teams", label: "Teams & Squads", icon: Shield, path: "/club-management/teams" },
+      { key: "players", label: "Player Registration", icon: UserCog, path: "/club-management/players" },
+      { key: "staff", label: "Staff & Officials", icon: UserCog, path: "/club-management/staff" },
+      { key: "roster", label: "Roster Update", icon: ClipboardList, path: "/club-management/roster" },
+      { key: "squad-submission", label: "Squad Submission", icon: Send, path: "/club-management/squad-submission" },
+    ],
+  },
 ];
 
 export default function RosterUpdate() {
@@ -173,10 +185,12 @@ export default function RosterUpdate() {
       eyebrow="Club Management"
       title="Roster Update"
       description="Manage club player rosters."
-      navItems={clubAdminNavItems}
+      navItems={navItems}
       activeTab="roster"
-      onTabChange={(key) => {
-        const item = clubAdminNavItems.find((i) => i.key === key);
+      hideAdminSidebar
+      onTabChange={(key: string) => {
+        const allItems = navItems.flatMap((g) => g.items);
+        const item = allItems.find((i) => i.key === key);
         if (item) navigate(item.path);
       }}
     >
