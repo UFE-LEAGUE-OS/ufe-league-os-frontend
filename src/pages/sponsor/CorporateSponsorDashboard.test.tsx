@@ -19,6 +19,7 @@ import {
   type SponsorAgreement,
   type SponsorPackage,
 } from '../../services/sponsorshipService';
+import { getSponsorCampaigns } from '../../services/sponsorCampaignService';
 
 vi.mock(
   '../../components/SponsorSidebar',
@@ -44,6 +45,24 @@ vi.mock(
       ...actual,
       getSponsorAccounts: vi.fn(),
       getSponsorAgreements: vi.fn(),
+    };
+  },
+);
+
+vi.mock(
+  '../../services/sponsorCampaignService',
+  async () => {
+    const actual = await vi.importActual<
+      typeof import(
+        '../../services/sponsorCampaignService'
+      )
+    >(
+      '../../services/sponsorCampaignService',
+    );
+
+    return {
+      ...actual,
+      getSponsorCampaigns: vi.fn(),
     };
   },
 );
@@ -184,11 +203,30 @@ const pendingAgreement = {
   payments: [],
 } as SponsorAgreement;
 
+const activeCampaign = {
+  id: 901,
+  sponsor_account: 12,
+  agreement_id: 44,
+  name: 'Matchday Activation',
+  status: 'ACTIVE',
+} as never;
+
+const draftCampaign = {
+  id: 902,
+  sponsor_account: 12,
+  agreement_id: null,
+  name: 'Untitled Campaign',
+  status: 'DRAFT',
+} as never;
+
 describe(
   'CorporateSponsorDashboard',
   () => {
     beforeEach(() => {
       vi.clearAllMocks();
+      vi.mocked(getSponsorCampaigns).mockResolvedValue({
+        data: { count: 0, results: [] },
+      } as never);
     });
 
     it(
@@ -274,6 +312,81 @@ describe(
             'KOBS Digital Partner',
           ).length,
         ).toBeGreaterThan(0);
+      },
+    );
+
+    it(
+      'shows the active campaign count from real campaign data',
+      async () => {
+        vi.mocked(
+          getSponsorAccounts,
+        ).mockResolvedValue({
+          data: {
+            count: 1,
+            results: [
+              accountFixture,
+            ],
+          },
+        } as never);
+
+        vi.mocked(
+          getSponsorAgreements,
+        ).mockResolvedValue({
+          data: {
+            count: 1,
+            results: [
+              activeAgreement,
+            ],
+          },
+        } as never);
+
+        vi.mocked(
+          getSponsorCampaigns,
+        ).mockResolvedValue({
+          data: {
+            count: 2,
+            results: [
+              activeCampaign,
+              draftCampaign,
+            ],
+          },
+        } as never);
+
+        render(
+          <MemoryRouter>
+            <CorporateSponsorDashboard />
+          </MemoryRouter>,
+        );
+
+        expect(
+          await screen.findByText(
+            'Orbimaps Limited',
+          ),
+        ).toBeInTheDocument();
+
+        await waitFor(() => {
+          expect(
+            getSponsorCampaigns,
+          ).toHaveBeenCalledWith({
+            sponsor_account: 12,
+          });
+        });
+
+        await waitFor(() => {
+          expect(
+            screen.getByText(
+              'Active Campaigns',
+            ).parentElement,
+          ).toHaveTextContent('1');
+        });
+
+        expect(
+          screen.getByText(
+            'Active Campaigns',
+          ).parentElement,
+        ).toHaveTextContent(
+          '2 campaigns total',
+        );
       },
     );
 

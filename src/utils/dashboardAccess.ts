@@ -227,6 +227,7 @@ function isSponsorCapability(pathname: string) {
     matchesPath(pathname, '/sponsor/audit-log') ||
     matchesPath(pathname, '/sponsor/agreements') ||
     matchesPath(pathname, '/sponsor/assets') ||
+    matchesPath(pathname, '/sponsor/notifications') ||
     matchesPath(pathname, '/sponsor/activations') ||
     matchesPath(pathname, '/sponsor/settings') ||
     matchesPath(pathname, '/sponsor/support') ||

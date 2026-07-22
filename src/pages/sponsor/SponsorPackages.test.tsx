@@ -170,6 +170,14 @@ const digitalPackage = {
     '2026-07-14T10:00:00Z',
 } as SponsorPackage;
 
+const hospitalityPackage = {
+  ...digitalPackage,
+  id: 2,
+  name: 'VIP Matchday Suite',
+  objective: 'HOSPITALITY',
+  objective_display: 'Hospitality',
+} as SponsorPackage;
+
 describe('Sponsor marketplace', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -248,6 +256,51 @@ describe('Sponsor marketplace', () => {
       expect(
         screen.queryByText(
           /league os marketplace/i,
+        ),
+      ).not.toBeInTheDocument();
+    },
+  );
+
+  it(
+    'pre-filters by objective from the URL (e.g. linked from the sponsorship hub)',
+    async () => {
+      getPackagesMock.mockResolvedValue(
+        {
+          data: {
+            count: 2,
+            results: [
+              digitalPackage,
+              hospitalityPackage,
+            ],
+          },
+        } as never,
+      );
+
+      render(
+        <MemoryRouter
+          initialEntries={[
+            '/sponsor/packages?objective=HOSPITALITY',
+          ]}
+        >
+          <SponsorPackages />
+        </MemoryRouter>,
+      );
+
+      expect(
+        await screen.findByRole(
+          'heading',
+          {
+            name: /vip matchday suite/i,
+          },
+        ),
+      ).toBeInTheDocument();
+
+      expect(
+        screen.queryByRole(
+          'heading',
+          {
+            name: /digital visibility partner/i,
+          },
         ),
       ).not.toBeInTheDocument();
     },

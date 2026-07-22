@@ -2,6 +2,7 @@ import {
   fireEvent,
   render,
   screen,
+  waitFor,
 } from '@testing-library/react';
 import {
   MemoryRouter,
@@ -14,10 +15,16 @@ import {
   describe,
   expect,
   it,
+  vi,
 } from 'vitest';
 import type { AuthFlowState } from '../../utils/authFlow';
 import { useAuthStore } from '../../store/authStore';
+import { getSponsorPackages } from '../../services/sponsorshipService';
 import SponsorshipHub from './SponsorshipHub';
+
+vi.mock('../../services/sponsorshipService', () => ({
+  getSponsorPackages: vi.fn(),
+}));
 
 function LoginSentinel() {
   const location = useLocation();
@@ -52,6 +59,46 @@ describe('SponsorshipHub', () => {
       requiresEmailVerification: false,
       accessStatus: 'unauthenticated',
     });
+    vi.mocked(getSponsorPackages).mockReset();
+    vi.mocked(getSponsorPackages).mockResolvedValue({
+      data: { count: 0, results: [] },
+    } as never);
+  });
+
+  it('shows a live package count badge once packages load', async () => {
+    vi.mocked(getSponsorPackages).mockResolvedValue({
+      data: {
+        count: 2,
+        results: [
+          { objective: 'VISIBILITY' },
+          { objective: 'VISIBILITY' },
+        ],
+      },
+    } as never);
+
+    renderHub();
+
+    expect(
+      await screen.findByText('2 packages available'),
+    ).toBeInTheDocument();
+  });
+
+  it('still renders the tiles with no count badge if the fetch fails', async () => {
+    vi.mocked(getSponsorPackages).mockRejectedValue(
+      new Error('network error'),
+    );
+
+    renderHub();
+
+    expect(screen.getByText('Visibility')).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(getSponsorPackages).toHaveBeenCalled();
+    });
+
+    expect(
+      screen.queryByText(/packages available/),
+    ).not.toBeInTheDocument();
   });
 
   it('is reachable by logged-out users and shows the public hub content', () => {

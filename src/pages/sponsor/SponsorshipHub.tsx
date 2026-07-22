@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import {
   Navigate,
   useNavigate,
@@ -22,34 +23,48 @@ import { useAuthStore } from '../../store/authStore';
 import { getToken } from '../../utils/tokenManager';
 import { LOGIN_ROUTE, type AuthFlowState } from '../../utils/authFlow';
 import { canAccessDashboardRoute } from '../../utils/dashboardAccess.js';
+import {
+  getSponsorPackages,
+  type SponsorPackageObjective,
+} from '../../services/sponsorshipService';
 import '../../styles/pages/landing.css';
 import './SponsorshipHub.css';
 
-const packageTiers = [
+const packageTiers: {
+  icon: typeof FiEye;
+  title: string;
+  desc: string;
+  objective: SponsorPackageObjective;
+}[] = [
   {
     icon: FiEye,
     title: 'Visibility',
     desc: 'Brand placement across matchday, digital and broadcast touchpoints.',
+    objective: 'VISIBILITY',
   },
   {
     icon: FiUsers,
     title: 'Fan Engagement',
     desc: 'Activations that put your brand directly in front of engaged fans.',
+    objective: 'FAN_ENGAGEMENT',
   },
   {
     icon: FiHome,
     title: 'Hospitality',
     desc: 'VIP access, hospitality suites and matchday experiences.',
+    objective: 'HOSPITALITY',
   },
   {
     icon: FiHeart,
     title: 'Community Impact',
     desc: 'Community-facing sponsorship opportunities that build brand trust.',
+    objective: 'COMMUNITY_IMPACT',
   },
   {
     icon: FiFeather,
     title: 'Grassroots Development',
     desc: 'Support development programmes at the grassroots level.',
+    objective: 'GRASSROOTS',
   },
 ];
 
@@ -96,6 +111,39 @@ export default function SponsorshipHub() {
   const canReachSponsorDashboard =
     isAuthenticated &&
     canAccessDashboardRoute(user?.dashboard_access, '/sponsor/dashboard');
+
+  const [packageCounts, setPackageCounts] = useState<Partial<
+    Record<SponsorPackageObjective, number>
+  > | null>(null);
+
+  useEffect(() => {
+    let active = true;
+
+    getSponsorPackages()
+      .then((response) => {
+        if (!active) return;
+
+        const counts: Partial<
+          Record<SponsorPackageObjective, number>
+        > = {};
+
+        for (const item of response.data.results) {
+          counts[item.objective] = (counts[item.objective] ?? 0) + 1;
+        }
+
+        setPackageCounts(counts);
+      })
+      .catch(() => {
+        // Package counts are a nice-to-have on this public, unauthenticated
+        // page — if the request fails (e.g. anonymous reads aren't
+        // permitted), the tiles just render without a count badge rather
+        // than breaking the page for logged-out visitors.
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   if (canReachSponsorDashboard) {
     return (
@@ -234,11 +282,19 @@ export default function SponsorshipHub() {
           <div className="sh-packages-grid">
             {packageTiers.map((tier) => {
               const Icon = tier.icon;
+              const count =
+                packageCounts?.[tier.objective];
 
               return (
-                <article
+                <button
+                  type="button"
                   key={tier.title}
-                  className="sh-package-card"
+                  className="sh-package-card sh-package-card-clickable"
+                  onClick={() =>
+                    navigate(
+                      `/sponsor/packages?objective=${tier.objective}`,
+                    )
+                  }
                 >
                   <div className="sh-package-icon-wrap">
                     <Icon
@@ -252,7 +308,12 @@ export default function SponsorshipHub() {
                   <div className="sh-package-desc">
                     {tier.desc}
                   </div>
-                </article>
+                  {typeof count === 'number' && (
+                    <div className="sh-package-count">
+                      {count} package{count === 1 ? '' : 's'} available
+                    </div>
+                  )}
+                </button>
               );
             })}
           </div>

@@ -5,6 +5,7 @@ import {
 } from 'react';
 import {
   useNavigate,
+  useSearchParams,
 } from 'react-router-dom';
 import {
   FiAlertCircle,
@@ -88,6 +89,7 @@ function money(
 
 export default function SponsorPackages() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const [packages, setPackages] =
     useState<SponsorPackage[]>([]);
@@ -103,7 +105,18 @@ export default function SponsorPackages() {
   const [objective, setObjective] =
     useState<
       'ALL' | SponsorPackageObjective
-    >('ALL');
+    >(() => {
+      const requested =
+        searchParams.get('objective');
+
+      return objectives.some(
+        (item) => item.value === requested,
+      )
+        ? (requested as
+            | 'ALL'
+            | SponsorPackageObjective)
+        : 'ALL';
+    });
   const [sport, setSport] =
     useState<
       'ALL' | SponsorPackageSport

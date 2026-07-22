@@ -160,6 +160,7 @@ const CampaignAnalytics = lazy(() => import('../pages/sponsor/CampaignAnalytics'
 const SponsorAuditLog = lazy(() => import('../pages/sponsor/SponsorAuditLog'));
 const SponsorAgreementSign = lazy(() => import('../pages/sponsor/SponsorAgreementSign'));
 const SponsorAssetLibrary = lazy(() => import('../pages/sponsor/SponsorAssetLibrary'));
+const SponsorNotifications = lazy(() => import('../pages/sponsor/SponsorNotifications'));
 const CampaignPlacementPreview = lazy(() => import('../pages/sponsor/CampaignPlacementPreview'));
 const CorporateSponsorReview = lazy(() => import('../pages/sponsor/CorporateSponsorReview'));
 const CorporateSponsorComplete = lazy(() => import('../pages/sponsor/CorporateSponsorComplete'));
@@ -591,6 +592,13 @@ export default function AppRoutes() {
                     path="/sponsor/assets"
                     element={dashboardProtectedPage(
                         <SponsorAssetLibrary />,
+                        'SPONSOR',
+                    )}
+                />
+                <Route
+                    path="/sponsor/notifications"
+                    element={dashboardProtectedPage(
+                        <SponsorNotifications />,
                         'SPONSOR',
                     )}
                 />

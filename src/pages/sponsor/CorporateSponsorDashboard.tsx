@@ -20,6 +20,7 @@ import {
   FiShield,
   FiUser,
   FiUsers,
+  FiZap,
 } from 'react-icons/fi';
 import SponsorSidebar from '../../components/SponsorSidebar';
 import {
@@ -28,6 +29,10 @@ import {
   type SponsorAccountResponse,
   type SponsorAgreement,
 } from '../../services/sponsorshipService';
+import {
+  getSponsorCampaigns,
+  type SponsorCampaign,
+} from '../../services/sponsorCampaignService';
 import '../../styles/pages/landing.css';
 import './CorporateSponsorDashboard.css';
 
@@ -51,6 +56,12 @@ const quickActions: QuickAction[] = [
     title: 'Browse Packages',
     desc: 'Discover approved sponsorship opportunities.',
     route: '/sponsor/packages',
+  },
+  {
+    icon: FiZap,
+    title: 'View Campaigns',
+    desc: 'Track the campaigns you have built and their status.',
+    route: '/sponsor/campaigns',
   },
   {
     icon: FiUsers,
@@ -369,6 +380,11 @@ export default function CorporateSponsorDashboard() {
   ] = useState<SponsorAgreement[]>([]);
 
   const [
+    campaigns,
+    setCampaigns,
+  ] = useState<SponsorCampaign[]>([]);
+
+  const [
     accountsLoading,
     setAccountsLoading,
   ] = useState(true);
@@ -376,6 +392,11 @@ export default function CorporateSponsorDashboard() {
   const [
     agreementsLoading,
     setAgreementsLoading,
+  ] = useState(false);
+
+  const [
+    campaignsLoading,
+    setCampaignsLoading,
   ] = useState(false);
 
   const [
@@ -544,6 +565,53 @@ export default function CorporateSponsorDashboard() {
     selectedAccountId,
   ]);
 
+  useEffect(() => {
+    let active = true;
+
+    if (selectedAccountId === null) {
+      setCampaigns([]);
+      setCampaignsLoading(false);
+
+      return () => {
+        active = false;
+      };
+    }
+
+    const loadCampaigns = async () => {
+      setCampaignsLoading(true);
+
+      try {
+        const response = await getSponsorCampaigns({
+          sponsor_account: selectedAccountId,
+        });
+
+        if (active) {
+          setCampaigns(response.data.results);
+        }
+      } catch {
+        // Campaigns are a supplementary stat on this dashboard — if they
+        // fail to load, the stat just reads 0 rather than blocking the
+        // whole page (agreements remain the primary, error-surfaced data).
+        if (active) {
+          setCampaigns([]);
+        }
+      } finally {
+        if (active) {
+          setCampaignsLoading(false);
+        }
+      }
+    };
+
+    void loadCampaigns();
+
+    return () => {
+      active = false;
+    };
+  }, [
+    reloadKey,
+    selectedAccountId,
+  ]);
+
   const selectedAccount =
     useMemo(
       () =>
@@ -597,6 +665,12 @@ export default function CorporateSponsorDashboard() {
     agreements.filter(
       (agreement) =>
         agreement.status === 'ACTIVE',
+    ).length;
+
+  const activeCampaignsCount =
+    campaigns.filter(
+      (campaign) =>
+        campaign.status === 'ACTIVE',
     ).length;
 
   const pendingCount =
@@ -689,6 +763,13 @@ export default function CorporateSponsorDashboard() {
         'Currently active agreements',
     },
     {
+      icon: FiZap,
+      label: 'Active Campaigns',
+      value: String(activeCampaignsCount),
+      change:
+        `${campaigns.length} campaign${campaigns.length === 1 ? '' : 's'} total`,
+    },
+    {
       icon: FiUsers,
       label: 'Pending Actions',
       value: String(pendingCount),
@@ -740,7 +821,7 @@ export default function CorporateSponsorDashboard() {
     accountsLoading ||
     (
       selectedAccountId !== null &&
-      agreementsLoading
+      (agreementsLoading || campaignsLoading)
     );
 
   const error =
