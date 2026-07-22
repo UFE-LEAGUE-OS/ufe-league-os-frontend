@@ -1,13 +1,9 @@
 import {
   BadgeCheck,
   CalendarCheck,
-  CalendarRange,
-  DollarSign,
-  FileCheck2,
-  FileText,
   ShieldCheck,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import type {
   UnionWorkspacePermission,
@@ -21,11 +17,7 @@ import styles from "./UnionMatchOfficialsPanel.module.css";
 type MatchOfficialsView =
   | "overview"
   | "directory"
-  | "appointments"
-  | "availability"
-  | "reports"
-  | "documents"
-  | "allowances";
+  | "appointments";
 
 type Props = {
   workspaceSlug: string;
@@ -60,57 +52,7 @@ const views: ViewDefinition[] = [
     icon: CalendarCheck,
     permissions: ["union.official.appointments.view"],
   },
-  {
-    key: "availability",
-    label: "Availability",
-    icon: CalendarRange,
-    permissions: ["union.official.availability.manage"],
-  },
-  {
-    key: "reports",
-    label: "Match Reports",
-    icon: FileText,
-    permissions: ["union.official.reports.manage"],
-  },
-  {
-    key: "documents",
-    label: "Documents",
-    icon: FileCheck2,
-    permissions: ["union.official.documents.view"],
-  },
-  {
-    key: "allowances",
-    label: "Allowances",
-    icon: DollarSign,
-    permissions: ["union.official.payments.view"],
-  },
 ];
-
-function UnavailableModule({
-  eyebrow,
-  title,
-  description,
-}: {
-  eyebrow: string;
-  title: string;
-  description: string;
-}) {
-  return (
-    <section className={styles.unavailablePanel}>
-      <span>{eyebrow}</span>
-
-      <h2>{title}</h2>
-
-      <p>{description}</p>
-
-      <div className={styles.unavailableNotice}>
-        This screen is included in the approved frontend workflow. Saving and
-        maintained records will be enabled when its Union-scoped backend
-        contract is connected.
-      </div>
-    </section>
-  );
-}
 
 export default function UnionMatchOfficialsPanel({
   workspaceSlug,
@@ -134,6 +76,10 @@ export default function UnionMatchOfficialsPanel({
   const [activeView, setActiveView] =
     useState<MatchOfficialsView>("overview");
 
+  useEffect(() => {
+    setActiveView("overview");
+  }, [workspaceSlug]);
+
   const currentView = availableViews.some(
     (view) => view.key === activeView,
   )
@@ -146,7 +92,7 @@ export default function UnionMatchOfficialsPanel({
         <div>
           <span>Official management</span>
 
-          <h2>Match Officials</h2>
+          <div className={styles.moduleTitle}>Match Officials</div>
 
           <p>
             Register, verify, appoint and monitor{" "}
@@ -163,6 +109,7 @@ export default function UnionMatchOfficialsPanel({
       <nav
         className={styles.tabList}
         aria-label="Match Officials sections"
+        role="tablist"
       >
         {availableViews.map((view) => {
           const Icon = view.icon;
@@ -178,7 +125,8 @@ export default function UnionMatchOfficialsPanel({
               }
               type="button"
               onClick={() => setActiveView(view.key)}
-              aria-current={isActive ? "page" : undefined}
+              role="tab"
+              aria-selected={isActive}
             >
               <Icon
                 size={17}
@@ -223,37 +171,6 @@ export default function UnionMatchOfficialsPanel({
           />
         ) : null}
 
-        {currentView === "availability" ? (
-          <UnavailableModule
-            eyebrow="Official readiness"
-            title="Availability calendar"
-            description="Review available, unavailable, tentative and conflicting dates for registered officials."
-          />
-        ) : null}
-
-        {currentView === "reports" ? (
-          <UnavailableModule
-            eyebrow="Post-match workflow"
-            title="Match reports and incidents"
-            description="Track submitted match reports, incident reports, overdue submissions and review status."
-          />
-        ) : null}
-
-        {currentView === "documents" ? (
-          <UnavailableModule
-            eyebrow="Official compliance"
-            title="Documents and certifications"
-            description="Review certification levels, expiry dates, identity evidence and compliance documents."
-          />
-        ) : null}
-
-        {currentView === "allowances" ? (
-          <UnavailableModule
-            eyebrow="Official finance"
-            title="Allowances and claims"
-            description="Review approved appointment allowances, outstanding claims and payment references."
-          />
-        ) : null}
       </div>
     </div>
   );

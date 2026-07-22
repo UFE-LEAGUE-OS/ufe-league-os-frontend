@@ -5436,3 +5436,16 @@ tr:last-child td {
         background-position: center top !important;
     }
 }
+
+/* Union pages own their title inside the main content card. */
+.sectionHeader h2 {
+    font-size: clamp(2.15rem, 3.4vw, 3.55rem);
+    line-height: 0.94;
+    letter-spacing: -0.052em;
+}
+
+@media (max-width: 700px) {
+    .sectionHeader h2 {
+        font-size: clamp(2rem, 10vw, 2.8rem);
+    }
+}

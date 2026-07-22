@@ -1,0 +1,27 @@
+.screen { display: grid; gap: 18px; min-width: 0; padding: 24px; border: 1px solid rgba(255,255,255,.1); border-radius: 18px; background: rgba(12,21,39,.9); color: #fff; overflow: hidden; }
+.screen button, .screen input, .screen select, .screen textarea { min-height: 44px; font: inherit; }
+.screen button { padding: 10px 14px; border: 1px solid rgba(133,85,245,.95); border-radius: 10px; background: #7b3ff2; color: #fff; font-weight: 800; cursor: pointer; }
+.screen button:focus-visible, .screen input:focus-visible, .screen select:focus-visible, .screen textarea:focus-visible { outline: 3px solid rgba(255,155,76,.65); outline-offset: 2px; }
+.toolbar, .actions { display: flex; align-items: end; flex-wrap: wrap; gap: 12px; }
+.toolbar label, .reviewBox label { display: grid; flex: 1 1 220px; gap: 7px; color: rgba(255,255,255,.72); font-size: .82rem; font-weight: 800; }
+.toolbar input, .toolbar select, .reviewBox textarea { width: 100%; padding: 10px 12px; border: 1px solid rgba(255,255,255,.16); border-radius: 9px; background: rgba(2,6,23,.72); color: #fff; box-sizing: border-box; }
+.notice, .readOnly { padding: 12px 14px; border-left: 4px solid #ff9b4c; border-radius: 8px; background: rgba(255,155,76,.09); color: #ffd4b1; }
+.errorWrap { display: grid; gap: 10px; justify-items: start; }
+.masterDetail { display: grid; grid-template-columns: minmax(260px,.8fr) minmax(0,1.6fr); gap: 18px; align-items: start; min-width: 0; }
+.detail { min-width: 0; padding: 20px; border: 1px solid rgba(255,255,255,.1); border-radius: 14px; background: rgba(17,28,48,.84); overflow-wrap: anywhere; }
+.detailHeading { display: flex; justify-content: space-between; gap: 12px; align-items: start; }
+.detailHeading h3 { margin: 10px 0 18px; font-family: var(--font-heading,"League Spartan"),Inter,sans-serif; font-size: clamp(1.55rem,3vw,2.2rem); font-style: italic; line-height: 1; }
+.detail dl { display: grid; grid-template-columns: minmax(140px,.45fr) minmax(0,1fr); gap: 9px 14px; }
+.detail dt { color: rgba(255,255,255,.56); }
+.detail dd { margin: 0; overflow-wrap: anywhere; }
+.evidence, .reviewBox { margin-top: 18px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,.1); }
+.evidence h4, .validationGroup h4 { margin: 0 0 9px; }
+.evidence p, .evidence ul, .validationGroup ul { color: rgba(255,255,255,.72); }
+.validationGrid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; margin-top: 16px; }
+.validationGroup { padding: 14px; border: 1px solid rgba(255,255,255,.09); border-radius: 10px; background: rgba(255,255,255,.03); }
+.validationGroup ul { display: grid; gap: 8px; margin: 0; padding-left: 18px; }
+.validationGroup li span { display: block; margin-top: 3px; }
+.reviewBox { display: grid; gap: 12px; }
+.danger { border-color: rgba(239,68,68,.65) !important; background: rgba(127,29,29,.9) !important; }
+@media (max-width: 900px) { .masterDetail { grid-template-columns: 1fr; } }
+@media (max-width: 600px) { .screen { padding: 16px; border-radius: 14px; } .toolbar > *, .actions > * { width: 100%; } .detail { padding: 16px; } .detail dl, .validationGrid { grid-template-columns: 1fr; } .detail dt { margin-top: 7px; } .detailHeading { flex-direction: column; } }

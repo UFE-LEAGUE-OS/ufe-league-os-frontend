@@ -58,7 +58,14 @@ vi.mock("../../components/UnionAdminManagementWorkflow/UnionAdminManagementWorkf
 vi.mock("../../components/UnionAdminClubsPanel/UnionAdminClubsPanel", () => ({ default: () => <div /> }));
 vi.mock("../../components/UnionAdminRefereesPanel/UnionAdminRefereesPanel", () => ({ default: () => <div /> }));
 vi.mock("../../components/OfficialAppointmentsPanel/OfficialAppointmentsPanel", () => ({ default: () => <div /> }));
-vi.mock("../../components/LeagueAdminScopesPanel/LeagueAdminScopesPanel", () => ({ default: () => <div /> }));
+vi.mock(
+  "../../components/LeagueAdminScopesPanel/LeagueAdminScopesPanel",
+  () => ({
+    default: () => (
+      <div>Delegated competition operations</div>
+    ),
+  }),
+);
 vi.mock("../../components/union-admin/UnionMatchOfficialsPanel", () => ({
   default: ({ workspaceSlug }: { workspaceSlug: string }) => (
     <div>Match Officials panel for {workspaceSlug}</div>
@@ -68,6 +75,21 @@ vi.mock("../../components/UnionOperationalPanels/UnionOperationalPanels", () => 
   UnionNationalTeamsPanel: ({ workspaceSlug }: { workspaceSlug: string }) => <div>National Teams panel for {workspaceSlug}</div>,
   UnionRegistrationsPanel: ({ workspaceSlug }: { workspaceSlug: string }) => <div>Registrations panel for {workspaceSlug}</div>,
   UnionOfficialReadinessPanel: ({ workspaceSlug }: { workspaceSlug: string }) => <div>Official readiness panel for {workspaceSlug}</div>,
+}));
+vi.mock("./UnionRegistrationsScreen", () => ({
+  default: ({ workspaceSlug }: { workspaceSlug: string }) => (
+    <div>Registrations panel for {workspaceSlug}</div>
+  ),
+}));
+vi.mock("./UnionNationalTeamsScreen", () => ({
+  default: ({ workspaceSlug }: { workspaceSlug: string }) => (
+    <div>National Teams panel for {workspaceSlug}</div>
+  ),
+}));
+vi.mock("./UnionStatisticsRecordsScreen", () => ({
+  default: ({ workspaceSlug }: { workspaceSlug: string }) => (
+    <div>Statistics for {workspaceSlug}</div>
+  ),
 }));
 
 const workspace = {
@@ -151,6 +173,73 @@ describe("UnionAdminDashboard", () => {
 
     expect(await screen.findByText("User directory unavailable.")).toBeInTheDocument();
     expect(screen.queryByText(/workspace overview could not be loaded/i)).not.toBeInTheDocument();
+  });
+
+  it("deduplicates workspace users and keeps one in-card title", async () => {
+    const duplicateUser = {
+      id: 21,
+      user_id: 99,
+      user_email: "duplicate.user@leagueos.test",
+      user_first_name: "Duplicate",
+      user_last_name: "User",
+      user_full_name: "Duplicate User",
+      workspace_slug: "union-a",
+      workspace_acronym: "UA",
+      role: "UNION_ADMIN" as const,
+      role_display: "Union Admin",
+      effective_permissions: [
+        "union.users.manage",
+      ],
+      is_active: true,
+      created_at: "2026-07-22T00:00:00Z",
+      updated_at: "2026-07-22T00:00:00Z",
+    };
+
+    serviceMock.getUnionWorkspaceUsers.mockResolvedValue({
+      count: 2,
+      workspace: "union-a",
+      results: [
+        duplicateUser,
+        { ...duplicateUser, id: 22 },
+      ],
+    });
+
+    renderDashboard();
+    await screen.findByText(
+      "Workspace command centre",
+    );
+
+    await userEvent.click(
+      screen.getAllByRole(
+        "button",
+        { name: "Users & Access" },
+      )[0],
+    );
+
+    expect(
+      await screen.findByRole("heading", {
+        name: "Workspace users and permissions",
+        level: 2,
+      }),
+    ).toBeInTheDocument();
+
+    expect(
+      screen.queryByRole("heading", {
+        name: "Users & Permissions",
+      }),
+    ).not.toBeInTheDocument();
+
+    expect(
+      screen.getAllByText(
+        "duplicate.user@leagueos.test",
+      ),
+    ).toHaveLength(1);
+
+    expect(
+      screen.queryByText(
+        "Delegated competition operations",
+      ),
+    ).not.toBeInTheDocument();
   });
 
   it("does not request finance before the finance tab is selected", async () => {
