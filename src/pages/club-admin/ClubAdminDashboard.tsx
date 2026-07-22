@@ -32,6 +32,8 @@ import {
   Users,
   Wallet,
   X,
+  UserCog,
+  FileCheck,
 } from "lucide-react";
 import {
   type FormEvent,
@@ -110,8 +112,8 @@ import {
   type MatchSalesSummary,
   type TicketTypeApi,
   type TicketTypeStatus,
-} 
-from "../../services/clubTicketingService";
+}
+  from "../../services/clubTicketingService";
 import "./ClubMembershipManagement.css";
 import "../../styles/pages/ClubAdmin.css";
 import ComplianceDocuments from "./ComplianceDocuments";
@@ -137,6 +139,11 @@ type TabKey =
   | "membershipRequests"
   | "membershipReports"
   | "teams"
+  | "teamsManagement"
+  | "playerRegistration"
+  | "staffOfficials"
+  | "rosterUpdate"
+  | "squadSubmission"
   | "matches"
   | "finances"
   | "financeMembershipPayments"
@@ -243,6 +250,44 @@ const navItems: AdminWorkspaceNavGroup<TabKey>[] = [
         ],
         clubPermissionMode: "any",
         clubWorkspaceFamily: "CLUB_ADMIN",
+
+        children: [
+          {
+            key: "teamsManagement",
+            label: "Teams and Squad",
+            icon: Trophy,
+            requiredClubPermissions: ["club.squad.manage"],
+            clubWorkspaceFamily: "CLUB_ADMIN",
+          },
+          {
+            key: "playerRegistration",
+            label: "Player Registration",
+            icon: Users,
+            requiredClubPermissions: ["club.squad.manage"],
+            clubWorkspaceFamily: "CLUB_ADMIN",
+          },
+          {
+            key: "staffOfficials",
+            label: "Staff & Officials",
+            icon: UserCog,
+            requiredClubPermissions: ["club.squad.manage"],
+            clubWorkspaceFamily: "CLUB_ADMIN",
+          },
+          {
+            key: "rosterUpdate",
+            label: "Roster Update",
+            icon: ClipboardList,
+            requiredClubPermissions: ["club.squad.manage"],
+            clubWorkspaceFamily: "CLUB_ADMIN",
+          },
+          {
+            key: "squadSubmission",
+            label: "Squad Submission",
+            icon: FileCheck,
+            requiredClubPermissions: ["club.squad.manage"],
+            clubWorkspaceFamily: "CLUB_ADMIN",
+          },
+        ],
       },
       {
         key: "matches",
@@ -531,31 +576,31 @@ const navItems: AdminWorkspaceNavGroup<TabKey>[] = [
                 requiredClubPermissions: [],
                 clubWorkspaceFamily: "CLUB_ADMIN",
               },
+              {
+                key: "announcementsPublish",
+                label: "Publish",
+                icon: Send,
+                requiredClubPermissions: [],
+                clubWorkspaceFamily: "CLUB_ADMIN",
+              },
+            ],
+          },
           {
-            key: "announcementsPublish",
-            label: "Publish",
-            icon: Send,
+            key: "noticesCirculars",
+            label: "Notices & Circulars",
+            icon: FileText,
+            requiredClubPermissions: [],
+            clubWorkspaceFamily: "CLUB_ADMIN",
+          },
+          {
+            key: "communicationHistoryLog",
+            label: "Communication History Log",
+            icon: MessageSquare,
             requiredClubPermissions: [],
             clubWorkspaceFamily: "CLUB_ADMIN",
           },
         ],
       },
-      {
-        key: "noticesCirculars",
-        label: "Notices & Circulars",
-        icon: FileText,
-        requiredClubPermissions: [],
-        clubWorkspaceFamily: "CLUB_ADMIN",
-      },
-      {
-        key: "communicationHistoryLog",
-        label: "Communication History Log",
-        icon: MessageSquare,
-        requiredClubPermissions: [],
-        clubWorkspaceFamily: "CLUB_ADMIN",
-      },
-    ],
-  },
     ],
   },
   {
@@ -597,6 +642,11 @@ const TAB_TO_PATH: Record<TabKey, string> = {
   membershipRequests: `${CLUB_ADMIN_BASE_PATH}/membership/requests`,
   membershipReports: `${CLUB_ADMIN_BASE_PATH}/membership/reports`,
   teams: `${CLUB_ADMIN_BASE_PATH}/teams`,
+  teamsManagement: `${CLUB_ADMIN_BASE_PATH}/teams`,
+  playerRegistration: `${CLUB_ADMIN_BASE_PATH}/players`,
+  staffOfficials: `${CLUB_ADMIN_BASE_PATH}/staff`,
+  rosterUpdate: `${CLUB_ADMIN_BASE_PATH}/roster`,
+  squadSubmission: `${CLUB_ADMIN_BASE_PATH}/squad-submission`,
   matches: `${CLUB_ADMIN_BASE_PATH}/matches`,
   finances: `${CLUB_ADMIN_BASE_PATH}/finances`,
   financeMembershipPayments: `${CLUB_ADMIN_BASE_PATH}/finances/membership-payments`,
@@ -676,6 +726,11 @@ const TAB_TO_MODULE: Record<TabKey, ClubWorkspaceTab> = {
   membershipRequests: "membership",
   membershipReports: "membership",
   teams: "teams",
+  teamsManagement: "teams",
+  playerRegistration: "teams",
+  staffOfficials: "teams",
+  rosterUpdate: "teams",
+  squadSubmission: "teams",
   matches: "matches",
   finances: "finances",
   financeMembershipPayments: "finances",
@@ -1010,8 +1065,8 @@ export default function ClubAdminDashboard() {
     : null;
   const activeTab =
     activeWorkspace &&
-    routeTab &&
-    isWorkspaceTabPermitted(routeTab, activeWorkspace)
+      routeTab &&
+      isWorkspaceTabPermitted(routeTab, activeWorkspace)
       ? routeTab
       : (defaultWorkspaceTab ?? "overview");
   const [data, setData] =
@@ -1344,11 +1399,11 @@ export default function ClubAdminDashboard() {
       setGateConfigForm(
         config
           ? {
-              gate_name: config.gate_name,
-              capacity: config.capacity !== null ? String(config.capacity) : "",
-              notes: config.notes,
-              is_ticketing_enabled: config.is_ticketing_enabled,
-            }
+            gate_name: config.gate_name,
+            capacity: config.capacity !== null ? String(config.capacity) : "",
+            notes: config.notes,
+            is_ticketing_enabled: config.is_ticketing_enabled,
+          }
           : emptyGateConfigForm,
       );
     } catch {
@@ -1469,8 +1524,8 @@ export default function ClubAdminDashboard() {
         const existing = prev[selectedMatchId] ?? [];
         const next = editingTicketTypeId
           ? existing.map((ticketType) =>
-              ticketType.id === saved.id ? saved : ticketType,
-            )
+            ticketType.id === saved.id ? saved : ticketType,
+          )
           : [...existing, saved];
 
         return { ...prev, [selectedMatchId]: next };
@@ -3385,15 +3440,15 @@ export default function ClubAdminDashboard() {
     } catch (validationFailure) {
       const responseData =
         typeof validationFailure === "object" &&
-        validationFailure !== null &&
-        "response" in validationFailure
+          validationFailure !== null &&
+          "response" in validationFailure
           ? (
-              validationFailure as {
-                response?: {
-                  data?: TicketValidationResult;
-                };
-              }
-            ).response?.data
+            validationFailure as {
+              response?: {
+                data?: TicketValidationResult;
+              };
+            }
+          ).response?.data
           : undefined;
 
       if (responseData?.result) {
@@ -3494,11 +3549,10 @@ export default function ClubAdminDashboard() {
 
         {validationResult ? (
           <div
-            className={`${styles.validationCard} ${
-              validationResult.result === "VALID"
-                ? styles.validationSuccess
-                : styles.validationFailure
-            }`}
+            className={`${styles.validationCard} ${validationResult.result === "VALID"
+              ? styles.validationSuccess
+              : styles.validationFailure
+              }`}
           >
             <WorkspaceStatus
               value={validationResult.result}
@@ -3676,27 +3730,27 @@ export default function ClubAdminDashboard() {
               ),
             )
             .map((section) => {
-            const Icon = section.icon;
+              const Icon = section.icon;
 
-            return (
-              <button
-                type="button"
-                key={section.key}
-                className="club-panel"
-                style={{
-                  textAlign: "left",
-                  cursor: "pointer",
-                  width: "100%",
-                }}
-                onClick={() => handleTabChange(section.key)}
-              >
-                <Icon size={22} aria-hidden="true" />
-                <h2 style={{ marginTop: 12 }}>{section.title}</h2>
-                <p className="panel-desc" style={{ marginBottom: 0 }}>
-                  {section.description}
-                </p>
-              </button>
-            );
+              return (
+                <button
+                  type="button"
+                  key={section.key}
+                  className="club-panel"
+                  style={{
+                    textAlign: "left",
+                    cursor: "pointer",
+                    width: "100%",
+                  }}
+                  onClick={() => handleTabChange(section.key)}
+                >
+                  <Icon size={22} aria-hidden="true" />
+                  <h2 style={{ marginTop: 12 }}>{section.title}</h2>
+                  <p className="panel-desc" style={{ marginBottom: 0 }}>
+                    {section.description}
+                  </p>
+                </button>
+              );
             })}
         </div>
       </WorkspacePanel>

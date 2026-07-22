@@ -7,6 +7,7 @@ import {
   type SponsorCampaignAssetWithCampaign,
 } from '../../../services/sponsorCampaignService';
 
+
 type StatusFilter = 'ALL' | SponsorCampaignAssetApprovalStatus;
 
 export default function ApprovalWorkflow() {
@@ -75,6 +76,7 @@ export default function ApprovalWorkflow() {
         asset.file_name.toLowerCase().includes(normalizedSearch) ||
         asset.campaign_name.toLowerCase().includes(normalizedSearch) ||
         asset.sponsor_account_name.toLowerCase().includes(normalizedSearch);
+
 
       return matchesStatus && matchesSearch;
     });

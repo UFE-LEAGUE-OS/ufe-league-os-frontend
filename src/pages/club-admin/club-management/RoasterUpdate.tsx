@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeftRight, Search, Save, CheckCircle2 } from "lucide-react";
+import { ArrowLeftRight, Search, Save, CheckCircle2, Shield, UserCog, ClipboardList, Send } from "lucide-react";
 
 import "../../../styles/pages/club-admin/ClubManagement.css";
 
 import AdminWorkspaceLayout from "../../../components/AdminWorkspaceLayout/AdminWorkspaceLayout";
-import { clubAdminNavItems } from "./clubAdminNav";
 
 interface Player {
   id: number;
@@ -13,19 +12,91 @@ interface Player {
   name: string;
   position: string;
   team: string;
+  jerseyNumber?: number;
+  status: "Active" | "Injured" | "Suspended" | "Loaned";
 }
-
 const currentPlayersData: Player[] = [
-  { id: 1, clubId: 1, name: "John Okello", position: "Midfielder", team: "Senior Men" },
-  { id: 2, clubId: 1, name: "Brian Kato", position: "Defender", team: "Senior Men" },
-  { id: 3, clubId: 1, name: "Musa Ali", position: "Forward", team: "Senior Men" },
-  { id: 4, clubId: 1, name: "David Peter", position: "Goalkeeper", team: "Senior Men" },
+  {
+    id: 1,
+    clubId: 1,
+    name: "John Okello",
+    position: "Midfielder",
+    team: "Senior Men",
+    jerseyNumber: 10,
+    status: "Active",
+  },
+
+  {
+    id: 2,
+    clubId: 1,
+    name: "Brian Kato",
+    position: "Defender",
+    team: "Senior Men",
+    jerseyNumber: 5,
+    status: "Active",
+  },
+
+  {
+    id: 3,
+    clubId: 1,
+    name: "Musa Ali",
+    position: "Forward",
+    team: "Senior Men",
+    jerseyNumber: 9,
+    status: "Injured",
+  },
+
+  {
+    id: 4,
+    clubId: 1,
+    name: "David Peter",
+    position: "Goalkeeper",
+    team: "Senior Men",
+    jerseyNumber: 1,
+    status: "Active",
+  },
 ];
 
 const availablePlayersData: Player[] = [
-  { id: 5, clubId: 1, name: "Samuel Ivan", position: "Midfielder", team: "" },
-  { id: 6, clubId: 1, name: "Isaac James", position: "Forward", team: "" },
-  { id: 7, clubId: 1, name: "Daniel Mark", position: "Defender", team: "" },
+  {
+    id: 5,
+    clubId: 1,
+    name: "Samuel Ivan",
+    position: "Midfielder",
+    team: "",
+    status: "Active"
+  },
+
+  {
+    id: 6,
+    clubId: 1,
+    name: "Isaac James",
+    position: "Forward",
+    team: "",
+    status: "Active"
+  },
+
+  {
+    id: 7,
+    clubId: 1,
+    name: "Daniel Mark",
+    position: "Defender",
+    team: "",
+    status: "Active"
+  }
+];
+
+const navItems = [
+  {
+    label: "Club Management",
+    items: [
+      { key: "teams", label: "Teams & Squads", icon: Shield, path: "/club-management/teams" },
+      { key: "players", label: "Player Registration", icon: UserCog, path: "/club-management/players" },
+      { key: "staff", label: "Staff & Officials", icon: UserCog, path: "/club-management/staff" },
+      { key: "roster", label: "Roster Update", icon: ClipboardList, path: "/club-management/roster" },
+      { key: "squad-submission", label: "Squad Submission", icon: Send, path: "/club-management/squad-submission" },
+    ],
+  },
 ];
 
 export default function RosterUpdate() {
@@ -44,13 +115,29 @@ export default function RosterUpdate() {
   const [availablePlayers, setAvailablePlayers] = useState<Player[]>(availablePlayersData);
 
   const [search, setSearch] = useState("");
+  const [position, setPosition] = useState("All");
   const [savedMessage, setSavedMessage] = useState<string | null>(null);
   const [dirty, setDirty] = useState(false);
 
   const addPlayer = (player: Player) => {
-    setCurrentPlayers([...currentPlayers, { ...player, team }]);
-    setAvailablePlayers(availablePlayers.filter((item) => item.id !== player.id));
+
+    setCurrentPlayers([
+      ...currentPlayers,
+      {
+        ...player,
+        team,
+        status: "Active"
+      }
+    ]);
+
+    setAvailablePlayers(
+      availablePlayers.filter(
+        item => item.id !== player.id
+      )
+    );
+
     setDirty(true);
+
   };
 
   const removePlayer = (player: Player) => {
@@ -60,9 +147,35 @@ export default function RosterUpdate() {
   };
 
   const saveRoster = () => {
-    setSavedMessage(`Roster for ${team} - ${squad} saved with ${currentPlayers.length} players.`);
+
+    const maxPlayers =
+      loggedInClub.sport === "Football"
+        ? 30
+        : loggedInClub.sport === "Basketball"
+          ? 15
+          : 35;
+
+
+    if (currentPlayers.length > maxPlayers) {
+      setSavedMessage(
+        `Maximum squad size for ${loggedInClub.sport} is ${maxPlayers}`
+      );
+
+      return;
+    }
+
+
+    setSavedMessage(
+      `Roster for ${team} - ${squad} saved with ${currentPlayers.length} players.`
+    );
+
     setDirty(false);
-    setTimeout(() => setSavedMessage(null), 3000);
+
+
+    setTimeout(() => {
+      setSavedMessage(null);
+    }, 3000);
+
   };
 
   return (
@@ -72,14 +185,19 @@ export default function RosterUpdate() {
       eyebrow="Club Management"
       title="Roster Update"
       description="Manage club player rosters."
-      navItems={clubAdminNavItems}
+      navItems={navItems}
       activeTab="roster"
-      onTabChange={(key) => {
-        const item = clubAdminNavItems.find((i) => i.key === key);
+      hideAdminSidebar
+      onTabChange={(key: string) => {
+        const allItems = navItems.flatMap((g) => g.items);
+        const item = allItems.find((i) => i.key === key);
         if (item) navigate(item.path);
       }}
     >
+      
       <div className="club-page">
+        
+
         <div className="club-header">
           <div>
             <h1>   {loggedInClub.name}</h1>
@@ -87,11 +205,25 @@ export default function RosterUpdate() {
               {loggedInClub.sport}
             </p>
           </div>
+          <div className="button-group">
+            <button
+            className="secondary-btn"
+            disabled={dirty}
+            onClick={() => setSavedMessage(
+              "Squad submitted for league approval"
+            )}
+          >
+            Submit Squad
+          </button>
 
           <button className="primary-btn" onClick={saveRoster} disabled={!dirty}>
             <Save size={18} />
             Save Roster
           </button>
+          </div>
+          
+
+          
 
         </div>
 
@@ -103,28 +235,63 @@ export default function RosterUpdate() {
         )}
 
         <div className="club-toolbar">
-          <select value={team} onChange={(e) => setTeam(e.target.value)}>
+
+    <div className="toolbar-group">
+        <label>Team</label>
+
+        <select 
+            value={team} 
+            onChange={(e) => setTeam(e.target.value)}
+        >
             <option>Senior Men</option>
             <option>Senior Women</option>
             <option>U20 Boys</option>
             <option>U17 Boys</option>
-          </select>
+        </select>
+    </div>
 
-          <select value={squad} onChange={(e) => setSquad(e.target.value)}>
+
+    <div className="toolbar-group">
+        <label>Squad Type</label>
+
+        <select 
+            value={squad} 
+            onChange={(e) => setSquad(e.target.value)}
+        >
             <option>League Squad</option>
             <option>Reserve Squad</option>
             <option>Youth Squad</option>
-          </select>
+        </select>
+    </div>
 
-          <div className="search-box">
-            <Search size={18} />
-            <input
-              placeholder="Search players..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-        </div>
+
+    <div className="toolbar-group">
+        <label>Position</label>
+
+        <select
+            value={position}
+            onChange={(e) => setPosition(e.target.value)}
+        >
+            <option>All</option>
+            <option>Goalkeeper</option>
+            <option>Defender</option>
+            <option>Midfielder</option>
+            <option>Forward</option>
+        </select>
+    </div>
+
+
+    <div className="search-box">
+        <Search size={18} />
+
+        <input
+            placeholder="Search players..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+        />
+    </div>
+
+</div>
 
         <div className="roster-container">
           <div className="roster-card">
@@ -138,13 +305,26 @@ export default function RosterUpdate() {
                 .filter(
                   (player) =>
                     player.clubId === loggedInClub.id &&
-                    player.name.toLowerCase().includes(search.toLowerCase())
+                    player.name
+                      .toLowerCase()
+                      .includes(search.toLowerCase())
+                    &&
+                    (position === "All" || player.position === position)
                 )
                 .map((player) => (
                   <div className="player-item" key={player.id}>
                     <div>
-                      <strong>{player.name}</strong>
-                      <span>{player.position}</span>
+                      <strong>
+                        {player.jerseyNumber} {player.name}
+                      </strong>
+
+                      <span>
+                        {player.position}
+                      </span>
+
+                      <span>
+                        Status: {player.status}
+                      </span>
                     </div>
 
                     <button className="remove-btn" onClick={() => removePlayer(player)}>
@@ -176,8 +356,17 @@ export default function RosterUpdate() {
                 .map((player) => (
                   <div className="player-item" key={player.id}>
                     <div>
-                      <strong>{player.name}</strong>
-                      <span>{player.position}</span>
+                      <strong>
+                        {player.jerseyNumber} {player.name}
+                      </strong>
+
+                      <span>
+                        {player.position}
+                      </span>
+
+                      <span>
+                        Status: {player.status}
+                      </span>
                     </div>
 
                     <button className="add-btn" onClick={() => addPlayer(player)}>

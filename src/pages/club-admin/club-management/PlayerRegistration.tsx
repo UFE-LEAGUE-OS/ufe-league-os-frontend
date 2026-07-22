@@ -1,10 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Search, Pencil, Trash2, ArrowRightLeft, X } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, ArrowRightLeft, X, Eye, Shield, UserCog, ClipboardList, Send } from "lucide-react";
 
 import "../../../styles/pages/club-admin/ClubManagement.css";
 import AdminWorkspaceLayout from "../../../components/AdminWorkspaceLayout/AdminWorkspaceLayout";
-import { clubAdminNavItems } from "./clubAdminNav";
 
 interface Player {
   id: number;
@@ -33,11 +32,26 @@ const emptyForm = {
 
 const emptyTransferForm = { playerName: "", transferTo: "", reason: "" };
 
+const navItems = [
+  {
+    label: "Club Management",
+    items: [
+      { key: "teams", label: "Teams & Squads", icon: Shield, path: "/club-management/teams" },
+      { key: "players", label: "Player Registration", icon: UserCog, path: "/club-management/players" },
+      { key: "staff", label: "Staff & Officials", icon: UserCog, path: "/club-management/staff" },
+      { key: "roster", label: "Roster Update", icon: ClipboardList, path: "/club-management/roster" },
+      { key: "squad-submission", label: "Squad Submission", icon: Send, path: "/club-management/squad-submission" },
+    ],
+  },
+];
+
 const PlayerRegistration = () => {
   const navigate = useNavigate();
 
   const [players, setPlayers] = useState<Player[]>(playersData);
-  const [search, setSearch] = useState("");
+const [showProfile, setShowProfile] = useState(false);
+const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
+const [search, setSearch] = useState("");
 
   // This will come from authentication later
   const loggedInClub = {
@@ -88,13 +102,13 @@ const PlayerRegistration = () => {
         players.map((p) =>
           p.id === editingId
             ? {
-                ...p,
-                name: form.name,
-                team: form.team,
-                position: form.position,
-                jersey: form.jersey,
-                status: form.status,
-              }
+              ...p,
+              name: form.name,
+              team: form.team,
+              position: form.position,
+              jersey: form.jersey,
+              status: form.status,
+            }
             : p
         )
       );
@@ -124,6 +138,11 @@ const PlayerRegistration = () => {
     setShowTransfer(true);
   };
 
+  const openProfile = (player: Player) => {
+    setSelectedPlayer(player);
+    setShowProfile(true);
+  };
+
   const confirmTransfer = () => {
     if (!transferringPlayer || !transferForm.transferTo.trim()) return;
     setPlayers(players.filter((p) => p.id !== transferringPlayer.id));
@@ -138,10 +157,12 @@ const PlayerRegistration = () => {
       eyebrow="Club Management"
       title="Player Registration"
       description="Register, edit and transfer players for your club."
-      navItems={clubAdminNavItems}
-      activeTab="teams"
-      onTabChange={(key) => {
-        const item = clubAdminNavItems.find((i) => i.key === key);
+      navItems={navItems}
+      activeTab="players"
+      hideAdminSidebar
+      onTabChange={(key: string) => {
+        const allItems = navItems.flatMap((g) => g.items);
+        const item = allItems.find((i) => i.key === key);
         if (item) navigate(item.path);
       }}
     >
@@ -208,6 +229,12 @@ const PlayerRegistration = () => {
                     </td>
                     <td>
                       <div className="action-buttons">
+                        <button
+                          title="View Profile"
+                          onClick={() => openProfile(player)}
+                        >
+                          <Eye size={16} />
+                        </button>
                         <button title="Edit" onClick={() => openEdit(player)}>
                           <Pencil size={16} />
                         </button>
@@ -230,7 +257,7 @@ const PlayerRegistration = () => {
           <div className="modal-overlay">
             <div className="club-modal">
               <div className="modal-header">
-                <h2>{editingId ? "Edit Player" : "Register Player"}</h2>
+                <h4>{editingId ? "Edit Player" : "Register Player"}</h4>
                 <button onClick={() => setShowForm(false)}>
                   <X />
                 </button>
@@ -288,11 +315,85 @@ const PlayerRegistration = () => {
           </div>
         )}
 
+
+        {showProfile && selectedPlayer && (
+  <div className="modal-overlay">
+
+    <div className="club-modal">
+
+      <div className="modal-header">
+        <h4>Player Profile</h4>
+
+        <button onClick={() => setShowProfile(false)}>
+          <X />
+        </button>
+      </div>
+
+
+      <div className="player-profile">
+
+        <div className="player-avatar-large">
+          {selectedPlayer.name.charAt(0)}
+        </div>
+
+
+        <h2>
+          {selectedPlayer.name}
+        </h2>
+
+
+        <p>
+          {selectedPlayer.position}
+        </p>
+
+
+        <div className="profile-details">
+
+          <div>
+            <strong>Club</strong>
+            <span>
+              {loggedInClub.name}
+            </span>
+          </div>
+
+
+          <div>
+            <strong>Team</strong>
+            <span>
+              {selectedPlayer.team}
+            </span>
+          </div>
+
+
+          <div>
+            <strong>Jersey Number</strong>
+            <span>
+              #{selectedPlayer.jersey}
+            </span>
+          </div>
+
+
+          <div>
+            <strong>Status</strong>
+            <span>
+              {selectedPlayer.status}
+            </span>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+)}
+
         {showTransfer && transferringPlayer && (
           <div className="modal-overlay">
             <div className="club-modal">
               <div className="modal-header">
-                <h2>Transfer Player</h2>
+                <h4>Transfer Player</h4>
                 <button onClick={() => setShowTransfer(false)}>
                   <X />
                 </button>

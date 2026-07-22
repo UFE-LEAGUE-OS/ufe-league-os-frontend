@@ -33,7 +33,11 @@ margin-bottom:20px;
 }
 
 
-
+.form-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
 .primary-btn{
 
 background:#8135FA;
@@ -322,14 +326,12 @@ padding:10px;
 
 .table-toolbar {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
+    align-items: flex-end;
+    gap: 30px;
     padding: 18px 20px;
     border-bottom: 1px solid var(--border-soft);
     flex-wrap: wrap;
 }
-
 .search-field {
     display: flex;
     align-items: center;
@@ -357,33 +359,36 @@ padding:10px;
     color: var(--text-muted);
 }
 
+
 .filter-pills {
     display: flex;
     gap: 6px;
     flex-wrap: wrap;
 }
 
-.filter-pill {
-    border: 1px solid var(--border-soft);
-    background: var(--bg-elevated);
-    color: var(--text-secondary);
-    font-size: 12.5px;
-    font-weight: 500;
-    padding: 7px 14px;
-    border-radius: 999px;
-    cursor: pointer;
-    transition: all 0.15s ease;
-}
 
-.filter-pill:hover {
-    color: var(--text-primary);
-    border-color: var(--accent-dim);
-}
 
-.filter-pill.is-active {
+.filter-select.is-active {
     background: #23234B;
     border-color: var(--accent);
     color: var(--accent-bright);
+}
+
+.filter-select select {
+    background: var(--bg-elevated);
+    color: rgb(255, 255, 255);
+    border: 1px solid rgba(255, 255, 255, 0.26);
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 14px;
+    min-width: 60px;
+    cursor: pointer;
+    
+}
+
+.filter-select select:focus {
+    outline: none;
+    border-color: #2563eb;
 }
 
 /* ---------- Table ---------- */
@@ -517,6 +522,36 @@ tbody td {
     color: var(--danger);
 }
 .badge--expired .badge-dot { background: var(--danger); }
+
+.badge--pending {
+    background: var(--warning-bg);
+    color: var(--warning);
+}
+
+.badge--pending .badge-dot {
+    background: var(--warning);
+}
+
+
+.badge--approved {
+    background: var(--success-bg);
+    color: var(--success);
+}
+
+.badge--approved .badge-dot {
+    background: var(--success);
+}
+
+
+.badge--rejected {
+    background: var(--danger-bg);
+    color: var(--danger);
+}
+
+.badge--rejected .badge-dot {
+    background: var(--danger);
+}
+
 
 /* ---------- Edit button ---------- */
 
@@ -852,6 +887,14 @@ tbody td {
     font-size: 16px;
     font-weight: 650;
     color: var(--text-primary);
+}
+/* Placement actions */
+
+.table-card .actions-cell {
+    display:flex;
+    gap:8px;
+    justify-content:flex-end;
+    align-items:center;
 }
 
 /* ---------- Sport tag & target cell ---------- */
@@ -1849,4 +1892,244 @@ tbody td {
     .form-field--full {
         grid-column: auto;
     }
+}
+
+/*visibility*/
+.campaign-visibility-page .toolbar-filters {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex-wrap: wrap;
+}
+
+.campaign-visibility-page .filter-select {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.campaign-visibility-page .filter-select label {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.8);
+    white-space: nowrap;
+}
+
+.campaign-visibility-page .filter-select select {
+    width: 170px;
+}
+.campaign-visibility-page .actions-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+ 
+.delete-btn {
+    background: transparent;
+    border: 1px solid rgba(255,80,80,0.35);
+    color: #ff7b7b;
+    font-size: 12.5px;
+    font-weight: 600;
+    padding: 7px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.delete-btn:hover {
+    background: rgba(255,80,80,0.12);
+}
+.toolbar-filters {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex-wrap: nowrap;
+}
+
+.filter-select {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+}
+
+.filter-select label {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.filter-select select {
+    height: 38px;
+}
+
+/*popu reject*/
+/* Action buttons container */
+.action-buttons {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+
+/* View button */
+.view {
+    background: transparent;
+    color: #60a5fa;
+    border: 1px solid #2563eb;
+    padding: 7px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.view:hover {
+    background: #2563eb;
+    color: white;
+}
+
+
+/* Approve button */
+.approve {
+    background: #16a34a;
+    color: white;
+    border: none;
+    padding: 7px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.approve:hover {
+    background: #15803d;
+}
+
+
+/* Reject button */
+.reject {
+    background: #dc2626;
+    color: white;
+    border: none;
+    padding: 7px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.reject:hover {
+    background: #b91c1c;
+}
+
+
+/* Modal background */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(2, 8, 23, 0.75);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+
+/* Modal box */
+.modal {
+    width: 420px;
+    background: #0f172a;
+    border: 1px solid #1e3a8a;
+    border-radius: 14px;
+    padding: 24px;
+    color: white;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.35);
+}
+
+
+/* Modal heading */
+.modal h3,
+.modal h4 {
+    margin: 0 0 20px;
+    color: #f8fafc;
+    font-size: 18px;
+}
+
+
+/* Campaign details */
+.modal p {
+    margin: 12px 0;
+    color: #cbd5e1;
+    font-size: 14px;
+}
+
+.modal strong {
+    color: white;
+}
+
+
+/* Reject textarea */
+.modal textarea {
+    width: 100%;
+    min-height: 100px;
+    margin: 15px 0;
+    padding: 12px;
+    resize: none;
+    border-radius: 8px;
+    border: 1px solid #334155;
+    background: #020617;
+    color: white;
+    outline: none;
+}
+
+.modal textarea:focus {
+    border-color: #2563eb;
+}
+
+
+/* Modal buttons */
+.modal-actions,
+.modal > div:last-child {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+
+/* Close / Cancel button */
+.secondary-btn {
+    background: #1e293b;
+    color: #cbd5e1;
+    border: 1px solid #334155;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.secondary-btn:hover {
+    background: #334155;
+}
+
+
+/* Confirm reject button */
+.reject-confirm-btn {
+    background: #dc2626;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.reject-confirm-btn:hover {
+    background: #b91c1c;
 }

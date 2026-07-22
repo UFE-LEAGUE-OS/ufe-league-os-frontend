@@ -10,11 +10,13 @@ import {
   Pencil,
   Trash2,
   X,
+  UserCog,
+  ClipboardList,
+  Send,
 } from "lucide-react";
 
 import "../../../styles/pages/club-admin/ClubManagement.css";
 import AdminWorkspaceLayout from "../../../components/AdminWorkspaceLayout/AdminWorkspaceLayout";
-import { clubAdminNavItems } from "./clubAdminNav";
 
 interface Team {
   id: number;
@@ -117,6 +119,19 @@ const emptyTeamForm = {
 };
 
 const emptySquadForm = { name: "", players: 0 };
+
+const navItems = [
+  {
+    label: "Club Management",
+    items: [
+      { key: "teams", label: "Teams & Squads", icon: Shield, path: "/club-management/teams" },
+      { key: "players", label: "Player Registration", icon: UserCog, path: "/club-management/players" },
+      { key: "staff", label: "Staff & Officials", icon: UserCog, path: "/club-management/staff" },
+      { key: "roster", label: "Roster Update", icon: ClipboardList, path: "/club-management/roster" },
+      { key: "squad-submission", label: "Squad Submission", icon: Send, path: "/club-management/squad-submission" },
+    ],
+  },
+];
 
 const TeamsManagement = () => {
   const navigate = useNavigate();
@@ -238,10 +253,12 @@ const TeamsManagement = () => {
       eyebrow="Club Management"
       title="Teams & Squads"
       description="Manage your club's teams, categories and squads."
-      navItems={clubAdminNavItems}
+      navItems={navItems}
       activeTab="teams"
-      onTabChange={(key) => {
-        const item = clubAdminNavItems.find((i) => i.key === key);
+      hideAdminSidebar
+      onTabChange={(key: string) => {
+        const allItems = navItems.flatMap((g) => g.items);
+        const item = allItems.find((i) => i.key === key);
         if (item) navigate(item.path);
       }}
     >

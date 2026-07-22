@@ -1,18 +1,16 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Check, ChevronRight, ChevronLeft, Send, CheckCircle2 } from "lucide-react";
+import { Check, ChevronLeft, Send, CheckCircle2 } from "lucide-react";
 
 import "../../../styles/pages/club-admin/ClubManagement.css";
-import AdminWorkspaceLayout from "../../../components/AdminWorkspaceLayout/AdminWorkspaceLayout";
-import { clubAdminNavItems } from "./clubAdminNav";
+
 
 interface Player {
   id: number;
   clubId: number;
   name: string;
   position: string;
+  status: "Active" | "Suspended" | "Injured";
 }
-
 interface Official {
   id: number;
   clubId: number;
@@ -25,7 +23,23 @@ const loggedInClub = {
   name: "KCCA FC",
   sport: "Football",
 };
+const squadRules = {
+  Football: {
+    minimumPlayers: 2,
+    maximumPlayers: 3,
+  },
 
+  Basketball: {
+    minimumPlayers: 8,
+    maximumPlayers: 12,
+  },
+
+  Rugby: {
+    minimumPlayers: 23,
+    maximumPlayers: 30,
+  },
+};
+const currentSquadRule = squadRules[loggedInClub.sport as keyof typeof squadRules];
 const competitions = ["Uganda Premier League", "National Cup"];
 
 const fixturesByCompetition: Record<string, string[]> = {
@@ -34,10 +48,39 @@ const fixturesByCompetition: Record<string, string[]> = {
 };
 
 const playersData: Player[] = [
-  { id: 1, clubId: 1, name: "John Okello", position: "Midfielder" },
-  { id: 2, clubId: 1, name: "Allan Okello", position: "Forward" },
-  { id: 3, clubId: 1, name: "David Peter", position: "Goalkeeper" },
-  { id: 4, clubId: 2, name: "Brian Kato", position: "Point Guard" },
+
+  {
+    id: 1,
+    clubId: 1,
+    name: "John Okello",
+    position: "Midfielder",
+    status: "Active"
+  },
+
+  {
+    id: 2,
+    clubId: 1,
+    name: "Allan Okello",
+    position: "Forward",
+    status: "Active"
+  },
+
+  {
+    id: 3,
+    clubId: 1,
+    name: "David Peter",
+    position: "Goalkeeper",
+    status: "Injured"
+  },
+
+  {
+    id: 4,
+    clubId: 2,
+    name: "Brian Kato",
+    position: "Point Guard",
+    status: "Active"
+  }
+
 ];
 
 const officialsData: Official[] = [
@@ -48,8 +91,6 @@ const officialsData: Official[] = [
 ];
 
 const SquadSubmission = () => {
-  const navigate = useNavigate();
-
   const [step, setStep] = useState(1);
   const [competition, setCompetition] = useState(competitions[0]);
   const [fixture, setFixture] = useState(fixturesByCompetition[competitions[0]][0]);
@@ -57,8 +98,13 @@ const SquadSubmission = () => {
   const [selectedOfficials, setSelectedOfficials] = useState<number[]>([]);
   const [submitted, setSubmitted] = useState(false);
   const [submittedAt, setSubmittedAt] = useState<string | null>(null);
+  const [validationMessage, setValidationMessage] = useState<string | null>(null);
 
-  const clubPlayers = playersData.filter((player) => player.clubId === loggedInClub.id);
+  const clubPlayers = playersData.filter(
+    (player) =>
+      player.clubId === loggedInClub.id &&
+      player.status === "Active"
+  );
   const clubOfficials = officialsData.filter((official) => official.clubId === loggedInClub.id);
 
   const togglePlayer = (id: number) => {
@@ -84,26 +130,73 @@ const SquadSubmission = () => {
   };
 
   const canGoNext = () => {
-    if (step === 2) return selectedPlayers.length > 0;
-    if (step === 3) return selectedOfficials.length > 0;
+
+    if (step === 2) {
+
+      return (
+        selectedPlayers.length >= currentSquadRule.minimumPlayers &&
+        selectedPlayers.length <= currentSquadRule.maximumPlayers
+      );
+
+    }
+
+
+    if (step === 3) {
+
+      return selectedOfficials.length > 0;
+
+    }
+
+
     return true;
+
+  };
+
+
+  const handleNext = () => {
+
+    if (step === 2) {
+
+      if (selectedPlayers.length < currentSquadRule.minimumPlayers) {
+
+        setValidationMessage(
+          `Please select at least ${currentSquadRule.minimumPlayers} players before continuing.`
+        );
+
+        return;
+      }
+
+
+      if (selectedPlayers.length > currentSquadRule.maximumPlayers) {
+
+        setValidationMessage(
+          `You cannot select more than ${currentSquadRule.maximumPlayers} players.`
+        );
+
+        return;
+      }
+    }
+
+
+    if (step === 3) {
+
+      if (selectedOfficials.length === 0) {
+
+        setValidationMessage(
+          "Please select at least one official before continuing."
+        );
+
+        return;
+      }
+    }
+
+
+    setValidationMessage(null);
+    setStep(step + 1);
   };
 
   return (
-    <AdminWorkspaceLayout
-      workspaceTitle={loggedInClub.name}
-      workspaceSubtitle={`${loggedInClub.sport} Club`}
-      eyebrow="Club Management"
-      title="Squad Sheet Submission"
-      description="Submit an official squad sheet to the union for a fixture."
-      navItems={clubAdminNavItems}
-      activeTab="squad-submission"
-      onTabChange={(key) => {
-        const item = clubAdminNavItems.find((i) => i.key === key);
-        if (item) navigate(item.path);
-      }}
-    >
-      <div className="club-page">
+    <div className="club-page">
         <div className="club-header">
           <div>
             <h1> {loggedInClub.name}  </h1>
@@ -145,7 +238,29 @@ const SquadSubmission = () => {
           {step === 2 && (
             <div>
               <h4>Select Players</h4>
-              <p>Players registered under {loggedInClub.name}</p>
+
+              <p>
+                Players registered under {loggedInClub.name}
+              </p>
+
+              <p className="rule-message">
+                Required squad size:
+                {currentSquadRule.minimumPlayers}
+                -
+                {currentSquadRule.maximumPlayers}
+                players
+              </p>
+
+              <p className="selected-count">
+                Selected Players:{" "}
+                <strong>
+                  {selectedPlayers.length}
+                </strong>
+                {" / "}
+                {currentSquadRule.maximumPlayers}
+                
+              </p>
+
 
               <div className="selection-list">
                 {clubPlayers.map((player) => (
@@ -156,9 +271,21 @@ const SquadSubmission = () => {
                       onChange={() => togglePlayer(player.id)}
                     />
                     <div>
-                      <strong>{player.name}</strong>
+                      <strong>
+                        {player.name}
+                      </strong>
+
                       <br />
-                      <span>{player.position}</span>
+
+                      <span>
+                        {player.position}
+                      </span>
+
+                      <br />
+
+                      <span className="player-status">
+                        Status: {player.status}
+                      </span>
                     </div>
                   </label>
                 ))}
@@ -235,6 +362,11 @@ const SquadSubmission = () => {
               )}
             </div>
           )}
+          {validationMessage && (
+            <div className="review-box error-box">
+              {validationMessage}
+            </div>
+          )}
 
           <div className="wizard-buttons">
             <button
@@ -246,18 +378,16 @@ const SquadSubmission = () => {
               Previous
             </button>
 
-            <button
+            <button 
               className="primary-btn"
-              disabled={step === 5 || !canGoNext()}
-              onClick={() => setStep(step + 1)}
+              onClick={handleNext}
+              disabled={!canGoNext()}
             >
               Next
-              <ChevronRight />
             </button>
           </div>
         </div>
       </div>
-    </AdminWorkspaceLayout>
   );
 };
 

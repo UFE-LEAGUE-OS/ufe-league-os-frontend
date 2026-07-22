@@ -5,31 +5,59 @@ import "../../../styles/pages/super-admin/sponsorship-management/sponsorshipMana
 interface SponsorFramework {
     id: number;
     name: string;
+    category: SponsorshipCategory;
     sponsor: string;
     sport: Sport;
     entityType: EntityType;
     target: string;
+
+    startDate: string;
+    endDate: string;
+
     duration: string;
     value: string;
-    status: "Active" | "Draft" | "Expired";
+    status: SponsorshipStatus;
     updatedAt: string;
 }
 
 type Sport = "Football" | "Basketball" | "Rugby";
 type EntityType = "League" | "Club" | "Fan Page";
-type StatusFilter = "All" | "Active" | "Draft" | "Expired";
 type SportFilter = "All" | Sport;
+type SponsorshipStatus =
+    | "Draft"
+    | "Pending Review"
+    | "Approved"
+    | "Active"
+    | "Expired"
+    | "Rejected";
+
+type StatusFilter = "All" | SponsorshipStatus;
 
 type FrameworkFormState = {
     name: string;
+    category: SponsorshipCategory;
     sponsor: string;
     sport: Sport;
     entityType: EntityType;
     target: string;
+
+    startDate: string;
+    endDate: string;
+
     duration: string;
     value: string;
     status: SponsorFramework["status"];
 };
+
+type SponsorshipCategory =
+    | "Title Sponsor"
+    | "Official Partner"
+    | "Technology Partner"
+    | "Broadcast Partner"
+    | "Beverage Partner"
+    | "Medical Partner"
+    | "Equipment Partner"
+    | "Digital Partner";
 
 // Mock directory of targetable entities, grouped by sport and entity type.
 // Mirrors the directory used in Campaign Visibility Controls.
@@ -50,11 +78,29 @@ const ENTITY_DIRECTORY: Record<Sport, Record<EntityType, string[]>> = {
         "Fan Page": ["Kobs RFC Fan Page", "Cranes Rugby Fans"],
     },
 };
+const SPONSORSHIP_CATEGORIES: SponsorshipCategory[] = [
+    "Title Sponsor",
+    "Official Partner",
+    "Technology Partner",
+    "Broadcast Partner",
+    "Beverage Partner",
+    "Medical Partner",
+    "Equipment Partner",
+    "Digital Partner",
+];
 
 const SPORTS: Sport[] = ["Football", "Basketball", "Rugby"];
 const ENTITY_TYPES: EntityType[] = ["League", "Club", "Fan Page"];
-const DURATIONS = ["1 Month", "3 Months", "6 Months", "12 Months", "24 Months"];
-const STATUSES: SponsorFramework["status"][] = ["Active", "Draft", "Expired"];
+
+const DURATIONS = ["1", "3", "6 ", "12", "24"];
+const STATUSES: SponsorshipStatus[] = [
+    "Draft",
+    "Pending Review",
+    "Approved",
+    "Active",
+    "Expired",
+    "Rejected",
+];
 
 const initials = (name: string) =>
     name
@@ -68,11 +114,16 @@ const initials = (name: string) =>
 function emptyForm(): FrameworkFormState {
     return {
         name: "",
+        category: "Official Partner",
         sponsor: "",
         sport: "Football",
         entityType: "League",
         target: ENTITY_DIRECTORY.Football.League[0],
-        duration: "3 Months",
+
+        startDate: "",
+        endDate: "",
+
+        duration: "3",
         value: "",
         status: "Draft",
     };
@@ -90,11 +141,14 @@ export default function SponsorFramework() {
         {
             id: 1,
             name: "Gold Sponsorship Package",
+            category: "Title Sponsor",
             sponsor: "MTN Uganda",
             sport: "Football",
             entityType: "League",
             target: "Uganda Premier League",
-            duration: "12 Months",
+            duration: "12",
+            startDate: "2026-01-01",
+            endDate: "2026-12-31",
             value: "$100,000",
             status: "Active",
             updatedAt: "Jul 08, 2026",
@@ -102,11 +156,14 @@ export default function SponsorFramework() {
         {
             id: 2,
             name: "Silver Sponsorship Package",
+            category: "Technology Partner",
             sponsor: "Airtel Africa",
             sport: "Basketball",
             entityType: "Club",
             target: "City Oilers",
-            duration: "6 Months",
+            duration: "6",
+            startDate: "2026-07-01",
+            endDate: "2026-12-31",
             value: "$50,000",
             status: "Draft",
             updatedAt: "Jul 03, 2026",
@@ -114,11 +171,14 @@ export default function SponsorFramework() {
         {
             id: 3,
             name: "Bronze Sponsorship Package",
+            category: "Beverage Partner",
             sponsor: "Coca-Cola",
             sport: "Rugby",
             entityType: "Fan Page",
             target: "Kobs RFC Fan Page",
-            duration: "3 Months",
+            duration: "3",
+            startDate: "2026-02-01",
+            endDate: "2026-05-01",
             value: "$20,000",
             status: "Expired",
             updatedAt: "May 21, 2026",
@@ -151,17 +211,24 @@ export default function SponsorFramework() {
     const openEdit = (item: SponsorFramework) => {
         setForm({
             name: item.name,
+            category: item.category,
             sponsor: item.sponsor,
             sport: item.sport,
             entityType: item.entityType,
             target: item.target,
+
+            startDate: item.startDate,
+            endDate: item.endDate,
+
             duration: item.duration,
             value: item.value,
             status: item.status,
         });
+
         setEditingId(item.id);
         setModalMode("edit");
     };
+
 
     const closeModal = () => {
         setModalMode(null);
@@ -370,29 +437,39 @@ export default function SponsorFramework() {
                         />
                     </div>
 
-                    <div className="filter-pills">
-                        {(["All", "Football", "Basketball", "Rugby"] as SportFilter[]).map((option) => (
-                            <button
-                                key={option}
-                                className={`filter-pill ${sportFilter === option ? "is-active" : ""}`}
-                                onClick={() => setSportFilter(option)}
-                            >
-                                {option}
-                            </button>
-                        ))}
+                    
+                    <div className="filter-select">
+                         <label htmlFor="sport-filter">Sport:   </label>
+                        <select
+                            value={sportFilter}
+                            onChange={(e) => setSportFilter(e.target.value as SportFilter)}
+                        >
+                            {(["All", "Football", "Basketball", "Rugby"] as SportFilter[]).map(
+                                (option) => (
+                                    <option key={option} value={option}>
+                                        {option}
+                                    </option>
+                                )
+                            )}
+                        </select>
+                    </div>
+                    <div className="filter-select">
+                        <label htmlFor="status-filter">Status: </label>
+
+                        <select
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
+                        >
+                            {(["All", "Draft", "Pending Review", "Approved", "Active", "Expired", "Rejected"] as StatusFilter[]).map(
+                                (option) => (
+                                    <option key={option} value={option}>
+                                        {option}
+                                    </option>
+                                )
+                            )}
+                        </select>
                     </div>
 
-                    <div className="filter-pills">
-                        {(["All", "Active", "Draft", "Expired"] as StatusFilter[]).map((option) => (
-                            <button
-                                key={option}
-                                className={`filter-pill ${statusFilter === option ? "is-active" : ""}`}
-                                onClick={() => setStatusFilter(option)}
-                            >
-                                {option}
-                            </button>
-                        ))}
-                    </div>
                 </div>
 
                 <table>
@@ -400,7 +477,10 @@ export default function SponsorFramework() {
                         <tr>
                             <th>Package</th>
                             <th>Scope</th>
-                            <th>Duration</th>
+
+                            <th>Period</th>
+                            <th>Duration (Months)</th>
+
                             <th>Sponsorship Value</th>
                             <th>Status</th>
                             <th>Last Updated</th>
@@ -411,7 +491,7 @@ export default function SponsorFramework() {
                     <tbody>
                         {filteredFrameworks.length === 0 && (
                             <tr>
-                                <td colSpan={7} className="empty-row">
+                                <td colSpan={8} className="empty-row">
                                     No frameworks match your search. Try a different keyword or filter.
                                 </td>
                             </tr>
@@ -424,6 +504,7 @@ export default function SponsorFramework() {
                                         <span className="sponsor-avatar">{initials(item.sponsor)}</span>
                                         <div className="package-cell__text">
                                             <span className="package-name">{item.name}</span>
+                                            <span className="package-category">{item.category}</span>
                                             <span className="package-sponsor">{item.sponsor}</span>
                                         </div>
                                     </div>
@@ -436,6 +517,14 @@ export default function SponsorFramework() {
                                     </div>
                                 </td>
 
+
+                                <td>
+                                    <div className="date-range">
+                                        <span>{item.startDate}</span>
+                                        <span> to </span>
+                                        <span>{item.endDate}</span>
+                                    </div>
+                                </td>
                                 <td>{item.duration}</td>
 
                                 <td className="value-cell">{item.value}</td>
@@ -516,6 +605,25 @@ export default function SponsorFramework() {
                                 </label>
 
                                 <label className="form-field form-field--full">
+                                    Sponsorship Category
+                                    <select
+                                        value={form.category}
+                                        onChange={(e) =>
+                                            setForm({
+                                                ...form,
+                                                category: e.target.value as SponsorshipCategory,
+                                            })
+                                        }
+                                    >
+                                        {SPONSORSHIP_CATEGORIES.map((category) => (
+                                            <option key={category} value={category}>
+                                                {category}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </label>
+
+                                <label className="form-field form-field--full">
                                     Sponsor
                                     <input
                                         required
@@ -562,7 +670,34 @@ export default function SponsorFramework() {
                                 </label>
 
                                 <label className="form-field">
-                                    Duration
+                                    Start Date
+                                    <input
+                                        type="date"
+                                        value={form.startDate}
+                                        onChange={(e) =>
+                                            setForm({
+                                                ...form,
+                                                startDate: e.target.value,
+                                            })
+                                        }
+                                    />
+                                </label>
+                                <label className="form-field">
+                                    End Date
+                                    <input
+                                        type="date"
+                                        value={form.endDate}
+                                        onChange={(e) =>
+                                            setForm({
+                                                ...form,
+                                                endDate: e.target.value,
+                                            })
+                                        }
+                                    />
+                                </label>
+
+                                <label className="form-field">
+                                    Duration (Months)
                                     <select
                                         value={form.duration}
                                         onChange={(e) => setForm({ ...form, duration: e.target.value })}

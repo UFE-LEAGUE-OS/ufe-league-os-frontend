@@ -96,9 +96,16 @@ export default function PlacementManager() {
     const [entityType, setEntityType] = useState<EntityType>("Platform-wide");
     const [target, setTarget] = useState("Platform-wide");
     const [status, setStatus] = useState<PlacementStatus>("Active");
+    const [editingPlacementId, setEditingPlacementId] = useState<number | null>(null);
+
+    const [deletePlacementId, setDeletePlacementId] = useState<number | null>(null);
 
     const entityTypeOptions = useMemo(() => entityTypesFor(sport), [sport]);
     const targetOptions = useMemo(() => targetsFor(sport, entityType), [sport, entityType]);
+    //search
+    const [search, setSearch] = useState("");
+    const [statusFilter, setStatusFilter] = useState<"All" | PlacementStatus>("All");
+    const [sportFilter, setSportFilter] = useState<Sport>("All Sports");
 
     const handleSportChange = (next: Sport) => {
         setSport(next);
@@ -111,6 +118,27 @@ export default function PlacementManager() {
         setEntityType(next);
         setTarget(targetsFor(sport, next)[0]);
     };
+    const filteredPlacements = useMemo(() => {
+        return placements.filter((item) => {
+
+            const matchesSearch =
+                search.trim() === "" ||
+                item.sponsor.toLowerCase().includes(search.toLowerCase()) ||
+                item.location.toLowerCase().includes(search.toLowerCase()) ||
+                item.target.toLowerCase().includes(search.toLowerCase());
+
+            const matchesSport =
+                sportFilter === "All Sports" ||
+                item.sport === sportFilter;
+
+            const matchesStatus =
+                statusFilter === "All" ||
+                item.status === statusFilter;
+
+            return matchesSearch && matchesSport && matchesStatus;
+        });
+
+    }, [placements, search, sportFilter, statusFilter]);
 
     const stats = useMemo(() => {
         const total = placements.length;
@@ -122,19 +150,60 @@ export default function PlacementManager() {
     const handleAdd = () => {
         if (!sponsor.trim()) return;
 
-        const newPlacement: Placement = {
-            id: placements.length + 1,
-            location,
-            sponsor: sponsor.trim(),
-            sport,
-            entityType,
-            target,
-            status,
-            updatedAt: "Today",
-        };
+        if (editingPlacementId !== null) {
 
-        setPlacements([newPlacement, ...placements]);
+            setPlacements(
+                placements.map(item =>
+                    item.id === editingPlacementId
+                        ? {
+                            ...item,
+                            location,
+                            sponsor,
+                            sport,
+                            entityType,
+                            target,
+                            status,
+                            updatedAt: "Today",
+                        }
+                        : item
+                )
+            );
+
+            setEditingPlacementId(null);
+
+        } else {
+
+            const newPlacement: Placement = {
+                id: placements.length + 1,
+                location,
+                sponsor: sponsor.trim(),
+                sport,
+                entityType,
+                target,
+                status,
+                updatedAt: "Today",
+            };
+
+            setPlacements([newPlacement, ...placements]);
+        }
+
+        setLocation(LOCATIONS[0]);
         setSponsor("");
+        setSport("All Sports");
+        setEntityType("Platform-wide");
+        setTarget("Platform-wide");
+        setStatus("Active");
+    };
+
+    const handleEdit = (item: Placement) => {
+        setEditingPlacementId(item.id);
+
+        setLocation(item.location);
+        setSponsor(item.sponsor);
+        setSport(item.sport);
+        setEntityType(item.entityType);
+        setTarget(item.target);
+        setStatus(item.status);
     };
 
     const cycleStatus = (id: number) => {
@@ -202,7 +271,9 @@ export default function PlacementManager() {
 
                 <div className="card">
                     <div className="card-header">
-                        <h2>New Placement</h2>
+                        <h2>
+                            {editingPlacementId ? "Edit Placement" : "New Placement"}
+                        </h2>
                         <p>Assign a sponsor to a location on the platform.</p>
                     </div>
 
@@ -295,13 +366,29 @@ export default function PlacementManager() {
                             ))}
                         </div>
                     </div>
-
-                    <button className="primary-btn" onClick={handleAdd}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                            <path d="M12 5v14M5 12h14" />
-                        </svg>
-                        Add Placement
-                    </button>
+                    <div className="form-action">
+                        <button className="primary-btn" onClick={handleAdd}>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                                <path d="M12 5v14M5 12h14" />
+                            </svg>
+                            {editingPlacementId ? "Update Placement" : "Add Placement"}
+                        </button>
+                        {editingPlacementId && (
+                            <button
+                                className="secondary-btn"
+                                onClick={() => {
+                                    setEditingPlacementId(null);
+                                    setLocation(LOCATIONS[0]);
+                                    setSponsor("");
+                                    setSport("All Sports");
+                                    setEntityType("Platform-wide");
+                                    setTarget("Platform-wide");
+                                    setStatus("Active");
+                                }}
+                            >
+                                Cancel Edit
+                            </button>
+                        )}</div>
                 </div>
 
                 <div className="card summary-card">
@@ -335,6 +422,58 @@ export default function PlacementManager() {
                     <h2>Configured Placements</h2>
                 </div>
 
+                <div className="table-toolbar">
+
+                    <div className="search-field">
+                        <input
+                            type="text"
+                            placeholder="Search placements..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                        />
+                    </div>
+
+
+                    <div className="toolbar-filters">
+
+                        <div className="filter-select">
+                            <label>Sport:</label>
+                            <select
+                                value={sportFilter}
+                                onChange={(e) =>
+                                    setSportFilter(e.target.value as Sport)
+                                }
+                            >
+                                {SPORTS.map((sport) => (
+                                    <option key={sport} value={sport}>
+                                        {sport}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+
+                        <div className="filter-select">
+                            <label>Status:</label>
+                            <select
+                                value={statusFilter}
+                                onChange={(e) =>
+                                    setStatusFilter(
+                                        e.target.value as "All" | PlacementStatus
+                                    )
+                                }
+                            >
+                                <option value="All">All Statuses</option>
+                                <option value="Active">Active</option>
+                                <option value="Scheduled">Scheduled</option>
+                                <option value="Inactive">Inactive</option>
+                            </select>
+                        </div>
+
+                    </div>
+
+                </div>
+
                 <table>
                     <thead>
                         <tr>
@@ -348,7 +487,7 @@ export default function PlacementManager() {
                     </thead>
 
                     <tbody>
-                        {placements.map((item) => (
+                        {filteredPlacements.map((item) => (
                             <tr key={item.id}>
                                 <td className="package-name">{item.location}</td>
                                 <td>{item.sponsor}</td>
@@ -370,15 +509,83 @@ export default function PlacementManager() {
                                 </td>
                                 <td className="muted-cell">{item.updatedAt}</td>
                                 <td>
-                                    <button className="edit-btn" onClick={() => cycleStatus(item.id)}>
-                                        Manage
-                                    </button>
+                                    <div className="actions-cell">
+
+                                        <button
+                                            className="edit-btn"
+                                            onClick={() => handleEdit(item)}
+                                        >
+                                            Edit
+                                        </button>
+
+                                        <button
+                                            className="edit-btn"
+                                            onClick={() => cycleStatus(item.id)}
+                                        >
+                                            {item.status === "Active" ? "Disable" : "Activate"}
+                                        </button>
+
+                                        <button
+                                            className="delete-btn"
+                                            onClick={() => setDeletePlacementId(item.id)}
+                                        >
+                                            Delete
+                                        </button>
+
+                                    </div>
                                 </td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
             </div>
+            {deletePlacementId !== null && (
+                <div
+                    className="modal-overlay"
+                    onClick={() => setDeletePlacementId(null)}
+                >
+                    <div
+                        className="modal-panel modal-panel--confirm"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+
+                        <div className="modal-header">
+                            <h3>Delete Placement</h3>
+                        </div>
+
+                        <p className="confirm-message">
+                            Are you sure you want to delete this sponsor placement?
+                            This action cannot be undone.
+                        </p>
+
+                        <div className="modal-actions">
+
+                            <button
+                                className="secondary-btn"
+                                onClick={() => setDeletePlacementId(null)}
+                            >
+                                Cancel
+                            </button>
+
+                            <button
+                                className="danger-btn"
+                                onClick={() => {
+                                    setPlacements(
+                                        placements.filter(
+                                            item => item.id !== deletePlacementId
+                                        )
+                                    );
+                                    setDeletePlacementId(null);
+                                }}
+                            >
+                                Delete Placement
+                            </button>
+
+                        </div>
+
+                    </div>
+                </div>
+            )}
 
         </div>
     );

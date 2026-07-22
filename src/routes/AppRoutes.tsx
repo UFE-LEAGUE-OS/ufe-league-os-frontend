@@ -324,9 +324,9 @@ export default function AppRoutes() {
                     }
                 />
 
-                <Route path="club-management">
+                
                     <Route
-                        path="teams"
+                        path="/dashboard/club-admin/teams"
                         element={dashboardProtectedPage(
                             <TeamsManagement />,
                             'CLUB_ADMIN',
@@ -336,7 +336,7 @@ export default function AppRoutes() {
                         )}
                     />
                     <Route
-                        path="players"
+                        path="/dashboard/club-admin/players"
                         element={dashboardProtectedPage(
                             <PlayerRegistration />,
                             'CLUB_ADMIN',
@@ -346,7 +346,7 @@ export default function AppRoutes() {
                         )}
                     />
                     <Route
-                        path="staff"
+                      path="/dashboard/club-admin/staff"
                         element={dashboardProtectedPage(
                             <StaffOfficials />,
                             'CLUB_ADMIN',
@@ -356,7 +356,7 @@ export default function AppRoutes() {
                         )}
                     />
                     <Route
-                        path="roster"
+                       path="/dashboard/club-admin/roster"
                         element={dashboardProtectedPage(
                             <RosterUpdate />,
                             'CLUB_ADMIN',
@@ -366,7 +366,7 @@ export default function AppRoutes() {
                         )}
                     />
                     <Route
-                        path="squad-submission"
+                        path="/dashboard/club-admin/squad-submission"
                         element={dashboardProtectedPage(
                             <SquadSubmission />,
                             'CLUB_ADMIN',
@@ -375,7 +375,7 @@ export default function AppRoutes() {
                             'CLUB',
                         )}
                     />
-                </Route>
+               
 
                 <Route
                     path="/dashboard/chairman/*"

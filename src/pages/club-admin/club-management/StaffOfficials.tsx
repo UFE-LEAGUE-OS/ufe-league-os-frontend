@@ -1,10 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Search, Pencil, Trash2, X } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, X, Shield, UserCog, ClipboardList, Send } from "lucide-react";
 
 import "../../../styles/pages/club-admin/ClubManagement.css";
 import AdminWorkspaceLayout from "../../../components/AdminWorkspaceLayout/AdminWorkspaceLayout";
-import { clubAdminNavItems } from "./clubAdminNav";
 
 interface StaffMember {
   id: number;
@@ -97,6 +96,19 @@ const emptyForm = {
   status: "Active" as "Active" | "Inactive",
 };
 
+const navItems = [
+  {
+    label: "Club Management",
+    items: [
+      { key: "teams", label: "Teams & Squads", icon: Shield, path: "/club-management/teams" },
+      { key: "players", label: "Player Registration", icon: UserCog, path: "/club-management/players" },
+      { key: "staff", label: "Staff & Officials", icon: UserCog, path: "/club-management/staff" },
+      { key: "roster", label: "Roster Update", icon: ClipboardList, path: "/club-management/roster" },
+      { key: "squad-submission", label: "Squad Submission", icon: Send, path: "/club-management/squad-submission" },
+    ],
+  },
+];
+
 const StaffOfficials = () => {
   const navigate = useNavigate();
 
@@ -188,10 +200,12 @@ const StaffOfficials = () => {
       eyebrow="Club Management"
       title="Staff & Officials"
       description="Manage coaches, officials and club technical staff."
-      navItems={clubAdminNavItems}
+      navItems={navItems}
       activeTab="staff"
-      onTabChange={(key) => {
-        const item = clubAdminNavItems.find((i) => i.key === key);
+      hideAdminSidebar
+      onTabChange={(key: string) => {
+        const allItems = navItems.flatMap((g) => g.items);
+        const item = allItems.find((i) => i.key === key);
         if (item) navigate(item.path);
       }}
     >
