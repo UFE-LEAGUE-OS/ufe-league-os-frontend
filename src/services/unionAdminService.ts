@@ -1520,6 +1520,54 @@ export interface UnionAdminLeagueOption {
   is_active: boolean;
   created_at: string | null;
   updated_at: string | null;
+  founded_year?: number | null;
+  competitions_count?: number;
+  clubs_count?: number;
+  administrators_count?: number;
+}
+
+export interface GovernanceChoice { value: string; label: string }
+export interface UnionGovernanceOptions {
+  workspace: { slug: string; name: string; sport: string; is_multi_sport: boolean };
+  supported_sports: GovernanceChoice[];
+  competition_types: GovernanceChoice[];
+  competition_format_types: GovernanceChoice[];
+  sport_variants: Record<string, GovernanceChoice[]>;
+  format_templates: Record<string, Array<{ key: string; label: string; competition_types: string[]; defaults: UnionCompetitionFormat }>>;
+  league_administrator_roles: GovernanceChoice[];
+  competition_administrator_roles: GovernanceChoice[];
+  club_administrator_roles: GovernanceChoice[];
+  club_affiliation_statuses: GovernanceChoice[];
+  league_membership_statuses: GovernanceChoice[];
+}
+
+export interface UpsertUnionAdminLeaguePayload {
+  workspace: string;
+  name?: string;
+  description?: string;
+  founded_year?: number | null;
+  is_active?: boolean;
+  sport?: string;
+}
+
+export interface LeagueAdministratorProvisioningPayload {
+  workspace: string;
+  account: { email: string; first_name?: string; last_name?: string; phone_number?: string; password?: string };
+  competition?: number | null;
+  role: string;
+}
+
+export interface UnionLeagueAdministrator {
+  id: number; user: number; user_email: string; user_name: string; league: number;
+  competition: number | null; competition_name: string | null; role: string;
+  is_active: boolean; effective_permissions: string[]; created_at: string; updated_at: string;
+}
+
+export interface LeagueAdministratorProvisioningResult {
+  created_user: boolean;
+  created_scope: boolean;
+  administrator: UnionLeagueAdministrator;
+  temporary_password?: string;
 }
 
 export interface UnionAdminSeasonRecord {
@@ -1742,6 +1790,52 @@ export async function getUnionAdminManagementLeagues(
   return response.data.results ?? [];
 }
 
+export async function getUnionGovernanceOptions(workspaceSlug: string) {
+  const response = await apiClient.get<UnionGovernanceOptions>(
+    `/dashboards/union-admin/governance-options/?workspace=${encodeURIComponent(workspaceSlug)}`,
+  );
+  return response.data;
+}
+
+export async function createUnionAdminLeague(payload: UpsertUnionAdminLeaguePayload) {
+  const response = await apiClient.post<UnionAdminLeagueOption>(
+    "/dashboards/union-admin/leagues/", payload,
+  );
+  return response.data;
+}
+
+export async function updateUnionAdminLeague(leagueId: number, payload: UpsertUnionAdminLeaguePayload) {
+  const response = await apiClient.patch<UnionAdminLeagueOption>(
+    `/dashboards/union-admin/leagues/${leagueId}/`, payload,
+  );
+  return response.data;
+}
+
+export async function getUnionLeagueAdministrators(workspaceSlug: string, leagueId: number) {
+  const response = await apiClient.get<UnionAdminListResponse<UnionLeagueAdministrator>>(
+    `/dashboards/union-admin/leagues/${leagueId}/administrators/?workspace=${encodeURIComponent(workspaceSlug)}`,
+  );
+  return response.data.results ?? [];
+}
+
+export async function provisionUnionLeagueAdministrator(leagueId: number, payload: LeagueAdministratorProvisioningPayload) {
+  const response = await apiClient.post<LeagueAdministratorProvisioningResult>(
+    `/dashboards/union-admin/leagues/${leagueId}/administrators/`, payload,
+  );
+  return response.data;
+}
+
+export async function updateUnionLeagueAdministrator(
+  leagueId: number,
+  scopeId: number,
+  payload: { workspace: string; role?: string; is_active?: boolean },
+) {
+  const response = await apiClient.patch<UnionLeagueAdministrator>(
+    `/dashboards/union-admin/leagues/${leagueId}/administrators/${scopeId}/`, payload,
+  );
+  return response.data;
+}
+
 export async function getUnionAdminManagementSeasons(
   workspaceSlug: string,
 ): Promise<UnionAdminSeasonRecord[]> {
@@ -1916,24 +2010,45 @@ export interface UnionAdminClubRecord {
   banner_url: string | null;
   primary_color: string;
   secondary_color: string;
-  admin: number | null;
-  admin_name: string;
-  admin_email: string;
+  description: string;
+  contact_email: string;
+  phone_number: string;
+  website: string;
+  address: string;
+  founded_year: number | null;
+  is_active: boolean;
+  affiliation_status: string;
+  compliance_status: string;
+  compliance_notes: string;
+  administrator: { id: number; user: number; user_email: string; user_name: string; role: string; is_active: boolean } | null;
   teams: number;
   players: number;
-  compliance: string;
   memberships: UnionAdminClubMembershipSummary[];
   created_at: string;
+  updated_at: string;
 }
 
-export interface UpsertUnionAdminClubPayload {
+export interface CreateUnionAdminClubPayload {
   workspace: string;
-  name?: string;
-  short_name?: string;
-  sport?: string;
-  primary_color?: string;
-  secondary_color?: string;
-  admin_email?: string;
+  name: string; short_name?: string; sport: string; founded_year?: number;
+  description?: string; contact_email?: string; phone_number?: string; website?: string;
+  address?: string; primary_color?: string; secondary_color?: string; is_active?: boolean;
+  affiliation: { status: string; compliance_status: string; compliance_notes?: string };
+  league_membership?: { league: number; season?: number | null; status: string; notes?: string } | null;
+  administrator: { account: { email: string; first_name?: string; last_name?: string; phone_number?: string; password?: string }; role: string };
+}
+
+export type UpdateUnionAdminClubPayload = Partial<Omit<CreateUnionAdminClubPayload, "affiliation" | "league_membership" | "administrator">> & {
+  workspace: string; affiliation_status?: string; compliance_status?: string; compliance_notes?: string;
+};
+
+export interface UnionAdminClubCreationResult {
+  club: UnionAdminClubRecord;
+  affiliation: { id: number; status: string; compliance_status: string; compliance_notes: string };
+  league_membership: { id: number; league: number; season: number | null; status: string } | null;
+  administrator_scope: { id: number; user: number; user_email: string; user_name: string; role: string; is_active: boolean };
+  account: { created_user: boolean };
+  temporary_password?: string;
 }
 
 export async function getUnionAdminClubs(
@@ -1954,9 +2069,9 @@ export async function getUnionAdminClubs(
 }
 
 export async function createUnionAdminClub(
-  payload: UpsertUnionAdminClubPayload,
-): Promise<UnionAdminClubRecord> {
-  const response = await apiClient.post<UnionAdminClubRecord>(
+  payload: CreateUnionAdminClubPayload,
+): Promise<UnionAdminClubCreationResult> {
+  const response = await apiClient.post<UnionAdminClubCreationResult>(
     "/dashboards/union-admin/clubs/",
     payload,
   );
@@ -1966,13 +2081,42 @@ export async function createUnionAdminClub(
 
 export async function updateUnionAdminClub(
   clubId: number,
-  payload: UpsertUnionAdminClubPayload,
+  payload: UpdateUnionAdminClubPayload,
 ): Promise<UnionAdminClubRecord> {
   const response = await apiClient.patch<UnionAdminClubRecord>(
     `/dashboards/union-admin/clubs/${clubId}/`,
     payload,
   );
 
+  return response.data;
+}
+
+export async function getUnionClubAdministrators(workspaceSlug: string, clubId: number) {
+  const response = await apiClient.get<UnionAdminListResponse<UnionAdminClubRecord["administrator"]>>(
+    `/dashboards/union-admin/clubs/${clubId}/administrators/?workspace=${encodeURIComponent(workspaceSlug)}`,
+  );
+  return response.data.results ?? [];
+}
+
+export async function provisionUnionClubAdministrator(
+  clubId: number,
+  payload: { workspace: string; account: { email: string; first_name?: string; last_name?: string; phone_number?: string; password?: string }; role: string },
+) {
+  const response = await apiClient.post<{
+    created_user: boolean; created_scope: boolean;
+    administrator: NonNullable<UnionAdminClubRecord["administrator"]>;
+    temporary_password?: string;
+  }>(`/dashboards/union-admin/clubs/${clubId}/administrators/`, payload);
+  return response.data;
+}
+
+export async function updateUnionClubAdministrator(
+  clubId: number, scopeId: number,
+  payload: { workspace: string; role?: string; is_active?: boolean; make_primary?: boolean },
+) {
+  const response = await apiClient.patch<NonNullable<UnionAdminClubRecord["administrator"]>>(
+    `/dashboards/union-admin/clubs/${clubId}/administrators/${scopeId}/`, payload,
+  );
   return response.data;
 }
 

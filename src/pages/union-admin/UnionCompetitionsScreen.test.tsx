@@ -11,6 +11,9 @@ const service = vi.hoisted(() => ({
   createUnionCompetitionIdentity: vi.fn(), createUnionCompetitionEdition: vi.fn(),
   createUnionCompetitionWorkflow: vi.fn(), getUnionCompetitionEligibleAdministrators: vi.fn(),
   transitionUnionCompetitionEdition: vi.fn(), generateUnionAdminFixtures: vi.fn(),
+  getUnionGovernanceOptions: vi.fn(), getUnionLeagueAdministrators: vi.fn(),
+  createUnionAdminLeague: vi.fn(), updateUnionAdminLeague: vi.fn(),
+  provisionUnionLeagueAdministrator: vi.fn(),
 }));
 vi.mock("../../services/unionAdminService", () => service);
 
@@ -28,6 +31,17 @@ describe("UnionCompetitionsScreen", () => {
     service.getUnionAdminManagementCompetitions.mockResolvedValue([{ id: 9, league: 4, name: identity.name, season_id: 3, matches_count: 0, clubs_count: 2 }]);
     service.getUnionAdminLeagueClubMemberships.mockResolvedValue([]);
     service.getUnionCompetitionEligibleAdministrators.mockResolvedValue([]);
+    service.getUnionLeagueAdministrators.mockResolvedValue([]);
+    service.getUnionGovernanceOptions.mockResolvedValue({
+      workspace: { slug: "uru", name: workspace.name, sport: "RUGBY", is_multi_sport: false },
+      supported_sports: [{ value: "RUGBY", label: "Rugby" }],
+      competition_types: [{ value: "LEAGUE", label: "League" }],
+      competition_format_types: [{ value: "DOUBLE_ROUND_ROBIN", label: "Double round robin" }],
+      sport_variants: { RUGBY: [] }, format_templates: { RUGBY: [] },
+      league_administrator_roles: [{ value: "LEAGUE_ADMIN", label: "League Administrator" }],
+      competition_administrator_roles: [{ value: "COMPETITION_ADMIN", label: "Competition Administrator" }],
+      club_administrator_roles: [], club_affiliation_statuses: [], league_membership_statuses: [],
+    });
   });
 
   it("loads backend records for the active workspace and renders the maintained interface", async () => {
@@ -53,7 +67,7 @@ describe("UnionCompetitionsScreen", () => {
     service.transitionUnionCompetitionEdition.mockResolvedValue({ ...edition, status: "REGISTRATION_CLOSED" });
     render(<UnionCompetitionsScreen workspace={workspace} />);
     await screen.findAllByText(identity.name);
-    fireEvent.click(screen.getByRole("tab", { name: "Publication & Lifecycle" }));
+    fireEvent.click(screen.getByRole("tab", { name: "Fixtures & Publication" }));
     fireEvent.click(await screen.findByRole("button", { name: "Move to registration closed" }));
     await waitFor(() =>
       expect(service.transitionUnionCompetitionEdition).toHaveBeenCalledWith(
