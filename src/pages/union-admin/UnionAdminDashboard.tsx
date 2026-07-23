@@ -17,11 +17,6 @@ import {
     Trophy,
     UserCheck,
     Users,
-    Wallet,
-    Receipt,
-    ClipboardList,
-    LineChart,
-    FileSearch,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
@@ -2538,10 +2533,6 @@ export default function UnionAdminDashboard() {
                 />
             </section>
         );
-    }
-
-    function handleFinanceSubTabChange(subTab: "dashboard" | "budget" | "payments" | "invoices" | "payouts" | "transactions" | "audit") {
-        setFinanceSubTab(subTab);
     }
 
     function renderFinanceSubmenuContent() {

@@ -733,6 +733,10 @@ export interface RescheduleUnionAdminFixtureResult {
     status: string;
   };
   updated: UnionAdminGeneratedFixture;
+  target?: {
+    club_name: string;
+    status_display: string;
+  };
   reason: string;
 }
 
@@ -866,11 +870,62 @@ export async function rescheduleUnionAdminFixture(
   return response.data;
 }
 
+export interface UnionAdminClubRecord {
+  id: number;
+  name: string;
+  category: string;
+  teams: number;
+  players: number;
+  compliance: string;
+  admin: string;
+  slug?: string;
+}
+
+export async function createUnionAdminClub(
+  payload: CreateUnionAdminLeagueClubPayload,
+): Promise<UnionAdminLeagueClubMembership> {
+  const response = await apiClient.post<UnionAdminLeagueClubMembership>(
+    "/dashboards/union-admin/clubs/",
+    payload,
+  );
+
+  return response.data;
+}
+
+export async function updateUnionAdminClub(
+  id: number,
+  payload: UpdateUnionAdminLeagueClubPayload,
+): Promise<UnionAdminLeagueClubMembership> {
+  const response = await apiClient.put<UnionAdminLeagueClubMembership>(
+    `/dashboards/union-admin/clubs/${id}/`,
+    payload,
+  );
+
+  return response.data;
+}
+
+export async function deleteUnionAdminClub(
+  id: number,
+): Promise<void> {
+  await apiClient.delete(`/dashboards/union-admin/clubs/${id}/`);
+}
+
+export async function removeUnionAdminLeagueClubMembership(
+  id: number,
+): Promise<void> {
+  await apiClient.delete(`/dashboards/union-admin/league-clubs/${id}/`);
+}
+
 export async function getUnionAdminClubs(
   workspaceSlug: string,
+  searchQuery?: string,
 ): Promise<UnionAdminLeagueClubMembership[]> {
+  const query = new URLSearchParams({ workspace: workspaceSlug });
+  if (searchQuery) {
+    query.set("search", searchQuery);
+  }
   const response = await apiClient.get<UnionAdminListResponse<UnionAdminLeagueClubMembership>>(
-    `/dashboards/union-admin/clubs/?workspace=${encodeURIComponent(workspaceSlug)}`,
+    `/dashboards/union-admin/clubs/?${query.toString()}`,
   );
 
   return response.data.results ?? [];

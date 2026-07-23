@@ -1,5 +1,4 @@
 import { useMemo, useState } from "react";
-import type { LucideIcon } from "lucide-react";
 import {
     Search,
     SlidersHorizontal,
