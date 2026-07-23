@@ -257,6 +257,155 @@ export async function getUnionFinanceDashboard(
   return response.data;
 }
 
+export interface UnionBudgetRecord {
+  id: number;
+  name: string;
+  category: string;
+  allocated: UnionFinanceMoney;
+  spent: UnionFinanceMoney;
+  remaining: UnionFinanceMoney;
+  utilization: number;
+  status: string;
+  last_updated: string;
+}
+
+export interface UnionBudgetOversightResponse {
+  count: number;
+  results: UnionBudgetRecord[];
+}
+
+export async function getUnionBudgets(
+  workspaceSlug: string,
+): Promise<UnionBudgetRecord[]> {
+  const response = await apiClient.get<UnionBudgetOversightResponse>(
+    `/dashboards/union-admin/finance/budgets/?workspace=${encodeURIComponent(workspaceSlug)}`,
+  );
+
+  return response.data.results ?? [];
+}
+
+export interface UnionPaymentRecord {
+  id: number;
+  reference: string;
+  amount: UnionFinanceMoney;
+  status: string;
+  method: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UnionPaymentApprovalsResponse {
+  count: number;
+  results: UnionPaymentRecord[];
+}
+
+export async function getUnionPayments(
+  workspaceSlug: string,
+): Promise<UnionPaymentRecord[]> {
+  const response = await apiClient.get<UnionPaymentApprovalsResponse>(
+    `/dashboards/union-admin/finance/payments/?workspace=${encodeURIComponent(workspaceSlug)}`,
+  );
+
+  return response.data.results ?? [];
+}
+
+export interface UnionInvoiceRecord {
+  id: number;
+  reference: string;
+  amount: UnionFinanceMoney;
+  status: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UnionInvoiceVerificationResponse {
+  count: number;
+  results: UnionInvoiceRecord[];
+}
+
+export async function getUnionInvoices(
+  workspaceSlug: string,
+): Promise<UnionInvoiceRecord[]> {
+  const response = await apiClient.get<UnionInvoiceVerificationResponse>(
+    `/dashboards/union-admin/finance/invoices/?workspace=${encodeURIComponent(workspaceSlug)}`,
+  );
+
+  return response.data.results ?? [];
+}
+
+export interface UnionPayoutRecord {
+  id: number;
+  reference: string;
+  beneficiary: string;
+  amount: UnionFinanceMoney;
+  status: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UnionPayoutAuthorizationsResponse {
+  count: number;
+  results: UnionPayoutRecord[];
+}
+
+export async function getUnionPayouts(
+  workspaceSlug: string,
+): Promise<UnionPayoutRecord[]> {
+  const response = await apiClient.get<UnionPayoutAuthorizationsResponse>(
+    `/dashboards/union-admin/finance/payouts/?workspace=${encodeURIComponent(workspaceSlug)}`,
+  );
+
+  return response.data.results ?? [];
+}
+
+export interface UnionTransactionRecord {
+  id: number;
+  reference: string;
+  amount: UnionFinanceMoney;
+  status: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UnionTransactionReviewResponse {
+  count: number;
+  results: UnionTransactionRecord[];
+}
+
+export async function getUnionTransactions(
+  workspaceSlug: string,
+): Promise<UnionTransactionRecord[]> {
+  const response = await apiClient.get<UnionTransactionReviewResponse>(
+    `/dashboards/union-admin/finance/transactions/?workspace=${encodeURIComponent(workspaceSlug)}`,
+  );
+
+  return response.data.results ?? [];
+}
+
+export interface UnionFinanceAuditLogRecord {
+  id: number;
+  module: string;
+  action: string;
+  actor: string;
+  status: string;
+  created_at: string;
+}
+
+export interface UnionFinanceAuditLogsResponse {
+  count: number;
+  results: UnionFinanceAuditLogRecord[];
+}
+
+export async function getUnionFinanceAuditLogs(
+  workspaceSlug: string,
+): Promise<UnionFinanceAuditLogRecord[]> {
+  const response = await apiClient.get<UnionFinanceAuditLogsResponse>(
+    `/dashboards/union-admin/finance/audit-logs/?workspace=${encodeURIComponent(workspaceSlug)}`,
+  );
+
+  return response.data.results ?? [];
+}
+
 
 export interface UnionOperationsCompetition {
   id: string;
@@ -352,10 +501,6 @@ export async function getUnionOperationsDashboard(
 
   return response.data;
 }
-
-
-
-
 
 // UNION ADMIN MANAGEMENT API START
 
@@ -676,29 +821,12 @@ export async function bulkAddUnionAdminLeagueClubMemberships(
 }
 
 export async function updateUnionAdminLeagueClubMembership(
-  membershipId: number,
+  id: number,
   payload: UpdateUnionAdminLeagueClubPayload,
 ): Promise<UnionAdminLeagueClubMembership> {
-  const response = await apiClient.patch<UnionAdminLeagueClubMembership>(
-    `/dashboards/union-admin/league-clubs/${membershipId}/`,
+  const response = await apiClient.put<UnionAdminLeagueClubMembership>(
+    `/dashboards/union-admin/league-clubs/${id}/`,
     payload,
-  );
-
-  return response.data;
-}
-
-export async function removeUnionAdminLeagueClubMembership(
-  membershipId: number,
-  workspaceSlug: string,
-): Promise<UnionAdminLeagueClubMembership> {
-  const response = await apiClient.delete<UnionAdminLeagueClubMembership>(
-    `/dashboards/union-admin/league-clubs/${membershipId}/`,
-    {
-      data: {
-        workspace: workspaceSlug,
-        notes: "Removed from league by union admin.",
-      },
-    },
   );
 
   return response.data;
@@ -706,14 +834,11 @@ export async function removeUnionAdminLeagueClubMembership(
 
 export async function promoteRelegateUnionAdminClub(
   payload: PromoteRelegateUnionAdminClubPayload,
-): Promise<{
-  source: UnionAdminLeagueClubMembership;
-  target: UnionAdminLeagueClubMembership;
-}> {
-  const response = await apiClient.post<{
-    source: UnionAdminLeagueClubMembership;
-    target: UnionAdminLeagueClubMembership;
-  }>("/dashboards/union-admin/promote-relegate/", payload);
+): Promise<RescheduleUnionAdminFixtureResult> {
+  const response = await apiClient.post<RescheduleUnionAdminFixtureResult>(
+    "/dashboards/union-admin/league-clubs/promote-relegate/",
+    payload,
+  );
 
   return response.data;
 }
@@ -722,7 +847,7 @@ export async function generateUnionAdminFixtures(
   payload: GenerateUnionAdminFixturesPayload,
 ): Promise<UnionAdminFixtureGenerationResult> {
   const response = await apiClient.post<UnionAdminFixtureGenerationResult>(
-    "/dashboards/union-admin/generate-fixtures/",
+    "/dashboards/union-admin/fixtures/generate/",
     payload,
   );
 
@@ -730,113 +855,23 @@ export async function generateUnionAdminFixtures(
 }
 
 export async function rescheduleUnionAdminFixture(
-  fixtureId: number,
+  id: number,
   payload: RescheduleUnionAdminFixturePayload,
 ): Promise<RescheduleUnionAdminFixtureResult> {
-  const response = await apiClient.patch<RescheduleUnionAdminFixtureResult>(
-    `/dashboards/union-admin/fixtures/${fixtureId}/reschedule/`,
+  const response = await apiClient.post<RescheduleUnionAdminFixtureResult>(
+    `/dashboards/union-admin/fixtures/${id}/reschedule/`,
     payload,
   );
 
   return response.data;
-}
-
-// UNION ADMIN MANAGEMENT API END
-
-// UNION ADMIN CLUBS API START
-
-export interface UnionAdminClubMembershipSummary {
-  id: number;
-  league: number;
-  league_name: string;
-  season: number | null;
-  season_name: string | null;
-  status: string;
-  status_display: string;
-  promoted_from_league_name: string | null;
-  relegated_to_league_name: string | null;
-  notes: string;
-}
-
-export interface UnionAdminClubRecord {
-  id: number;
-  name: string;
-  slug: string;
-  short_name: string;
-  sport: string;
-  sport_display: string;
-  logo_url: string | null;
-  banner_url: string | null;
-  primary_color: string;
-  secondary_color: string;
-  admin: number | null;
-  admin_name: string;
-  admin_email: string;
-  teams: number;
-  players: number;
-  compliance: string;
-  memberships: UnionAdminClubMembershipSummary[];
-  created_at: string;
-}
-
-export interface UpsertUnionAdminClubPayload {
-  workspace: string;
-  name?: string;
-  short_name?: string;
-  sport?: string;
-  primary_color?: string;
-  secondary_color?: string;
-  admin_email?: string;
 }
 
 export async function getUnionAdminClubs(
   workspaceSlug: string,
-  query = "",
-): Promise<UnionAdminClubRecord[]> {
-  const params = new URLSearchParams({ workspace: workspaceSlug });
-
-  if (query.trim()) {
-    params.set("q", query.trim());
-  }
-
-  const response = await apiClient.get<UnionAdminListResponse<UnionAdminClubRecord>>(
-    `/dashboards/union-admin/clubs/?${params.toString()}`,
+): Promise<UnionAdminLeagueClubMembership[]> {
+  const response = await apiClient.get<UnionAdminListResponse<UnionAdminLeagueClubMembership>>(
+    `/dashboards/union-admin/clubs/?workspace=${encodeURIComponent(workspaceSlug)}`,
   );
 
   return response.data.results ?? [];
 }
-
-export async function createUnionAdminClub(
-  payload: UpsertUnionAdminClubPayload,
-): Promise<UnionAdminClubRecord> {
-  const response = await apiClient.post<UnionAdminClubRecord>(
-    "/dashboards/union-admin/clubs/",
-    payload,
-  );
-
-  return response.data;
-}
-
-export async function updateUnionAdminClub(
-  clubId: number,
-  payload: UpsertUnionAdminClubPayload,
-): Promise<UnionAdminClubRecord> {
-  const response = await apiClient.patch<UnionAdminClubRecord>(
-    `/dashboards/union-admin/clubs/${clubId}/`,
-    payload,
-  );
-
-  return response.data;
-}
-
-export async function deleteUnionAdminClub(
-  clubId: number,
-  workspaceSlug: string,
-): Promise<void> {
-  await apiClient.delete(`/dashboards/union-admin/clubs/${clubId}/`, {
-    data: { workspace: workspaceSlug },
-  });
-}
-
-// UNION ADMIN CLUBS API END
-
