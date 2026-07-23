@@ -879,6 +879,17 @@ export interface UnionAdminClubRecord {
   compliance: string;
   admin: string;
   slug?: string;
+  short_name?: string;
+  sport?: string;
+  sport_display?: string;
+  logo_url?: string | null;
+  banner_url?: string | null;
+  primary_color?: string;
+  secondary_color?: string;
+  admin_name?: string;
+  admin_email?: string;
+  memberships?: UnionAdminLeagueClubMembership[];
+  created_at?: string;
 }
 
 export async function createUnionAdminClub(
@@ -906,14 +917,20 @@ export async function updateUnionAdminClub(
 
 export async function deleteUnionAdminClub(
   id: number,
+  workspaceSlug: string,
 ): Promise<void> {
-  await apiClient.delete(`/dashboards/union-admin/clubs/${id}/`);
+  await apiClient.delete(`/dashboards/union-admin/clubs/${id}/`, {
+    data: { workspace: workspaceSlug },
+  });
 }
 
 export async function removeUnionAdminLeagueClubMembership(
   id: number,
+  workspaceSlug: string,
 ): Promise<void> {
-  await apiClient.delete(`/dashboards/union-admin/league-clubs/${id}/`);
+  await apiClient.delete(`/dashboards/union-admin/league-clubs/${id}/`, {
+    data: { workspace: workspaceSlug },
+  });
 }
 
 export async function getUnionAdminClubs(
@@ -929,4 +946,26 @@ export async function getUnionAdminClubs(
   );
 
   return response.data.results ?? [];
+}
+
+export interface UnionAdminClubFromMembership {
+  id: number;
+  name: string;
+  category: string;
+  teams: number;
+  players: number;
+  compliance: string;
+  admin: string;
+  slug?: string;
+  short_name?: string;
+  sport?: string;
+  sport_display?: string;
+  logo_url?: string | null;
+  banner_url?: string | null;
+  primary_color?: string;
+  secondary_color?: string;
+  admin_name?: string;
+  admin_email?: string;
+  memberships?: UnionAdminLeagueClubMembership[];
+  created_at?: string;
 }

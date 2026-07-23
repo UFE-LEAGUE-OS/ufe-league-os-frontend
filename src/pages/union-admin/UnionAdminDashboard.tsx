@@ -20,12 +20,6 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import UnionAdminBudgetOversight from "./UnionAdminBudgetOversight";
-import UnionAdminPaymentApprovals from "./UnionAdminPaymentApprovals";
-import UnionAdminInvoiceVerification from "./UnionAdminInvoiceVerification";
-import UnionAdminPayoutAuthorizations from "./UnionAdminPayoutAuthorizations";
-import UnionAdminTransactionReview from "./UnionAdminTransactionReview";
-import UnionAdminAuditLogs from "./UnionAdminAuditLogs";
 import {
     getMyUnionWorkspaces,
     getUnionDashboardOverview,
@@ -767,7 +761,6 @@ export default function UnionAdminDashboard() {
         resolvePreferredWorkspaceSlug(fallbackWorkspaces),
     );
     const [activeTab, setActiveTab] = useState<TabKey>("overview");
-    const [financeSubTab, setFinanceSubTab] = useState<"dashboard" | "budget" | "payments" | "invoices" | "payouts" | "transactions" | "audit">("dashboard");
     const [isApiBacked, setIsApiBacked] = useState(false);
     const [isLoadingWorkspaces, setIsLoadingWorkspaces] = useState(true);
     const [workspaceError, setWorkspaceError] = useState("");
@@ -2535,25 +2528,6 @@ export default function UnionAdminDashboard() {
         );
     }
 
-    function renderFinanceSubmenuContent() {
-        switch (financeSubTab) {
-            case "budget":
-                return <UnionAdminBudgetOversight />;
-            case "payments":
-                return <UnionAdminPaymentApprovals />;
-            case "invoices":
-                return <UnionAdminInvoiceVerification />;
-            case "payouts":
-                return <UnionAdminPayoutAuthorizations />;
-            case "transactions":
-                return <UnionAdminTransactionReview />;
-            case "audit":
-                return <UnionAdminAuditLogs />;
-            default:
-                return renderFinance();
-        }
-    }
-
     function renderFinance() {
         const financeKpis = [
             {
@@ -3033,7 +3007,7 @@ export default function UnionAdminDashboard() {
             case "ticketing": return renderTicketing();
             case "scanner": return renderScanner();
             case "entryLogs": return renderEntryLogs();
-            case "finance": return renderFinanceSubmenuContent();
+            case "finance": return renderFinance();
             case "sponsors": return renderSponsors();
             case "comms": return renderComms();
             case "users": return renderUsers();

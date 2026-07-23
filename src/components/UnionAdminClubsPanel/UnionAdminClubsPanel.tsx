@@ -2,11 +2,11 @@ import { Search } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import type { FormEvent } from "react";
 import {
-  createUnionAdminClub,
   deleteUnionAdminClub,
   getUnionAdminClubs,
   updateUnionAdminClub,
   type UnionAdminClubRecord,
+  type UnionAdminLeagueClubMembership,
 } from "../../services/unionAdminService";
 import styles from "./UnionAdminClubsPanel.module.css";
 
@@ -35,7 +35,6 @@ const sportOptions = [
 
 function normaliseSport(sport: string) {
   const value = sport.trim().toUpperCase().replace(/\s+/g, "_");
-
   return sportOptions.some((option) => option.value === value) ? value : "OTHER";
 }
 
@@ -49,7 +48,6 @@ function getErrorMessage(error: unknown) {
     };
     message?: string;
   };
-
   return (
     maybeError.response?.data?.detail ??
     maybeError.response?.data?.message ??
@@ -67,10 +65,35 @@ function initials(name: string) {
     .join("");
 }
 
+function mapMembershipToClubRecord(membership: UnionAdminLeagueClubMembership): UnionAdminClubRecord {
+  return {
+    id: membership.club,
+    name: membership.club_name,
+    category: "League Club",
+    slug: membership.club_slug,
+    short_name: membership.club_short_name,
+    sport: "",
+    sport_display: `${membership.league_name} • ${membership.season_name ?? "No season"}`,
+    logo_url: null,
+    banner_url: null,
+    primary_color: "",
+    secondary_color: "",
+    admin: "",
+    admin_name: membership.notes || "",
+    admin_email: "",
+    teams: 0,
+    players: 0,
+    compliance: membership.status_display,
+    memberships: [membership],
+    created_at: membership.created_at,
+  };
+}
+
 function fallbackToClubRecord(club: Props["fallbackClubs"][number], sport: string): UnionAdminClubRecord {
   return {
     id: Number(club.id),
     name: club.name,
+    category: club.category ?? "Club",
     slug: club.name.toLowerCase().replace(/\s+/g, "-"),
     short_name: "",
     sport: normaliseSport(sport),
@@ -79,7 +102,7 @@ function fallbackToClubRecord(club: Props["fallbackClubs"][number], sport: strin
     banner_url: null,
     primary_color: "",
     secondary_color: "",
-    admin: null,
+    admin: "",
     admin_name: club.admin ?? "",
     admin_email: "",
     teams: club.teams ?? 0,
@@ -142,11 +165,11 @@ export default function UnionAdminClubsPanel({ workspaceSlug, workspaceLabel, sp
   function loadClubIntoForm(club: UnionAdminClubRecord) {
     setForm({
       name: club.name,
-      short_name: club.short_name,
-      sport: club.sport,
-      primary_color: club.primary_color,
-      secondary_color: club.secondary_color,
-      admin_email: club.admin_email,
+      short_name: club.short_name ?? "",
+      sport: club.sport ?? "",
+      primary_color: club.primary_color ?? "",
+      secondary_color: club.secondary_color ?? "",
+      admin_email: club.admin_email ?? "",
     });
     setSelectedClubId(club.id);
     setShowForm(true);
@@ -154,12 +177,11 @@ export default function UnionAdminClubsPanel({ workspaceSlug, workspaceLabel, sp
 
   async function refreshClubs(searchValue = query) {
     setIsLoading(true);
-
     try {
-      const nextClubs = await getUnionAdminClubs(workspaceSlug, searchValue);
+      const nextMemberships = await getUnionAdminClubs(workspaceSlug, searchValue);
+      const nextClubs = nextMemberships.map(mapMembershipToClubRecord);
       setClubs(nextClubs);
       setFailureMessage("");
-
       if (!selectedClubId && nextClubs[0]) {
         setSelectedClubId(nextClubs[0].id);
       }
@@ -172,10 +194,8 @@ export default function UnionAdminClubsPanel({ workspaceSlug, workspaceLabel, sp
 
   useEffect(() => {
     if (!workspaceSlug) return;
-
     resetForm(sport);
     void refreshClubs("");
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [workspaceSlug, sport]);
 
   function submitClub(event: FormEvent<HTMLFormElement>) {
@@ -184,39 +204,30 @@ export default function UnionAdminClubsPanel({ workspaceSlug, workspaceLabel, sp
     setSuccessMessage("");
     setFailureMessage("");
 
-    const payload = {
-      workspace: workspaceSlug,
-      name: form.name.trim(),
-      short_name: form.short_name.trim(),
-      sport: form.sport,
-      primary_color: form.primary_color.trim(),
-      secondary_color: form.secondary_color.trim(),
-      admin_email: form.admin_email.trim(),
-    };
-
-    const request = selectedClubId && showForm
-      ? updateUnionAdminClub(selectedClubId, payload)
-      : createUnionAdminClub(payload);
-
-    void request
-      .then((club) => {
-        setSelectedClubId(club.id);
-        setSuccessMessage(`${club.name} saved successfully.`);
-        setShowForm(false);
-        resetForm();
-        return refreshClubs();
+    if (selectedClubId && showForm) {
+      void updateUnionAdminClub(selectedClubId, {
+        workspace: workspaceSlug,
+        status: "ACTIVE",
+        notes: form.name.trim(),
       })
-      .catch((error: unknown) => {
-        setFailureMessage(getErrorMessage(error));
-      })
-      .finally(() => {
-        setIsSaving(false);
-      });
+        .then(() => {
+          const savedName = form.name.trim() || selectedClub?.name || "Club";
+          setSuccessMessage(`${savedName} updated successfully.`);
+          setShowForm(false);
+          resetForm();
+          return refreshClubs();
+        })
+        .catch((error: unknown) => {
+          setFailureMessage(getErrorMessage(error));
+        })
+        .finally(() => {
+          setIsSaving(false);
+        });
+    }
   }
 
   function deleteSelectedClub() {
     if (!selectedClub) return;
-
     setIsSaving(true);
     setSuccessMessage("");
     setFailureMessage("");
@@ -246,7 +257,6 @@ export default function UnionAdminClubsPanel({ workspaceSlug, workspaceLabel, sp
             and prepare clubs for league seasons and fixtures.
           </p>
         </div>
-
         <div className={styles.actions}>
           <button className={styles.secondaryButton} type="button" onClick={() => void refreshClubs()}>
             {isLoading ? "Refreshing..." : "Refresh"}
@@ -300,7 +310,6 @@ export default function UnionAdminClubsPanel({ workspaceSlug, workspaceLabel, sp
                 <span className={styles.badge}>{club.compliance}</span>
               </button>
             ))}
-
             {filteredClubs.length === 0 ? <div className={styles.empty}>No clubs found.</div> : null}
           </div>
         </div>
@@ -317,7 +326,6 @@ export default function UnionAdminClubsPanel({ workspaceSlug, workspaceLabel, sp
                   placeholder="KCB KOBS"
                 />
               </label>
-
               <label>
                 Short name
                 <input
@@ -326,7 +334,6 @@ export default function UnionAdminClubsPanel({ workspaceSlug, workspaceLabel, sp
                   placeholder="KOBS"
                 />
               </label>
-
               <label>
                 Sport
                 <select
@@ -340,7 +347,6 @@ export default function UnionAdminClubsPanel({ workspaceSlug, workspaceLabel, sp
                   ))}
                 </select>
               </label>
-
               <label>
                 Primary color
                 <input
@@ -349,7 +355,6 @@ export default function UnionAdminClubsPanel({ workspaceSlug, workspaceLabel, sp
                   placeholder="#160e39"
                 />
               </label>
-
               <label>
                 Secondary color
                 <input
@@ -358,7 +363,6 @@ export default function UnionAdminClubsPanel({ workspaceSlug, workspaceLabel, sp
                   placeholder="#f97316"
                 />
               </label>
-
               <label className={styles.fullWidth}>
                 Existing admin email
                 <input
@@ -367,7 +371,6 @@ export default function UnionAdminClubsPanel({ workspaceSlug, workspaceLabel, sp
                   placeholder="club.admin@example.com"
                 />
               </label>
-
               <div className={styles.formActions}>
                 <button className={styles.primaryButton} type="submit" disabled={isSaving}>
                   {isSaving ? "Saving..." : "Save Club"}
@@ -395,7 +398,6 @@ export default function UnionAdminClubsPanel({ workspaceSlug, workspaceLabel, sp
                   <span>{selectedClub.sport_display}</span>
                 </div>
               </div>
-
               <div className={styles.metaGrid}>
                 <div className={styles.metaItem}>
                   <span>Teams</span>
@@ -414,10 +416,9 @@ export default function UnionAdminClubsPanel({ workspaceSlug, workspaceLabel, sp
                   <strong>{selectedClub.admin_name || "Not assigned"}</strong>
                 </div>
               </div>
-
               <h4>League memberships</h4>
               <div className={styles.memberships}>
-                {selectedClub.memberships.map((membership) => (
+                {(selectedClub.memberships ?? []).map((membership) => (
                   <div className={styles.membership} key={membership.id}>
                     <strong>{membership.league_name}</strong>
                     <span>
@@ -425,15 +426,13 @@ export default function UnionAdminClubsPanel({ workspaceSlug, workspaceLabel, sp
                     </span>
                   </div>
                 ))}
-
-                {selectedClub.memberships.length === 0 ? (
+                {(selectedClub.memberships ?? []).length === 0 ? (
                   <div className={styles.empty}>
                     This club is not attached to a league season yet. Use the Competition management workflow
                     to add it to a league and season.
                   </div>
                 ) : null}
               </div>
-
               <div className={styles.actions}>
                 <button className={styles.secondaryButton} type="button" onClick={() => loadClubIntoForm(selectedClub)}>
                   Edit Club

@@ -1289,19 +1289,19 @@ export default function UnionAdminManagementWorkflow({ workspaceSlug, workspaceL
                   >
                     Mark Active
                   </button>
-                  <button
-                    className={styles.dangerButton}
-                    type="button"
-                    onClick={() =>
-                      void handleSubmit(async () => {
-                        const updated = await removeUnionAdminLeagueClubMembership(membership.id, workspaceSlug);
+                    <button
+                      className={styles.dangerButton}
+                      type="button"
+                      onClick={() =>
+                        void handleSubmit(async () => {
+                          await removeUnionAdminLeagueClubMembership(membership.id, workspaceSlug);
 
-                        return `${updated.club_name} removed from active league list.`;
-                      })
-                    }
-                  >
-                    Remove
-                  </button>
+                          return `${membership.club_name} removed from active league list.`;
+                        })
+                      }
+                    >
+                      Remove
+                    </button>
                 </div>
               </div>
             ))}
